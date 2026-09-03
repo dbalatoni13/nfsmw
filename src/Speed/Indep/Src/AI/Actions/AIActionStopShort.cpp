@@ -5,20 +5,16 @@
 // total size: 0x48
 class AIActionStopShort : public AIAction {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionStopShort(AIActionParams *params, float score);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionStopShort() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
+    bool IsFinished() override;
 
     void BeginAction(float dT) override {}
-
-    bool IsFinished() override;
 
     void FinishAction(float dT) override {}
 
@@ -30,13 +26,13 @@ class AIActionStopShort : public AIAction {
     IPursuitAI *mPursuitAI; // offset 0x4C, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionStopShort);
+
 AIAction *AIActionStopShort::Construct(AIActionParams *params) {
     return new AIActionStopShort(params, AIACTION_SCORE_LOW);
 }
 
-AIActionStopShort::AIActionStopShort(AIActionParams *params, float score)
-    : AIAction(params, score) //
-{
+AIActionStopShort::AIActionStopShort(AIActionParams *params, float score) : AIAction(params, score) {
     params->mOwner->QueryInterface(&this->mIInput);
     params->mOwner->QueryInterface(&this->mPursuitAI);
 }

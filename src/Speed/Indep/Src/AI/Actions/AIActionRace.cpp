@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
@@ -10,34 +11,108 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
+
+// TODO use these
+static const bool bDrawNavTrail = false;        // size: 0x1, Decl: 37
+static const bool bDrawSpeedLimits = false;     // size: 0x1, Decl: 38
+static const bool bFollowPlayer = false;        // size: 0x1, Decl: 39
+static const bool bSeparationBySteering = true; // size: 0x1, Decl: 40
+
+// static const float fCurvatureFudge; // TODO not in carbon
+float fDragDifficulty = 0.5f;
+// static const float fDragWinningMargin; // TODO not in carbon
+
+static const float fNosSpeedGapOn = 15.0f;        // size: 0x4, Decl: 49
+static const float fNosSpeedGapOff = 5.0f;        // size: 0x4, Decl: 50
+static const float fNosAccelGapOff = 0.15f;       // size: 0x4, Decl: 51
+static const float fNosAccelGapOn = 0.5f;         // size: 0x4, Decl: 52
+static const float fMinSpeedForNOS = 10.0f;       // size: 0x4, Decl: 53
+static const float fNosTimeOffMin = 20.0f;        // size: 0x4, Decl: 54
+static const float fNosTimeOffMax = 4.0f;         // size: 0x4, Decl: 55
+static const float fNosTimeOnMin = 2.0f;          // size: 0x4, Decl: 56
+static const float fNosTimeOnMax = 4.0f;          // size: 0x4, Decl: 57
+static const float fAINosTrapTimeMin = 1.0f;      // size: 0x4, Decl: 58
+static const float fAINosTrapTimeMax = 3.0f;      // size: 0x4, Decl: 59
+static const float fAINosAvailabilityMin = 0.33f; // size: 0x4, Decl: 60
+static const float fAINosAvailabilityMax = 1.0f;  // size: 0x4, Decl: 61
+
+static const float fAINosOnCapacityMin = 0.5f; // size: 0x4, Decl: 63
+static const float fAINosOnCapacityMax = 0.3f; // size: 0x4, Decl: 64
+
+static const float Tweak_MinPerformance = 0.0f; // size: 0x4, Decl: 66
+
+static const float Tweak_SpeedTrapSkillBoost = 1.0f; // size: 0x4, Decl: 70
+
+// Decl: 71
+float aNosScaleData[2] = {0.25f, 1.0f};
+Table AiNosScaleTable(aNosScaleData, NUM_ELEMENTS(aNosScaleData), 0.0f, 1.0f);
+
+// Decl: 73
+float aSpeedScaleData[2] = {0.85f, 1.0f};
+Table AiSpeedScaleTable(aSpeedScaleData, NUM_ELEMENTS(aSpeedScaleData), 0.0f, 1.0f);
+
+float aSpeedScaleDataDrag[2] = {0.85f, 1.0f};
+Table AiSpeedScaleTableDrag(aSpeedScaleDataDrag, NUM_ELEMENTS(aSpeedScaleDataDrag), 0.0f, 1.0f);
+
+// Decl: 83
+float aAccelScaleData[2] = {0.65f, 1.0f};
+Table AiAccelScaleTable(aAccelScaleData, NUM_ELEMENTS(aAccelScaleData), 0.0f, 1.0f);
+
+float aAccelScaleDataDrag[2] = {0.82f, 1.0f};
+Table AiAccelScaleTableDrag(aAccelScaleDataDrag, NUM_ELEMENTS(aAccelScaleDataDrag), 0.0f, 1.0f);
+
+float AiCatchupAccelerationData[4] = {1.0f, 1.33f, 1.66f, 2.0f};
+Table AiCatchupAcceleration(AiCatchupAccelerationData, NUM_ELEMENTS(AiCatchupAccelerationData), 0.0f, 1.0f);
+
+static const float Tweak_AIAccelExpMin = 1.5f; // Decl: 94
+static const float Tweak_AIAccelExpMax = 2.0f; // Decl: 95
+
+// Decl: 98
+float aCorneringScaleData[2] = {0.36f, 0.9f};
+Table AICorneringScaleTable(aCorneringScaleData, NUM_ELEMENTS(aCorneringScaleData), 0.0f, 1.0f);
+
+// Decl: 105
+float aAiNavLookAheadData[2] = {30.0f, 100.0f};
+Table AiNavLookAheadTable(aAiNavLookAheadData, NUM_ELEMENTS(aAiNavLookAheadData), 0.0f, 100.0f);
+
+float aAiDragNavLookAheadData[2] = {30.0f, 100.0f};
+Table AiDragNavLookAheadTable(aAiDragNavLookAheadData, NUM_ELEMENTS(aAiDragNavLookAheadData), 0.0f, 100.0f);
+
+// Decl: 113
+float aAiSeparationMin[5] = {0.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+Table AiSeparationMinTable(aAiSeparationMin, NUM_ELEMENTS(aAiSeparationMin), 0.0f, 100.0f);
+
+// Decl: 116
+float aAiSeparationMax[5] = {1.0f, 5.0f, 10.0f, 15.0f, 20.0f};
+#ifdef SANE_CODE
+Table AiSeparationMaxTable(aAiSeparationMax, NUM_ELEMENTS(aAiSeparationMax), 0.0f, 100.0f);
+#else
+Table AiSeparationMaxTable(aAiSeparationMin, NUM_ELEMENTS(aAiSeparationMin), 0.0f, 100.0f);
+#endif
+
+static const float Tweak_UnstageTime = 2.5f;   // size: 0x4, Decl: 119
+static const float Tweak_UnStageSpeed = 24.0f; // size: 0x4, Decl: 120
+static const float Tweak_StageSpeedMin = 2.5f; // size: 0x4, Decl: 121
+static const float Tweak_StageSpeedMax = 3.0f; // size: 0x4, Decl: 122
+
+static const int NUM_ACCEL_TABLE_ENTRIES = 20; // size: 0x4, Decl: 214
 
 // total size: 0x48
+// Decl: 217
 class AIActionRace : public AIAction, public Debugable {
   public:
     typedef AIAction Base;
 
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionRace(AIActionParams *params, float score);
-    void ComputePotentials();
-    float GetPotentialSpeed(const float curvature, const float skill, bool is_drag) const;
-    float GetPotentialAcceleration(const float speed, const float skill, bool using_nos, bool is_drag) const;
-    float GetPotentialNOS(float speed, bool was_on, float skill) const;
-    void CheckOffPath(float dT);
-    float UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &direction);
-    bool CheckSpeedTraps(float speed, float skill, float potential_nos, bool was_nos) const;
-
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionRace() override;
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -46,15 +121,25 @@ class AIActionRace : public AIAction, public Debugable {
         return false;
     }
 
-    // Overrides: ITaskable
-    bool OnTask(HSIMTASK hTask, float dT) override;
-
     void BeginAction(float dT) override;
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
+    // Overrides: ITaskable
+    bool OnTask(HSIMTASK hTask, float dT) override;
+
+    virtual void OnDebugDraw();
+
   private:
+    void CheckOffPath(float dT);
+    float GetPotentialNOS(float speed, bool was_on, float skill) const;
+    float GetPotentialAcceleration(const float speed, const float skill, bool using_nos, bool is_drag) const;
+    float GetPotentialSpeed(const float curvature, const float skill, bool is_drag) const;
+    float UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &direction);
+    void ComputePotentials();
+    bool CheckSpeedTraps(float speed, float skill, float potential_nos, bool was_nos) const;
+
     IRigidBody *mIRigidBody;                     // offset 0x4C, size 0x4
     IEngine *mIEngine;                           // offset 0x50, size 0x4
     IInput *mIInput;                             // offset 0x54, size 0x4
@@ -68,19 +153,21 @@ class AIActionRace : public AIAction, public Debugable {
     bool mTurnAroundActive;                      // offset 0x74, size 0x1
     UMath::Vector3 mLastFindPosition;            // offset 0x78, size 0xC
     IPerpetrator *mPerpetrator;                  // offset 0x84, size 0x4
-    float mLastAccel;                            // offset 0x88, size 0x4
-    float mLastSpeed;                            // offset 0x8C, size 0x4
+    Mps mLastAccel;                              // offset 0x88, size 0x4
+    Mps mLastSpeed;                              // offset 0x8C, size 0x4
     Physics::Info::Performance mPerformanceBias; // offset 0x90, size 0xC
     float mNosCapability;                        // offset 0x9C, size 0x4
     float mUsableNOS;                            // offset 0xA0, size 0x4
     float mBottleTime;                           // offset 0xA4, size 0x4
     float mStartGrip;                            // offset 0xA8, size 0x4
     float mEndGrip;                              // offset 0xAC, size 0x4
-    float mTopSpeed;                             // offset 0xB0, size 0x4
-    float mUnstageTimer;                         // offset 0xB4, size 0x4
-    float mNOSTimer;                             // offset 0xB8, size 0x4
+    Mps mTopSpeed;                               // offset 0xB0, size 0x4
+    Mps mUnstageTimer;                           // offset 0xB4, size 0x4
+    Seconds mNOSTimer;                           // offset 0xB8, size 0x4
     HSIMTASK mResetTask;                         // offset 0xBC, size 0x4
 };
+
+BIND_AIACTION_FACTORY(AIActionRace);
 
 AIActionRace::AIActionRace(AIActionParams *params, float score)
     : AIAction(params, score),                                    //
@@ -111,6 +198,10 @@ AIActionRace::AIActionRace(AIActionParams *params, float score)
     this->ComputePotentials();
 }
 
+AIAction *AIActionRace::Construct(AIActionParams *params) {
+    return new AIActionRace(params, AIACTION_SCORE_LOW);
+}
+
 void AIActionRace::OnBehaviorChange(const UCrc32 &mechanic) {
     if (BEHAVIOR_MECHANIC_INPUT == mechanic) {
         this->GetOwner()->QueryInterface(&this->mIInput);
@@ -122,15 +213,12 @@ void AIActionRace::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 bool AIActionRace::OnTask(HSIMTASK hTask, float dT) {
+    Object::OnTask(hTask, dT);
     if (hTask == this->mResetTask) {
         this->CheckOffPath(dT);
         return true;
     }
     return false;
-}
-
-AIAction *AIActionRace::Construct(AIActionParams *params) {
-    return new AIActionRace(params, AIACTION_SCORE_LOW);
 }
 
 bool AIActionRace::CanBeAttempted(float dT) {
@@ -205,6 +293,7 @@ void AIActionRace::BeginAction(float dT) {
     }
 }
 
+// Decl: 507
 void AIActionRace::FinishAction(float dT) {
     WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
     if (road_nav != nullptr) {
@@ -217,6 +306,7 @@ void AIActionRace::FinishAction(float dT) {
 }
 
 // total size: 0xC
+// Decl: 530
 struct GripTor {
     GripTor(IVehicle *vehicle) {
         this->StartGrip = 0.0f;
@@ -252,6 +342,7 @@ struct GripTor {
 };
 
 // total size: 0x8
+// Decl: 575
 struct NosTor {
     NosTor(IVehicle *vehicle) {
         Attrib::Gen::nos nos(vehicle->GetVehicleAttributes().nos(0), 0, nullptr);
@@ -270,6 +361,7 @@ struct NosTor {
 };
 
 // total size: 0x4
+// Decl: 593
 struct SpeedTor {
     SpeedTor(IVehicle *vehicle) {
         this->Speed = 0.0f;
@@ -294,6 +386,7 @@ struct SpeedTor {
 };
 
 // total size: 0x10
+// Decl: 615
 struct PerformaTor {
     PerformaTor() {
         this->Valid = false;
@@ -311,6 +404,7 @@ struct PerformaTor {
     bool Valid;                             // offset 0xC, size 0x1
 };
 
+// Decl: 563
 void AIActionRace::ComputePotentials() {
     if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
         GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
@@ -318,8 +412,11 @@ void AIActionRace::ComputePotentials() {
 
         if (this->mPerpetrator != nullptr) {
             GRacerInfo *racer_info = this->mPerpetrator->GetRacerInfo();
-            if (racer_info != nullptr && racer_info->GetGameCharacter() != nullptr) {
-                min_perf = racer_info->GetGameCharacter()->MinimumAIPerformance();
+            if (racer_info != nullptr) {
+                GCharacter *character = racer_info->GetGameCharacter();
+                if (character != nullptr) {
+                    min_perf = character->MinimumAIPerformance();
+                }
             }
         }
 
@@ -364,6 +461,8 @@ void AIActionRace::ComputePotentials() {
     this->mTopSpeed = UMath::Lerp(lowest_speed.Speed, my_speed.Speed, this->mPerformanceBias.TopSpeed);
 }
 
+static const float Tweak_TestPerfBias = 0.0f; // size: 0x4, Decl: 634
+
 float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed) {
     const float gravity = 9.8f;
     float side_force = friction * gravity;
@@ -382,27 +481,6 @@ float GetSpeedLimit(float curvature, float f0, float f1, float top_speed) {
 
     return denominator;
 }
-
-float aNosScaleData[2] = {0.25f, 1.0f};
-Table AiNosScaleTable(aNosScaleData, 2, 0.0f, 1.0f);
-
-float aSpeedScaleData[2] = {0.85f, 1.0f};
-Table AiSpeedScaleTable(aSpeedScaleData, 2, 0.0f, 1.0f);
-
-float aSpeedScaleDataDrag[2] = {0.85f, 1.0f};
-Table AiSpeedScaleTableDrag(aSpeedScaleDataDrag, 2, 0.0f, 1.0f);
-
-float aAccelScaleData[2] = {0.65f, 1.0f};
-Table AiAccelScaleTable(aAccelScaleData, 2, 0.0f, 1.0f);
-
-float aAccelScaleDataDrag[2] = {0.82f, 1.0f};
-Table AiAccelScaleTableDrag(aAccelScaleDataDrag, 2, 0.0f, 1.0f);
-
-float AiCatchupAccelerationData[4] = {1.0f, 1.33f, 1.66f, 2.0f};
-Table AiCatchupAcceleration(AiCatchupAccelerationData, 4, 0.0f, 1.0f);
-
-float aCorneringScaleData[2] = {0.36f, 0.9f};
-Table AICorneringScaleTable(aCorneringScaleData, 2, 0.0f, 1.0f);
 
 float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, bool is_drag) const {
     float result = this->mTopSpeed;
@@ -518,7 +596,20 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
     return result;
 }
 
+// STRIPPED
+// Decl: 1057
+bool LineIntersection(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d, bVector2 *intersection) {
+    return false;
+}
+
+// STRIPPED
+// Decl: 1068
+float Curvature(const bVector2 *p0, const bVector2 *p1, const bVector2 *p2, bVector2 *centre) {
+    return 0.0f;
+}
+
 // total size: 0x8
+// Decl: 1095
 struct AccelTor {
     AccelTor(float speed, const IVehicleAI *ai) {
         this->Speed = speed;
@@ -536,6 +627,10 @@ struct AccelTor {
     float Speed; // offset 0x0, size 0x4
     float Accel; // offset 0x4, size 0x4
 };
+
+static const float fAINavOutOfBounds = 2.0f; // size: 0x4, Decl: 1333
+
+static const float Tweak_DotToTrapForNOS = 0.5f; // size: 0x4, Decl: 1463
 
 float AIActionRace::GetPotentialAcceleration(const float speed, const float skill, bool using_nos, bool is_drag) const {
     AccelTor my_accel(speed, this->GetAI());
@@ -576,7 +671,7 @@ float AIActionRace::GetPotentialAcceleration(const float speed, const float skil
 }
 
 float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const {
-    if (speed < 10.0f || speed >= this->fSpeedLimit) {
+    if (speed < fMinSpeedForNOS || speed >= this->fSpeedLimit) {
         return 0.0f;
     }
     if (this->mNosCapability <= 0.0f || this->mUsableNOS <= 0.0f) {
@@ -585,10 +680,10 @@ float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const
     if (this->mIEngine == nullptr) {
         return 0.0f;
     }
-    float useable_nos = this->mUsableNOS * UMath::Lerp(0.33f, 1.0f, skill);
+    float useable_nos = this->mUsableNOS * UMath::Lerp(fAINosAvailabilityMin, fAINosAvailabilityMax, skill);
     float off_limit = 1.0f - useable_nos;
-    float on_limit; // TODO
-    float needed_capacity = (1.0f - off_limit) * UMath::Lerp(0.5f, 0.3f, skill);
+    float on_limit = 1.0f - off_limit;
+    float needed_capacity = on_limit * UMath::Lerp(fAINosOnCapacityMin, fAINosOnCapacityMax, skill);
     if (was_on) {
         needed_capacity = off_limit;
     }
@@ -598,13 +693,6 @@ float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const
     }
     return (bottle_amount - needed_capacity) * this->mBottleTime;
 }
-
-float aAiNavLookAheadData[2] = {30.0f, 100.0f};
-Table AiNavLookAheadTable(aAiNavLookAheadData, 2, 0.0f, 100.0f);
-
-// TODO MOVE
-float aAiDragNavLookAheadData[2] = {30.0f, 100.0f};
-Table AiDragNavLookAheadTable(aAiDragNavLookAheadData, 2, 0.0f, 100.0f);
 
 void AIActionRace::CheckOffPath(float dT) {
     WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
@@ -623,7 +711,7 @@ void AIActionRace::CheckOffPath(float dT) {
 
     if (!this->bIsPursuitMode) {
         float old_out_of_bounds = road_nav->GetOutOfBounds();
-        if (old_out_of_bounds > 2.0f) {
+        if (old_out_of_bounds > fAINavOutOfBounds) {
             WRoadNavWithCookies nav;
             nav.SetNavType(WRoadNav::kTypeDirection);
             nav.SetPathType(road_nav->GetPathType());
@@ -688,6 +776,298 @@ float AIActionRace::UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &
     return nav_distance;
 }
 
-void AIActionRace::Update(float dT) {}
+bool AIActionRace::CheckSpeedTraps(float speed, float skill, float potential_nos, bool was_nos) const {
+    if (this->mPerpetrator == nullptr) {
+        return false;
+    }
+    if (!GRaceStatus::Get().GetActivelyRacing()) {
+        return false;
+    }
+    if (!GRaceStatus::IsSpeedTrapRace()) {
+        return false;
+    }
+
+    GRacerInfo *info = this->mPerpetrator->GetRacerInfo();
+
+    if (info == nullptr || speed < fMinSpeedForNOS) {
+        return false;
+    }
+    if (!was_nos && speed > this->fSpeedLimit - 5.0f) {
+        return false;
+    }
+
+    const UMath::Vector3 &my_position = this->mIRigidBody->GetPosition();
+
+    UMath::Vector3 my_direction;
+    this->mIRigidBody->GetForwardVector(my_direction);
+
+    int num_speed_traps = GRaceStatus::Get().GetNumRaceSpeedTraps();
+
+    for (int i = 0; i < num_speed_traps; i++) {
+        GTrigger *trap = GRaceStatus::Get().GetRaceSpeedTrap(i);
+
+        if (trap->IsEnabled()) {
+            UMath::Vector3 position;
+            trap->GetPosition(position);
+
+            float desired_time_ahead = UMath::Lerp(fAINosTrapTimeMin, fAINosTrapTimeMax, skill);
+            float look_ahead = speed * desired_time_ahead;
+
+            if (UMath::DistanceSquare(position, my_position) < look_ahead * look_ahead) {
+                UMath::Vector3 relative_position;
+                UMath::Sub(position, my_position, relative_position);
+
+                float distance = UMath::Normalize(relative_position);
+                float time_ahead = distance / speed;
+
+                if ((time_ahead < potential_nos || was_nos) && UMath::Dot(my_direction, relative_position) > Tweak_DotToTrapForNOS) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void AIActionRace::Update(float dT) {
+    bool need_to_stop = this->GetVehicle()->IsDestroyed();
+    bool drag_racing = this->GetVehicle()->GetDriverStyle() == STYLE_DRAG;
+    bool is_staging = this->GetVehicle()->IsStaging();
+    WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
+    UMath::Vector3 desired_direction = UMath::Vector3::kZero;
+    const UMath::Vector3 &car_position = this->mIRigidBody->GetPosition();
+
+    if (false) {
+        IRigidBody *player_rigid_body = this->mIRigidBody;
+        road_nav->SetLaneType(WRoadNav::kLaneRacing);
+
+        UMath::Vector3 player_position;
+        player_position = UVector3(player_position) - car_position;
+        WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
+
+        {
+            UMath::Vector3 direction;
+        }
+    }
+
+    if (this->bIsPursuitMode) {
+        road_nav->SetLaneType(WRoadNav::kLaneRacing);
+
+        if (!road_nav->FindingPath()) {
+            IVehicleAI *targetai;
+            AITarget *target = this->GetAI()->GetTarget();
+            target->QueryInterface(&targetai);
+            UMath::Vector3 findPosition;
+
+            if (this->bIsFleeMode) {
+                UMath::Vector3 fleecenter;
+                UMath::Vector3 fleeforward;
+                IPlayer *iplayer = IPlayer::First(PLAYER_LOCAL);
+                UMath::Vector3 offset;
+                float offlen;
+
+                if (iplayer != nullptr) {
+                    fleecenter = iplayer->GetSimable()->GetPosition();
+                    iplayer->GetSimable()->GetLinearVelocity(fleeforward);
+                    offlen = UMath::Normalize(fleeforward);
+
+                    if (offlen < 0.00001f) {
+                        iplayer->GetSimable()->GetRigidBody()->GetForwardVector(fleeforward);
+                    }
+                } else {
+                    fleecenter = target->GetPosition();
+                    fleeforward = target->GetLinearVelocity();
+                    offlen = UMath::Normalize(fleeforward);
+
+                    if (offlen < 0.00001f) {
+                        target->GetSimable()->GetRigidBody()->GetForwardVector(fleeforward);
+                    }
+                }
+
+                UMath::Sub(fleecenter, this->mIRigidBody->GetPosition(), offset);
+
+                if ((offlen = UMath::Length(offset)) > 50.0f) {
+                    UMath::Scale(offset, 1.0f / offlen, fleeforward);
+                }
+
+                UMath::ScaleAdd(fleeforward, -500.0f, fleecenter, findPosition);
+
+                if (UMath::Distance(this->mLastFindPosition, findPosition) < 60.0f && UMath::Distance(fleecenter, this->mLastFindPosition) > 450.0f) {
+                    findPosition = this->mLastFindPosition;
+                }
+            } else {
+                if (this->bDontSeekAhead) {
+                    findPosition = target->GetPosition();
+                } else {
+                    findPosition = targetai->GetSeekAheadPosition();
+                }
+            }
+
+            this->mLastFindPosition = findPosition;
+            road_nav->FindPath(&findPosition, nullptr, nullptr);
+        }
+
+        desired_direction = UVector3(this->mLastFindPosition) - car_position;
+    } else {
+        if (drag_racing) {
+            road_nav->SetLaneType(WRoadNav::kLaneDrag);
+        } else {
+            road_nav->SetLaneType(WRoadNav::kLaneRacing);
+        }
+
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing &&
+            GRaceStatus::Get().GetRaceParameters() != nullptr && GRaceStatus::Get().GetRaceParameters()->HasFinishLine()) {
+            AITarget *target = this->GetAI()->GetTarget();
+
+            if (target->IsValid() && !GRaceStatus::Get().GetRaceRouteError()) {
+                const UMath::Vector3 &target_position = target->GetPosition();
+                UMath::Vector3 car_to_target = UVector3(target_position) - car_position;
+                WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
+
+                if (road_nav->GetNavType() != WRoadNav::kTypePath && !road_nav->FindingPath()) {
+                    bool find_path = true;
+
+                    if (UMath::DistanceSquare(target_position, this->mLastFindPosition) < 1.0f) {
+                        if (road_nav->IsGoalInCookieTrail()) {
+                            find_path = false;
+                        } else {
+                            UMath::LengthSquare(car_to_target);
+                        }
+                    }
+
+                    if (find_path) {
+                        UMath::Vector3 target_direction = target->GetDirection();
+                        road_nav->FindPath(&target_position, &target_direction, nullptr);
+                        this->mLastFindPosition = target_position;
+                    }
+                }
+            } else {
+                need_to_stop = true;
+            }
+        }
+    }
+
+    Table &nav_look_ahead_table = drag_racing ? AiDragNavLookAheadTable : AiNavLookAheadTable;
+    float look_ahead_distance = nav_look_ahead_table.GetValue(this->fSpeedLimit);
+    float distance_to_nav = this->UpdateNavPos(look_ahead_distance, desired_direction);
+    this->GetAI()->SetAvoidableRadius(look_ahead_distance);
+
+    WRoadNav *nav = this->GetAI()->GetDriveToNav();
+    const UMath::Vector3 &nav_position = nav->GetPosition();
+    const UMath::Vector3 &apex_position = nav->GetApexPosition();
+    const UMath::Vector3 &occluded_position = nav->GetOccludedPosition();
+
+    float curvature = nav->CookieTrailCurvature(car_position, this->mIRigidBody->GetLinearVelocity());
+
+    const float skill = this->GetAI()->GetSkill();
+    this->fPotentialSpeed = this->GetPotentialSpeed(curvature, skill, drag_racing);
+
+    const float actual_speed = this->GetVehicle()->GetSpeed();
+    const float nos_capacity = this->mIEngine->GetNOSCapacity();
+    const bool was_nos = this->mIInput->GetControls().fNOS && nos_capacity > 0.0f;
+
+    const float potential_acceleration = this->GetPotentialAcceleration(UMath::Max(actual_speed, this->fSpeedLimit), skill, was_nos, drag_racing);
+
+    const float actual_acceleration = (actual_speed - this->mLastSpeed) / dT;
+    this->mLastSpeed = actual_speed;
+    this->mLastAccel = actual_acceleration;
+
+    if (actual_acceleration < 0.0f) {
+        if (this->fSpeedLimit<this->fPotentialSpeed &&this->fSpeedLimit> actual_speed) {
+            float delta_acc = UMath::Min(potential_acceleration + actual_acceleration, 0.0f);
+            this->fSpeedLimit += delta_acc * dT;
+        }
+    }
+
+    if (this->fSpeedLimit < this->fPotentialSpeed) {
+        float t = UMath::Ramp(this->fSpeedLimit, 0.0f, this->fPotentialSpeed);
+        float exp = UMath::Lerp(1.5f, 2.0f, skill);
+        float delta_acc = UMath::Pow(t, exp);
+        delta_acc = UMath::Clamp(potential_acceleration - actual_acceleration * delta_acc, 0.0f, potential_acceleration);
+        this->fSpeedLimit += delta_acc * dT;
+    }
+
+    if (is_staging) {
+        this->mUnstageTimer = Tweak_UnstageTime;
+    } else if (this->mUnstageTimer > 0.0f && actual_speed > Tweak_UnStageSpeed) {
+        this->mUnstageTimer -= dT;
+        this->mUnstageTimer = UMath::Max(this->mUnstageTimer, 0.0f);
+    }
+
+    this->fSpeedLimit = UMath::Clamp(this->fSpeedLimit, 0.0f, this->fPotentialSpeed);
+
+    const float delta_acceleration = potential_acceleration - actual_acceleration;
+
+    UMath::Vector3 drive_target = occluded_position;
+
+    if (is_staging) {
+        this->fSpeedLimit = UMath::Lerp(Tweak_StageSpeedMin, Tweak_StageSpeedMax, skill) * MPH2MPS(1.0f);
+        drive_target = nav_position;
+    }
+
+    float drive_speed = need_to_stop ? 0.0f : this->fSpeedLimit;
+
+    this->mTurnAroundActive = false;
+
+    {
+        const float kTurnAroundSpeed = KPH2MPS(40.0f);
+
+        if (this->mIRigidBody->GetSpeed() > kTurnAroundSpeed && this->bIsPursuitMode) {
+            UMath::Vector3 race_steer;
+            UMath::Sub(drive_target, car_position, race_steer);
+            float dirdot = UMath::Dot(this->mIRigidBody->GetLinearVelocity(), race_steer);
+
+            if (dirdot < (this->mIRigidBody->GetSpeed() * -0.3f) * UMath::Length(race_steer)) {
+                drive_target = this->GetAI()->GetFutureRoad()->GetPosition();
+                drive_speed = 0.0f;
+                this->mTurnAroundActive = true;
+            }
+        }
+
+        this->GetAI()->SetDriveTarget(drive_target);
+        this->GetAI()->SetDriveSpeed(drive_speed);
+    }
+    this->fDriveSpeed = drive_speed;
+
+    bool want_nos = false;
+    const float potential_nos = this->GetPotentialNOS(actual_speed, was_nos, skill);
+    const bool can_nos = !this->mTurnAroundActive && !need_to_stop && !is_staging && potential_nos > 0.0f;
+
+    if (can_nos && !this->GetOwner()->IsPlayer()) {
+        float skill_scale = AiNosScaleTable.GetValue(skill);
+
+        if (this->CheckSpeedTraps(actual_speed, skill, potential_nos, was_nos)) {
+            skill_scale += Tweak_SpeedTrapSkillBoost;
+        }
+
+        float speed_gap = skill_scale * (this->fPotentialSpeed - actual_speed);
+        float accel_gap = skill_scale * (potential_acceleration - actual_acceleration);
+
+        if (!was_nos) {
+            float time_off = UMath::Lerp(fNosTimeOffMin, fNosTimeOffMax, skill);
+
+            if (this->mNOSTimer < -time_off && !road_nav->IsOccluded() && speed_gap > fNosSpeedGapOn &&
+                accel_gap > potential_acceleration * fNosAccelGapOn) {
+                want_nos = true;
+            }
+        } else {
+            want_nos = true;
+            float time_on = UMath::Lerp(fNosTimeOnMin, fNosTimeOnMax, skill);
+
+            if (this->mNOSTimer > time_on && (speed_gap < fNosSpeedGapOff || accel_gap < potential_acceleration * fNosAccelGapOff)) {
+                want_nos = false;
+            }
+        }
+    }
+
+    if (want_nos) {
+        this->mNOSTimer = UMath::Max(this->mNOSTimer + dT, 0.0f);
+    } else {
+        this->mNOSTimer = UMath::Min(this->mNOSTimer - dT, 0.0f);
+    }
+
+    this->mIInput->SetControlNOS(want_nos);
+    this->GetAI()->DoDriving(7);
+}
 
 void AIActionRace::OnDebugDraw() {}

@@ -17,7 +17,7 @@ class ITaskable : public UTL::COM::IUnknown {
     DECL_INTERFACE(ITaskable);
 
   public:
-    virtual bool OnTask(HSIMTASK htask, float dT);
+    virtual bool OnTask(HSIMTASK htask, float dT) = 0;
 };
 
 }; // namespace Sim

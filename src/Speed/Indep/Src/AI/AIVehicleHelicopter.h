@@ -131,6 +131,4 @@ class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
 
 bool HeliVehicleActive();
 
-extern AIVehicleHelicopter *gHeliVehicle;
-
 #endif

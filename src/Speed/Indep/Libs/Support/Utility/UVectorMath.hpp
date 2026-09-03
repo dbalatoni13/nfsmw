@@ -51,6 +51,9 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
                      : "o"(a), "o"(b), "r"(_t0));
 }
 
+// Decl: Carbon: UVectorMathCPU.hpp: 107, GC MW: UVectorMathGC.hpp: TODO, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {}
+
 // TODO order
 inline float VU0_sqrt(const float a) {
     float result;
@@ -283,6 +286,11 @@ inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2
     return result;
 }
 
+// Decl: Carbon: UVectorMathCPU.hpp: 348, GC MW: UVectorMathGC.hpp: TODO, PS2 MW: UVectorMath.hpp: TODO
+inline float VU0_v4distancexz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
+    return 0.0f; // TODO
+}
+
 // Decl: 1545
 inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {
     u_long128 _t0;
@@ -366,6 +374,12 @@ inline void VU0_MATRIX4_transpose(const UMath::Matrix4 &m, UMath::Matrix4 &resul
 
 // Decl: Carbon: UVectorMathCPU.hpp: 530, GC MW: UVectorMathGC.hpp: 115, PS2 MW: UVectorMath.hpp: 2086
 inline void VU0_qtranspose(const RQUAT &a, RQUAT &result) {}
+
+// Decl: Carbon: UVectorMathCPU.hpp: 558, GC MW: UVectorMathGC.hpp: 142, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_v4Init(UMath::Vector4 &a) {}
+
+// Decl: Carbon: UVectorMathCPU.hpp: 564, GC MW: UVectorMathGC.hpp: 152, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_MATRIX4Init(UMath::Matrix4 &dest) {}
 
 // Decl: Carbon: UVectorMathCPU.hpp: 584, GC MW: UVectorMathGC.hpp: 169, PS2 MW: UVectorMath.hpp: 2188
 inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {}

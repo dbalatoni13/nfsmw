@@ -229,32 +229,9 @@ template <typename T> class tGraph {
 };
 
 // total size: 0x84
-struct PidError {
-    // void *operator new(unsigned int size, void *ptr) {}
-
-    // void operator delete(void *mem, void *ptr) {}
-
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    void *operator new(size_t size, const char *name) {
-        return gFastMem.Alloc(size, name);
-    }
-
-    void operator delete(void *mem, const char *name) {
-        if (mem) {
-            gFastMem.Free(mem, sizeof(PidError), name);
-        }
-    }
-
-    // void operator delete(void *mem, unsigned int size, const char *name) {}
+class PidError {
+  public:
+    USE_FASTALLOC(PidError);
 
     PidError(int nIntegralTerms, int nDerivativeTerms, float f_frequency)
         : aTimes(nIntegralTerms),        //

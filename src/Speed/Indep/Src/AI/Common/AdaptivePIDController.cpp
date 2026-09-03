@@ -5,22 +5,35 @@
 #define MAX_AI_FRAMERATE 45.0f      // Decl: 44
 #define EXPECTED_AI_FRAMERATE 30.0f // Decl: 45
 
+static const float MRACDefaultTimeSlice = 0.2f;           // Decl: 49
+static const float MRACDefaultTuningThreshold = 0.01f;    // Decl: 50
+static const float MRACDefaultCoefficientClampMin = 0.0f; // Decl: 51
+static const float MRACDefaultCoefficientClampMax = 1.0f; // Decl: 52
+static const float MRACDefaultTermClampMin = -99999.0f;   // Decl: 53
+static const float MRACDefaultTermClampMax = 99999.0f;    // Decl: 54
+static const float MRACDefaultAlpha = 1.0f;               // Decl: 55
+static const float MRACDefaultAdaptationGain = 5e-5f;     // Decl: 56
+
+static const float MRACMaxSensitivityDerivative = 1000.0f; // Decl: 58
+
+static const bool AdaptivePIDControllerCompressAveragesTo16Bits = true; // Decl: 60
+
 AdaptivePIDControllerBase::AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window)
-    : ModelErrorDerivative(coefficient_derivative_window, 45.0f) {
+    : ModelErrorDerivative(coefficient_derivative_window, MAX_AI_FRAMERATE) {
     this->AdaptationRule = adaptation_rule;
-    this->TimeSlice = 0.2f;
-    this->Alpha = 1.0f;
+    this->TimeSlice = MRACDefaultTimeSlice;
+    this->Alpha = MRACDefaultAlpha;
     for (int i = 0; i < NUM_PID_TERMS; i++) {
-        this->pCoefficientDerivative[i] = new AverageWindow(coefficient_derivative_window, 45.0f);
+        this->pCoefficientDerivative[i] = new AverageWindow(coefficient_derivative_window, MAX_AI_FRAMERATE);
 
-        this->CoefficientClamp[i][0] = 0.0f;
-        this->CoefficientClamp[i][1] = 1.0f;
+        this->CoefficientClamp[i][0] = MRACDefaultCoefficientClampMin;
+        this->CoefficientClamp[i][1] = MRACDefaultCoefficientClampMax;
 
-        this->TermClamp[i][0] = VALUE_NOT_SET;
-        this->TermClamp[i][1] = 99999.0f;
+        this->TermClamp[i][0] = MRACDefaultTermClampMin;
+        this->TermClamp[i][1] = MRACDefaultTermClampMax;
 
-        this->TuningThreshold[i] = 0.01f;
-        this->AdaptationGain[i] = 5e-5f;
+        this->TuningThreshold[i] = MRACDefaultTuningThreshold;
+        this->AdaptationGain[i] = MRACDefaultAdaptationGain;
         this->Coefficient[i] = 0.0f;
     }
     this->ModelError = 0.0f;
@@ -88,18 +101,24 @@ float AdaptivePIDControllerBase::GetNewCoefficientDerivative(ePIDTerm term, floa
     return 0.0f;
 }
 
-// Functionally matching
 float AdaptivePIDControllerBase::GetSensitivityDerivative(float coefficient_derivative) {
     float model_error_derivative = this->ModelErrorDerivative.GetValue();
+
     if (!bEqual(coefficient_derivative, 0.0f, 1e-9f)) {
-        return bClamp(model_error_derivative / coefficient_derivative, -1000.0f, 1000.0f);
-    } else if (bEqual(model_error_derivative, 0.0f, 0.001f)) {
-        return 0.0f;
-    } else if (model_error_derivative > 0.0f) {
-        return 1.0f;
-    } else {
-        return -1.0f;
+        return bClamp(model_error_derivative / coefficient_derivative, -MRACMaxSensitivityDerivative, MRACMaxSensitivityDerivative);
     }
+
+    coefficient_derivative = 0.0f;
+
+    if (bEqual(model_error_derivative, coefficient_derivative, 0.001f)) {
+        return 0.0f;
+    }
+
+    if (model_error_derivative > coefficient_derivative) {
+        return 1.0f;
+    }
+
+    return -1.0f;
 }
 
 float AdaptivePIDControllerBase::Sign(float v) {
@@ -115,7 +134,7 @@ float AdaptivePIDControllerBase::Sign(float v) {
 AdaptivePIDControllerSimple::AdaptivePIDControllerSimple(enum eAdaptationRule adaptation_rule, float coefficient_derivative_window,
                                                          int integral_history, int derivative_history)
     : AdaptivePIDControllerBase(adaptation_rule, coefficient_derivative_window), //
-      PIDController(integral_history, derivative_history, 30.0f) {}
+      PIDController(integral_history, derivative_history, EXPECTED_AI_FRAMERATE) {}
 
 float AdaptivePIDControllerSimple::GetTerm(ePIDTerm term) {
     float term_value = 0.0f;
@@ -134,6 +153,9 @@ float AdaptivePIDControllerSimple::GetTerm(ePIDTerm term) {
     }
     return term_value;
 }
+
+void AdaptivePIDControllerSimple::Update(float desired_process_value, float actual_process_value, float model_behaviour_value, float timestep,
+                                         eRecordingInstruction recording_instruction) {}
 
 AdaptivePIDControllerComplicated::AdaptivePIDControllerComplicated(enum eAdaptationRule adaptation_rule, float coefficient_derivative_window)
     : AdaptivePIDControllerBase(adaptation_rule, coefficient_derivative_window) {

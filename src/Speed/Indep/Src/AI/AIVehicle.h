@@ -24,6 +24,7 @@
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
@@ -327,7 +328,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return this->mISuspension;
     }
 
-    EventSequencer::IEngine *GetEngine() const {
+    IEngine *GetEngine() const {
         return this->mIEngine;
     }
 
@@ -363,11 +364,11 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     IRoadBlock *mRoadBlock;                      // offset 0xC8, size 0x4
     UCrc32 mGoalName;                            // offset 0xCC, size 0x4
     float mAvoidableRadius;                      // offset 0xD0, size 0x4
-    unsigned int mDriveFlags;                    // offset 0xD4, size 0x4
+    unsigned int mDriveFlags;                    // offset 0xD4, size 0x4 // TODO figure out
     ICollisionBody *mCollisionBody;              // offset 0xD8, size 0x4
     ITransmission *mITransmission;               // offset 0xDC, size 0x4
     ISuspension *mISuspension;                   // offset 0xE0, size 0x4
-    EventSequencer::IEngine *mIEngine;           // offset 0xE4, size 0x4
+    IEngine *mIEngine;                           // offset 0xE4, size 0x4
     IInput *mIInput;                             // offset 0xE8, size 0x4
     WRoadNav *mCollNav;                          // offset 0xEC, size 0x4
     Attrib::Gen::aivehicle *mAttributes;         // offset 0xF0, size 0x4

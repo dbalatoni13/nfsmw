@@ -38,10 +38,11 @@ class AISpawnManager {
     float mMinSpawnDist; // offset 0x0, size 0x4
     float mMaxSpawnDist; // offset 0x4, size 0x4
 
-    static const int kMaxSpawnSegments; // size: 0x4, address: 0xFFFFFFFF
-    static float mMaxGatherDist;        // size: 0x4, address: 0x8041547C
-    static int mSpawnSegment[50];       // size: 0xC8, address: 0x804F4040
-    static int mNumSpawnSegments;       // size: 0x4, address: 0x80415480
+    static const int kMaxSpawnSegments = 50; // Decl: 42
+
+    static float mMaxGatherDist;                 // size: 0x4, address: 0x8041547C
+    static int mSpawnSegment[kMaxSpawnSegments]; // size: 0xC8, address: 0x804F4040
+    static int mNumSpawnSegments;                // size: 0x4, address: 0x80415480
 };
 
 #endif

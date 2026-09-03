@@ -75,7 +75,9 @@ class WRoadNetwork : public Debugable {
 
     // bool IsValid() {}
 
-    // bool HasValidTrafficRoads() {}
+    bool HasValidTrafficRoads() {
+        return this->fValidTrafficRoads;
+    }
 
     const WRoadNode *GetNode(int index) {
         return &fNodes[index];
@@ -117,7 +119,9 @@ class WRoadNetwork : public Debugable {
         return fSegments[index].fRoadID;
     }
 
-    // void IncSegmentStamp() {}
+    void IncSegmentStamp() {
+        this->fSegmentStamp++;
+    }
 
     // unsigned long GetSegmentStamp() {}
 
@@ -362,6 +366,10 @@ class WRoadNav {
         this->fLaneInd = ind;
     }
 
+    char GetToLaneInd() const {
+        return this->fToLaneInd;
+    }
+
     float GetLaneOffset() const {
         return this->fLaneOffset;
     }
@@ -385,7 +393,7 @@ class WRoadNav {
     }
 
     bool HasCookieTrail() const {
-        return this->pCookieTrail != nullptr;
+        return this->bCookieTrail;
     }
 
     void ResetCookieTrail();
@@ -463,7 +471,9 @@ class WRoadNav {
         this->fPathGoalParam = param;
     }
 
-    bool IsGoalInCookieTrail() {}
+    bool IsGoalInCookieTrail() {
+        return this->IsSegmentInCookieTrail(this->nPathGoalSegment, true);
+    }
 
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     void RebuildSplines(const WRoadSegment *segment);

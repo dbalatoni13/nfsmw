@@ -3,11 +3,10 @@
 // total size: 0x48
 class AIActionNone : public AIAction {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionNone(AIActionParams *params, float score) : AIAction(params, score) {}
-
     ~AIActionNone() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     bool CanBeAttempted(float dT) override {
         return false;

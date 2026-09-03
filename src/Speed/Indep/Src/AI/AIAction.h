@@ -34,17 +34,17 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
         USE_FASTALLOC(AIAction::List);
     };
 
-    USE_FASTALLOC(AIAction::List);
+    USE_FASTALLOC(AIAction);
 
+    // Decl: 37
     ~AIAction() override {}
 
-    // Virtual functions
-    virtual bool CanBeAttempted(float dT);
-    virtual bool IsFinished();
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual void BeginAction(float dT);
-    virtual void FinishAction(float dT);
-    virtual void Update(float dT);
+    virtual bool CanBeAttempted(float dT) = 0;
+    virtual bool IsFinished() = 0;
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) = 0;
+    virtual void BeginAction(float dT) = 0;
+    virtual void FinishAction(float dT) = 0;
+    virtual void Update(float dT) = 0;
 
     float GetScore() {
         return this->mScore;

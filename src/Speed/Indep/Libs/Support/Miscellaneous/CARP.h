@@ -306,7 +306,7 @@ struct CollisionObject {
 };
 
 // total size: 0x40
-struct __attribute__((packed)) Trigger {
+struct EA_PACKED Trigger {
     bool ValidateMatrix() const;
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 

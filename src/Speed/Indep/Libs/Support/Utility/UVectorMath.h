@@ -319,7 +319,11 @@ void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath:
 
 // Decl: Carbon: 789, GC MW: 868
 inline float VU0_ASin(float x) {
-    return asinf(x) / (float)M_TWOPI;
+    return asinf(x) / (2 * MATH_PI);
+}
+
+inline float VU0_ACos(float x) {
+    return acosf(x) / (2 * MATH_PI);
 }
 
 // Decl: Carbon: 800, GC MW: 878

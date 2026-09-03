@@ -25,7 +25,7 @@ enum Gear {
 typedef int32 CarLoaderHandle;
 
 // inline float MPH2MPS(float x) {
-//     return x * 0.44703001f;
+//     return x * 0.44702727f;
 // }
 
 #endif

@@ -12,7 +12,7 @@ struct IServiceable : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IServiceable);
 
-    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
+    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) = 0;
 };
 
 }; // namespace Sim

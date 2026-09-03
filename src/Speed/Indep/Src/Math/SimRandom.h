@@ -2,6 +2,7 @@
 #define _SIMRANDOM_H_
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+
 #define SimRandom_Float() _SimRandom_Float()
 #define SimRandom_FloatRange(_range) _SimRandom_FloatRange((_range))
 #define SimRandom_IntRange(_range) _SimRandom_IntRange((_range))
@@ -28,8 +29,8 @@ class SimRandom {
     }
 
     int _SimRandom_IntRange(const int range) {
-        int r = SimRandom_Generate() * range;
-        return r >> 16;
+        int r = (range * SimRandom_Generate()) >> 16;
+        return r;
     }
 
   private:

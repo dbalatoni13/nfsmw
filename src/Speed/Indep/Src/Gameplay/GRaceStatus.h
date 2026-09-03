@@ -9,6 +9,7 @@
 #include "GRace.h"
 #include "GRaceDatabase.h"
 #include "GTimer.h"
+#include "GTrigger.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
@@ -28,6 +29,15 @@ struct GRacerInfo {
     float GetPctRaceComplete() const {
         return mPctRaceComplete;
     }
+
+    void NotifyTrafficCollision() {
+        mNumTrafficCarsHit++;
+    }
+
+    void Busted();            // Decl: 185
+    void ChallengeComplete(); // Decl: 186
+
+    void ForceStop(); // Decl: 199
 
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
@@ -248,7 +258,7 @@ class GRaceParameters {
 
     int GetTrafficDensity() const;
 
-    // enum Difficulty GetDifficulty() const;
+    GRace::Difficulty GetDifficulty() const;
 
     // enum CopDensity GetCopDensity() const;
 
@@ -426,6 +436,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     int GetLapsLed(int racerIndex);
 
+    bool GetRaceRouteError() {
+        return this->bRaceRouteError;
+    }
+
+    float GetRaceLength() {
+        return this->fRaceLength;
+    }
+
     float GetRaceSpeedTrapSpeed(int trapIndex, int racerIndex);
 
     int GetRaceSpeedTrapPosition(int trapIndex, int racerIndex);
@@ -504,6 +522,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
     }
 
+    static bool IsSpeedTrapRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_SpeedTrap;
+    }
+
     float GetBinBaseHeat() const {
         return (mRaceBin != nullptr) ? mRaceBin->GetBaseOpenWorldHeat() : 0.0f;
     }
@@ -514,6 +536,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     float GetBinHeatScale() const {
         return (mRaceBin != nullptr) ? mRaceBin->GetScaleOpenWorldHeat() : 1.0f;
+    }
+
+    int GetNumRaceSpeedTraps() {
+        return this->nSpeedTraps;
+    }
+
+    GTrigger *GetRaceSpeedTrap(int n) {
+        return this->aSpeedTraps[n];
     }
 
   private:

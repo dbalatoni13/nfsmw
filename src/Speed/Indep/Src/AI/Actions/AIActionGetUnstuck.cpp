@@ -5,21 +5,15 @@
 // total size: 0x48
 struct AIActionGetUnstuck : public AIAction {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionGetUnstuck(AIActionParams *params, float score);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionGetUnstuck() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
-
-    void BeginAction(float dT) override {}
-
     bool IsFinished() override;
-
+    void BeginAction(float dT) override {}
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;

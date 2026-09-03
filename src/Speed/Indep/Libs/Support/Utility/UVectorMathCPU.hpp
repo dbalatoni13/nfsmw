@@ -23,6 +23,9 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
     VU0_v3unit(dest, dest);
 }
 
+// Decl: Carbon: UVectorMathCPU.hpp: 107, GC MW: UVectorMathGC.hpp: TODO, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {}
+
 // Decl: Carbon: UVectorMathCPU.hpp: 129, GC MW: UVectorMathGC.hpp: 220, PS2 MW: UVectorMath.hpp: 621
 inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
     float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
@@ -113,6 +116,11 @@ inline float VU0_v4distancexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p
 // Decl: Carbon: UVectorMathCPU.hpp: 342, GC MW: UVectorMathGC.hpp: 263, PS2 MW: UVectorMath.hpp: 1437
 inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
     return VU0_sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.z - p1.z) * (p2.z - p1.z));
+}
+
+// Decl: Carbon: UVectorMathCPU.hpp: 348, GC MW: UVectorMathGC.hpp: TODO, PS2 MW: UVectorMath.hpp: TODO
+inline float VU0_v4distancexz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
+    return VU0_sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.z - p2.z) * (p1.z - p2.z));
 }
 
 // Decl: Carbon: UVectorMathCPU.hpp: 354, GC MW: UVectorMathGC.hpp: 274, PS2 MW: UVectorMath.hpp: 1014
@@ -215,6 +223,15 @@ inline void VU0_qmul(const RQUAT &b, const RQUAT &a, RQUAT &dest) {
     dest = result;
 }
 
+// Decl: Carbon: UVectorMathCPU.hpp: 558, GC MW: UVectorMathGC.hpp: 142, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_v4Init(UMath::Vector4 &a) {
+    a.x = a.y = a.z = 0.0f;
+    a.w = 1.0f;
+}
+
+// Decl: Carbon: UVectorMathCPU.hpp: 564, GC MW: UVectorMathGC.hpp: 152, PS2 MW: UVectorMath.hpp: TODO
+inline void VU0_MATRIX4Init(UMath::Matrix4 &dest) {}
+
 // Decl: Carbon: UVectorMathCPU.hpp: 584, GC MW: UVectorMathGC.hpp: 169, PS2 MW: UVectorMath.hpp: 2188
 inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {
     dest[0][0] = xx;
@@ -222,21 +239,10 @@ inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy
     dest[2][2] = zz;
     dest[3][3] = 1.0f;
 
-    dest[3][2] = 0.0f;
-    dest[3][1] = 0.0f;
-    dest[3][0] = 0.0f;
-
-    dest[2][3] = 0.0f;
-    dest[2][1] = 0.0f;
-    dest[2][0] = 0.0f;
-
-    dest[1][3] = 0.0f;
-    dest[1][2] = 0.0f;
-    dest[1][0] = 0.0f;
-
-    dest[0][3] = 0.0f;
-    dest[0][2] = 0.0f;
-    dest[0][1] = 0.0f;
+    dest[3][0] = dest[3][1] = dest[3][2] = 0.0f;
+    dest[2][0] = dest[2][1] = dest[2][3] = 0.0f;
+    dest[1][0] = dest[1][2] = dest[1][3] = 0.0f;
+    dest[0][1] = dest[0][2] = dest[0][3] = 0.0f;
 }
 
 // Decl: Carbon: UVectorMathCPU.hpp: 607, GC MW: UVectorMathGC.hpp: 193, PS2 MW: UVectorMath.hpp: 2234

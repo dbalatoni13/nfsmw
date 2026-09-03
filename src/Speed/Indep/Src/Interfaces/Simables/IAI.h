@@ -164,7 +164,9 @@ struct GroundSupportRequest {
           mSupportTimer(0.0f),     //
           mSupportRequestStatus(NOT_ACTIVE) {}
 
-    ~GroundSupportRequest() {}
+    ~GroundSupportRequest() {
+        this->Reset();
+    }
 
     void Reset();
     void Update(float dT);
@@ -308,7 +310,7 @@ class IPerpetrator : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IPerpetrator);
 
-    static const int MaxiumumHeat;
+    static const int MaxiumumHeat = 10;
 
     virtual float GetHeat() const = 0;
     virtual void SetHeat(float heat) = 0;

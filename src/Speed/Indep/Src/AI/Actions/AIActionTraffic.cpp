@@ -1,3 +1,4 @@
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
@@ -11,6 +12,7 @@
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
 // total size: 0x48
 class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision::IListener {
@@ -26,21 +28,10 @@ class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision
         ePULLED_OVER = 2,
     };
 
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionTraffic(AIActionParams *params, float score);
-    void MessageSetSpeed(const MSetTrafficSpeed &message);
-    float ComputeSpeed(float current_speed, float dT);
-    void UpdateNavPos(float lookAheadDistance);
-    bool ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav);
-    void OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, const UMath::Vector3 &position);
-
-    // Virtual functions
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionTraffic() override;
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -53,7 +44,15 @@ class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision
     // IListener
     void OnCollision(const COLLISION_INFO &cinfo) override;
 
+    virtual void OnDebugDraw();
+
   private:
+    void OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, const UMath::Vector3 &position);
+    float ComputeSpeed(float current_speed, float dT);
+    void UpdateNavPos(float lookAheadDistance);
+    void MessageSetSpeed(const MSetTrafficSpeed &message);
+    bool ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav);
+
     bool mStopSign;                                         // offset 0x50, size 0x1
     bool mClearIntersection;                                // offset 0x54, size 0x1
     bool mFixedSpeed;                                       // offset 0x58, size 0x1
@@ -66,7 +65,7 @@ class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision
     Attrib::Gen::pursuitlevels *mDefaultPursuitLevelAttrib; // offset 0x74, size 0x4
     UMath::Matrix4 mNavMatrix;                              // offset 0x78, size 0x40
     eAccident mAccident;                                    // offset 0xB8, size 0x4
-    float mAccidentTimer;                                   // offset 0xBC, size 0x4
+    Seconds mAccidentTimer;                                 // offset 0xBC, size 0x4
     PullOverState nPullOverState;                           // offset 0xC0, size 0x4
 };
 
@@ -108,7 +107,7 @@ AIActionTraffic::~AIActionTraffic() {
 }
 
 AIAction *AIActionTraffic::Construct(AIActionParams *params) {
-    return new AIActionTraffic(params, AIACTION_SCORE_HIGH);
+    return new AIActionTraffic(params, 0.1f);
 }
 
 void AIActionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -199,7 +198,7 @@ void AIActionTraffic::BeginAction(float dT) {
 void AIActionTraffic::FinishAction(float dT) {}
 
 float aAIStoppingDist[2] = {3.0f, 50.0f};
-Table aAIStoppingDistTable(aAIStoppingDist, 2, 0.0f, 1.0f);
+Table aAIStoppingDistTable(aAIStoppingDist, NUM_ELEMENTS(aAIStoppingDist), 0.0f, 80.0f);
 
 float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed);
 
@@ -289,7 +288,7 @@ void AIActionTraffic::UpdateNavPos(float lookAheadDistance) {
 
     UMath::Vector3 nav_direction = nav_point->GetForwardVector();
 
-    if (UMath::Normalize(nav_direction) > 0.01f) {
+    if (UMath::Normalize(nav_direction) > UMath::Epsilon) {
         this->mNavMatrix = Util_GenerateMatrix(nav_direction, nullptr);
 
         this->mNavMatrix.v3 = UMath::Vector4Make(!pull_over ? nav_point->GetOccludedPosition() : nav_point->GetPosition(), 1.0f);

@@ -3,6 +3,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 
+bool bDownVelTest = false;
+float Exit_Height = 25.0f;
+
 // total size: 0x48
 class AIActionHeliExit : public AIAction, public Debugable {
   public:
@@ -12,36 +15,35 @@ class AIActionHeliExit : public AIAction, public Debugable {
         kFlyOut = 2,
     };
 
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionHeliExit(AIActionParams *params, float score);
-
-    // Virtual functions
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionHeliExit() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override {
         return true;
     }
-    void BeginAction(float dT) override;
+
     bool IsFinished() override;
+    void BeginAction(float dT) override;
     void FinishAction(float dT) override;
     void Update(float dT) override;
 
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
 
+    virtual void OnDebugDraw();
+
+  protected:
     bool ShouldRestartWhenFinished() override {
         return true;
     }
 
-    // Inlines
-    // WRoadNav *GetPursuitNav() {}
-
   private:
+    WRoadNav *GetPursuitNav() {
+        return this->mIVehicleAI->GetDriveToNav();
+    }
+
     IVehicleAI *mIVehicleAI;               // offset 0x4C, size 0x4
     IVehicle *mIVehicle;                   // offset 0x50, size 0x4
     IRigidBody *mIRigidBody;               // offset 0x54, size 0x4
@@ -53,12 +55,13 @@ class AIActionHeliExit : public AIAction, public Debugable {
     kExitMode mExitMode;                   // offset 0x74, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionHeliExit);
+
 AIActionHeliExit::AIActionHeliExit(AIActionParams *params, float score)
     : AIAction(params, score), //
       mExitTime(0.0f),         //
       mExitMode(kSeekUp),      //
       mBuildingPath(false) {
-    this->MakeDebugable(DBG_AI);
     params->mOwner->QueryInterface(&this->mIVehicleAI);
     params->mOwner->QueryInterface(&this->mIPursuitAI);
     params->mOwner->QueryInterface(&this->mIVehicle);
@@ -69,8 +72,6 @@ AIActionHeliExit::AIActionHeliExit(AIActionParams *params, float score)
 AIAction *AIActionHeliExit::Construct(AIActionParams *params) {
     return new AIActionHeliExit(params, AIACTION_SCORE_LOW);
 }
-
-float Exit_Height;
 
 bool AIActionHeliExit::IsFinished() {
     IRigidBody *player_rigid_body = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
