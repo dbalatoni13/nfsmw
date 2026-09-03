@@ -5,28 +5,24 @@
 // total size: 0x48
 class AIActionTooDamaged : public AIAction, public Debugable {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionTooDamaged(AIActionParams *params, float score);
-
-    // Virtual functions
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionTooDamaged() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
-    void BeginAction(float dT) override;
 
     bool IsFinished() override {
         return false;
     }
 
+    void BeginAction(float dT) override;
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+    virtual void OnDebugDraw();
 
   private:
     IVehicle *mIVehicle; // offset 0x4C, size 0x4

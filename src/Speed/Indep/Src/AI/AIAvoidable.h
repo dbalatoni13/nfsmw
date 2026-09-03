@@ -44,7 +44,7 @@ class ALIGN_16 AIAvoidable {
     AIAvoidable(UTL::COM::IUnknown *pUnkPersist);
 
     virtual ~AIAvoidable();
-    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
+    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) = 0;
 
     // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
 

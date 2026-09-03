@@ -44,13 +44,15 @@ class AdaptivePIDControllerBase {
     AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window);
     virtual ~AdaptivePIDControllerBase();
 
-    void ForceCoefficient(ePIDTerm term, float new_coefficient) {}
+    void ForceCoefficient(ePIDTerm term, float new_coefficient) {
+        this->Coefficient[term] = new_coefficient;
+    }
 
     float GetCoefficient(ePIDTerm term) {
         return this->Coefficient[term];
     }
 
-    virtual float GetTerm(ePIDTerm term);
+    virtual float GetTerm(ePIDTerm term) = 0;
 
     float GetClampedTerm(ePIDTerm term) {
         return bClamp(this->GetTerm(term), this->TermClamp[term][0], this->TermClamp[term][1]);

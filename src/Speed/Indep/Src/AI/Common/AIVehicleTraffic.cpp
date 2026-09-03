@@ -1,11 +1,10 @@
-
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
+#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 // total size: 0x75C
 class AIVehicleTraffic : public AIVehicle, public ITrafficAI {
@@ -27,17 +26,20 @@ class AIVehicleTraffic : public AIVehicle, public ITrafficAI {
     static float mStagger; // size: 0x4
 };
 
-float AIVehicleTraffic::mStagger = 0.0f;
+static const float Traffic_AIUpdateRate = 0.1f; // Decl: 24
+float AIVehicleTraffic::mStagger = 0.0f;        // Decl: 25
 
 Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
     return new AIVehicleTraffic(bp);
 }
 
+BIND_BEHAVIOR_FACTORY(AIVehicleTraffic);
+
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
-    : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
+    : AIVehicle(bp, Traffic_AIUpdateRate, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {
     this->SetGoal(UCrc32("AIGoalNone"));
-    mStagger += 0.1f;
+    mStagger += Traffic_AIUpdateRate;
     if (mStagger >= 1.0f) {
         mStagger = 0.0f;
     }

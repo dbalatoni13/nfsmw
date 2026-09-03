@@ -55,6 +55,7 @@ bool AvoidableManager::OnTask(HSIMTASK htask, float dT) {
     }
 }
 
+IMPLEMENT_SAP_GRID(AIAvoidable); // Decl: 78
 AvoidableList AIAvoidable::mAll; //  Decl: 79
 AIAvoidable::AIAvoidable(UTL::COM::IUnknown *pUnkPersist) : mGridNode(nullptr), mUnk(pUnkPersist) {
     mAll.push_back(this);
@@ -76,13 +77,11 @@ void AIAvoidable::OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT) {
 
 void AIAvoidable::DrawAll() {}
 
-// later when we have SAP::Grid inlines
-// UNSOLVED, Grid shenanigans
 void AIAvoidable::UpdateAllAvoidables(float dT) {
     unsigned int overlapx = 0;
     unsigned int overlapz = 0;
 
-    for (AvoidableList::const_iterator iter = mAll.begin(); iter != mAll.end(); ++iter) {
+    for (AvoidableList::const_iterator iter = mAll.begin(); iter != mAll.end(); iter++) {
         AIAvoidable *pavoid = *iter;
         UVector3 pos(UMath::Vector3::kZero);
         float sweep = 0.0f;
@@ -92,9 +91,11 @@ void AIAvoidable::UpdateAllAvoidables(float dT) {
                 pavoid->mGridNode = new Grid(*pavoid, pos, sweep);
             } else {
                 pavoid->mGridNode->SetPosition(pos, sweep);
+
                 if (pavoid->mGridNode->GetX().Overlaps()) {
                     overlapx++;
                 }
+
                 if (pavoid->mGridNode->GetZ().Overlaps()) {
                     overlapz++;
                 }
@@ -110,5 +111,5 @@ void AIAvoidable::UpdateAllAvoidables(float dT) {
     }
 
     unsigned int numiters = Grid::Sweep();
-    Grid::Prune(overlapz <= overlapx, OnOverLap, dT);
+    Grid::Prune(overlapx < overlapz, OnOverLap, dT);
 }

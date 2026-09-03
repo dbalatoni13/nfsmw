@@ -15,18 +15,15 @@
 // total size: 0x48
 class AIActionJackKnife : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionJackKnife(AIActionParams *params, float score);
-    void MessageJackKnife(const MJackKnife &message);
 
-    // Virtual overrides
-    // IUnknown
     ~AIActionJackKnife() override {
         if (this->mMsgJackKnife != nullptr) {
             Hermes::Handler::Destroy(this->mMsgJackKnife);
         }
     }
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -43,6 +40,8 @@ class AIActionJackKnife : public AIAction {
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
   private:
+    void MessageJackKnife(const MJackKnife &message);
+
     IVehicle *mIVehicle;                // offset 0x48, size 0x4
     IArticulatedVehicle *mArticulation; // offset 0x4C, size 0x4
     IInput *mIInput;                    // offset 0x50, size 0x4
@@ -52,6 +51,8 @@ class AIActionJackKnife : public AIAction {
     bool mForceJackKnife;               // offset 0x60, size 0x1
     bool SentAudioMsg;                  // offset 0x64, size 0x1
 };
+
+BIND_AIACTION_FACTORY(AIActionJackKnife);
 
 AIAction *AIActionJackKnife::Construct(AIActionParams *params) {
     return new AIActionJackKnife(params, AIACTION_SCORE_HIGH);
@@ -130,7 +131,7 @@ void AIActionJackKnife::Update(float dT) {
         vpos.x = this->mIVehicle->GetPosition().x;
         vpos.y = this->mIVehicle->GetPosition().y;
         vpos.z = this->mIVehicle->GetPosition().z;
-        
+
         new EMomentStrm(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, Attrib::Hash::aud_moment_strm::key_jacknife);
     }
     this->mIInput->SetControlHandBrake(1.0f);

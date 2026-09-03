@@ -93,10 +93,18 @@ struct WRoadLane {
     }
 
   private:
-    // TODO inline
-    unsigned int GetBits(int n_offset, int n_bits) const;
-    int GetBitsSigned(int n_offset, int n_bits) const;
-    void SetBits(int n_offset, int n_bits, int n_value);
+    uint32 GetBits(int n_offset, int n_bits) const {
+        uint32 n_mask = ~(-1 << n_bits);
+        return (this->nBits >> n_offset) & n_mask;
+    }
+
+    int GetBitsSigned(int n_offset, int n_bits) const {
+        int extra_high_bits = 32 - (n_offset + n_bits);
+        int bits = static_cast<int>(this->nBits << extra_high_bits);
+        return bits >> (n_offset + extra_high_bits);
+    }
+
+    void SetBits(int n_offset, int n_bits, int n_value) {}
 
     uint32 nBits; // offset 0x0, size 0x4
 };

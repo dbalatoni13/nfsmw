@@ -7,13 +7,10 @@
 // total size: 0x48
 class AIActionAirborne : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionAirborne(AIActionParams *params, float score);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionAirborne() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -34,6 +31,8 @@ class AIActionAirborne : public AIAction {
     bool mIsAirborne;           // offset 0x54, size 0x1
     float mAirborneTimer;       // offset 0x58, size 0x4
 };
+
+BIND_AIACTION_FACTORY(AIActionAirborne);
 
 AIAction *AIActionAirborne::Construct(AIActionParams *params) {
     return new AIActionAirborne(params, AIACTION_SCORE_LOW);

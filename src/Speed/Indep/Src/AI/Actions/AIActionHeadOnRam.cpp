@@ -3,42 +3,33 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x48
 class AIActionHeadOnRam : public AIAction, public Debugable {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionHeadOnRam(AIActionParams *params, float score);
-    void GetSeekPosition(UMath::Vector3 &seekPosition);
-    float GetDesiredSpeed(UMath::Vector3 &seekPosition);
-    void UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition, float &distToSeekPos);
-
-    // Virtual functions
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionHeadOnRam() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
-    void BeginAction(float dT) override;
     bool IsFinished() override;
+    void BeginAction(float dT) override;
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
-    bool ShouldRestartWhenFinished() override {
-        return true;
-    }
+    virtual void OnDebugDraw();
 
   private:
+    void GetSeekPosition(UMath::Vector3 &seekPosition);
+    float GetDesiredSpeed(UMath::Vector3 &seekPosition);
+    void UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition, float &distToSeekPos);
+
     IVehicleAI *mIVehicleAI;       // offset 0x4C, size 0x4
     IRigidBody *mIRigidBody;       // offset 0x50, size 0x4
     IVehicle *mIVehicle;           // offset 0x54, size 0x4
@@ -46,6 +37,8 @@ class AIActionHeadOnRam : public AIAction, public Debugable {
     ITransmission *mITransmission; // offset 0x5C, size 0x4
     bool mBrakeLeft;               // offset 0x60, size 0x1
 };
+
+BIND_AIACTION_FACTORY(AIActionHeadOnRam);
 
 AIActionHeadOnRam::AIActionHeadOnRam(AIActionParams *params, float score) : AIAction(params, score) {
     this->MakeDebugable(DBG_AI);
@@ -70,7 +63,7 @@ void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
-    return new AIActionHeadOnRam(params, AIACTION_SCORE_HIGH);
+    return new AIActionHeadOnRam(params, 0.1f);
 }
 
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {
@@ -142,6 +135,8 @@ float AIActionHeadOnRam::GetDesiredSpeed(UMath::Vector3 &seekPosition) {
 
     return desiredSpeed;
 }
+
+void AIActionHeadOnRam::UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition, float &distToSeekPos) {}
 
 void AIActionHeadOnRam::Update(float dT) {
     UMath::Vector3 steer = UMath::Vector3::kZero;

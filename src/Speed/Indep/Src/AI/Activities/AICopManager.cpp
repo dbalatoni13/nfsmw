@@ -245,7 +245,9 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     Hermes::HHANDLER mMessForcePursuitStart; // offset 0x12C, size 0x4, Decl: 306
 };
 
-BIND_ACTIVITY_FACTORY(AIPursuit); // TODO move?
+BIND_ACTIVITY_FACTORY(AIPursuit);
+
+BIND_ACTIVITY_FACTORY(AIRoadBlock);
 
 // Decl: 311
 BIND_ACTIVITY_FACTORY(AICopManager);
@@ -705,7 +707,7 @@ void AICopManager::ApplyBreakerZones() {
         bool in_zone = false;
         for (BreakerList::const_iterator b = this->mBreakerZones.begin(); b != this->mBreakerZones.end(); ++b) {
             UMath::Vector3 position = b->position;
-            float dist = UMath::Distancexz(position, ivehicle->GetPosition());
+            float dist = UMath::Distancexz(ivehicle->GetPosition(), position);
             if (dist < b->radius) {
                 in_zone = true;
                 break;
@@ -836,8 +838,8 @@ bool AICopManager::SpawnPursuitCar(IPursuit *ipursuit) {
 }
 
 UMath::Vector3 rand_point_in_circle() {
-    float angle = Sim::GetRandom()._SimRandom_FloatRange(M_TWOPI);
-    float radius = UMath::Sqrt(Sim::GetRandom()._SimRandom_FloatRange(1.0f));
+    float angle = Sim::GetRandom().SimRandom_FloatRange(M_TWOPI);
+    float radius = UMath::Sqrt(Sim::GetRandom().SimRandom_FloatRange(1.0f));
 
     UMath::Vector3 r;
     r.x = UMath::Sinr(angle) * radius;
@@ -853,7 +855,7 @@ static const float kPursuitCarSpawnDistance = 200.0f; // Decl: 1591
 bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableCopCar) {
     bool RaceOn = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing;
     IVehicleAI *ivehicleAI = availableCopCar->GetAIVehiclePtr();
-    float rand = Sim::GetRandom()._SimRandom_Float();
+    float rand = Sim::GetRandom().SimRandom_Float();
     bool bNewWayWorksWell = false;
 
     if (ipursuit->GetPursuitStatus() == PS_COOL_DOWN) {
@@ -892,7 +894,7 @@ bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableC
                 float dist = UMath::Length(seek2Perp);
 
                 float rotate = DEG2ANGLE(60.0f);
-                if (Sim::GetRandom()._SimRandom_Float() > 0.5f) {
+                if (Sim::GetRandom().SimRandom_Float() > 0.5f) {
                     rotate *= -1.0f;
                 }
 
@@ -1192,7 +1194,7 @@ bool AICopManager::CreateRoadBlock(IPursuit *ipursuit, int cop_count, IVehicle *
     }
 
     float SpikeProb = pursuitLevelAttrib->roadblockspikechance();
-    float simProb = Sim::GetRandom()._SimRandom_FloatRange(100.0f);
+    float simProb = Sim::GetRandom().SimRandom_FloatRange(100.0f);
     bool bWithSpikes = simProb < SpikeProb;
     if (ipursuit->GetPursuitStatus() == PS_COOL_DOWN) {
         bWithSpikes = false;
@@ -1406,7 +1408,7 @@ void AICopManager::UpdatePatrols() {
                 UMath::Normalize(targetForward);
                 UMath::ScaleAdd(targetForward, 75.0f, targetPosition, targetPosition);
                 float dist = UMath::Distance(copPosition, targetPosition);
-                float compDist = bIsChopper ? 375.0f : 600.0f;
+                float compDist = bIsChopper ? 600.0f : 375.0f;
                 if (dist < compDist) {
                     shouldRespawn = false;
                 }
@@ -1464,7 +1466,7 @@ bool AICopManager::GetHeavySupportVehicles(GroundSupportRequest *gsr) {
     int BigSuvChance = gsr->mHeavySupport->ChanceBigSUV;
     int index = gsr->mIVehicleList.size();
     for (; index < numVehicles; index++) {
-        int rand = Sim::GetRandom()._SimRandom_IntRange(100);
+        int rand = Sim::GetRandom().SimRandom_IntRange(100);
         if (rand < BigSuvChance) {
             vname = "copsuv";
         } else {
@@ -1817,7 +1819,7 @@ bool AICopManager::PlayerPursuitHasCop() const {
     return false;
 }
 
-bool ForcePursuitStart; // Decl: 3193
+bool ForcePursuitStart = false; // Decl: 3193
 
 void AICopManager::UpdatePursuits() {
     IVehicle *ivehicle_chopper = nullptr;
@@ -2118,7 +2120,7 @@ void AICopManager::PursueAtHeatLevel(int minHeatLevel) {
         }
 
         if (!alreadyPursued) {
-            Sim::IActivity *ipursuitActivity = Sim::IActivity::CreateInstance(UCrc32("AIPursuits"), Sim::Param());
+            Sim::IActivity *ipursuitActivity = Sim::IActivity::CreateInstance(UCrc32("AIPursuit"), Sim::Param());
             IPursuit *ipursuit;
             ipursuitActivity->QueryInterface(&ipursuit);
             this->Attach(ipursuit);

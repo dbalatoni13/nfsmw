@@ -33,6 +33,8 @@ class AIActionStaticRoadBlock : public AIAction, public Debugable {
     IInput *mIInput;     // offset 0x50, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionStaticRoadBlock);
+
 AIActionStaticRoadBlock::AIActionStaticRoadBlock(AIActionParams *params, float score) : AIAction(params, score) {
     params->mOwner->QueryInterface(&this->mIVehicle);
     params->mOwner->QueryInterface(&this->mIInput);

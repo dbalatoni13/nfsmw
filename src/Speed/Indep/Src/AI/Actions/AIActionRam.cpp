@@ -13,19 +13,10 @@
 // total size: 0x48
 class AIActionRam : public AIAction, public Debugable {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionRam(AIActionParams *params, float score);
-    bool ShouldDoIt();
-    void GetSeekPosition(UMath::Vector3 &seekPosition, bool avoid);
-    void UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition, bool pull_over);
-
-    // Virtual functions
-    virtual void OnDebugDraw();
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionRam() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -34,6 +25,13 @@ class AIActionRam : public AIAction, public Debugable {
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+    virtual void OnDebugDraw();
+
+  private:
+    void GetSeekPosition(UMath::Vector3 &seekPosition, bool avoid);
+    void UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition, bool pull_over);
+    bool ShouldDoIt();
 
   private:
     IVehicleAI *mIVehicleAI;       // offset 0x4C, size 0x4
@@ -46,9 +44,9 @@ class AIActionRam : public AIAction, public Debugable {
     performance_limiter mLimiter;  // offset 0x68, size 0x4
 };
 
-AIActionRam::AIActionRam(AIActionParams *params, float score)
-    : AIAction(params, score) //
-{
+BIND_AIACTION_FACTORY(AIActionRam);
+
+AIActionRam::AIActionRam(AIActionParams *params, float score) : AIAction(params, score) {
     this->MakeDebugable(DBG_AI);
     params->mOwner->QueryInterface(&this->mIInput);
     params->mOwner->QueryInterface(&this->mIVehicleAI);
@@ -75,7 +73,7 @@ void AIActionRam::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionRam::Construct(AIActionParams *params) {
-    return new AIActionRam(params, AIACTION_SCORE_HIGH);
+    return new AIActionRam(params, 0.1f);
 }
 
 bool AIActionRam::ShouldDoIt() {
@@ -159,7 +157,7 @@ void AIActionRam::GetSeekPosition(UMath::Vector3 &seekPosition, bool avoid) {
     }
 
     UMath::Vector3 targettotangent = UMath::Vector3Make(-metotarget.z, 0.0f, metotarget.x);
-    UMath::Scale(targettotangent, targettoseekradius * 2.1f / UMath::Length(targettotangent), targettotangent);
+    UMath::Scale(targettotangent, targettoseekradius * 2.1f / UMath::Length(targettotangent));
 
     UMath::Vector3 drive1 = metotarget + UVector3(targettotangent);
     UMath::Vector3 drive2 = metotarget - targettotangent;

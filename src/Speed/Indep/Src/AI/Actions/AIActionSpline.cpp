@@ -3,13 +3,10 @@
 // total size: 0x48
 class AIActionSpline : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionSpline(AIActionParams *params, float score) : AIAction(params, score) {}
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionSpline() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override {
@@ -25,8 +22,11 @@ class AIActionSpline : public AIAction {
     void FinishAction(float dT) override {}
 
     void Update(float dT) override;
+
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
 };
+
+BIND_AIACTION_FACTORY(AIActionSpline);
 
 AIAction *AIActionSpline::Construct(AIActionParams *params) {
     return new AIActionSpline(params, AIACTION_SCORE_LOW);

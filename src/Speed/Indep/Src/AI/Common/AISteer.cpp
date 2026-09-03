@@ -222,7 +222,7 @@ void Seperation(UMath::Vector3 &separation, IBody *my_body, IBody *target_body, 
 
     float scale = absolute;
     float denom = UMath::LengthSquare(my_velocity - target_velocity);
-    if (denom > 1e-5f || denom < -1e5f) {
+    if (denom > 1e-5f || denom < -1e-5f) {
         float closest_time = -UMath::Dot(my_position - target_position, my_velocity - target_velocity) / denom;
         if (closest_time > 0.05f) {
             UMath::Vector3 my_closest;

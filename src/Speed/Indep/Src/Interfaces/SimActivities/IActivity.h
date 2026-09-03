@@ -12,12 +12,13 @@ namespace Sim {
 class IActivity : public UTL::COM::IUnknown,
                   public UTL::COM::Factory<Param, IActivity, UCrc32>,
                   public UTL::Collections::Instanceable<HACTIVITY, IActivity, 40> {
+  public:
     DECL_INTERFACE(IActivity);
 
-    virtual void Release();
-    virtual bool Attach(IUnknown *object);
-    virtual bool Detach(IUnknown *object);
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    virtual void Release() = 0;
+    virtual bool Attach(IUnknown *object) = 0;
+    virtual bool Detach(IUnknown *object) = 0;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const = 0;
 };
 
 }; // namespace Sim

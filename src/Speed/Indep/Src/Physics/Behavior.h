@@ -22,33 +22,31 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
   public:
     USE_FASTALLOC(Behavior);
 
-    Behavior(const BehaviorParams &params, unsigned int num_interfaces);
-
     const UCrc32 &GetMechanic() {
-        return mMechanic;
+        return this->mMechanic;
     }
 
     const UCrc32 &GetSignature() {
-        return mSignature;
+        return this->mSignature;
     }
 
     bool IsPaused() const {
-        return mPaused;
+        return this->mPaused;
     }
 
     ISimable *GetOwner() const {
-        return mIOwner;
+        return this->mIOwner;
     }
 
     void EnableProfile(const char *name) {
-        Sim::Profile::Release(mProfile);
-        mProfile = Sim::Profile::Create();
+        Sim::Profile::Release(this->mProfile);
+        this->mProfile = Sim::Profile::Create();
     }
 
     virtual void Reset() = 0;
 
     virtual const int GetPriority() const {
-        return mPriority;
+        return this->mPriority;
     }
 
     virtual void OnOwnerAttached(IAttachable *pOther) {}
@@ -65,7 +63,9 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual void OnPause();
     virtual void OnUnPause();
 
-    virtual ~Behavior() {
+    Behavior(const BehaviorParams &params, unsigned int num_interfaces);
+
+    ~Behavior() override {
         // TODO
         Sim::Profile::Release(nullptr);
     }

@@ -110,6 +110,11 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
+    // Decl: 472
+    const char *GetCacheName() const override {
+        return "AITrafficManager";
+    }
+
     // ITrafficMgr
     void FlushAllTraffic(bool release) override;
 
@@ -135,11 +140,15 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     float ComputeDensity() const;
     void UpdateDebug();
 
-    HSIMTASK mTask;                       // offset 0x68, size 0x4
-    unsigned int mSpawnIdx;               // offset 0x6C, size 0x4
-    float mPatternTimer[10];              // offset 0x70, size 0x28
-    float mNewInstanceTimer;              // offset 0x98, size 0x4
-    TrafficList mVehicles;                // offset 0x9C, size 0x8
+    HSIMTASK mTask;          // offset 0x68, size 0x4
+    unsigned int mSpawnIdx;  // offset 0x6C, size 0x4
+    float mPatternTimer[10]; // offset 0x70, size 0x28
+    float mNewInstanceTimer; // offset 0x98, size 0x4
+    TrafficList mVehicles;   // offset 0x9C, size 0x8
+
+    static float mTrafficMinSpawnDist;
+    static float mTrafficMaxSpawnDist;
+
     ActionQueue *mActionQ;                // offset 0xA4, size 0x4
     eTrafficDensity mDensity;             // offset 0xA8, size 0x4
     PatternMap mPatternMap;               // offset 0xAC, size 0x10
@@ -147,6 +156,9 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     float mOncommingChance;               // offset 0x3AC, size 0x4
     Attrib::Gen::trafficpattern mPattern; // offset 0x3B0, size 0x14
 };
+
+float AITrafficManager::mTrafficMinSpawnDist = 225.0f;
+float AITrafficManager::mTrafficMaxSpawnDist = 300.0f;
 
 // Decl: 554
 BIND_ACTIVITY_FACTORY(AITrafficManager);
@@ -636,7 +648,7 @@ float AITrafficManager::ComputeDensity() const {
         }
 
         if (IPursuit::Count() != 0) {
-            result *= 0.5f;
+            result *= 0.75f;
         }
     }
 

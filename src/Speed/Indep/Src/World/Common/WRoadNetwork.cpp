@@ -1919,9 +1919,9 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
 
 // UNSOLVED, but should be functionally matching
 void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
-    if (!this->bCookieTrail)
+    if (!this->HasCookieTrail()) {
         return;
-    this->HasCookieTrail(); // unused?
+    }
 
     this->nRoadOcclusion = 0;
     this->nAvoidableOcclusion = 0;
@@ -1998,7 +1998,8 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
         if (next_segment_number == current_segment_number) {
             this->mCurrentCookie.SegmentNumber = next_segment_number;
             this->mCurrentCookie.SegmentNodeInd = current_cookie.SegmentNodeInd;
-            this->mCurrentCookie.SetSegmentParameter(UMath::Lerp(current_cookie.GetSegmentParameter(), next_cookie.GetSegmentParameter(), current_blend));
+            this->mCurrentCookie.SetSegmentParameter(
+                UMath::Lerp(current_cookie.GetSegmentParameter(), next_cookie.GetSegmentParameter(), current_blend));
         } else {
             WRoadNetwork &rn = WRoadNetwork::Get();
             const WRoadSegment *next_segment = rn.GetSegment(next_segment_number);
@@ -2033,7 +2034,8 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
 
     bVector2 cookie_to_car = car_position - bVector2(this->mCurrentCookie.Centre.x, this->mCurrentCookie.Centre.z);
     float current_offset = bCross(&cookie_to_car, reinterpret_cast<const bVector2 *>(&this->mCurrentCookie.Forward));
-    this->mOutOfBounds = this->fVehicleHalfWidth + bMax(current_offset - this->mCurrentCookie.RightOffset, this->mCurrentCookie.LeftOffset - current_offset);
+    this->mOutOfBounds =
+        this->fVehicleHalfWidth + bMax(current_offset - this->mCurrentCookie.RightOffset, this->mCurrentCookie.LeftOffset - current_offset);
 
     if (n < num_cookies) {
         int first_index = n;
@@ -2650,8 +2652,10 @@ void WRoadNav::SetControlPos(const WRoadSegment &segment, bool startControl) {
             float left_scale = UMath::Max(0.01f, UMath::Distance(this->fLeftStartPos, this->fLeftEndPos)) / original_distance;
             float right_scale = UMath::Max(0.01f, UMath::Distance(this->fRightStartPos, this->fRightEndPos)) / original_distance;
 
-            UMath::ScaleAdd(handle, left_scale, startControl ? this->fLeftStartPos : this->fLeftEndPos, startControl ? this->fLeftStartControl : this->fLeftEndControl);
-            UMath::ScaleAdd(handle, right_scale, startControl ? this->fRightStartPos : this->fRightEndPos, startControl ? this->fRightStartControl : this->fRightEndControl);
+            UMath::ScaleAdd(handle, left_scale, startControl ? this->fLeftStartPos : this->fLeftEndPos,
+                            startControl ? this->fLeftStartControl : this->fLeftEndControl);
+            UMath::ScaleAdd(handle, right_scale, startControl ? this->fRightStartPos : this->fRightEndPos,
+                            startControl ? this->fRightStartControl : this->fRightEndControl);
         }
     }
 }

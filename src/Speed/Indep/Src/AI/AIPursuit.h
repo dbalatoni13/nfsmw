@@ -1,9 +1,9 @@
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifndef __AIPURSUIT_H
 #define __AIPURSUIT_H 1
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
@@ -169,7 +169,7 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
 
     // Overrides: IPursuit
     bool AttemptingToReAquire() const override {
-        return !this->mIsPerpInSight && !this->mIsPerpBusted ? !this->mIsPursuitBailed : false;
+        return !this->mIsPerpInSight && !this->mIsPerpBusted && !this->mIsPursuitBailed;
     }
 
     // Overrides: IPursuit
