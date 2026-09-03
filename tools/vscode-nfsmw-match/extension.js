@@ -538,8 +538,14 @@ async function activate(context) {
   const runningRefreshes = new Map();
   const lastResults = new Map();
   let lastDiffViewColumn;
+  const autoRefreshEnabled = () =>
+    vscode.workspace.getConfiguration("nfsmwMatch").get("autoRefresh", true);
+  const cancelRunningRefreshes = () => {
+    for (const controller of runningRefreshes.values()) controller.abort();
+  };
   const selector = [{ language: "c", scheme: "file" }, { language: "cpp", scheme: "file" }];
   context.subscriptions.push(
+    { dispose: cancelRunningRefreshes },
     vscode.languages.registerCodeLensProvider(selector, lenses),
     vscode.workspace.registerTextDocumentContentProvider("nfsmw-dwarf-diff", diffs),
     diffs.changed,
@@ -869,7 +875,12 @@ async function activate(context) {
       );
       if (visibleDiff?.viewColumn) lastDiffViewColumn = visibleDiff.viewColumn;
     }),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (!event.affectsConfiguration("nfsmwMatch.autoRefresh")) return;
+      if (!autoRefreshEnabled()) cancelRunningRefreshes();
+    }),
     vscode.workspace.onDidOpenTextDocument((document) => {
+      if (!autoRefreshEnabled()) return;
       if (document.languageId === "c" || document.languageId === "cpp") refresh(document, false).catch(() => {});
     }),
     vscode.workspace.onDidChangeTextDocument((event) => {
@@ -889,8 +900,10 @@ async function activate(context) {
     }),
   );
 
-  for (const document of vscode.workspace.textDocuments) {
-    if (document.languageId === "c" || document.languageId === "cpp") refresh(document, false).catch(() => {});
+  if (autoRefreshEnabled()) {
+    for (const document of vscode.workspace.textDocuments) {
+      if (document.languageId === "c" || document.languageId === "cpp") refresh(document, false).catch(() => {});
+    }
   }
   await cache.prune();
 }
