@@ -7,7 +7,7 @@
 #include <stdarg.h>
 
 // TODO
-#if !defined(EA_PLATFORM_WIN32) && !defined(EA_PLATFORM_XENON) 
+#if defined(EA_PLATFORM_GAMECUBE)
 void *memset(void *, int, unsigned long, ...);
 #endif
 

@@ -172,12 +172,14 @@ elif version_num in [4]:
     config.delink_tag = "v0.16.1"
 
 config.objdiff_tag = "v3.7.0"
-config.sjiswrap_tag = "v1.2.0"
+config.sjiswrap_tag = "v1.2.2"
 config.wibo_tag = "1.2.0"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
+
+compilers_path = Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
 
 if config.platform == Platform.GC_WII:
     config.asflags = [
@@ -593,7 +595,7 @@ elif config.platform == Platform.WIN32:
         # "/Gy",  # maybe?
         "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
         "/EHsc",  # enable exception handling (and extern C notthrow?)
-        f"/I build/compilers/{config.linker_version}/Include",
+        f"/I {compilers_path / config.linker_version / 'Include'}",
         "/I src/Packages",
         "/I src",
         "/DEA_PLATFORM_WIN32",
