@@ -142,6 +142,10 @@ Speed/Indep/SourceLists/zSim.cpp:
 	.pdata      start:0x820D21C0 end:0x820D2E90
 	.text       start:0x8249A6C0 end:0x824B65DC
 
+Speed/Indep/SourceLists/zTrack.cpp:
+	.pdata      start:0x820D2E90 end:0x820D4B48
+	.text       start:0x824B65DC end:0x82504D90
+
 Speed/Indep/SourceLists/zWorld.cpp:
 	.pdata      start:0x820D4B48 end:0x820D5DB0
 	.text       start:0x82504D90 end:0x825432B0
@@ -149,7 +153,3 @@ Speed/Indep/SourceLists/zWorld.cpp:
 Speed/Indep/SourceLists/zWorld2.cpp:
 	.pdata      start:0x820D5DB0 end:0x820D6E58
 	.text       start:0x825432B0 end:0x825720BC
-
-Speed/Indep/SourceLists/zTrack.cpp:
-	.pdata      start:0x820DA178 end:0x820DA2E0
-	.text       start:0x82600720 end:0x82604BDC
