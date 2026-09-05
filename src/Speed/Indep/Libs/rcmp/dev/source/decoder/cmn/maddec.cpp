@@ -12,7 +12,7 @@ int madvlctbl3[0x100];
 int madvlctbl4[0x40];
 extern int idctinput[0x40];
 extern int idctprescale[0x40];
-extern void idctcompute(int *, int);
+extern "C" void idctcompute(int *, int);
 extern int madvlcdecode();
 
 static unsigned char clipbiastbl[0x200];

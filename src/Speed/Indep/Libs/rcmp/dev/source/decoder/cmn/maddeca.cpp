@@ -1,9 +1,9 @@
 #include "types.h"
 #include "../../../../../../../../../include/dol2asm.h"
 
-extern unsigned int madshiftreg __attribute__((section(".sdata")));
-extern unsigned char *maddataptr __attribute__((section(".sdata")));
-extern int madbitcount __attribute__((section(".sdata")));
+extern unsigned int madshiftreg __attribute__((section(".sbss")));
+extern unsigned char *maddataptr __attribute__((section(".sbss")));
+extern int madbitcount __attribute__((section(".sbss")));
 extern int madvlctbl1[0x200];
 extern int madvlctbl2[0x100];
 extern int madvlctbl3[0x100];
@@ -63,30 +63,26 @@ extern "C" int madvlcdecode() {
         entry = &madvlctbl1[(madshiftreg >> 0x15) & 0x1ff];
         val = *entry;
         bits = val & 0xff;
-        if (bits <= 9) {
-            goto decode;
-        }
-        if (!(val & 0x20)) {
-            if (!(val & 0x10)) {
-                discardbits(9);
-                val = madvlctbl2[(static_cast<unsigned char>(madshiftreg))];
-            } else {
+        if (bits > 9) {
+            if (!(val & 0x20)) {
+                if (!(val & 0x10)) {
+                    discardbits(9);
+                    val = madvlctbl2[(static_cast<unsigned char>(madshiftreg))];
+                } else {
+                    discardbits(6);
+                    val = madvlctbl3[(static_cast<unsigned char>(madshiftreg))];
+                }
+                bits = val & 0xff;
+            } else if (!(val & 0x10)) {
                 discardbits(6);
-                val = madvlctbl3[(static_cast<unsigned char>(madshiftreg))];
+                val = madshiftreg;
+                bits = 0x10;
+            } else {
+                discardbits(2);
+                return index;
             }
-            bits = val & 0xff;
-            goto decode;
         }
-        if (!(val & 0x10)) {
-            discardbits(6);
-            val = madshiftreg;
-            bits = 0x10;
-            goto decode;
-        }
-        discardbits(2);
-        return index;
 
-    decode:
         discardbits(bits);
         index += (val >> 0x10) & 0x3f;
         idctinput[zigzag[index]] = (val >> 0x16) * madquant[zigzag[index]];

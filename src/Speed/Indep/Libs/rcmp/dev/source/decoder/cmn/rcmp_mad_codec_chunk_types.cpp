@@ -10,14 +10,15 @@ namespace RCMP {
 bool MAD_CODEC_is_chunk_for_codec(unsigned int chunktype) {
     {
         unsigned int i;
-        const unsigned int (&chunkTypes)[3] = ChunkTypes;
+        const unsigned int *chunkTypes = ChunkTypes;
+
         for (i = NumberChunkTypes; i != 0; --i) {
-            if (chunkTypes[NumberChunkTypes - i] == chunktype) {
+            if (*chunkTypes++ == chunktype) {
                 return true;
             }
         }
-        return false;
     }
+    return false;
 }
 
 } // namespace RCMP
