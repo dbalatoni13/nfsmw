@@ -338,6 +338,7 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/snd/9/include",
         "-I src/Speed/Indep/Libs/spch/dev/include",
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
+        "-I src/Speed/Indep/Libs/rcmp/dev/include",
     ]
 
     cflags_path = [*cflags_game]
@@ -639,16 +640,23 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp"),
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/rcmp2real.cpp"),
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/av/cmn/avplayer.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/av/cmn/avsubtitle.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/av/cmn/audioplayer.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/vd/gc/bigswizzler.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmpbase.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp2real.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp"),
             Object(
                 NonMatching,
-                "egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp",
+                "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp",
             ),
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/maddec.cpp"),
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/maddeca.cpp"),
-            Object(NonMatching, "egami/rcmp/dev/source/decoder/cmn/madidct.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/maddec.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/maddeca.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/madidct.cpp"),
         ],
     },
     {

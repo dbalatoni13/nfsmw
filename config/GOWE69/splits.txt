@@ -596,51 +596,51 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c:
 	.text       start:0x803457E4 end:0x80345B50
 	.sbss       start:0x804FFC40 end:0x804FFC48
 
-egami/rcmp/dev/source/av/cmn/avplayer.cpp:
+Speed/Indep/Libs/rcmp/dev/source/av/cmn/avplayer.cpp:
 	.text       start:0x803472B4 end:0x80348334
 
-egami/rcmp/dev/source/av/cmn/avsubtitle.cpp:
+Speed/Indep/Libs/rcmp/dev/source/av/cmn/avsubtitle.cpp:
 	.text       start:0x80348334 end:0x80348334
 
-egami/rcmp/dev/source/av/cmn/audioplayer.cpp:
+Speed/Indep/Libs/rcmp/dev/source/av/cmn/audioplayer.cpp:
 	.text       start:0x80348334 end:0x80348640
 
-egami/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp:
+Speed/Indep/Libs/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp:
 	.text       start:0x80348640 end:0x80348EE4
 
-egami/rcmp/dev/source/vd/gc/bigswizzler.cpp:
+Speed/Indep/Libs/rcmp/dev/source/vd/gc/bigswizzler.cpp:
 	.text       start:0x80348EE4 end:0x8034939C
 
-egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmpbase.cpp:
 	.text       start:0x8034939C end:0x803497E4
 	.bss        start:0x804BC0E0 end:0x804BC0F0
 
-egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp:
 	.text       start:0x8034983C end:0x8034A2F0
 	.bss        start:0x804BC0F0 end:0x804BC104
 	.sbss       start:0x804FFC6C end:0x804FFC74
 
-egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp:
 	.text       start:0x8034A348 end:0x8034A390
 
-egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp:
 	.text       start:0x8034A390 end:0x8034ADB0
 
-egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp:
 	.text       start:0x8034ADB0 end:0x8034ADE4
 	.rodata     start:0x8041045C end:0x80410468
 
-egami/rcmp/dev/source/decoder/cmn/maddec.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/maddec.cpp:
 	.text       start:0x8034ADE4 end:0x8034B900
 	.rodata     start:0x80410468 end:0x80411358
 	.bss        start:0x804BC104 end:0x804BDB04
 	.sbss       start:0x804FFC74 end:0x804FFC88
 
-egami/rcmp/dev/source/decoder/cmn/maddeca.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/maddeca.cpp:
 	.text       start:0x8034B900 end:0x8034BAC4
 	.rodata     start:0x80411358 end:0x804114A8
 
-egami/rcmp/dev/source/decoder/cmn/madidct.cpp:
+Speed/Indep/Libs/rcmp/dev/source/decoder/cmn/madidct.cpp:
 	.text       start:0x8034BAC4 end:0x8034C0A4
 	.data       start:0x8044F62C end:0x8044F72C
 	.bss        start:0x804BDB04 end:0x804BDD04
