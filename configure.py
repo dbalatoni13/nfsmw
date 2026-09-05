@@ -506,7 +506,6 @@ elif config.platform == Platform.PS2:
         "-I src/Packages",
         "-I src",
         "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
-        "-DEA_REGION_AMERICA",
         "-DEA_BUILD_A124",
         "-D_NOTHREADS",  # TODO is this necessary?
         f"-I build/{config.version}/include",
