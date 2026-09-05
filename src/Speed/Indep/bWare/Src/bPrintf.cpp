@@ -6,11 +6,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-// TODO
-#if defined(EA_PLATFORM_GAMECUBE)
-void *memset(void *, int, unsigned long, ...);
-#endif
-
 char *_nan_table[4] = {
     "-1.#INF",
     "1.#INF ",
