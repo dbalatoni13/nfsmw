@@ -7,7 +7,9 @@
 #include <stdarg.h>
 
 // TODO
+#ifndef EA_PLATFORM_WIN32
 void *memset(void *, int, unsigned long, ...);
+#endif
 
 char *_nan_table[4] = {
     "-1.#INF",

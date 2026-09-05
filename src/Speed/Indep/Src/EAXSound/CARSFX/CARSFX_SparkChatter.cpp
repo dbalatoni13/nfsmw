@@ -16,8 +16,8 @@ CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {
     this->SparkChatOutputClients.CreateClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.UpdateClient.pClientData = &this->SparkChatOutputClients;
-    this->SparkChatOutputClients.CreateClient.pClientFunc = this->SparkChatCreateCallBack;
-    this->SparkChatOutputClients.DestroyClient.pClientFunc = this->SparkChatDestroyCallBack;
+    this->SparkChatOutputClients.CreateClient.pClientFunc = &CARSFX_SparkChatter::SparkChatCreateCallBack;
+    this->SparkChatOutputClients.DestroyClient.pClientFunc = &CARSFX_SparkChatter::SparkChatDestroyCallBack;
     this->m_pSweetnersData = nullptr;
     this->BlipVol = 0;
 }
@@ -64,12 +64,11 @@ void CARSFX_SparkChatter::InitSFX() {
     static int tmp_refCnt = m_pSparkChatterControl->GetRefCount();
 }
 
-// TODO wtf?
 void CARSFX_SparkChatter::SparkChatCreateCallBack(Csis::Class *pSparkChatClass, Csis::Parameter *pParameters, void *pClientData) {
     SparkChatOutputInstance *pSparkChatInstance = static_cast<SparkChatOutputInstance *>(pClientData);
     Csis::CAR_SputOutputStruct *pSparkData = reinterpret_cast<Csis::CAR_SputOutputStruct *>(pParameters);
 
-    if (reinterpret_cast<Csis::Parameter *>(pSparkData)[2].iVal == reinterpret_cast<intptr_t>(pSparkChatInstance->m_pThis)) {
+    if (pSparkData->car_id == reinterpret_cast<intptr_t>(pSparkChatInstance->m_pThis)) {
         Csis::Class::UnsubscribeConstructor(&Csis::gCAR_SputOutputHandle, &pSparkChatInstance->CreateClient);
         pSparkChatInstance->UpdateClient.pClientFunc = SparkChatUpdateCallBack;
         pSparkChatClass->SubscribeMemberData(&pSparkChatInstance->UpdateClient);

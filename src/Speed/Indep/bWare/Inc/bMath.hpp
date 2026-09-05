@@ -12,6 +12,8 @@
 #include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eetypes.h"
+#elif defined(EA_PLATFORM_WIN32)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -90,6 +92,8 @@ inline float bSqrt(float x) {
 #elif defined(EA_PLATFORM_XENON)
 // TODO
 #elif defined(EA_PLATFORM_PLAYSTATION2)
+// TODO
+#elif defined(EA_PLATFORM_WIN32)
 // TODO
 #else
 #error Choose a platform
@@ -1083,6 +1087,7 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
         : "=o"(dest->v0), "=o"(dest->v1), "=o"(dest->v2), "=o"(dest->v3)
         : "o"(v->v0), "o"(v->v1), "o"(v->v2), "o"(v->v3)
         : "memory");
+#elif defined(EA_PLATFORM_WIN32)
 #else
 #error Choose a platform
 #endif
@@ -1108,6 +1113,7 @@ inline void bIdentity(bMatrix4 *a) {
     asm("sq   %1, %0" : "=o"(a->v1) : "r"(t));
     asm("pextlw %0, %0, $0" : "+r"(t));
     asm("sq   %1, %0" : "=o"(a->v3) : "r"(t));
+#elif defined(EA_PLATFORM_WIN32)
 #else
 #error Choose a platform
 #endif

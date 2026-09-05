@@ -1,0 +1,66 @@
+# This file is mainly needed so to provide the file extension (.c vs .cpp)
+target_path: orig/SPEED_EXE_1_3/speed.exe
+
+splits_path: config/SPEED_EXE_1_3/splits.json
+symbols_path: config/SPEED_EXE_1_3/symbols.json
+
+splits:
+  - Speed/Indep/SourceLists/zAI.cpp
+  - Speed/Indep/SourceLists/zAnim.cpp
+  - Speed/Indep/SourceLists/zAttribSys.cpp
+  - Speed/Indep/SourceLists/zBWare.cpp
+  - Speed/Indep/SourceLists/zCamera.cpp
+  - Speed/Indep/SourceLists/zDynamics.cpp
+  - Speed/Indep/SourceLists/zEagl4Anim.cpp
+  - Speed/Indep/SourceLists/zEAXSound.cpp
+  - Speed/Indep/SourceLists/zEAXSound2.cpp
+  - Speed/Indep/SourceLists/zEcstasy.cpp
+  - Speed/Indep/SourceLists/zFe.cpp
+  - Speed/Indep/SourceLists/zFe2.cpp
+  - Speed/Indep/SourceLists/zFEng.cpp
+  - Speed/Indep/SourceLists/zFoundation.cpp
+  - Speed/Indep/SourceLists/zGameModes.cpp
+  - Speed/Indep/SourceLists/zGameplay.cpp
+  - Speed/Indep/SourceLists/zLua.cpp
+  - Speed/Indep/SourceLists/zMain.cpp
+  - Speed/Indep/SourceLists/zMisc.cpp
+  - Speed/Indep/SourceLists/zMiscSmall.cpp
+  - Speed/Indep/SourceLists/zMission.cpp
+  - Speed/Indep/SourceLists/zPhysics.cpp
+  - Speed/Indep/SourceLists/zPhysicsBehaviors.cpp
+  - Speed/Indep/SourceLists/zPlatform.cpp
+  - Speed/Indep/SourceLists/zSim.cpp
+  - Speed/Indep/SourceLists/zSpeech.cpp
+  - Speed/Indep/SourceLists/zTrack.cpp
+  - Speed/Indep/SourceLists/zWorld.cpp
+  - Speed/Indep/SourceLists/zWorld2.cpp
+  - unassigned_00.s
+  - unassigned_01.s
+  - unassigned_02.s
+  - unassigned_03.s
+  - unassigned_04.s
+  - unassigned_05.s
+  - unassigned_06.s
+  - unassigned_07.s
+  - unassigned_08.s
+  - unassigned_09.s
+  - unassigned_10.s
+  - unassigned_11.s
+  - unassigned_12.s
+  - unassigned_13.s
+  - unassigned_14.s
+  - unassigned_15.s
+  - unassigned_16.s
+  - unassigned_17.s
+  - unassigned_18.s
+  - unassigned_19.s
+  - unassigned_20.s
+  - unassigned_21.s
+  - unassigned_22.s
+  - unassigned_23.s
+  - unassigned_24.s
+  - unassigned_25.s
+  - unassigned_26.s
+  - unassigned_27.s
+  - unassigned_28.s
+  - unassigned_29.s

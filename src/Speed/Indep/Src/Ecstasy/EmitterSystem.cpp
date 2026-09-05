@@ -19,8 +19,10 @@
 #include "Speed/GameCube/Src/xSparks.h"
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/Src/xSparks.h"
-#else
+#elif defined(EA_PLATFORM_XENON)
 #include "Speed/Xenon/Src/xSparks.h"
+#elif defined(EA_PLATFORM_WIN32)
+#include "Speed/PC/Src/xSparks.h"
 #endif
 
 #include <algorithm>
@@ -1096,7 +1098,7 @@ EmitterLibrary *EmitterSystem::FindLibrary(Attrib::Key key) {
     LibEntry e;
     e.Key = key;
     e.Lib = nullptr;
-    LibEntry *iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
+    LibList::iterator iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
     if (iter != mLibs.end() && iter->Key == key) {
         return iter->Lib;
     }
@@ -1114,7 +1116,7 @@ void EmitterSystem::RemoveLibrary(EmitterLibrary *lib) {
     LibEntry e;
     e.Key = lib->GroupKey;
     e.Lib = lib;
-    LibEntry *iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
+    LibList::iterator iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
     while (iter != mLibs.end() && iter->Key == e.Key) {
         if (iter->Lib == lib) {
             mLibs.erase(iter);

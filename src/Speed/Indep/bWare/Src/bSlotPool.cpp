@@ -360,7 +360,7 @@ SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char 
     if (!new_slot_pool) {
         return nullptr;
     }
-    if (Initialized == true) {
+    if (Initialized == 1) {
         SlotPoolList.AddTail(new_slot_pool);
     }
     return new_slot_pool;

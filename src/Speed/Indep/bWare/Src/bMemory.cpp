@@ -1051,7 +1051,7 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
         switch (p->mTag) {
             case 1:
                 if (p->mValue.mPointer != nullptr) {
-                    name = static_cast<char *>(p->mValue.mPointer);
+                    name = static_cast<char *>(const_cast<void*>(p->mValue.mPointer));
                 }
                 break;
             case 2:

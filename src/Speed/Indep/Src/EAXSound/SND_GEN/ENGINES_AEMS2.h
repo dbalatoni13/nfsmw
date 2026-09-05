@@ -1,6 +1,7 @@
 #ifndef ENGINES_AEMS2_H
 #define ENGINES_AEMS2_H
 
+#include "types.h"
 #include <csis/csis.h>
 
 namespace Csis {
@@ -119,9 +120,9 @@ extern ClassHandle gCAR_SputOutputHandle; // size: 0x8, address: 0x8045E7DC, Dec
 // total size: 0xC
 // Decl: 630
 typedef struct {
-    int volume;    // offset 0x0, size 0x4
-    int car_class; // offset 0x4, size 0x4
-    int car_id;    // offset 0x8, size 0x4
+    int volume;      // offset 0x0, size 0x4
+    int car_class;   // offset 0x4, size 0x4
+    intptr_t car_id; // offset 0x8, size 0x4
 } CAR_SputOutputStruct;
 
 // Decl: 640

@@ -160,7 +160,7 @@ bool WWorldPos::FindClosestFace(const WCollisionInstanceCacheList &instList, con
     float bestDist = 1e38f;
     this->fFaceValid = 0;
 
-    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+    for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         WCollisionTri face;
         float dist;
         if (WCollisionMgr(0, 3).FindFaceInCInst(mat, endPt, **iIter, face, dist)) {

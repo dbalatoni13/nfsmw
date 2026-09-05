@@ -1,0 +1,722 @@
+{
+  "Speed/Indep/SourceLists/zAI.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4198480,
+        4483727
+      ]
+    ],
+    "rdata": [[8979684, 8991720]],
+    "data": [[9347072, 9355384]],
+    "bss": [[9492252, 9492912]]
+  },
+  "Speed/Indep/SourceLists/zAnim.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4484240,
+        4527747
+      ]
+    ],
+    "rdata": [[8991720, 8993856]],
+    "data": [[9355384, 9356512]],
+    "bss": [[9492912, 9493672]]
+  },
+  "Speed/Indep/SourceLists/zAttribSys.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4527952,
+        4573481
+      ]
+    ],
+    "rdata": [[8993856, 8994136]],
+    "data": [],
+    "bss": [[9493672, 9493744]]
+  },
+  "Speed/Indep/SourceLists/zBWare.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4573792,
+        4613280
+      ]
+    ],
+    "rdata": [
+      [
+        8994136,
+        8996328
+      ]
+    ],
+    "data": [[9356512, 9363028]],
+    "bss": [[9493744, 9506848]]
+  },
+  "Speed/Indep/SourceLists/zCamera.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4613280,
+        4759546
+      ]
+    ],
+    "rdata": [[8996328, 9000056]],
+    "data": [[9363028, 9364688]],
+    "bss": [[9506848, 9507628]]
+  },
+    "Speed/Indep/SourceLists/zDebug.obj": {
+    "functions": [],
+    "function_ranges": [],
+    "rdata": [],
+    "data": [],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zDynamics.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4759552,
+        4776198
+      ]
+    ],
+    "rdata": [],
+    "data": [],
+    "bss": [[9507628, 9508828]]
+  },
+  "Speed/Indep/SourceLists/zEagl4Anim.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4776384,
+        4826398
+      ]
+    ],
+    "rdata": [[9000056, 9004012]],
+    "data": [[9364688, 9364824]],
+    "bss": [[9508828, 9510552]]
+  },
+  "Speed/Indep/SourceLists/zEAXSound.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        4826400,
+        5060373
+      ]
+    ],
+    "rdata": [[9004012, 9009468]],
+    "data": [[9364824, 9370008]],
+    "bss": [[9510552, 9518512]]
+  },
+  "Speed/Indep/SourceLists/zEAXSound2.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        5061200,
+        5217785
+      ]
+    ],
+    "rdata": [[9009468, 9020996]],
+    "data": [[9370008, 9380180]],
+    "bss": [[9518512, 9522016]]
+  },
+  "Speed/Indep/SourceLists/zEcstasy.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        5217856,
+        5295635
+      ]
+    ],
+    "rdata": [],
+    "data": [[9380180, 9384468]],
+    "bss": [[9522016, 9552496]]
+  },
+  "Speed/Indep/SourceLists/zFe.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        5295648,
+        5654608
+      ]
+    ],
+    "rdata": [[9020996, 9030996]],
+    "data": [[9384468, 9389468]],
+    "bss": [[9552496, 9560036]]
+  },
+  "Speed/Indep/SourceLists/zFe2.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        5655280,
+        5957260
+      ]
+    ],
+    "rdata": [[9030996, 9040996]],
+    "data": [[9389468, 9394776]],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zFEng.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        5957776,
+        6053311
+      ]
+    ],
+    "rdata": [[9040996, 9058276]],
+    "data": [],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zFoundation.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6053504,
+        6128844
+      ]
+    ],
+    "rdata": [],
+    "data": [],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zGameModes.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6128864,
+        6129245
+      ]
+    ],
+    "rdata": [],
+    "data": [],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zGameplay.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6129248,
+        6307981
+      ]
+    ],
+    "rdata": [[9058276, 9060040]],
+    "data": [[9394776, 9397972]],
+    "bss": [[9560036, 9560264]]
+  },
+  "Speed/Indep/SourceLists/zLua.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6308032,
+        6421305
+      ]
+    ],
+    "rdata": [[9060040, 9062428]],
+    "data": [],
+    "bss": [[9560264, 9565208]]
+  },
+  "Speed/Indep/SourceLists/zMain.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6421312,
+        6592081
+      ]
+    ],
+    "rdata": [[9062428, 9078232]],
+    "data": [[9397972, 9403864]],
+    "bss": [[9565208, 9590400]]
+  },
+  "Speed/Indep/SourceLists/zMisc.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6592096,
+        6713347
+      ]
+    ],
+    "rdata": [[9078232, 9081456]],
+    "data": [[9403864, 9406092]],
+    "bss": [[9590400, 9592932]]
+  },
+  "Speed/Indep/SourceLists/zMiscSmall.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6713360,
+        6713930
+      ]
+    ],
+    "rdata": [],
+    "data": [[9406092, 9406768]],
+    "bss": [[9592932, 9593192]]
+  },
+  "Speed/Indep/SourceLists/zMission.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6714064,
+        6714168
+      ]
+    ],
+    "rdata": [],
+    "data": [],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zPhysics.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6714176,
+        6853985
+      ]
+    ],
+    "rdata": [[9081456, 9087956]],
+    "data": [[9406768, 9406928]],
+    "bss": [[9593192, 9656904]]
+  },
+  "Speed/Indep/SourceLists/zPhysicsBehaviors.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        6854000,
+        7072220
+      ]
+    ],
+    "rdata": [[9087956, 9110056]],
+    "data": [[9406928, 9408496]],
+    "bss": [[9656904, 9685712]]
+  },
+  "Speed/Indep/SourceLists/zPlatform.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7072224,
+        7112769
+      ]
+    ],
+    "rdata": [],
+    "data": [[9408496, 9444064]],
+    "bss": [[9685712, 9693284]]
+  },
+  "Speed/Indep/SourceLists/zSim.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7112912,
+        7331895
+      ]
+    ],
+    "rdata": [[9110056, 9116876]],
+    "data": [[9444064, 9444288]],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zSpeech.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7332048,
+        7478464
+      ]
+    ],
+    "rdata": [[9116876, 9126876]],
+    "data": [[9444288, 9445668]],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zTrack.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7478896,
+        7547307
+      ]
+    ],
+    "rdata": [],
+    "data": [[9445668, 9450128]],
+    "bss": []
+  },
+  "Speed/Indep/SourceLists/zWorld.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7547312,
+        7739131
+      ]
+    ],
+    "rdata": [[9126876, 9136876]],
+    "data": [[9450128, 9460968]],
+    "bss": [[9693284, 9993284]]
+  },
+  "Speed/Indep/SourceLists/zWorld2.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7739136,
+        7904648
+      ]
+    ],
+    "rdata": [[9136876, 9146876]],
+    "data": [[9460968, 9461036]],
+    "bss": []
+  },
+  "unassigned_00.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7904960,
+        7944452
+      ]
+    ],
+    "rdata": [[9146876, 9153549]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_01.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7944464,
+        7979979
+      ]
+    ],
+    "rdata": [[9153549, 9160222]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_02.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        7979984,
+        8012041
+      ]
+    ],
+    "rdata": [[9160222, 9166895]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_03.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8012048,
+        8043290
+      ]
+    ],
+    "rdata": [[9166895, 9173568]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_04.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8043360,
+        8071808
+      ]
+    ],
+    "rdata": [[9173568, 9180242]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_05.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8071808,
+        8099581
+      ]
+    ],
+    "rdata": [[9180242, 9186915]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_06.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8099648,
+        8126448
+      ]
+    ],
+    "rdata": [[9186915, 9193588]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_07.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8126448,
+        8154226
+      ]
+    ],
+    "rdata": [[9193588, 9200261]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_08.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8154240,
+        8182176
+      ]
+    ],
+    "rdata": [[9200261, 9206934]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_09.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8182176,
+        8210372
+      ]
+    ],
+    "rdata": [[9206934, 9213608]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_10.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8210384,
+        8238512
+      ]
+    ],
+    "rdata": [[9213608, 9220281]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_11.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8238512,
+        8265966
+      ]
+    ],
+    "rdata": [[9220281, 9226954]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_12.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8265968,
+        8301384
+      ]
+    ],
+    "rdata": [[9226954, 9233627]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_13.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8301488,
+        8336972
+      ]
+    ],
+    "rdata": [[9233627, 9240300]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_14.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8336972,
+        8368377
+      ]
+    ],
+    "rdata": [[9240300, 9246974]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_15.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8368377,
+        8398506
+      ]
+    ],
+    "rdata": [[9246974, 9253647]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_16.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8398506,
+        8430053
+      ]
+    ],
+    "rdata": [[9253647, 9260320]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_17.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8430053,
+        8454407
+      ]
+    ],
+    "rdata": [[9260320, 9266993]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_18.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8454407,
+        8483119
+      ]
+    ],
+    "rdata": [[9266993, 9273666]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_19.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8483119,
+        8513081
+      ]
+    ],
+    "rdata": [[9273666, 9280340]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_20.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8513081,
+        8540265
+      ]
+    ],
+    "rdata": [[9280340, 9287013]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_21.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8540265,
+        8571008
+      ]
+    ],
+    "rdata": [[9287013, 9293686]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_22.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8571008,
+        8602356
+      ]
+    ],
+    "rdata": [[9293686, 9300359]],
+    "data": [],
+    "bss": [[9993284, 10067662]]
+  },
+  "unassigned_23.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8602388,
+        8638108
+      ]
+    ],
+    "rdata": [[9300359, 9307032]],
+    "data": [[10067662, 10094037]],
+    "bss": []
+  },
+  "unassigned_24.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8638208,
+        8668939
+      ]
+    ],
+    "rdata": [[9307032, 9313706]],
+    "data": [[10094037, 10120412]],
+    "bss": []
+  },
+  "unassigned_25.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8668944,
+        8697704
+      ]
+    ],
+    "rdata": [[9313706, 9320379]],
+    "data": [[10120412, 10146787]],
+    "bss": []
+  },
+  "unassigned_26.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8697712,
+        8733458
+      ]
+    ],
+    "rdata": [[9320379, 9327052]],
+    "data": [[10146787, 10173162]],
+    "bss": []
+  },
+  "unassigned_27.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8733472,
+        8762360
+      ]
+    ],
+    "rdata": [[9327052, 9333725]],
+    "data": [[10173162, 10199537]],
+    "bss": []
+  },
+  "unassigned_28.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8762432,
+        8796307
+      ]
+    ],
+    "rdata": [[9333725, 9340398]],
+    "data": [[10199537, 10225912]],
+    "bss": []
+  },
+  "unassigned_29.obj": {
+    "functions": [],
+    "function_ranges": [
+      [
+        8796320,
+        8974634
+      ]
+    ],
+    "rdata": [[9340398, 9347072]],
+    "data": [[10225912, 10252288]],
+    "bss": []
+  }
+}

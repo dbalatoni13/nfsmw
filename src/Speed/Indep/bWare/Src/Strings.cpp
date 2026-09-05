@@ -462,8 +462,8 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
             return false;
         }
 
-        string++;
         wild++;
+        string++;
     }
 
     while (*string != '\0') {

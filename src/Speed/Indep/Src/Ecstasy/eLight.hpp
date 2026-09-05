@@ -15,6 +15,8 @@
 #include "Speed/Xenon/Src/Ecstasy/eLightPlat.hpp"
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/Src/Ecstasy/eLightPlat.hpp"
+#elif defined(EA_PLATFORM_WIN32)
+#include "Speed/PC/Src/Ecstasy/eLightPlat.hpp"
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"

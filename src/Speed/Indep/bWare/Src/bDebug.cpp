@@ -98,19 +98,24 @@ void bReleasePutString(char terminal_channel, const char *s) {
 }
 
 // STRIPPED
-int bNewFileCheckerAdd(const char *filename) {}
+int bNewFileCheckerAdd(const char *filename) {
+    return 0;
+}
 
 // STRIPPED
 void bNewFileCheckerRemove(int id) {}
 
 // STRIPPED
-int bCheckForNewFiles() {}
+int bCheckForNewFiles() {
+    return 0;
+}
 
 // STRIPPED
-int bCheckForNewFiles(float seconds) {}
+int bCheckForNewFiles(float seconds) {
+    return 0;
+}
 
 bool bIsDebuggerConnected() {
-
     if (bIsCodeineConnected()) {
         // TODO: from sn debug.c
         // return snIsDebuggerRunning();
@@ -134,10 +139,14 @@ int bGetComputerName(char *computer_name, int max_chars) {
 }
 
 // STRIPPED
-int bGetHostName(char *host_name, int max_chars) {}
+int bGetHostName(char *host_name, int max_chars) {
+    return 0;
+}
 
 // STRIPPED
-int bGetTimeString(char *time_string, int max_chars) {}
+int bGetTimeString(char *time_string, int max_chars) {
+    return 0;
+}
 
 void bBreak() {
 #ifdef EA_PLATFORM_GAMECUBE
@@ -152,13 +161,16 @@ int bIsValidPointer(void *p, int size) {
 }
 
 // STRIPPED
-int bLaunch(const char *command_line, int dos_command) {}
+int bLaunch(const char *command_line, int dos_command) {
+    return 0;
+}
 
 // STRIPPED
-int bLaunchWindows(const char *command_line) {}
+int bLaunchWindows(const char *command_line) {
+    return 0;
+}
 
 float bGetTickerDifference(unsigned int start_ticks) {
-
     return bGetTickerDifference(start_ticks, bGetTicker());
 }
 
@@ -176,6 +188,8 @@ void bInitTicker(float min_wraparound_time) {}
 unsigned int bGetTicker() {
 #ifdef EA_PLATFORM_GAMECUBE
     return OSGetTick();
+#else
+    return 0;
 #endif
 }
 
@@ -188,13 +202,19 @@ float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
     }
 #ifdef EA_PLATFORM_GAMECUBE
     return OSTicksToMicroseconds(start_ticks) * 0.001f;
+#else
+    return 0;
 #endif
 }
 
 // STRIPPED
-bool bHasTickerExpired(unsigned int start_ticks, float ms) {}
+bool bHasTickerExpired(unsigned int start_ticks, float ms) {
+    return false;
+}
 
-int bDisableInterrupts() {}
+int bDisableInterrupts() {
+    return 0;
+}
 
 void bRestoreInterrupts(int previous_state) {}
 
