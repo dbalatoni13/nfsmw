@@ -38,19 +38,26 @@ struct tBigSwizzler {
 
 struct _GXTexObj;
 
-static void CON_tTileSize2d(tTileSize2d *tsize, unsigned int TileSizeX,
-                            unsigned int TileSizeY, unsigned int SizeX,
-                            unsigned int SizeY) {
+static void CON_tTileSize2d(tTileSize2d *tsize, unsigned long TileSizeX,
+                            unsigned long TileSizeY, unsigned long SizeX,
+                            unsigned long SizeY) {
+    unsigned long NumberOfTilesX;
+    unsigned long NumberOfTilesY;
+
     tsize->TileWidth = TileSizeX;
     tsize->TileHeight = TileSizeY;
     tsize->Width = SizeX;
     tsize->Height = SizeY;
-    tsize->NumberOfTilesX = (SizeX + TileSizeX - 1) / TileSizeX;
-    tsize->NumberOfTilesY = (SizeY + TileSizeY - 1) / TileSizeY;
+    NumberOfTilesX = SizeX - 1;
+    NumberOfTilesX += TileSizeX;
+    NumberOfTilesY = SizeY - 1;
+    NumberOfTilesY += TileSizeY;
+    tsize->NumberOfTilesX = NumberOfTilesX / TileSizeX;
+    tsize->NumberOfTilesY = NumberOfTilesY / TileSizeY;
     tsize->TileSize = TileSizeX * TileSizeY;
 }
 
-static void CON_tPixAdr2d(tPixAdr2d *padr, unsigned int x, unsigned int y,
+static void CON_tPixAdr2d(tPixAdr2d *padr, unsigned long x, unsigned long y,
                           tTileSize2d *tsize) {
     unsigned int TileX;
     unsigned int TileY;
@@ -145,12 +152,8 @@ struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
     for (y = 0; y < This->Height; ++y) {
         for (x = 0; x < This->Width; ++x) {
             CON_tPixAdr2d(&padr, x, y, &tsize);
-            CurTileLut = reinterpret_cast<tBigSTPix *>(
-                reinterpret_cast<unsigned char *>(This->TextureData) +
-                (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2) *
-                    2);
             CurPixLut = This->TextureData;
-            CurTileLut += CurPixLut - CurPixLut;
+            CurTileLut = CurPixLut + (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2);
             CurTileLut->X = static_cast<unsigned char>(padr.X / TileSizeX);
             CurTileLut->Y = static_cast<unsigned char>(padr.Y / TileSizeY);
         }
@@ -164,14 +167,14 @@ struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
     for (y = 0; y < This->TextureHeight; ++y) {
         for (x = 0; x < This->TextureWidth; ++x) {
             CON_tPixAdr2d(&padr, x, y, &tsize);
-            CurTileLut = reinterpret_cast<tBigSTPix *>(
+            CurPixLut = reinterpret_cast<tBigSTPix *>(
                 reinterpret_cast<unsigned char *>(This->TextureData2) +
                 (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2) *
                     2);
-            CurPixLut = This->TextureData2;
-            CurTileLut += CurPixLut - CurPixLut;
-            CurTileLut->X = static_cast<unsigned char>(padr.X % TileSizeX);
-            CurTileLut->Y = static_cast<unsigned char>((padr.Y % TileSizeY) - y + 0x80);
+            CurTileLut = This->TextureData2;
+            CurPixLut += CurTileLut - CurTileLut;
+            CurPixLut->X = static_cast<unsigned char>(padr.X % TileSizeX);
+            CurPixLut->Y = static_cast<unsigned char>((padr.Y % TileSizeY) - y + 0x80);
         }
     }
 

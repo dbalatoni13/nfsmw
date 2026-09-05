@@ -216,8 +216,7 @@ struct DLNode {
         new_next = insert_point;
         new_prev = new_next->Prev;
         new_prev->Next = this;
-        new_next->Prev = this;
-        this->Next = new_next;
+        this->Next = insert_point;
         this->Prev = new_prev;
         return this;
     }
