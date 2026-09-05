@@ -7,7 +7,7 @@
 #include <stdarg.h>
 
 // TODO
-#ifndef EA_PLATFORM_WIN32
+#if !defined(EA_PLATFORM_WIN32) && !defined(EA_PLATFORM_XENON) 
 void *memset(void *, int, unsigned long, ...);
 #endif
 

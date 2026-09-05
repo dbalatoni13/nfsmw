@@ -892,6 +892,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
 
 bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment,
                                                   WorldCollisionInfo &cInfo) {
+#ifndef EA_PLATFORM_XENON // TODO
     cInfo.fType = 0;
     WCollisionBarrierList::const_iterator ret = nullptr;
     float closestDistSq = 1e38f;
@@ -916,6 +917,7 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
         cInfo.fBle = *ret;
         cInfo.fType = 2;
     }
+#endif
     return cInfo.HitSomething();
 }
 
