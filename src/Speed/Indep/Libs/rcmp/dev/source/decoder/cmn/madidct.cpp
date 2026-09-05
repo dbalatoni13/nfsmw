@@ -15,10 +15,7 @@ int idctinput[0x40];
 static int work[0x40];
 
 extern "C" {
-static inline int idctmul(int a, int b) {
-    long long product = static_cast<long long>(a) * static_cast<long long>(b);
-    return static_cast<int>((product + 0x8000) >> 16);
-}
+#define idctmul(a, b) static_cast<int>((static_cast<long long>(a) * static_cast<long long>(b) + 0x8000) >> 16)
 
 static void IdctColumn(int *src, int *dest) {
     int t1;
@@ -31,8 +28,7 @@ static void IdctColumn(int *src, int *dest) {
     int t8;
     int t9;
 
-    if (src[1] == 0 && src[2] == 0 && src[3] == 0 && src[4] == 0 &&
-        src[5] == 0 && src[6] == 0 && src[7] == 0) {
+    if ((src[1] | src[2] | src[3] | src[4] | src[5] | src[6] | src[7]) == 0) {
         dest[0] = src[0];
         dest[8] = src[0];
         dest[16] = src[0];
@@ -85,19 +81,6 @@ static void IdctRow(int *src, int *dest) {
     int t7;
     int t8;
     int t9;
-
-    if (src[1] == 0 && src[2] == 0 && src[3] == 0 && src[4] == 0 &&
-        src[5] == 0 && src[6] == 0 && src[7] == 0) {
-        dest[0] = src[0];
-        dest[1] = src[0];
-        dest[2] = src[0];
-        dest[3] = src[0];
-        dest[4] = src[0];
-        dest[5] = src[0];
-        dest[6] = src[0];
-        dest[7] = src[0];
-        return;
-    }
 
     t1 = src[0];
     t2 = src[1];

@@ -2,13 +2,24 @@
 #include "../../../../../../../../../include/dol2asm.h"
 
 extern unsigned int madshiftreg __attribute__((section(".sbss")));
-extern unsigned char *maddataptr __attribute__((section(".sbss")));
+extern const unsigned short *maddataptr __attribute__((section(".sbss")));
 extern int madbitcount __attribute__((section(".sbss")));
 extern int madvlctbl1[0x200];
 extern int madvlctbl2[0x100];
 extern int madvlctbl3[0x100];
 extern int madquant[0x40];
 extern int idctinput[0x40];
+
+static inline unsigned int geti(const void *src, int bytes) {
+    if (bytes == 2) {
+        return (static_cast<const unsigned char *>(src)[1] << 8) |
+               static_cast<const unsigned char *>(src)[0];
+    }
+    return (static_cast<const unsigned char *>(src)[3] << 24) |
+           (static_cast<const unsigned char *>(src)[2] << 16) |
+           (static_cast<const unsigned char *>(src)[1] << 8) |
+           static_cast<const unsigned char *>(src)[0];
+}
 
 static const int zigzag[0x40] = {
     0, 8, 1, 2, 9, 0x10, 0x18, 0x11, 0xa, 3, 4, 0xb, 0x12, 0x19, 0x20, 0x28,
@@ -19,20 +30,12 @@ static const int zigzag[0x40] = {
 };
 
 static void discardbits(int bits) {
-    unsigned int shiftreg;
-    int bitcount;
-
-    shiftreg = madshiftreg << bits;
-    bitcount = madbitcount - bits;
-    madshiftreg = shiftreg;
-    madbitcount = bitcount;
-    if (bitcount <= 0xf) {
-        unsigned int val;
-
-        val = (maddataptr[1] << 8) | maddataptr[0];
-        madbitcount = bitcount + 0x10;
-        maddataptr += 2;
-        madshiftreg |= val << (0x10 - bitcount);
+    madshiftreg = madshiftreg << bits;
+    madbitcount = madbitcount - bits;
+    if (madbitcount <= 0xf) {
+        madshiftreg = madshiftreg | (geti(maddataptr, 2) << (0x10 - madbitcount));
+        madbitcount = madbitcount + 0x10;
+        maddataptr += 1;
     }
 }
 

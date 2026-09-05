@@ -1,5 +1,6 @@
 #include "rcmp/rcmp.h"
 #include "dolphin.h"
+#include "snd/sndo.h"
 #include "../../../../../realcore/6.24.00/include/common/realcore/file/filesys.h"
 
 struct AV_SUBTITLE_ARRAY;
@@ -21,10 +22,20 @@ extern int STREAM_queuefile(int stream, const char *name, int offset, int endchu
 extern int STREAM_queuemem(int stream, void *buffer, int size, int endchunkid);
 extern int STREAM_taphandle(int stream, int tapnum);
 extern int ASYNCFILE_load(const char *name, int memtype);
+extern int ASYNCFILE_release(int handle, void **address, int *size);
 extern void MEM_fill(void *dest, unsigned int val, int count);
 extern void DEBUG_break();
+extern char lbl_8040FEE0[];
 extern char lbl_8040FEFC[];
 extern char lbl_8040FF14[];
+extern const double lbl_8040FF30;
+extern const double lbl_8040FF40;
+extern const float lbl_8040FF48;
+extern "C" void SNDSYS_entercritical();
+extern "C" void SNDSYS_leavecritical();
+extern "C" int SNDSTRM_status(int streamhandle, SNDSTREAMSTATUS *status);
+extern "C" int SNDSTRM_requeststatus(int requesthandle, SNDREQUESTSTATUS *status);
+extern "C" int SNDPROFILE_outputlatency();
 extern void SYNCTASK_run();
 
 namespace Snd {
@@ -72,42 +83,51 @@ struct AV_MS_TIMER {
     long long m_Elapsed;
     unsigned int m_TimeBase;
 
+    inline static void *operator new(unsigned int size) {
+        return rcmp_sys.AllocMem(lbl_8040FEE0, size, 0, 0, rcmp_sys.m_DefaultMemDir);
+    }
+
     inline static void operator delete(void *ptr) {
         rcmp_sys.FreeMem(ptr);
     }
 
+    inline AV_MS_TIMER() {}
     inline ~AV_MS_TIMER() {}
     inline void Update();
+    inline unsigned int GetMS();
     void SetSpeed(unsigned int Speed);
 };
 
-inline void AV_MS_TIMER::Update() {
-    long long time;
-
-    time = OSGetTime();
-    if (this->m_TimeBase == 0x1000) {
-        this->m_Elapsed += time - this->m_Time;
-    } else {
-        this->m_Elapsed += (this->m_TimeBase *
-                            static_cast<unsigned long long>(time - this->m_Time)) >> 12;
-    }
-    this->m_Time = time;
-}
-
-inline void AV_MS_TIMER::SetSpeed(unsigned int Speed) {
-    this->Update();
-    this->m_TimeBase = Speed;
+inline unsigned int AV_MS_TIMER::GetMS() {
+    return static_cast<unsigned int>(
+        static_cast<unsigned long long>(this->m_Elapsed) /
+        (OS_TIMER_CLOCK / 1000));
 }
 
 struct AUDIO_PLAYER {
+    float m_Volume;
+    unsigned char *m_audiobuff;
+    int m_audiotap;
+    int m_sndstreamhandle;
+    int m_sndrequesthandle;
+
+    inline static void *operator new(unsigned int size) {
+        return rcmp_sys.AllocMem(lbl_8040FEE0, size, 0, 0, rcmp_sys.m_DefaultMemDir);
+    }
+
     inline static void operator delete(void *ptr) {
         rcmp_sys.FreeMem(ptr);
     }
 
+    AUDIO_PLAYER(int streamhandle, int requesthandle);
     ~AUDIO_PLAYER();
+    void StartSound();
     int SetSpeed(unsigned int Speed);
     bool IsAudioFinished();
     int SetVol(unsigned int volume);
+    inline int GetStreamHandle() {
+        return this->m_sndstreamhandle;
+    }
 };
 
 struct AV_PLAYER {
@@ -164,6 +184,10 @@ struct AV_PLAYER {
               int VideoStreamOffset, const char *AudioFileName, int SizeOfAudioFile,
               int AudioBufferSize, int AudioStreamOffset, LOAD_ENUM LoadMode,
               SOUND_ENUM SndMode);
+    FRAME *GetFirstFrame(unsigned int MaxFramesOutstanding, int VideoLatencyInMs);
+    FRAME *GetFrame(float GoalFrame);
+    bool IsTimeForDecode();
+    unsigned int SyncedAudioTime();
 
     inline int GetVideoStreamHandle() {
         return this->m_VideoStream;
@@ -289,6 +313,70 @@ void AV_PLAYER::Init(const char *VideoFileName, int SizeOfVideoFile, int VideoBu
     }
 }
 
+FRAME *AV_PLAYER::GetFirstFrame(unsigned int MaxFramesOutstanding, int VideoLatencyInMs) {
+    STREAM_setpriority(this->m_AudioStream, 0x97, 0x33);
+    STREAM_setpriority(this->m_VideoStream, 0x97, 0x33);
+
+    {
+        int size;
+        int ret;
+
+        if (this->m_AyncVideoFileHandle != 0) {
+            ret = ASYNCFILE_release(this->m_AyncVideoFileHandle,
+                                    reinterpret_cast<void **>(&this->m_VideoData), &size);
+            this->m_VideoStreamRequestID = STREAM_queuemem(
+                this->m_VideoStream, this->m_VideoData, size, 0);
+        }
+    }
+
+    {
+        int size;
+        int ret;
+
+        if (this->m_AyncAudioFileHandle != 0) {
+            ret = ASYNCFILE_release(this->m_AyncAudioFileHandle,
+                                    reinterpret_cast<void **>(&this->m_AudioData), &size);
+            this->m_AudioStreamRequestID = STREAM_queuemem(
+                this->m_AudioStream, this->m_AudioData, size, 0);
+        }
+    }
+
+    if (!this->m_SndFromDifferentFile) {
+        this->m_AudioStreamRequestID = this->m_VideoStreamRequestID;
+    }
+
+    if (this->m_SndMode == SOUND_ON) {
+        this->m_ap = new AUDIO_PLAYER(this->m_AudioStream, this->m_AudioStreamRequestID);
+        this->m_trackingaudio = this->m_ap->GetStreamHandle() >= 0;
+    } else {
+        this->m_trackingaudio = 0;
+    }
+
+    this->m_pdecoder = 0;
+    if (rcmp_sys.IsInited() && rcmp_sys.FreeMemFunc != 0) {
+        this->m_data_streamer.SetStreamer(this);
+        CODEC_IDATA cidata(&this->m_data_streamer, StaticGetRCMPChunk,
+                           StaticReleaseRCMPChunk, MaxFramesOutstanding);
+        this->m_pdecoder = new DECODER(&cidata);
+    }
+
+    this->m_CurRCMPFrame = this->m_pdecoder->GetFrame(0);
+    this->m_MSTimer = new AV_MS_TIMER;
+    this->m_MSTimer->m_Elapsed = 0;
+    this->m_MSTimer->m_Time = OSGetTime();
+    this->m_MSTimer->m_TimeBase = 0x1000;
+    this->m_MSTimer->Update();
+    this->m_refms = this->m_MSTimer->GetMS();
+    this->m_filterederror = 0;
+    this->m_VideoLatencyInMs = VideoLatencyInMs;
+    this->m_oldaudiotime = 0;
+    if (this->m_ap != 0) {
+        this->m_ap->StartSound();
+    }
+    this->SetSpeed(0x1000);
+    return this->m_CurRCMPFrame;
+}
+
 AV_PLAYER::~AV_PLAYER() {
     if (this->m_pdecoder != 0) {
         delete this->m_pdecoder;
@@ -325,6 +413,81 @@ AV_PLAYER::~AV_PLAYER() {
         rcmp_sys.FreeMem(this->m_AudioStreambuff);
         this->m_AudioStreambuff = 0;
     }
+}
+
+FRAME *AV_PLAYER::GetFrame(float GoalFrame) {
+    this->m_GoalFrame = GoalFrame;
+    this->m_CurRCMPFrame = this->m_pdecoder->GetFrame(
+        GoalFrame < lbl_8040FF30
+            ? static_cast<int>(GoalFrame)
+            : static_cast<unsigned int>(static_cast<int>(GoalFrame - lbl_8040FF30) ^ 0x80000000));
+    this->m_CurFrame = this->m_pdecoder->GetCurrentFrameNumber();
+    return this->m_CurRCMPFrame;
+}
+
+unsigned int AV_PLAYER::SyncedAudioTime() {
+    AV_MS_TIMER &timer = *this->m_MSTimer;
+    SNDREQUESTSTATUS status;
+    SNDSTREAMSTATUS sndstrmsstatus;
+    int audiotime;
+    int error;
+    int ellapsed;
+    unsigned int ms;
+
+    timer.Update();
+    ms = timer.GetMS();
+    ellapsed = ms - this->m_refms;
+    if (this->m_trackingaudio != 0) {
+        SNDSYS_entercritical();
+        error = SNDSTRM_status(this->m_ap->GetStreamHandle(), &sndstrmsstatus);
+        error = SNDSTRM_requeststatus(sndstrmsstatus.currentrequest, &status);
+        SNDSYS_leavecritical();
+        error = SNDPROFILE_outputlatency();
+        audiotime = status.currenttime - error;
+        if (audiotime > this->m_oldaudiotime) {
+            this->m_oldaudiotime = audiotime;
+            error = audiotime - ellapsed;
+            this->m_filterederror = this->m_filterederror - this->m_filterederror / 8;
+            this->m_filterederror += error;
+            error = -this->m_filterederror;
+            if (error < this->m_filterederror) {
+                error = this->m_filterederror;
+            }
+            if (error > 0x108) {
+                this->m_refms -= this->m_filterederror / 8;
+                this->m_filterederror = 0;
+                ellapsed = ms - this->m_refms;
+            }
+        }
+    }
+    return ellapsed;
+}
+
+bool AV_PLAYER::IsTimeForDecode() {
+    unsigned int CurTimeMs;
+
+    CurTimeMs = this->SyncedAudioTime();
+    this->m_GoalFrame = static_cast<float>(CurTimeMs += this->m_VideoLatencyInMs) * lbl_8040FF48 *
+                        this->m_pdecoder->GetFrameRate();
+    return this->m_GoalFrame > static_cast<float>(this->m_CurFrame);
+}
+
+inline void AV_MS_TIMER::Update() {
+    long long time;
+
+    time = OSGetTime();
+    if (this->m_TimeBase == 0x1000) {
+        this->m_Elapsed += time - this->m_Time;
+    } else {
+        this->m_Elapsed += (this->m_TimeBase *
+                            static_cast<unsigned long long>(time - this->m_Time)) >> 12;
+    }
+    this->m_Time = time;
+}
+
+inline void AV_MS_TIMER::SetSpeed(unsigned int Speed) {
+    this->Update();
+    this->m_TimeBase = Speed;
 }
 
 int AV_PLAYER::SetSpeed(unsigned int Speed) {

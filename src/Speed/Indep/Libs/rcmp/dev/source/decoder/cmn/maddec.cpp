@@ -1,10 +1,10 @@
 #include "types.h"
 #include "../../../../../../../../../include/dol2asm.h"
 
-SECTION_SBSS unsigned int madshiftreg;
-SECTION_SBSS unsigned char *maddataptr;
-SECTION_SBSS int madbitcount;
-SECTION_SBSS static int motionframe;
+unsigned int madshiftreg __attribute__((section(".sbss")));
+const unsigned short *maddataptr __attribute__((section(".sbss")));
+int madbitcount __attribute__((section(".sbss")));
+static int motionframe __attribute__((section(".sbss")));
 int madquant[0x40];
 int madvlctbl1[0x200];
 int madvlctbl2[0x100];
@@ -18,7 +18,7 @@ extern int madvlcdecode();
 static unsigned char clipbiastbl[0x200];
 static int luma[0x100];
 static int chroma[0x80];
-SECTION_SBSS static int initflag;
+static int initflag __attribute__((section(".sbss")));
 
 static const int quanttbl[0x40] = {
     8, 0x10, 0x13, 0x16, 0x1a, 0x1b, 0x1d, 0x22,
@@ -34,21 +34,24 @@ static const int quanttbl[0x40] = {
 extern const int encodetbl1[];
 extern const int encodetbl2[];
 
+static inline unsigned int geti(const void *src, int bytes) {
+    if (bytes == 2) {
+        return (static_cast<const unsigned char *>(src)[1] << 8) |
+               static_cast<const unsigned char *>(src)[0];
+    }
+    return (static_cast<const unsigned char *>(src)[3] << 24) |
+           (static_cast<const unsigned char *>(src)[2] << 16) |
+           (static_cast<const unsigned char *>(src)[1] << 8) |
+           static_cast<const unsigned char *>(src)[0];
+}
+
 static void discardbits(int bits) {
-    unsigned int shiftreg;
-    int bitcount;
-
-    shiftreg = madshiftreg << bits;
-    bitcount = madbitcount - bits;
-    madshiftreg = shiftreg;
-    madbitcount = bitcount;
-    if (bitcount <= 0xf) {
-        unsigned int val;
-
-        val = (maddataptr[1] << 8) | maddataptr[0];
-        madbitcount = bitcount + 0x10;
-        maddataptr += 2;
-        madshiftreg |= val << (0x10 - bitcount);
+    madshiftreg = madshiftreg << bits;
+    madbitcount = madbitcount - bits;
+    if (madbitcount <= 0xf) {
+        madshiftreg = madshiftreg | (geti(maddataptr, 2) << (0x10 - madbitcount));
+        madbitcount = madbitcount + 0x10;
+        maddataptr += 1;
     }
 }
 
@@ -246,7 +249,7 @@ void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     }
     madbitcount = 0x20;
     madshiftreg = (src[0] << 0x18) | (src[1] << 0x10) | (src[2] << 8) | src[3];
-    maddataptr = reinterpret_cast<unsigned char *>(const_cast<unsigned short *>(src)) + 4;
+    maddataptr = reinterpret_cast<const unsigned short *>(reinterpret_cast<const unsigned char *>(src) + 4);
     motionframe = motion;
     madquant[0] = fixedmul(quanttbl[0] << 16, idctprescale[0]);
     for (i = 1; i < 0x40; i++) {

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+extern char lbl_8040FEE0[];
+
 enum FRAME_TYPE_ENUM {
     FRAME_MPC = 0,
     FRAME_MAD = 1,
@@ -104,6 +106,10 @@ struct CODEC {
 
 class DECODER {
   public:
+    inline static void *operator new(unsigned int size) {
+        return rcmp_sys.AllocMem(lbl_8040FEE0, size, 0, 0, rcmp_sys.m_DefaultMemDir);
+    }
+
     inline static void operator delete(void *ptr) {
         rcmp_sys.FreeMem(ptr);
     }
@@ -137,6 +143,14 @@ class DECODER {
 class CHUNK {
   public:
     CHUNK();
+
+    inline static void operator delete(void *ptr) {
+        rcmp_sys.FreeMem(ptr);
+    }
+
+    inline static void operator delete[](void *ptr) {
+        rcmp_sys.FreeMem(ptr);
+    }
 
     inline ~CHUNK() {}
 
@@ -194,6 +208,10 @@ class FRAME {
 
 class STREAMER {
   public:
+    inline static void operator delete(void *ptr) {
+        rcmp_sys.FreeMem(ptr);
+    }
+
     inline STREAMER(void *Data) {
         this->m_Streamer = Data;
     }
