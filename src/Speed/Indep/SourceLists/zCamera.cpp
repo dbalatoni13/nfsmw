@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Src/Camera/Camera.cpp"
 
 #include "Speed/Indep/Src/Camera/CameraMover.cpp"

@@ -34,6 +34,7 @@ VERSIONS = [
     "EUROPEGERMILESTONE",  # 1
     "SLES-53558-A124",  # 2
     "SLUS-21351",  # 3
+    "SPEED_EXE_1_3",  # 4
 ]
 
 parser = argparse.ArgumentParser()
@@ -95,6 +96,12 @@ parser.add_argument(
     help="path to decomp-toolkit binary or source (optional)",
 )
 parser.add_argument(
+    "--delink",
+    metavar="BINARY | DIR",
+    type=Path,
+    help="path to delink binary (optional)",
+)
+parser.add_argument(
     "--objdiff",
     metavar="BINARY | DIR",
     type=Path,
@@ -132,6 +139,7 @@ version_num = VERSIONS.index(config.version)
 # Apply arguments
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
+config.delink_path = args.delink
 config.objdiff_path = args.objdiff
 config.binutils_path = args.binutils
 config.compilers_path = args.compilers
@@ -146,7 +154,7 @@ if not config.non_matching:
     config.asm_dir = None
 
 # Tool versions
-config.compilers_tag = "20251015"
+config.compilers_tag = "20260903"
 
 if version_num in [0]:
     config.platform = Platform.GC_WII
@@ -159,14 +167,24 @@ elif version_num in [1]:
 elif version_num in [2, 3]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
+elif version_num in [4]:
+    config.platform = Platform.WIN32
+    config.delink_tag = "v0.16.1"
 
 config.objdiff_tag = "v3.7.0"
-config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "1.1.0"
+config.sjiswrap_tag = "v1.2.2"
+
+# sjiswrap segfault
+if config.platform == Platform.GC_WII:
+    config.wibo_tag = "1.1.0"
+else:
+    config.wibo_tag = "1.2.0"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
+
+compilers_path = Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
 
 if config.platform == Platform.GC_WII:
     config.asflags = [
@@ -214,6 +232,12 @@ elif config.platform == Platform.PS2:
         "-T",
         str(ldscript_path),
     ]  # TODO what about undefined_syms_auto.txt?
+elif config.platform == Platform.WIN32:
+    config.ldflags = [
+        "/NODEFAULTLIB",
+        f"/PDB:./build/{config.version}/{config.version}.pdb",
+        f"/DEBUG",
+    ]
 
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = []
@@ -405,6 +429,7 @@ elif config.platform == Platform.X360:
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
         "/wd4355",  # gets rid of the warning 'this' used in base member initializer
+        "/wd4716",
         # "/GL",  # enable LTCG
         # "/GR",  # RTTI
         "/Og",
@@ -553,6 +578,68 @@ elif config.platform == Platform.PS2:
 
     config.extra_clang_flags = [
         "-std=gnu++98",
+    ]
+elif config.platform == Platform.WIN32:
+    config.linker_version = "Win32/7.1"
+
+    cflags_base_prodg = [
+        "/nologo",
+        "/c",  # compile without linking
+        "/wd4996",  # get rid of string deprecation warnings for now
+        "/wd4355",  # gets rid of the warning 'this' used in base member initializer
+        # "/Og",
+        # "/Os",
+        # "/Ob2",
+        # "/Oi",
+        # "/Oy",  # maybe
+        "/Ox",
+        # "/Ou",  # enable prescheduling
+        # "/Oz",  # enable inline asm scheduling
+        # "/GF",  # Eliminate Duplicate Strings
+        # "/Gy",  # maybe?
+        "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
+        "/EHsc",  # enable exception handling (and extern C notthrow?)
+        f"/I {compilers_path / config.linker_version / 'Include'}",
+        "/I src/Packages",
+        "/I src",
+        "/DEA_PLATFORM_WIN32",
+        "/D_USE_MATH_DEFINES",
+        f"/I build/{config.version}/include",
+        f"/DBUILD_VERSION={version_num}",
+        f"/DVERSION_{config.version}",
+    ]
+
+    config.context_defines = [
+        "EA_PLATFORM_WIN32",
+        "EA_REGION_AMERICA",
+        "_USE_MATH_DEFINES",
+        "_WIN32",
+    ]
+
+    cflags_game = [
+        *cflags_base_prodg,
+        "/DLUA_NUMBER=float",
+        "/DDEFAULT_ALLOCATOR=0",
+        "/I src/Speed/Indep/Libs/allocator/1.5.0",
+        "/I src/Speed/Indep/Libs/csis/dev/include",
+        "/I src/Packages/eathread/1.1.0/include",
+        "/I src/Speed/Indep/Libs/snd/9/include",
+        "/I src/Speed/Indep/Libs/spch/dev/include",
+        "/I src/Speed/Indep/Libs/path/5.01.04/include",
+        "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+        "/I src/Speed/Indep/Libs/endian/0.5.2/include",
+    ]
+
+    cflags_snd = [
+        *cflags_game,
+        "/I src/Speed/Indep/Libs/snd/9/include",
+    ]
+
+    config.extra_clang_flags = [
+        "-std=c++98",
+        "-D_WIN32",
+        "-D_WCHAR_T_DEFINED",
+        "-fms-extensions",
     ]
 
 cflags_libc = [*cflags_base_prodg]

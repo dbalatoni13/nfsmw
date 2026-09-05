@@ -738,7 +738,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
         const WCollisionBarrierList &barriers = *barrierList;
         UMath::Matrix4 mat = UMath::Matrix4::kIdentity;
 
-        for (const WCollisionBarrierListEntry *iter = barriers.begin(); iter != barriers.end(); ++iter) {
+        for (WCollisionBarrierList::const_iterator iter = barriers.begin(); iter != barriers.end(); ++iter) {
             const WCollisionBarrierListEntry &ble = *iter;
             if (!this->SurfacePassesExclusion(ble.fB.GetWSurface())) {
                 continue;
@@ -892,11 +892,12 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
 
 bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment,
                                                   WorldCollisionInfo &cInfo) {
+#ifndef EA_PLATFORM_XENON // TODO
     cInfo.fType = 0;
-    const WCollisionBarrierListEntry *ret = nullptr;
+    WCollisionBarrierList::const_iterator ret = nullptr;
     float closestDistSq = 1e38f;
 
-    for (const WCollisionBarrierListEntry *bIter = barrierList.begin(); bIter != barrierList.end(); ++bIter) {
+    for (WCollisionBarrierList::const_iterator bIter = barrierList.begin(); bIter != barrierList.end(); ++bIter) {
         const WCollisionBarrier *barrier = &bIter->fB;
         if (this->SurfacePassesExclusion(barrier->GetWSurface())) {
             UMath::Vector4 intersectionPt;
@@ -916,6 +917,7 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
         cInfo.fBle = *ret;
         cInfo.fType = 2;
     }
+#endif
     return cInfo.HitSomething();
 }
 
@@ -926,7 +928,7 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
     UMath::Vector4 closestIntersectionPt;
     float closestDistSq = 1e38f;
 
-    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+    for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
         const WCollisionArticle *cArt = cInst.fCollisionArticle;
         if ((cArt != nullptr) && cArt->fNumEdges != 0) {
@@ -1130,7 +1132,7 @@ inline float XZDistSq(const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
 void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, WCollisionTriList &triList) {
     float radiusSq = radius * radius;
 
-    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+    for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
         const WCollisionArticle *cArt = cInst.fCollisionArticle;
         if (cArt != nullptr) {

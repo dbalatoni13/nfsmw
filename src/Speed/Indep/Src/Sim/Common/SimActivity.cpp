@@ -13,14 +13,14 @@ Activity::Activity(unsigned int num_interfaces)
       mAttachments(new Attachments(this)) {}
 
 Activity::~Activity() {
-    if (mAttachments) {
+    if (mAttachments != nullptr) {
         delete mAttachments;
         mAttachments = nullptr;
     }
 }
 
 void Activity::DetachAll() {
-    if (mAttachments) {
+    if (mAttachments != nullptr) {
         delete mAttachments;
         mAttachments = nullptr;
     }

@@ -33,7 +33,7 @@ options:
   create_undefined_syms_auto: True
   undefined_syms_auto_path: config/SLES-53558-A124//undefined_syms_auto.txt
 
-  # Manually defined symvols
+  # Manually defined symbols
   symbol_addrs_path: config/SLES-53558-A124/symbols.txt
   ld_script_path: build/SLES-53558-A124/ldscript.ld
 

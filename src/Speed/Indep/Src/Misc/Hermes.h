@@ -97,7 +97,7 @@ class Handler {
         pmemberhandler->Handler = handler;
         pmemberhandler->that = that;
 
-        h.CallFn = pmemberhandler->Call;
+        h.CallFn = &MemberHandler<MessageT, Class, V>::Call;
         h.mKind = MessageT::_GetKind();
         h.mKey = reinterpret_cast<HHANDLER>(mKeyNext++);
         h.mID = id;

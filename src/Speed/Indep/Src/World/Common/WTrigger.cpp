@@ -439,13 +439,12 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
 }
 
 void WTriggerManager::DeleteRefs(const WTrigger *trig) {
-    std::set<FireOnExitRec>::const_iterator iter = this->fgFireOnExitList->begin();
-    while (iter != this->fgFireOnExitList->end()) {
-        const FireOnExitRec &rec = *iter;
+    for (FireOnExitList::const_iterator iter = this->fgFireOnExitList->begin(); iter != this->fgFireOnExitList->end();) {
+        FireOnExitRec &rec = const_cast<FireOnExitRec &>(*iter);
         if (trig == &rec.mTrigger) {
-            std::set<FireOnExitRec>::const_iterator newlocation = iter;
+            FireOnExitList::const_iterator newlocation = iter;
             ++newlocation;
-            this->fgFireOnExitList->erase(iter);
+            this->fgFireOnExitList->erase(static_cast<FireOnExitList::iterator &>(iter));
             iter = newlocation;
             if (iter == this->fgFireOnExitList->end()) {
                 return;
@@ -463,8 +462,8 @@ void WTriggerManager::ClearAllFireOnExit() {
 
 void WTriggerManager::Update(float dT) {
     this->fProcessingStimulus = 1;
-    IRigidBody *const *enditer = IRigidBody::GetList().end();
-    for (IRigidBody *const *iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
+    IRigidBody::List::const_iterator enditer = IRigidBody::GetList().end();
+    for (IRigidBody::List::const_iterator iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
         IRigidBody *rigidBody = *iter;
         if (rigidBody->IsSimple()) {
             this->ProcessSRB(rigidBody, dT);
@@ -473,7 +472,7 @@ void WTriggerManager::Update(float dT) {
         }
     }
     this->fProcessingStimulus = 2;
-    std::set<FireOnExitRec>::const_iterator iter = this->fgFireOnExitList->begin();
+    FireOnExitList::iterator iter = this->fgFireOnExitList->begin();
     while (iter != this->fgFireOnExitList->end()) {
         const FireOnExitRec &rec = *iter;
         ISimable *iSimable = ISimable::FindInstance(rec.mhSimable);
@@ -493,7 +492,7 @@ void WTriggerManager::Update(float dT) {
                 rec.mTrigger.FireEvents(rec.mhSimable);
             }
         }
-        std::set<FireOnExitRec>::const_iterator newlocation = iter;
+        FireOnExitList::iterator newlocation = iter;
         ++newlocation;
         this->fgFireOnExitList->erase(iter);
         iter = newlocation;

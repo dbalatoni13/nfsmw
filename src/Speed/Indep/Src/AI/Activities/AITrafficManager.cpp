@@ -170,10 +170,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
       IVehicleCache(this),    //
       mSpawnIdx(0),           //
       mOncommingChance(0.5f), //
-      mVehicles(),            //
-      mPatternMap(),          //
       mNewInstanceTimer(0),   //
-      mNav(),                 //
       mPattern(static_cast<Attrib::Collection *>(nullptr), 0, nullptr) {
     this->MakeDebugable(DBG_AI);
     bMemSet(this->mPatternTimer, 0, sizeof(this->mPatternTimer));

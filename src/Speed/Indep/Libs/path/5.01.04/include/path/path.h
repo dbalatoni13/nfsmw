@@ -105,7 +105,7 @@ typedef enum PATHEVENTRESULT {
 
 typedef void (*EventReleaseCallback)(void *, PATHEVENTRESULT); // Decl: 239
 
-typedef void (*EventActionCallback)(int, int, int); // Decl: 260
+typedef void (*EventActionCallback)(const int, const int, const int); // Decl: 260
 
 typedef void (*PATHAbortMsgFunc)(const char *, ...); // Decl: 271
 

@@ -6,9 +6,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-// TODO
-void *memset(void *, int, unsigned long, ...);
-
 char *_nan_table[4] = {
     "-1.#INF",
     "1.#INF ",

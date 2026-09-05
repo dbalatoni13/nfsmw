@@ -210,7 +210,7 @@ ScheduledSpeechEvent::~ScheduledSpeechEvent() {
     this->curndx = 0;
     SampleReqList &requests = Manager::GetSampleRequests();
     if (requests.size() != 0) {
-        for (SPCHSampleRequest *i = requests.begin(); i != requests.end();) {
+        for (SampleReqList::iterator i = requests.begin(); i != requests.end();) {
             if (i->owner == this) {
                 requests.erase(i);
             } else {

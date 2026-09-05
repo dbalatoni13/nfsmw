@@ -1,6 +1,8 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+// TODO get rid of our own macros and use UDefs and bWare stuff instead of them
+
 #if defined(EA_PLATFORM_GAMECUBE)
 
 #include "dolphin/types.h"
@@ -63,6 +65,75 @@ typedef bool Bool;
 #endif
 
 #define ALIGN_16 ATTRIBUTE_ALIGN(16)
+
+#define EA_PACKED
+
+#ifndef AT_ADDRESS
+#define AT_ADDRESS(xyz)
+#endif
+
+// TODO
+typedef signed char int8;
+typedef __int16 int16;
+typedef signed int int32;
+typedef signed __int64 int64;
+typedef unsigned char uint8;
+typedef unsigned __int16 uint16;
+typedef unsigned int uint32;
+typedef unsigned __int64 uint64;
+typedef unsigned int type_operator_new;
+
+typedef signed char int8_t;
+typedef __int16 int16_t;
+typedef signed int int32_t;
+typedef signed __int64 int64_t;
+typedef unsigned char uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef float float_t;
+typedef double double_t;
+
+// TODO
+typedef unsigned int u32;
+typedef int i32;
+typedef unsigned __int16 u16;
+typedef __int16 i16;
+typedef unsigned __int8 u8;
+    // typedef signed char i8;
+
+#define ONLINE_SUPPORT (1)
+
+#elif defined(EA_PLATFORM_WIN32)
+
+#include <cstddef>
+
+// TODO
+typedef int BOOL;
+typedef bool Bool;
+
+#define TRUE 1
+#define FALSE 0
+
+#if !defined(__cplusplus) || __cplusplus < 201103L
+
+#ifndef nullptr
+#define nullptr 0
+#endif
+
+#if __cplusplus < 201103L
+#ifndef override
+#define override
+#endif
+#endif
+
+#endif
+
+#ifndef ATTRIBUTE_ALIGN
+#define ATTRIBUTE_ALIGN(num) __declspec(align(num))
+#endif
+
+#define ALIGN_16
 
 #define EA_PACKED
 
