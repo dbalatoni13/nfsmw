@@ -27,6 +27,8 @@ struct Vector3 {
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
 
+    Vector3() {}
+
     static const Vector3 kZero;
 
     operator const bVector3 &() const {
