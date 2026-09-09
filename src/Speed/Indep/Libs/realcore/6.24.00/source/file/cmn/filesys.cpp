@@ -55,7 +55,7 @@ class FILEOPERATION : public ListNodeS {
     }
 
     bool IsCancelled() {
-        return this->cancelled;
+        return this->cancelled == true;
     }
 
     void *GetUserData() {
