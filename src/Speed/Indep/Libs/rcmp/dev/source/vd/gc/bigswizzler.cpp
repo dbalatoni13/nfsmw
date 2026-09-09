@@ -82,15 +82,15 @@ static int GC_swizzleGetPixelOffset16(int x, int y, int width) {
     NumberOfBlocksX = (width + 3) >> 2;
     XBlock = x >> 2;
     YBlock = y >> 2;
-    XPix = (x & 3) * 2;
-    YPix = (y & 3) * 8;
-    return (((YBlock * NumberOfBlocksX + XBlock) << 5) + (YPix + XPix));
+    XPix = x & 3;
+    YPix = y & 3;
+    return ((YBlock * NumberOfBlocksX + XBlock) << 5) + (YPix * 8 + XPix * 2);
 }
 
-void DELETE_tBigSwizzler(tBigSwizzler *swizzler) {
-    RCMP::rcmp_sys.FreeMem(swizzler->TextureData);
-    RCMP::rcmp_sys.FreeMem(swizzler->TextureData2);
-    RCMP::rcmp_sys.FreeMem(swizzler);
+void DELETE_tBigSwizzler(tBigSwizzler *This) {
+    RCMP::rcmp_sys.FreeMem(This->TextureData);
+    RCMP::rcmp_sys.FreeMem(This->TextureData2);
+    RCMP::rcmp_sys.FreeMem(This);
 }
 
 struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
