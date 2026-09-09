@@ -126,7 +126,7 @@ struct PB_INSTANCE {
         int NearestGMvIndex; // offset 0x50, size 0x4
         unsigned int MBrow; // offset 0x54, size 0x4
         unsigned int MBcol; // offset 0x58, size 0x4
-        int bp; // offset 0x5C, size 0x4
+        BLOCK_POSITION bp; // offset 0x5C, size 0x4
         unsigned int Source; // offset 0x60, size 0x4
         unsigned int SourceY; // offset 0x64, size 0x4
         unsigned int SourceX; // offset 0x68, size 0x4
@@ -144,7 +144,7 @@ struct PB_INSTANCE {
         struct {
             // Members
             unsigned char Token; // offset 0x0, size 0x1
-            int Mode; // offset 0x4, size 0x4
+            CODING_MODE Mode; // offset 0x4, size 0x4
             unsigned short Frame; // offset 0x8, size 0x2
             short Dc; // offset 0xA, size 0x2
             unsigned char unused[3]; // offset 0xC, size 0x3
@@ -153,7 +153,7 @@ struct PB_INSTANCE {
         struct {
             // Members
             unsigned char Token; // offset 0x0, size 0x1
-            int Mode; // offset 0x4, size 0x4
+            CODING_MODE Mode; // offset 0x4, size 0x4
             unsigned short Frame; // offset 0x8, size 0x2
             short Dc; // offset 0xA, size 0x2
             unsigned char unused[3]; // offset 0xC, size 0x3
