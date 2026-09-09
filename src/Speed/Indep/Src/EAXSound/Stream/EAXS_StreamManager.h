@@ -67,4 +67,9 @@ class EAXS_StreamManager : public AudioMemBase {
 
 #define MAX_STREAM_CHANNELS 3; // Decl: 57
 
+extern EAXS_StreamManager *gpEAXS_StrmMgr; // Decl: unknown
+
+void AssignAudioStreamHandle(uintptr_t realstrmhandle);
+bool IsWorldDataStreaming(uintptr_t strmhandle);
+
 #endif

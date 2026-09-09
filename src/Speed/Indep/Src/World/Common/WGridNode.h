@@ -40,41 +40,41 @@ struct WGridNode {
     unsigned int TotalSize() const;
 
     void ShutDown() {
-        delete fDynElems;
-        fDynElems = nullptr;
+        delete this->fDynElems;
+        this->fDynElems = nullptr;
     }
 
     unsigned int GetNodeInd() const {
-        return fNodeInd;
+        return this->fNodeInd;
     }
 
     const unsigned int GetElemTypeCount(WGridNode_ElemType type) const {
-        return fElemCounts[type];
+        return this->fElemCounts[type];
     }
 
     const unsigned int *GetElemTypePtr(WGridNode_ElemType type) const {
         // TODO
-        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fElemOffsets[type];
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + this->fElemOffsets[type];
         return reinterpret_cast<const unsigned int *>(dataStart);
     }
 
     const unsigned int GetElemType(unsigned int ind, WGridNode_ElemType type) const {
-        return GetElemTypePtr(type)[ind];
+        return this->GetElemTypePtr(type)[ind];
     }
 
     void AddDynamic(unsigned int ind, WGridNode_ElemType type) {
-        if (fDynElems == nullptr) {
-            fDynElems = new WGridNodeElemList();
+        if (this->fDynElems == nullptr) {
+            this->fDynElems = new WGridNodeElemList();
         }
         WGridNodeElem elem(ind, type);
-        fDynElems->push_back(elem);
+        this->fDynElems->push_back(elem);
     }
 
     void RemoveDynamic(uintptr_t ind, WGridNode_ElemType type) {
-        if (fDynElems != nullptr) {
-            for (WGridNodeElemList::iterator eIter = fDynElems->begin(); eIter != fDynElems->end(); ++eIter) {
+        if (this->fDynElems != nullptr) {
+            for (WGridNodeElemList::iterator eIter = this->fDynElems->begin(); eIter != this->fDynElems->end(); ++eIter) {
                 if ((*eIter).fInd == ind && (*eIter).fType == type) {
-                    fDynElems->erase(eIter);
+                    this->fDynElems->erase(eIter);
                     return;
                 }
             }
@@ -90,45 +90,45 @@ struct WGridNode {
               fElemInd(nullptr),       //
               fValid(false),           //
               fDynamic(false) {
-            fNumEntriesRemaining = fNode->GetElemTypeCount(type);
-            if (fNumEntriesRemaining > 0) {
-                fValid = true;
-                fElemInd = fNode->GetElemTypePtr(type);
+            this->fNumEntriesRemaining = this->fNode->GetElemTypeCount(type);
+            if (this->fNumEntriesRemaining > 0) {
+                this->fValid = true;
+                this->fElemInd = this->fNode->GetElemTypePtr(type);
             }
             if (node->fDynElems != nullptr) {
-                fIter = fNode->fDynElems->begin();
-                fValid = true;
+                this->fIter = this->fNode->fDynElems->begin();
+                this->fValid = true;
             }
         }
 
         void Invalidate() {
-            fElemInd = nullptr;
-            fValid = false;
+            this->fElemInd = nullptr;
+            this->fValid = false;
         }
 
         const uintptr_t *GetIndPtr() {
-            if (!fValid) {
+            if (!this->fValid) {
                 return nullptr;
             }
             const uintptr_t *retInd = nullptr;
-            if (!fDynamic && fNumEntriesRemaining > 0) {
-                fValid = true;
-                retInd = fElemInd++;
-                fNumEntriesRemaining--;
-            } else if (fNode->fDynElems != nullptr) {
-                fDynamic = true;
-                while (fIter != fNode->fDynElems->end() && (*fIter).fType != fType) {
-                    ++fIter;
+            if (!this->fDynamic && this->fNumEntriesRemaining > 0) {
+                this->fValid = true;
+                retInd = this->fElemInd++;
+                this->fNumEntriesRemaining--;
+            } else if (this->fNode->fDynElems != nullptr) {
+                this->fDynamic = true;
+                while (this->fIter != this->fNode->fDynElems->end() && (*this->fIter).fType != this->fType) {
+                    ++this->fIter;
                 }
-                if (fIter != fNode->fDynElems->end()) {
-                    fElemInd = &(*fIter).fInd;
-                    retInd = fElemInd;
-                    ++fIter;
+                if (this->fIter != this->fNode->fDynElems->end()) {
+                    this->fElemInd = &(*this->fIter).fInd;
+                    retInd = this->fElemInd;
+                    ++this->fIter;
                 } else {
-                    Invalidate();
+                    this->Invalidate();
                 }
             } else {
-                Invalidate();
+                this->Invalidate();
             }
             return retInd;
         }

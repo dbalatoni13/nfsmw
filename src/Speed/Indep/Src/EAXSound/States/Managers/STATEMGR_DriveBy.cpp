@@ -11,13 +11,15 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/Src/World/WTriggerList.h"
 
+#define WOOSHCHECK_FRAME_FREQ 4 // Decl: 21
+
 static const bool debug_SmackableWooshs_ALL = true; // size: 0x1, Decl: 23
 static const bool debug_SmackableWooshs_CAM = true; // size: 0x1, Decl: 24
 static const bool debug_SmackableWooshs_CAR = true; // size: 0x1, Decl: 25
 static const bool debug_EventWooshs = true;         // size: 0x1, Decl: 26
 
 CSTATEMGR_DriveBy::CSTATEMGR_DriveBy() : CSTATEMGR_Base() {
-    this->WooshCheckFrameCntr = 4;
+    this->WooshCheckFrameCntr = WOOSHCHECK_FRAME_FREQ;
 }
 
 CSTATEMGR_DriveBy::~CSTATEMGR_DriveBy() {}
@@ -199,7 +201,7 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
 
     this->WooshCheckFrameCntr--;
     if (this->WooshCheckFrameCntr < 0) {
-        this->WooshCheckFrameCntr = 4;
+        this->WooshCheckFrameCntr = WOOSHCHECK_FRAME_FREQ;
     }
 
     CSTATEMGR_Base::UpdateParams(t);

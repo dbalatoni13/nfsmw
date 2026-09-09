@@ -34,7 +34,10 @@ class SFXCTL_AccelTrans : public SFXCTL {
     SFXCTL_Engine *m_pEngineCtl;  // offset 0x28, size 0x4, Decl: 38
     SFXCTL_Shifting *m_pShiftCtl; // offset 0x2C, size 0x4, Decl: 39
 
-    // bool IsActive() {} // Decl: 45
+    // Decl: 45
+    bool IsActive() {
+        return this->eAccelTransFxState != FX_ACCEL_STATE_NONE;
+    }
 
     void UpdateRPM(float t);
 

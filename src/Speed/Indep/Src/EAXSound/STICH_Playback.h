@@ -41,6 +41,8 @@ class cStitchLoop {
 
 class cSampleWarpper : public UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> {
   public:
+    friend class cStichWrapper;
+
     enum eSTITCH_PLAY_STATUS {
         eSTITCH_PLAY_STATUS_OFF = 0,
         eSTITCH_PLAY_STATUS_QUEUED = 1,
@@ -119,16 +121,32 @@ class cStichWrapper : public AudioMemBase {
 };
 
 // total size: 0x8
-
+// Decl: 129
 struct SampleQueueItem {
+    SampleQueueItem()
+        : pSample(nullptr), //
+          pStitch(nullptr) {}
+
+    bool operator==(const SampleQueueItem &compareto) const {
+        if (this->pSample != compareto.pSample) {
+            return false;
+        }
+        if (this->pStitch != compareto.pStitch) {
+            return false;
+        }
+        return true;
+    }
+
     cSampleWarpper *pSample; // offset 0x0, size 0x4
     cStichWrapper *pStitch;  // offset 0x4, size 0x4
 };
 
 // total size: 0x1C
-
+// Decl: 153
 class cSTICH_PlayBack : public AudioMemBase {
   public:
+    friend class cStichWrapper;
+
     cSTICH_PlayBack();
     ~cSTICH_PlayBack() override;
 
@@ -136,23 +154,29 @@ class cSTICH_PlayBack : public AudioMemBase {
     void DestroyAllStichs();
     SND_Stich &GetStich(STICH_TYPE StichType, int Index);
 
-    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
-        return StichList[StichType];
-    }
+    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType);
 
     void Update(float t);
-
-  protected:
-    static void RemoveFromList(SampleQueueItem sampleitem);
-    static void QueueSampleRequest(SampleQueueItem &samplereq);
-    static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 
     static SlotPool *mSampleRefSlotPool;
     static SlotPool *mStitchSlotPool;
 
+    typedef UTL::FixedVector<SampleQueueItem, 43> QueueSampleList;
+
   private:
-    static UTL::FixedVector<SampleQueueItem, 43> mQueuedSampleList[3];
-    bPList<SND_Stich> StichList[3]; // offset 0x4, size 0x18
+    void DEBUG_Update(float t);
+
+    static QueueSampleList mQueuedSampleList[MAX_NUM_STICH_TYPE];
+    bPList<SND_Stich> StichList[MAX_NUM_STICH_TYPE]; // offset 0x4, size 0x18
+
+  protected:
+    static QueueSampleList &GetQueueList(STICH_TYPE type) {
+        return mQueuedSampleList[type];
+    }
+
+    static void RemoveFromList(SampleQueueItem sampleitem);
+    static void QueueSampleRequest(SampleQueueItem &samplereq);
+    static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 };
 
 char *GetStichTypeName(STICH_TYPE CurType);

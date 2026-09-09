@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/aud_moment_strm_hash.h"
 #include "Speed/Indep/Src/Generated/Events/EMomentStrm.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MJackKnife.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -14,18 +15,15 @@
 // total size: 0x48
 class AIActionJackKnife : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionJackKnife(AIActionParams *params, float score);
-    void MessageJackKnife(const MJackKnife &message);
 
-    // Virtual overrides
-    // IUnknown
     ~AIActionJackKnife() override {
-        if (mMsgJackKnife) {
-            Hermes::Handler::Destroy(mMsgJackKnife);
+        if (this->mMsgJackKnife != nullptr) {
+            Hermes::Handler::Destroy(this->mMsgJackKnife);
         }
     }
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -42,6 +40,8 @@ class AIActionJackKnife : public AIAction {
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
   private:
+    void MessageJackKnife(const MJackKnife &message);
+
     IVehicle *mIVehicle;                // offset 0x48, size 0x4
     IArticulatedVehicle *mArticulation; // offset 0x4C, size 0x4
     IInput *mIInput;                    // offset 0x50, size 0x4
@@ -52,46 +52,48 @@ class AIActionJackKnife : public AIAction {
     bool SentAudioMsg;                  // offset 0x64, size 0x1
 };
 
+BIND_AIACTION_FACTORY(AIActionJackKnife);
+
 AIAction *AIActionJackKnife::Construct(AIActionParams *params) {
-    return new AIActionJackKnife(params, 1.0f);
+    return new AIActionJackKnife(params, AIACTION_SCORE_HIGH);
 }
 
 AIActionJackKnife::AIActionJackKnife(AIActionParams *params, float score) : AIAction(params, score) {
-    params->mOwner->QueryInterface(&mIVehicle);
-    params->mOwner->QueryInterface(&mIInput);
-    params->mOwner->QueryInterface(&mArticulation);
-    params->mOwner->QueryInterface(&mISuspension);
+    params->mOwner->QueryInterface(&this->mIVehicle);
+    params->mOwner->QueryInterface(&this->mIInput);
+    params->mOwner->QueryInterface(&this->mArticulation);
+    params->mOwner->QueryInterface(&this->mISuspension);
 
-    mMsgJackKnife = Hermes::Handler::Create<MJackKnife, AIActionJackKnife, AIActionJackKnife>(this, &AIActionJackKnife::MessageJackKnife, "AIAction",
-                                                                                              mIVehicle->GetSimable()->GetWorldID());
-    mForceJackKnife = false;
-    SentAudioMsg = false;
+    this->mMsgJackKnife = Hermes::Handler::Create<MJackKnife, AIActionJackKnife, AIActionJackKnife>(
+        this, &AIActionJackKnife::MessageJackKnife, UCrc32("AIAction"), this->mIVehicle->GetSimable()->GetWorldID());
+    this->mForceJackKnife = false;
+    this->SentAudioMsg = false;
 }
 
 void AIActionJackKnife::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
-        GetOwner()->QueryInterface(&mISuspension);
+        this->GetOwner()->QueryInterface(&this->mISuspension);
     }
 }
 
 float kActionJackKnifeSpeed = 50.0f;
 
 bool AIActionJackKnife::CanBeAttempted(float dT) {
-    if (!mIInput || !mIVehicle || !mArticulation || !mArticulation->GetTrailer()) {
+    if (this->mIInput == nullptr || this->mIVehicle == nullptr || this->mArticulation == nullptr || this->mArticulation->GetTrailer() == nullptr) {
         return false;
     }
-    if (mForceJackKnife) {
-        mForceJackKnife = false;
+    if (this->mForceJackKnife) {
+        this->mForceJackKnife = false;
         return true;
     }
-    if (mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed)) {
+    if (this->mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed)) {
         return false;
     }
     IRigidBody *playerIRB = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
-    IRigidBody *irb = mIVehicle->GetSimable()->GetRigidBody();
+    IRigidBody *irb = this->mIVehicle->GetSimable()->GetRigidBody();
     const UMath::Vector3 &playerPosition = playerIRB->GetPosition();
     const UMath::Vector3 &position = irb->GetPosition();
     UMath::Vector3 forwardVector;
@@ -105,7 +107,7 @@ bool AIActionJackKnife::CanBeAttempted(float dT) {
         // TODO this variable isn't scoped
         float angletoplayer = AI::Math::AngleTo(position, forwardVector, playerPosition);
         if (angletoplayer <= DEG2ANGLE(25.0f)) {
-            mAccelTime = 0.5f;
+            this->mAccelTime = 0.5f;
             return true;
         }
     }
@@ -113,39 +115,39 @@ bool AIActionJackKnife::CanBeAttempted(float dT) {
 }
 
 void AIActionJackKnife::Update(float dT) {
-    mIInput->SetControlGas(1.0f);
-    mIInput->SetControlBrake(0.0f);
+    this->mIInput->SetControlGas(1.0f);
+    this->mIInput->SetControlBrake(0.0f);
 
-    mAccelTime = UMath::Max(mAccelTime - dT, 0.0f);
+    this->mAccelTime = UMath::Max(this->mAccelTime - dT, 0.0f);
 
-    if (mAccelTime > 0.0f) {
-        mIInput->SetControlSteering(0.0f);
+    if (this->mAccelTime > 0.0f) {
+        this->mIInput->SetControlSteering(0.0f);
         return;
     }
 
-    if (SentAudioMsg == false) {
-        SentAudioMsg = true;
+    if (this->SentAudioMsg == false) {
+        this->SentAudioMsg = true;
         UMath::Vector4 vpos;
-        vpos.x = mIVehicle->GetPosition().x;
-        vpos.y = mIVehicle->GetPosition().y;
-        vpos.z = mIVehicle->GetPosition().z;
-        // TODO magic
-        new EMomentStrm(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, 0x5202c045);
-    }
-    mIInput->SetControlHandBrake(1.0f);
-    mIInput->SetControlSteering(-1.0f);
+        vpos.x = this->mIVehicle->GetPosition().x;
+        vpos.y = this->mIVehicle->GetPosition().y;
+        vpos.z = this->mIVehicle->GetPosition().z;
 
-    if (!mArticulation) {
+        new EMomentStrm(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, Attrib::Hash::aud_moment_strm::key_jacknife);
+    }
+    this->mIInput->SetControlHandBrake(1.0f);
+    this->mIInput->SetControlSteering(-1.0f);
+
+    if (this->mArticulation == nullptr) {
         return;
     }
-    IVehicle *trailer = mArticulation->GetTrailer();
-    if (mArticulation->IsHitched() && trailer && mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed / 5.0f)) {
-        mArticulation->SetHitch(false);
+    IVehicle *trailer = this->mArticulation->GetTrailer();
+    if (this->mArticulation->IsHitched() && trailer != nullptr && this->mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed / 5.0f)) {
+        this->mArticulation->SetHitch(false);
     }
 }
 
 void AIActionJackKnife::MessageJackKnife(const MJackKnife &message) {
-    if (mIVehicle && message.GetID() == mIVehicle->GetSimable()->GetWorldID()) {
-        mForceJackKnife = true;
+    if (this->mIVehicle != nullptr && message.GetID() == this->mIVehicle->GetSimable()->GetWorldID()) {
+        this->mForceJackKnife = true;
     }
 }

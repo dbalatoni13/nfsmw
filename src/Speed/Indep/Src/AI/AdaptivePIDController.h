@@ -1,13 +1,11 @@
-#ifndef AI_ADAPTIVEPIDCONTROLLER_H
-#define AI_ADAPTIVEPIDCONTROLLER_H
+#ifndef ADAPTIVEPIDCONTROLLER_HPP
+#define ADAPTIVEPIDCONTROLLER_HPP // Decl: 42
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include <cstddef>
 
+// Decl: 48
 enum eAdaptationRule {
     eMIT_RULE = 0,
     eNORMALIZED_MIT_RULE = 1,
@@ -18,100 +16,15 @@ enum eAdaptationRule {
     NUM_ADAPTATION_RULES = 6
 };
 
-enum ePIDTerm { eP_TERM = 0, eI_TERM = 1, eD_TERM = 2, NUM_PID_TERMS = 3 };
-
-// total size: 0xAC
-class AdaptivePIDControllerBase {
-  public:
-    // Functions
-    // void *operator new(size_t size, void *ptr) {}
-
-    // void operator delete(void *mem, void *ptr) {}
-
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    // void *operator new(size_t size, const char *name) {}
-
-    // void operator delete(void *mem, const char *name) {}
-
-    // void operator delete(void *mem, size_t size, const char *name) {}
-
-    AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window);
-    virtual ~AdaptivePIDControllerBase();
-    virtual float GetTerm(ePIDTerm term);
-
-    void UpdateBase(float model_error, float timestep, float desired_process_value);
-    float GetOutput();
-
-    void ForceCoefficient(ePIDTerm term, float new_coefficient) {}
-
-    float GetCoefficient(ePIDTerm term) {
-        return Coefficient[term];
-    }
-
-    float GetClampedTerm(ePIDTerm term) {
-        return bClamp(GetTerm(term), TermClamp[term][0], TermClamp[term][1]);
-    }
-
-    void SetTimeSlice(float timeslice) {
-        TimeSlice = timeslice;
-    }
-
-    void SetCoefficientClamp(ePIDTerm term, float min_value, float max_value) {
-        CoefficientClamp[term][0] = min_value;
-        CoefficientClamp[term][1] = max_value;
-    }
-
-    void SetTermClamp(ePIDTerm term, float min_value, float max_value) {
-        TermClamp[term][0] = min_value;
-        TermClamp[term][1] = max_value;
-    }
-
-    void SetTuningThreshold(ePIDTerm term, float min_value) {
-        TuningThreshold[term] = min_value;
-    }
-
-    void SetAdaptationGain(ePIDTerm term, float adaptation_gain) {
-        AdaptationGain[term] = adaptation_gain;
-    }
-
-    void SetAlpha(float alpha) {
-        Alpha = alpha;
-    }
-
-  protected:
-    float GetNewCoefficientDerivative(ePIDTerm term, float model_error, float desired_process_value);
-
-    float GetSensitivityDerivative(ePIDTerm term) {
-        return GetSensitivityDerivative(pCoefficientDerivative[term]->GetValue());
-    }
-
-    float GetSensitivityDerivative(float coefficient_derivative);
-
-    float Sign(float v);
-
-    float TermClamp[NUM_PID_TERMS][2]; // offset 0x0, size 0x18
-  private:
-    eAdaptationRule AdaptationRule;                       // offset 0x18, size 0x4
-    float TimeSlice;                                      // offset 0x1C, size 0x4
-    float CoefficientClamp[NUM_PID_TERMS][2];             // offset 0x20, size 0x18
-    float TuningThreshold[NUM_PID_TERMS];                 // offset 0x38, size 0xC
-    float AdaptationGain[NUM_PID_TERMS];                  // offset 0x44, size 0xC
-    float Alpha;                                          // offset 0x50, size 0x4
-    float Coefficient[NUM_PID_TERMS];                     // offset 0x54, size 0xC
-    AverageWindow *pCoefficientDerivative[NUM_PID_TERMS]; // offset 0x60, size 0xC
-    float ModelError;                                     // offset 0x6C, size 0x4
-    AverageWindow ModelErrorDerivative;                   // offset 0x70, size 0x38
+// Decl: 68
+enum ePIDTerm {
+    eP_TERM = 0,
+    eI_TERM = 1,
+    eD_TERM = 2,
+    NUM_PID_TERMS = 3,
 };
 
+// Decl: 77
 enum eRecordingInstruction {
     eINSTRUCTION_NONE = 0,
     eINSTRUCTION_IGNORE_DERIVATIVE_TERM = 1,
@@ -120,25 +33,109 @@ enum eRecordingInstruction {
     NUM_RECORDING_INSTRUCTIONS = 4,
 };
 
+#define VALUE_NOT_SET -99999.0f // Decl: 87
+
+// total size: 0xAC
+// Decl: 91
+class AdaptivePIDControllerBase {
+  public:
+    USE_FASTALLOC(AdaptivePIDControllerBase);
+
+    AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window);
+    virtual ~AdaptivePIDControllerBase();
+
+    void ForceCoefficient(ePIDTerm term, float new_coefficient) {
+        this->Coefficient[term] = new_coefficient;
+    }
+
+    float GetCoefficient(ePIDTerm term) {
+        return this->Coefficient[term];
+    }
+
+    virtual float GetTerm(ePIDTerm term) = 0;
+
+    float GetClampedTerm(ePIDTerm term) {
+        return bClamp(this->GetTerm(term), this->TermClamp[term][0], this->TermClamp[term][1]);
+    }
+
+    float GetOutput();
+
+    void SetTimeSlice(float timeslice) {
+        this->TimeSlice = timeslice;
+    }
+
+    void SetCoefficientClamp(ePIDTerm term, float min_value, float max_value) {
+        this->CoefficientClamp[term][0] = min_value;
+        this->CoefficientClamp[term][1] = max_value;
+    }
+
+    void SetTermClamp(ePIDTerm term, float min_value, float max_value) {
+        this->TermClamp[term][0] = min_value;
+        this->TermClamp[term][1] = max_value;
+    }
+
+    void SetTuningThreshold(ePIDTerm term, float min_value) {
+        this->TuningThreshold[term] = min_value;
+    }
+
+    void SetAdaptationGain(ePIDTerm term, float adaptation_gain) {
+        this->AdaptationGain[term] = adaptation_gain;
+    }
+
+    void SetAlpha(float alpha) {
+        this->Alpha = alpha;
+    }
+
+    float TermClamp[NUM_PID_TERMS][2]; // offset 0x0, size 0x18, Decl: 121
+
+  protected:
+    void UpdateBase(float model_error, float timestep, float desired_process_value);
+
+  private:
+    float GetSensitivityDerivative(ePIDTerm term) {
+        return this->GetSensitivityDerivative(this->pCoefficientDerivative[term]->GetValue());
+    }
+
+    float GetSensitivityDerivative(float coefficient_derivative);
+
+    float GetNewCoefficientDerivative(ePIDTerm term, float model_error, float desired_process_value);
+
+    float Sign(float v);
+
+    eAdaptationRule AdaptationRule;           // offset 0x18, size 0x4, Decl: 130
+    float TimeSlice;                          // offset 0x1C, size 0x4
+    float CoefficientClamp[NUM_PID_TERMS][2]; // offset 0x20, size 0x18
+    float TuningThreshold[NUM_PID_TERMS];     // offset 0x38, size 0xC
+    float AdaptationGain[NUM_PID_TERMS];      // offset 0x44, size 0xC
+    float Alpha;                              // offset 0x50, size 0x4
+
+    float Coefficient[NUM_PID_TERMS];                     // offset 0x54, size 0xC
+    AverageWindow *pCoefficientDerivative[NUM_PID_TERMS]; // offset 0x60, size 0xC
+
+    float ModelError;                   // offset 0x6C, size 0x4
+    AverageWindow ModelErrorDerivative; // offset 0x70, size 0x38
+};
+
 // total size: 0x130
+// Decl: 148
 class AdaptivePIDControllerSimple : public AdaptivePIDControllerBase {
   public:
     AdaptivePIDControllerSimple(eAdaptationRule adaptation_rule, float coefficient_derivative_window, int integral_history, int derivative_history);
 
-    // Overrides: AdaptivePIDControllerBase
     ~AdaptivePIDControllerSimple() override {}
-
-    // Overrides: AdaptivePIDControllerBase
-    float GetTerm(ePIDTerm term) override;
 
     void Update(float desired_process_value, float actual_process_value, float model_behaviour_value, float timestep,
                 eRecordingInstruction recording_instruction);
+
+    // Overrides: AdaptivePIDControllerBase
+    float GetTerm(ePIDTerm term) override;
 
   private:
     PidError PIDController; // offset 0xAC, size 0x84
 };
 
 // total size: 0xB8
+// Decl: 173
 class AdaptivePIDControllerComplicated : public AdaptivePIDControllerBase {
   public:
     AdaptivePIDControllerComplicated(eAdaptationRule adaptation_rule, float coefficient_derivative_window);
@@ -148,9 +145,13 @@ class AdaptivePIDControllerComplicated : public AdaptivePIDControllerBase {
 
     void Update(float model_behaviour_value, float actual_behaviour_value, float timestep, float desired_process_value);
 
+    void SetTerm(ePIDTerm term, float value) {
+        this->CurrentTermValue[term] = value;
+    }
+
     // Overrides: AdaptivePIDControllerBase
     float GetTerm(ePIDTerm term) override {
-        return CurrentTermValue[term];
+        return this->CurrentTermValue[term];
     }
 
   private:

@@ -145,6 +145,20 @@ typedef struct {
     int fX_Wet;       // offset 0x1C, size 0x4
 } FX_TRUCK_FXStruct;
 
+// Decl: 290
+inline Result CacheHandlesENVIRO_AEMS() {
+    int result;
+    result = gFX_ROADNOISEHandle.Set(&FX_ROADNOISEId);
+    result = gFX_ROADNOISE_TRANSHandle.Set(&FX_ROADNOISE_TRANSId);
+    result = gENV_STATICHandle.Set(&ENV_STATICId);
+    result = gFX_MAIN_MEMHandle.Set(&FX_MAIN_MEMId);
+    result = gFX_WINDHandle.Set(&FX_WINDId);
+    result = gFX_WIND_WeatherHandle.Set(&FX_WIND_WeatherId);
+    result = gFX_TRAFFICHandle.Set(&FX_TRAFFICId);
+    result = gFX_TRUCK_FXHandle.Set(&FX_TRUCK_FXId);
+    return static_cast<Result>(result);
+}
+
 // total size: 0x30
 // Decl: 311
 class FX_ROADNOISE {

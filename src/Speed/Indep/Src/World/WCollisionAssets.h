@@ -51,7 +51,7 @@ class WCollisionAssets {
     // static bool Exists() {}
 
     unsigned int NumTriggers() const {
-        return fStaticTriggersCount;
+        return this->fStaticTriggersCount;
     }
 
     static WCollisionAssets *sWCollisionAssets;       // size: 0x4, address: 0x80438F58

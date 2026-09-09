@@ -12,7 +12,7 @@ unsigned int bStringHashUpper(const char *text) {
     return h;
 }
 
-unsigned int bStringHash(const char *text) {
+uint32 bStringHash(const char *text) {
     unsigned int h = ~0;
     while (*text) {
         h = (h << 5) + h;
@@ -462,8 +462,8 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
             return false;
         }
 
-        string++;
         wild++;
+        string++;
     }
 
     while (*string != '\0') {

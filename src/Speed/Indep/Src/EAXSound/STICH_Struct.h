@@ -8,12 +8,13 @@
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+// Decl: 9
 enum STICH_TYPE {
-    MAX_NUM_STICH_TYPE = 3,
-    STICH_TYPE_STATIC = 2,
-    STICH_TYPE_WOOSH = 1,
-    STICH_TYPE_COLLISION = 0,
     STICH_TYPE_UNKNOWN = -1,
+    STICH_TYPE_COLLISION = 0,
+    STICH_TYPE_WOOSH = 1,
+    STICH_TYPE_STATIC = 2,
+    MAX_NUM_STICH_TYPE = 3,
 };
 
 // total size: 0x10

@@ -222,7 +222,7 @@ void Seperation(UMath::Vector3 &separation, IBody *my_body, IBody *target_body, 
 
     float scale = absolute;
     float denom = UMath::LengthSquare(my_velocity - target_velocity);
-    if (denom > 1e-5f || denom < -1e5f) {
+    if (denom > 1e-5f || denom < -1e-5f) {
         float closest_time = -UMath::Dot(my_position - target_position, my_velocity - target_velocity) / denom;
         if (closest_time > 0.05f) {
             UMath::Vector3 my_closest;
@@ -277,14 +277,17 @@ void Alignment(UMath::Vector3 &result, const UMath::Vector3 &myForward, const Av
 // STRIPPED
 void Cohesion(UMath::Vector3 &result, const UMath::Vector3 &myPos, const AvoidableList &irbList) {}
 
-// Functionally matching
-float GetDesiredSpeedToTarget(float distToTarget, float targetSpeed) {
+float AISteer::GetDesiredSpeedToTarget(float distToTarget, float targetSpeed) {
     float desiredSpeed;
+
     if (distToTarget < 0.0f) {
-        desiredSpeed = UMath::Max(distToTarget * 0.5f + targetSpeed, MPH2MPS(10.0f));
+        desiredSpeed = distToTarget * 0.5f + targetSpeed;
+        desiredSpeed = UMath::Max(MPH2MPS(10.0f), desiredSpeed);
     } else {
-        desiredSpeed = UMath::Min(distToTarget * 0.5f + targetSpeed, UMath::Max(MPH2MPS(25.0f), targetSpeed * 1.2f));
+        desiredSpeed = distToTarget * 0.5f + targetSpeed;
+        desiredSpeed = UMath::Min(UMath::Max(MPH2MPS(25.0f), targetSpeed * 1.2f), desiredSpeed);
     }
+
     return desiredSpeed;
 }
 

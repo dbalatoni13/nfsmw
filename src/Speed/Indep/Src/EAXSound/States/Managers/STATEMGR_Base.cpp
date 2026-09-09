@@ -8,14 +8,13 @@ bPList<SndBase::TypeInfo> CSTATEMGR_Base::m_SFXCTRLClassList;
 bPList<SndBase::TypeInfo> CSTATEMGR_Base::m_SFXClassList;
 bPList<CSTATE_Base::StateInfo> CSTATEMGR_Base::m_STATEClassList;
 
-// UNSOLVED
 CSTATEMGR_Base::CSTATEMGR_Base() {
-    this->m_pHeadStateObj = nullptr;
     this->m_eStateType = eMM_MAIN;
     this->m_CurNumStates = 0;
-    this->bIsInitialized = false;
     this->m_CurTime = 0.0f;
+    this->bIsInitialized = false;
     this->m_DeltaTime = 0.0f;
+    this->m_pHeadStateObj = nullptr;
 }
 
 CSTATEMGR_Base::~CSTATEMGR_Base() {}

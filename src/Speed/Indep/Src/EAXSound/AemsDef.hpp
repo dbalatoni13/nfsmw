@@ -2,6 +2,7 @@
 #define AEMS_DEF_HPP // Decl: 27
 
 #define EAXFECOMMONPLAYSTRUCTS // Decl: 32
+// TODO move eMenuSoundTriggers here
 
 // total size: 0x14
 // Decl: 279

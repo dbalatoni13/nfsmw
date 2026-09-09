@@ -1,26 +1,19 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 
 // total size: 0x48
 struct AIActionGetUnstuck : public AIAction {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionGetUnstuck(AIActionParams *params, float score);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionGetUnstuck() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
-
-    void BeginAction(float dT) override {}
-
     bool IsFinished() override;
-
+    void BeginAction(float dT) override {}
     void FinishAction(float dT) override;
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
@@ -31,65 +24,72 @@ struct AIActionGetUnstuck : public AIAction {
     IInput *mIInput;          // offset 0x58, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionGetUnstuck);
+
 AIActionGetUnstuck::AIActionGetUnstuck(AIActionParams *params, float score) : AIAction(params, score) {
-    mStuckTimer = 0.0f;
-    params->mOwner->QueryInterface(&mIInput);
+    this->mStuckTimer = 0.0f;
+    params->mOwner->QueryInterface(&this->mIInput);
 }
 
 void AIActionGetUnstuck::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     }
 }
 
 AIAction *AIActionGetUnstuck::Construct(AIActionParams *params) {
-    return new AIActionGetUnstuck(params, 1.0f);
+    return new AIActionGetUnstuck(params, AIACTION_SCORE_HIGH);
 }
 
+static const float fGetUnstuckTooLong = 3.0f; // Decl: 57
+
+static const float fGetUnstuckDistance = 3.0f; // Decl: 59
+static const float fGetUnstuckDuration = 2.0f; // Decl: 60
+
 bool AIActionGetUnstuck::CanBeAttempted(float dT) {
-    if (!GetVehicle() || !GetAI() || !mIInput || GetAI()->GetReverseOverride()) {
+    if (this->GetVehicle() == nullptr || this->GetAI() == nullptr || this->mIInput == nullptr || this->GetAI()->GetReverseOverride()) {
         return false;
     }
     bool stuck = false;
-    UMath::Vector3 position = GetActionParams().mOwner->GetPosition();
-    if (mIInput->GetControls().fGas >= 0.5f || mIInput->GetControls().fSteeringVertical >= 0.5f) {
-        if (GetVehicle()->IsStaging() || mStuckTimer <= 0.0f) {
-            mStuckPos = position;
-            mStuckTimer = dT;
+    UMath::Vector3 position = this->GetActionParams().mOwner->GetPosition();
+    if (this->mIInput->GetControls().fGas >= 0.5f || this->mIInput->GetControls().fSteeringVertical >= 0.5f) {
+        if (this->GetVehicle()->IsStaging() || this->mStuckTimer <= 0.0f) {
+            this->mStuckPos = position;
+            this->mStuckTimer = dT;
         } else {
-            mStuckTimer += dT;
-            if (mStuckTimer >= 3.0f) {
-                float dist = UMath::Distance(mStuckPos, position);
-                mStuckTimer = 0.0f;
-                if (dist < 3.0f) {
+            this->mStuckTimer += dT;
+            if (this->mStuckTimer >= fGetUnstuckTooLong) {
+                float dist = UMath::Distance(this->mStuckPos, position);
+                this->mStuckTimer = 0.0f;
+                if (dist < fGetUnstuckDistance) {
                     stuck = true;
-                    GetAI()->SetReverseOverride(2.0f);
-                    mStuckTimer = 0.0f;
+                    this->GetAI()->SetReverseOverride(fGetUnstuckDuration);
+                    this->mStuckTimer = 0.0f;
                 }
             }
         }
     } else {
-        mStuckTimer = 0.0f;
+        this->mStuckTimer = 0.0f;
     }
     if (stuck) {
-        GetAI()->ResetDriveToNav(SELECT_CENTER_LANE);
+        this->GetAI()->ResetDriveToNav(SELECT_CENTER_LANE);
     }
     return stuck;
 }
 
 void AIActionGetUnstuck::FinishAction(float dT) {
-    WRoadNav *nav = GetAI()->GetDriveToNav();
-    if (nav) {
-        GetAI()->ResetDriveToNav(SELECT_VALID_LANE);
+    WRoadNav *nav = this->GetAI()->GetDriveToNav();
+    if (nav != nullptr) {
+        this->GetAI()->ResetDriveToNav(SELECT_VALID_LANE);
     }
 }
 
 bool AIActionGetUnstuck::IsFinished() {
-    return !GetAI()->GetReverseOverride();
+    return !this->GetAI()->GetReverseOverride();
 }
 
 void AIActionGetUnstuck::Update(float dT) {
-    GetAI()->SetDriveSpeed(15.0f);
-    GetAI()->DoSteering();
-    GetAI()->DoGasBrake();
+    this->GetAI()->SetDriveSpeed(15.0f);
+    this->GetAI()->DoSteering();
+    this->GetAI()->DoGasBrake();
 }

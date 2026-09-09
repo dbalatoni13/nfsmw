@@ -12,6 +12,8 @@
 #include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eetypes.h"
+#elif defined(EA_PLATFORM_WIN32)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -91,6 +93,8 @@ inline float bSqrt(float x) {
 // TODO
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
+#elif defined(EA_PLATFORM_WIN32)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -99,10 +103,10 @@ inline float bSqrt(float x) {
 }
 
 inline int bMin(int a, int b) {
-    if (b < a) {
-        return b;
-    } else {
+    if (a < b) {
         return a;
+    } else {
+        return b;
     }
 }
 
@@ -186,7 +190,7 @@ inline float bCeil(float a) {
 }
 
 inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
-    return bMin(bMax(a, MINIMUM), MAXIMUM);
+    return bMin(MAXIMUM, bMax(a, MINIMUM));
 }
 
 // TODO is this order correct?
@@ -218,7 +222,9 @@ inline float bCos(float angle) {
     return bSin(angle + bDegToRad(90.0f));
 }
 
-inline float bRadToDeg(float radians) {}
+inline float bRadToDeg(float radians) {
+    return radians * (180.0f / PI);
+}
 
 inline float bAngToRad(short angle) {}
 
@@ -320,6 +326,27 @@ inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float _x = x1 - x2;
     float _y = y1 - y2;
     return bVector2(_x, _y);
+}
+
+inline bVector2 *bAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+
+    bFill(dest, x1 + x2, y1 + y2);
+    return dest;
+}
+
+inline bVector2 &bVector2::operator+=(const bVector2 &v) {
+    bAdd(this, this, &v);
+    return *this;
+}
+
+inline bVector2 bAdd(const bVector2 &v1, const bVector2 &v2) {
+    bVector2 dest;
+    bAdd(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector2 *bSub(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
@@ -1060,6 +1087,7 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
         : "=o"(dest->v0), "=o"(dest->v1), "=o"(dest->v2), "=o"(dest->v3)
         : "o"(v->v0), "o"(v->v1), "o"(v->v2), "o"(v->v3)
         : "memory");
+#elif defined(EA_PLATFORM_WIN32)
 #else
 #error Choose a platform
 #endif
@@ -1085,6 +1113,7 @@ inline void bIdentity(bMatrix4 *a) {
     asm("sq   %1, %0" : "=o"(a->v1) : "r"(t));
     asm("pextlw %0, %0, $0" : "+r"(t));
     asm("sq   %1, %0" : "=o"(a->v3) : "r"(t));
+#elif defined(EA_PLATFORM_WIN32)
 #else
 #error Choose a platform
 #endif

@@ -1,6 +1,7 @@
 #ifndef SIM_ENTITIES_LOCALPLAYER_H
 #define SIM_ENTITIES_LOCALPLAYER_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -16,17 +17,8 @@
 // total size: 0x94
 class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::IListener {
   public:
+    USE_FASTALLOC(LocalPlayer);
     LocalPlayer(Sim::Param params);
-
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
 
     // Overrides
     // IPlayer

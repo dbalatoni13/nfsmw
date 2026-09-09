@@ -7,13 +7,10 @@
 // total size: 0x48
 class AIActionAirborne : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionAirborne(AIActionParams *params, float score);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionAirborne() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override;
@@ -35,54 +32,56 @@ class AIActionAirborne : public AIAction {
     float mAirborneTimer;       // offset 0x58, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionAirborne);
+
 AIAction *AIActionAirborne::Construct(AIActionParams *params) {
-    return new AIActionAirborne(params, 0.0f);
+    return new AIActionAirborne(params, AIACTION_SCORE_LOW);
 }
 
 AIActionAirborne::AIActionAirborne(AIActionParams *params, float score) : AIAction(params, score) {
-    mIsAirborne = false;
-    mAirborneTimer = 0.0f;
-    params->mOwner->QueryInterface(&mISuspension);
-    params->mOwner->QueryInterface(&mIInput);
-    params->mOwner->QueryInterface(&mRBComplex);
+    this->mIsAirborne = false;
+    this->mAirborneTimer = 0.0f;
+    params->mOwner->QueryInterface(&this->mISuspension);
+    params->mOwner->QueryInterface(&this->mIInput);
+    params->mOwner->QueryInterface(&this->mRBComplex);
 }
 
 void AIActionAirborne::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
-        GetOwner()->QueryInterface(&mISuspension);
+        this->GetOwner()->QueryInterface(&this->mISuspension);
     } else if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     } else if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mRBComplex);
+        this->GetOwner()->QueryInterface(&this->mRBComplex);
     }
 }
 
 bool AIActionAirborne::CanBeAttempted(float dT) {
-    if (!mISuspension || !mIInput || !mRBComplex) {
+    if (this->mISuspension == nullptr || this->mIInput == nullptr || this->mRBComplex == nullptr) {
         return false;
     }
-    if (mRBComplex->IsModeling()) {
-        if (mIsAirborne) {
-            mAirborneTimer += dT;
-            if (mAirborneTimer > 1.5f) {
+    if (this->mRBComplex->IsModeling()) {
+        if (this->mIsAirborne) {
+            this->mAirborneTimer += dT;
+            if (this->mAirborneTimer > 1.5f) {
                 return true;
             }
         }
-        mIsAirborne = mISuspension->GetNumWheelsOnGround() == 0;
+        this->mIsAirborne = this->mISuspension->GetNumWheelsOnGround() == 0;
     }
     return false;
 }
 
 bool AIActionAirborne::IsFinished() {
-    return !mIsAirborne;
+    return !this->mIsAirborne;
 }
 
 void AIActionAirborne::Update(float dT) {
-    mIInput->SetControlGas(0.0f);
-    mIInput->SetControlBrake(0.0f);
-    mIInput->SetControlSteering(0.0f);
-    mIInput->SetControlSteeringVertical(0.0f);
-    mIInput->SetControlHandBrake(0.0f);
+    this->mIInput->SetControlGas(0.0f);
+    this->mIInput->SetControlBrake(0.0f);
+    this->mIInput->SetControlSteering(0.0f);
+    this->mIInput->SetControlSteeringVertical(0.0f);
+    this->mIInput->SetControlHandBrake(0.0f);
 
-    mIsAirborne = mISuspension->GetNumWheelsOnGround() == 0;
+    this->mIsAirborne = this->mISuspension->GetNumWheelsOnGround() == 0;
 }

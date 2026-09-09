@@ -1,11 +1,10 @@
-/*
- *  A collection of functions to convert to and from various units.
- */
 #ifndef CONVERSION_UTIL_H
 #define CONVERSION_UTIL_H
 
 #include "types.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+
+// TODO move these to UMath.h, this file is actually for other stuff
 
 // Credit: Brawltendo
 

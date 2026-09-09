@@ -39,23 +39,23 @@ class Reference {
     void Unlock();
 
     bool IsValid() const {
-        return mMatrix != nullptr;
+        return this->mMatrix != nullptr;
     }
 
     WUID GetWorldID() const {
-        return mWorldID;
+        return this->mWorldID;
     }
 
     const bMatrix4 *GetMatrix() const {
-        return mMatrix;
+        return this->mMatrix;
     }
 
     const bVector3 *GetVelocity() const {
-        return mVelocity;
+        return this->mVelocity;
     }
 
     const bVector3 *GetAcceleration() const {
-        return mAcceleration;
+        return this->mAcceleration;
     }
 
   private:
@@ -72,11 +72,11 @@ class Server {
         USE_FASTALLOC(Server::Body);
 
         Body() {
-            time = 0.0f;
-            refcount = 1;
-            bIdentity(&matrix);
-            bFill(&velocity, 0.0f, 0.0f, 0.0f);
-            bFill(&acceleration, 0.0f, 0.0f, 0.0f);
+            this->time = 0.0f;
+            this->refcount = 1;
+            bIdentity(&this->matrix);
+            bFill(&this->velocity, 0.0f, 0.0f, 0.0f);
+            bFill(&this->acceleration, 0.0f, 0.0f, 0.0f);
         }
 
         bMatrix4 matrix;       // offset 0x0, size 0x40
@@ -126,11 +126,11 @@ class Pkt_Body_Service : public Sim::Packet {
     ~Pkt_Body_Service() override {}
 
     void SetMatrix(const UMath::Matrix4 &matrix) {
-        mMatrix = matrix;
+        this->mMatrix = matrix;
     }
 
     void SetVelocity(const UMath::Vector3 &velocity) {
-        mVelocity = velocity;
+        this->mVelocity = velocity;
     }
 
     UMath::Matrix4 mMatrix;   // offset 0x4, size 0x40
@@ -209,15 +209,15 @@ class Pkt_Effect_Service : public Sim::Packet {
     ~Pkt_Effect_Service() override {}
 
     void SetPosition(const UMath::Vector3 &pos) {
-        mPosition = pos;
+        this->mPosition = pos;
     }
 
     void SetMagnitude(const UMath::Vector3 &mag) {
-        mMagnitude = mag;
+        this->mMagnitude = mag;
     }
 
     void SetTracking(bool b) {
-        mTracking = b;
+        this->mTracking = b;
     }
 
     ALIGN_16 UMath::Vector3 mPosition;  // offset 0x4, size 0xC

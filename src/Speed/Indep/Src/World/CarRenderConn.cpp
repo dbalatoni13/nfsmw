@@ -45,14 +45,14 @@ struct TireState : public bTNode<TireState> {
         }
 
         void ResetGroup() {
-            mGroup = nullptr;
-            mEmitterKey = 0;
-            mMinVel = 0.0f;
-            mNeedsLazyInit = true;
+            this->mGroup = nullptr;
+            this->mEmitterKey = 0;
+            this->mMinVel = 0.0f;
+            this->mNeedsLazyInit = true;
 #ifndef EA_BUILD_A124
-            mZeroParticleFrameCount = 0;
+            this->mZeroParticleFrameCount = 0;
 #endif
-            mMaxVel = 0.0f;
+            this->mMaxVel = 0.0f;
         }
 
 #ifndef EA_BUILD_A124
@@ -269,7 +269,7 @@ void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v) {
 }
 
 void TireState::KillSkids() {
-    mSkidMaker.MakeNoSkid();
+    this->mSkidMaker.MakeNoSkid();
 }
 
 void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float SkidWidth) {
@@ -457,7 +457,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
     for (unsigned int i = 0; i < 4; i++) {
         this->mTireState[i] = new TireState();
 
-        GetAttributes().TireOffsets(reinterpret_cast<UMath::Vector4 &>(this->mTirePositions[i]), i);
+        this->GetAttributes().TireOffsets(reinterpret_cast<UMath::Vector4 &>(this->mTirePositions[i]), i);
         // missing stripped out ... = bVector4();
         this->mTireRadius[i] = UMath::Max(this->mTirePositions[i].w, Tweak_MinRenderTireRadius);
 
@@ -706,7 +706,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             } else if (this->mShifting < 0.0f) {
                 this->mShiftPitchAngle *= Tweak_EngineAnimShiftDownScale;
                 this->mShifting = this->mShifting + (dT * shift_speed) / max_pitch;
-                this->mShifting = UMath::Min(mShifting, 0.0f);
+                this->mShifting = UMath::Min(this->mShifting, 0.0f);
             }
         } else {
             this->mShifting = 0.0f;
@@ -739,7 +739,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             this->mEngineTorqueAngle = UMath::Min(this->mEngineTorqueAngle, desired_angle);
         } else {
             this->mEngineTorqueAngle = this->mEngineTorqueAngle - rev_speed * dT;
-            this->mEngineTorqueAngle = UMath::Max(mEngineTorqueAngle, desired_angle);
+            this->mEngineTorqueAngle = UMath::Max(this->mEngineTorqueAngle, desired_angle);
         }
 
         this->mEngineTorqueAngle = UMath::Clamp(this->mEngineTorqueAngle, 0.0f, max_rev);
@@ -1190,7 +1190,7 @@ void CarRenderConn::Hide(bool b) {
                 this->mTireState[i]->KillSkids();
             }
 
-            VehicleRenderConn::Hide();
+            this->VehicleRenderConn::Hide();
 
             VehicleRenderConn::Effect *effect;
             for (effect = this->mEngineEffects.GetHead(); effect != this->mEngineEffects.EndOfList(); effect = effect->GetNext()) {
@@ -1222,7 +1222,7 @@ void CarRenderConn::OnFetch(float dT) {
 
 void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
     ProfileNode profile_node("TODO", 0);
-    VehicleRenderConn::OnLoaded(carrender_info);
+    this->VehicleRenderConn::OnLoaded(carrender_info);
 
     if (carrender_info == nullptr) {
         return;
@@ -1235,25 +1235,25 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
             unsigned int numSpokes = static_cast<signed char>(part_rim->GetSpokeCount());
 
             if (numSpokes == 0) {
-                numSpokes = bAbs(GetAttributes().WheelSpokeCount());
+                numSpokes = bAbs(this->GetAttributes().WheelSpokeCount());
             }
 
             if (numSpokes != 0) {
-                mMaxWheelRenderDeltaAngle = DEG2RAD(360.0f / (2.0f * numSpokes) - 1.0f);
+                this->mMaxWheelRenderDeltaAngle = DEG2RAD(360.0f / (2.0f * numSpokes) - 1.0f);
             }
         }
     }
 
-    carrender_info->InitEmitterPositions(mTirePositions);
+    carrender_info->InitEmitterPositions(this->mTirePositions);
 
-    if (mPipeEffects.IsEmpty()) {
+    if (this->mPipeEffects.IsEmpty()) {
         for (CarEmitterPosition *emitter_position = carrender_info->EmitterPositionList[10].GetHead();
              emitter_position != carrender_info->EmitterPositionList[10].EndOfList(); emitter_position = emitter_position->GetNext()) {
 
             ePositionMarker *position_marker = emitter_position->PositionMarker;
 
             if (position_marker) {
-                mPipeEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
+                this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
             } else {
                 bMatrix4 tempmat;
                 bIdentity(&tempmat);
@@ -1262,19 +1262,19 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
                 tempmat.v3.y = emitter_position->Y;
                 tempmat.v3.z = emitter_position->Z;
 
-                mPipeEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
+                this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
             }
         }
     }
 
-    if (mEngineEffects.IsEmpty()) {
+    if (this->mEngineEffects.IsEmpty()) {
         for (CarEmitterPosition *emitter_position = carrender_info->EmitterPositionList[9].GetHead();
              emitter_position != carrender_info->EmitterPositionList[9].EndOfList(); emitter_position = emitter_position->GetNext()) {
 
             ePositionMarker *position_marker = emitter_position->PositionMarker;
 
             if (position_marker) {
-                mEngineEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
+                this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
             } else {
                 bMatrix4 tempmat;
                 bIdentity(&tempmat);
@@ -1283,7 +1283,7 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
                 tempmat.v3.y = emitter_position->Y;
                 tempmat.v3.z = emitter_position->Z;
 
-                mEngineEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
+                this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
             }
         }
     }

@@ -47,22 +47,22 @@ unsigned int PlotLoadingMarker(const char *layer_name, const bVector2 *begin_pos
 class TSMemoryNode : public bTNode<TSMemoryNode> {
   public:
     bool IsFree() {
-        return !Allocated;
+        return !this->Allocated;
     }
 
     bool IsAllocated() {
-        return Allocated;
+        return this->Allocated;
     }
 
     bool Contains(intptr_t address) {
-        return address >= Address && address < Address + Size;
+        return address >= this->Address && address < this->Address + this->Size;
     }
 
     int GetAddress(bool start_from_top, int size) {
         if (start_from_top) {
-            return Address;
+            return this->Address;
         }
-        return Address + Size - size;
+        return this->Address + this->Size - size;
     }
 
     intptr_t Address;   // offset 0x8, size 0x4
@@ -82,24 +82,24 @@ class TSMemoryPool {
     TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node);
 
     TSMemoryNode *GetFirstNode(bool start_from_top) {
-        return GetNextNode(start_from_top, nullptr);
+        return this->GetNextNode(start_from_top, nullptr);
     }
 
     TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node);
 
     TSMemoryNode *GetFirstFreeNode(bool start_from_top) {
-        return GetNextFreeNode(start_from_top, nullptr);
+        return this->GetNextFreeNode(start_from_top, nullptr);
     }
 
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node);
 
     TSMemoryNode *GetFirstAllocatedNode(bool start_from_top) {
-        return GetNextAllocatedNode(start_from_top, 0);
+        return this->GetNextAllocatedNode(start_from_top, 0);
     }
 
     bool IsUpdated() {
-        bool updated = Updated;
-        Updated = false;
+        bool updated = this->Updated;
+        this->Updated = false;
         return updated;
     }
 
@@ -107,7 +107,7 @@ class TSMemoryPool {
     void DebugPrint();
 
     void EnableTracing(bool enabled) {
-        TracingEnabled = enabled;
+        this->TracingEnabled = enabled;
     }
 
   private:
@@ -155,22 +155,22 @@ class TSMemoryPool {
 };
 
 TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, int pool_num) {
-    PoolNum = pool_num;
-    DebugName = debug_name;
-    TotalSize = size;
-    TracingEnabled = true;
-    AllocationNumber = 0;
-    Updated = false;
-    AmountFree = size;
-    LargestFree = size;
-    NeedToRecalcLargestFree = false;
+    this->PoolNum = pool_num;
+    this->DebugName = debug_name;
+    this->TotalSize = size;
+    this->TracingEnabled = true;
+    this->AllocationNumber = 0;
+    this->Updated = false;
+    this->AmountFree = size;
+    this->LargestFree = size;
+    this->NeedToRecalcLargestFree = false;
 
     for (int n = 0; n < 192; n++) {
-        TSMemoryNode *node = &MemoryNodes[n];
-        UnusedNodeList.AddTail(node);
+        TSMemoryNode *node = &this->MemoryNodes[n];
+        this->UnusedNodeList.AddTail(node);
     }
 
-    if (TracingEnabled && bMemoryTracing) {
+    if (this->TracingEnabled && bMemoryTracing) {
         bMemoryTraceNewPoolPacket packet;
         packet.PoolID = reinterpret_cast<intptr_t>(this);
         bMemSet(packet.Name, 0, sizeof(packet.Name));
@@ -178,10 +178,10 @@ TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, i
         bFunkCallASync("CODEINE", 0x19, &packet, sizeof(packet));
     }
 
-    TSMemoryNode *node = GetNewNode(address, size, false, nullptr);
-    NodeList.AddTail(node);
+    TSMemoryNode *node = this->GetNewNode(address, size, false, nullptr);
+    this->NodeList.AddTail(node);
 
-    if (TracingEnabled && bMemoryTracing) {
+    if (this->TracingEnabled && bMemoryTracing) {
         bMemoryTraceFreePacket packet = {};
         packet.PoolID = reinterpret_cast<intptr_t>(this);
         packet.MemoryAddress = static_cast<intptr_t>(address);
@@ -189,23 +189,23 @@ TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, i
         bFunkCallASync("CODEINE", 0x1b, &packet, sizeof(packet));
     }
 
-    MemoryPoolOverrideInfo *override_info = &OverrideInfo;
-    bMemSet(&OverrideInfo, 0, sizeof(OverrideInfo));
+    MemoryPoolOverrideInfo *override_info = &this->OverrideInfo;
+    bMemSet(&this->OverrideInfo, 0, sizeof(this->OverrideInfo));
 #ifndef EA_BUILD_A124
-    OverrideInfo.Name = DebugName;
+    this->OverrideInfo.Name = this->DebugName;
 #endif
-    OverrideInfo.Pool = this;
-    OverrideInfo.Address = address;
-    OverrideInfo.Size = size;
-    OverrideInfo.Malloc = OverrideMalloc;
-    OverrideInfo.Free = OverrideFree;
-    OverrideInfo.GetAmountFree = OverrideGetAmountFree;
-    OverrideInfo.GetLargestFreeBlock = OverrideGetLargestFreeBlock;
-    bSetMemoryPoolOverrideInfo(PoolNum, &OverrideInfo);
+    this->OverrideInfo.Pool = this;
+    this->OverrideInfo.Address = address;
+    this->OverrideInfo.Size = size;
+    this->OverrideInfo.Malloc = OverrideMalloc;
+    this->OverrideInfo.Free = OverrideFree;
+    this->OverrideInfo.GetAmountFree = OverrideGetAmountFree;
+    this->OverrideInfo.GetLargestFreeBlock = OverrideGetLargestFreeBlock;
+    bSetMemoryPoolOverrideInfo(this->PoolNum, &this->OverrideInfo);
 }
 
 TSMemoryNode *TSMemoryPool::GetNewNode(intptr_t address, int size, bool allocated, const char *debug_name) {
-    TSMemoryNode *node = UnusedNodeList.RemoveHead();
+    TSMemoryNode *node = this->UnusedNodeList.RemoveHead();
 
     node->Address = address;
     node->Size = size;
@@ -215,7 +215,7 @@ TSMemoryNode *TSMemoryPool::GetNewNode(intptr_t address, int size, bool allocate
 }
 
 void TSMemoryPool::RemoveNode(TSMemoryNode *node) {
-    UnusedNodeList.AddTail(node);
+    this->UnusedNodeList.AddTail(node);
 }
 
 void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, intptr_t address) {
@@ -224,27 +224,27 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     size = (size + 0x7f) & ~0x7f;
 
     if (address != 0) {
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
             if (node->IsFree() && node->Size >= size && node->Contains(address)) {
                 found_node = node;
                 break;
             }
         }
     } else if (best_fit) {
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
             if (node->IsFree() && node->Size >= size && ((found_node == nullptr) || found_node->Size - size > node->Size - size)) {
                 found_node = node;
             }
         }
     } else if (allocate_from_top) {
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
             if (node->IsFree() && node->Size >= size) {
                 found_node = node;
                 break;
             }
         }
     } else {
-        for (TSMemoryNode *node = NodeList.GetTail(); node != NodeList.EndOfList(); node = node->GetPrev()) {
+        for (TSMemoryNode *node = this->NodeList.GetTail(); node != this->NodeList.EndOfList(); node = node->GetPrev()) {
             if (node->IsFree() && node->Size >= size) {
                 found_node = node;
                 break;
@@ -264,29 +264,29 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         }
     }
 
-    AmountFree -= size;
-    if (found_node->Size == LargestFree) {
-        NeedToRecalcLargestFree = true;
+    this->AmountFree -= size;
+    if (found_node->Size == this->LargestFree) {
+        this->NeedToRecalcLargestFree = true;
     }
 
-    TSMemoryNode *new_node = GetNewNode(address, size, true, debug_name);
+    TSMemoryNode *new_node = this->GetNewNode(address, size, true, debug_name);
     new_node->AddAfter(found_node);
 
     int new_bottom_size = address - found_node->Address;
     int new_top_size = found_node->Address + found_node->Size - (address + size);
     found_node->Size = new_bottom_size;
     if (new_bottom_size == 0) {
-        NodeList.Remove(found_node);
-        RemoveNode(found_node);
+        this->NodeList.Remove(found_node);
+        this->RemoveNode(found_node);
     }
 
     if (new_top_size != 0) {
-        TSMemoryNode *top_node = GetNewNode(address + size, new_top_size, false, 0);
+        TSMemoryNode *top_node = this->GetNewNode(address + size, new_top_size, false, 0);
         top_node->AddAfter(new_node);
     }
 
-    if (TracingEnabled && bMemoryTracing) {
-        bMemoryTraceAllocatePacket packet = {reinterpret_cast<intptr_t>(this), address, size, 0, AllocationNumber};
+    if (this->TracingEnabled && bMemoryTracing) {
+        bMemoryTraceAllocatePacket packet = {reinterpret_cast<intptr_t>(this), address, size, 0, this->AllocationNumber};
 
         bMemSet(packet.DebugText, 0, sizeof(packet.DebugText));
         if (debug_name) {
@@ -300,16 +300,16 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         unsigned char *p;
     }
 
-    Updated = true;
-    AllocationNumber++;
+    this->Updated = true;
+    this->AllocationNumber++;
     return reinterpret_cast<void *>(address);
 }
 
 void TSMemoryPool::Free(void *ptr) {
     intptr_t address = reinterpret_cast<intptr_t>(ptr);
-    Updated = true;
+    this->Updated = true;
 
-    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+    for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
         if (node->Address == address) {
             int size;
             TSMemoryNode *prev_node = node->GetPrev();
@@ -317,26 +317,26 @@ void TSMemoryPool::Free(void *ptr) {
             size = node->Size;
             node->Allocated = false;
             node->DebugName[0] = 0;
-            if (prev_node != NodeList.EndOfList() && prev_node->IsFree()) {
+            if (prev_node != this->NodeList.EndOfList() && prev_node->IsFree()) {
                 node->Address = address - prev_node->Size;
                 node->Size = size + prev_node->Size;
-                NodeList.Remove(prev_node);
-                RemoveNode(prev_node);
+                this->NodeList.Remove(prev_node);
+                this->RemoveNode(prev_node);
             }
 
             TSMemoryNode *next_node = node->GetNext();
-            if (next_node != NodeList.EndOfList() && next_node->IsFree()) {
+            if (next_node != this->NodeList.EndOfList() && next_node->IsFree()) {
                 node->Size += next_node->Size;
-                NodeList.Remove(next_node);
-                RemoveNode(next_node);
+                this->NodeList.Remove(next_node);
+                this->RemoveNode(next_node);
             }
 
-            AmountFree += size;
-            if (node->Size > LargestFree) {
-                LargestFree = node->Size;
+            this->AmountFree += size;
+            if (node->Size > this->LargestFree) {
+                this->LargestFree = node->Size;
             }
 
-            if (TracingEnabled && bMemoryTracing) {
+            if (this->TracingEnabled && bMemoryTracing) {
                 bMemoryTraceFreePacket packet = {};
                 packet.PoolID = reinterpret_cast<intptr_t>(this);
                 packet.MemoryAddress = reinterpret_cast<intptr_t>(ptr);
@@ -349,32 +349,32 @@ void TSMemoryPool::Free(void *ptr) {
 }
 
 int TSMemoryPool::GetAmountFree() {
-    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+    for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
         node->IsFree();
     }
-    int amount_free = AmountFree;
+    int amount_free = this->AmountFree;
     return amount_free;
 }
 
 int TSMemoryPool::GetLargestFreeBlock() {
-    if (NeedToRecalcLargestFree) {
+    if (this->NeedToRecalcLargestFree) {
         int largest_free = 0;
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
             if (node->IsFree() && node->Size > largest_free) {
                 largest_free = node->Size;
             }
         }
-        LargestFree = largest_free;
-        NeedToRecalcLargestFree = false;
+        this->LargestFree = largest_free;
+        this->NeedToRecalcLargestFree = false;
     }
 
     int largest_free = 0;
-    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+    for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
         if (node->IsFree() && node->Size > largest_free) {
             largest_free = node->Size;
         }
     }
-    return LargestFree;
+    return this->LargestFree;
 }
 
 TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
@@ -382,17 +382,17 @@ TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node)
         if (node != nullptr) {
             node = node->GetNext();
         } else {
-            node = NodeList.GetHead();
+            node = this->NodeList.GetHead();
         }
     } else {
         if (node != nullptr) {
             node = node->GetPrev();
         } else {
-            node = NodeList.GetTail();
+            node = this->NodeList.GetTail();
         }
     }
 
-    if (node == NodeList.EndOfList()) {
+    if (node == this->NodeList.EndOfList()) {
         return nullptr;
     }
     return node;
@@ -400,7 +400,7 @@ TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node)
 
 TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *node) {
     TSMemoryNode *next_node = node;
-    while (next_node = GetNextNode(start_from_top, next_node), next_node) {
+    while (next_node = this->GetNextNode(start_from_top, next_node), next_node) {
         if (next_node->IsFree()) {
             return next_node;
         }
@@ -410,7 +410,7 @@ TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *n
 
 TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node) {
     TSMemoryNode *next_node = node;
-    while (next_node = GetNextNode(start_from_top, next_node), next_node) {
+    while (next_node = this->GetNextNode(start_from_top, next_node), next_node) {
         if (next_node->IsAllocated()) {
             return next_node;
         }
@@ -423,7 +423,7 @@ unsigned int TSMemoryPool::GetPoolChecksum() {
 }
 
 void TSMemoryPool::DebugPrint() {
-    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+    for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList(); node = node->GetNext()) {
         const char *name = node->DebugName;
         node->IsAllocated();
     }
@@ -443,57 +443,57 @@ void RefreshTrackStreamer() {
 
 // UNSOLVED, ClearTable shouldn't inline
 TrackStreamer::TrackStreamer() {
-    pTrackStreamingSections = nullptr;
-    NumTrackStreamingSections = 0;
-    pDiscBundleSections = nullptr;
-    pLastDiscBundleSection = nullptr;
-    NumSectionsLoaded = 0;
-    NumSectionsLoading = 0;
-    NumSectionsActivated = 0;
-    NumSectionsOutOfMemory = 0;
-    NumSectionsMoved = 0;
-    bMemSet(StreamFilenames, 0, sizeof(StreamFilenames));
-    SplitScreen = false;
-    PermFileLoading = false;
-    PermFilename = nullptr;
-    PermFileChunks = nullptr;
-    PermFileSize = 0;
-    NumBarriers = 0;
-    pBarriers = nullptr;
-    NumCurrentStreamingSections = 0;
-    NumHibernatingSections = 0;
-    CurrentZoneNeedsRefreshing = false;
-    ZoneSwitchingDisabled = false;
-    LastWaitUntilRenderingDoneFrameCount = 0;
-    LastPrintedFrameCount = 0;
-    SkipNextHandleLoad = false;
+    this->pTrackStreamingSections = nullptr;
+    this->NumTrackStreamingSections = 0;
+    this->pDiscBundleSections = nullptr;
+    this->pLastDiscBundleSection = nullptr;
+    this->NumSectionsLoaded = 0;
+    this->NumSectionsLoading = 0;
+    this->NumSectionsActivated = 0;
+    this->NumSectionsOutOfMemory = 0;
+    this->NumSectionsMoved = 0;
+    bMemSet(this->StreamFilenames, 0, sizeof(this->StreamFilenames));
+    this->SplitScreen = false;
+    this->PermFileLoading = false;
+    this->PermFilename = nullptr;
+    this->PermFileChunks = nullptr;
+    this->PermFileSize = 0;
+    this->NumBarriers = 0;
+    this->pBarriers = nullptr;
+    this->NumCurrentStreamingSections = 0;
+    this->NumHibernatingSections = 0;
+    this->CurrentZoneNeedsRefreshing = false;
+    this->ZoneSwitchingDisabled = false;
+    this->LastWaitUntilRenderingDoneFrameCount = 0;
+    this->LastPrintedFrameCount = 0;
+    this->SkipNextHandleLoad = false;
 
-    ClearCurrentZones();
-    ClearStreamingPositions();
+    this->ClearCurrentZones();
+    this->ClearStreamingPositions();
 
-    pMemoryPoolMem = nullptr;
-    MemoryPoolSize = 0;
-    UserMemoryAllocationSize = 0;
-    pMemoryPool = nullptr;
+    this->pMemoryPoolMem = nullptr;
+    this->MemoryPoolSize = 0;
+    this->UserMemoryAllocationSize = 0;
+    this->pMemoryPool = nullptr;
 
-    CurrentVisibleSectionTable.Init(CurrentVisibleSectionTableMem, 0xAF0);
+    this->CurrentVisibleSectionTable.Init(CurrentVisibleSectionTableMem, 0xAF0);
     // TODO why doesn't this inline?
-    CurrentVisibleSectionTable.ClearTable();
-    bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
-    pCallback = nullptr;
-    CallbackParam = 0;
-    MakeSpaceInPoolCallback = nullptr;
-    MakeSpaceInPoolCallbackParam = 0;
-    MakeSpaceInPoolSize = 0;
+    this->CurrentVisibleSectionTable.ClearTable();
+    bMemSet(this->KeepSectionTable, 0, sizeof(this->KeepSectionTable));
+    this->pCallback = nullptr;
+    this->CallbackParam = 0;
+    this->MakeSpaceInPoolCallback = nullptr;
+    this->MakeSpaceInPoolCallbackParam = 0;
+    this->MakeSpaceInPoolSize = 0;
 }
 
 int TrackStreamer::Loader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_SECTIONS) {
         int n;
-        pTrackStreamingSections = reinterpret_cast<TrackStreamingSection *>(chunk->GetData());
-        NumTrackStreamingSections = chunk->GetSize() / sizeof(TrackStreamingSection);
-        for (n = 0; n < NumTrackStreamingSections; n++) {
-            TrackStreamingSection *section = &pTrackStreamingSections[n];
+        this->pTrackStreamingSections = reinterpret_cast<TrackStreamingSection *>(chunk->GetData());
+        this->NumTrackStreamingSections = chunk->GetSize() / sizeof(TrackStreamingSection);
+        for (n = 0; n < this->NumTrackStreamingSections; n++) {
+            TrackStreamingSection *section = &this->pTrackStreamingSections[n];
             bPlatEndianSwap(&section->SectionNumber);
             bPlatEndianSwap(reinterpret_cast<int *>(&section->FileType));
             bPlatEndianSwap(reinterpret_cast<int *>(&section->Status));
@@ -507,22 +507,22 @@ int TrackStreamer::Loader(bChunk *chunk) {
             bPlatEndianSwap(&section->Checksum);
         }
 
-        for (n = 0; n < NumHibernatingSections; n++) {
-            TrackStreamingSection *hibernating_section = &HibernatingSections[n];
-            TrackStreamingSection *section = FindSection(hibernating_section->SectionNumber);
+        for (n = 0; n < this->NumHibernatingSections; n++) {
+            TrackStreamingSection *hibernating_section = &this->HibernatingSections[n];
+            TrackStreamingSection *section = this->FindSection(hibernating_section->SectionNumber);
             bMemCpy(section, hibernating_section, sizeof(TrackStreamingSection));
-            NumSectionsLoaded++;
-            ActivateSection(section);
-            CurrentStreamingSections[NumCurrentStreamingSections++] = section;
+            this->NumSectionsLoaded++;
+            this->ActivateSection(section);
+            this->CurrentStreamingSections[this->NumCurrentStreamingSections++] = section;
         }
 
-        NumHibernatingSections = 0;
+        this->NumHibernatingSections = 0;
         return 1;
     } else if (chunk->GetID() == BCHUNK_TRACK_STRAMING_DISC_BUNDLE) {
         DiscBundleSection *disc_bundle;
-        pDiscBundleSections = reinterpret_cast<DiscBundleSection *>(chunk->GetData());
-        pLastDiscBundleSection = reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(chunk->GetData()) + chunk->GetSize());
-        for (disc_bundle = pDiscBundleSections; disc_bundle < pLastDiscBundleSection; disc_bundle = disc_bundle->GetMemoryImageNext()) {
+        this->pDiscBundleSections = reinterpret_cast<DiscBundleSection *>(chunk->GetData());
+        this->pLastDiscBundleSection = reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(chunk->GetData()) + chunk->GetSize());
+        for (disc_bundle = this->pDiscBundleSections; disc_bundle < this->pLastDiscBundleSection; disc_bundle = disc_bundle->GetMemoryImageNext()) {
             bPlatEndianSwap(&disc_bundle->FileOffset);
             bPlatEndianSwap(&disc_bundle->FileSize);
             bPlatEndianSwap(&disc_bundle->NumMembers);
@@ -530,22 +530,22 @@ int TrackStreamer::Loader(bChunk *chunk) {
                 DiscBundleSectionMember *member = &disc_bundle->Members[i];
                 bPlatEndianSwap(&member->SectionNumber);
                 bPlatEndianSwap(&member->FileOffset);
-                TrackStreamingSection *section = FindSection(member->SectionNumber);
+                TrackStreamingSection *section = this->FindSection(member->SectionNumber);
                 member->pSection = section;
             }
         }
         return 1;
     } else if (chunk->GetID() == BCHUNK_TRACK_STRAMING_INFOS) {
-        pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
+        this->pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
         for (int n = 0; n < 2; n++) {
-            bPlatEndianSwap(n + pInfo->FileSize);
+            bPlatEndianSwap(n + this->pInfo->FileSize);
         }
         return 1;
     } else if (chunk->GetID() == BCHUNK_TRACK_STRAMING_BARRIERS) {
-        pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
-        NumBarriers = chunk->GetSize() / sizeof(TrackStreamingBarrier);
-        for (int n = 0; n < NumBarriers; n++) {
-            TrackStreamingBarrier *barrier = &pBarriers[n];
+        this->pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
+        this->NumBarriers = chunk->GetSize() / sizeof(TrackStreamingBarrier);
+        for (int n = 0; n < this->NumBarriers; n++) {
+            TrackStreamingBarrier *barrier = &this->pBarriers[n];
             barrier->EndianSwap();
         }
         return 1;
@@ -556,26 +556,26 @@ int TrackStreamer::Loader(bChunk *chunk) {
 
 int TrackStreamer::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_SECTIONS) {
-        UnloadEverything();
-        pTrackStreamingSections = nullptr;
-        NumTrackStreamingSections = 0;
+        this->UnloadEverything();
+        this->pTrackStreamingSections = nullptr;
+        this->NumTrackStreamingSections = 0;
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_DISC_BUNDLE) {
-        pDiscBundleSections = nullptr;
-        pLastDiscBundleSection = nullptr;
+        this->pDiscBundleSections = nullptr;
+        this->pLastDiscBundleSection = nullptr;
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_INFOS) {
-        pInfo = nullptr;
+        this->pInfo = nullptr;
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_BARRIERS) {
-        pBarriers = nullptr;
-        NumBarriers = 0;
+        this->pBarriers = nullptr;
+        this->NumBarriers = 0;
         return 1;
     }
 
@@ -584,7 +584,7 @@ int TrackStreamer::Unloader(bChunk *chunk) {
 
 void TrackStreamer::ClearCurrentZones() {
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         position_entry->CurrentZone = 0;
         position_entry->BeginLoadingTime = 0.0f;
         position_entry->BeginLoadingPosition.x = 0.0f;
@@ -595,32 +595,32 @@ void TrackStreamer::ClearCurrentZones() {
         position_entry->AmountLoaded = 0;
     }
 
-    LoadingPhase = LOADING_IDLE;
-    LoadingBacklog = 0.0f;
-    CurrentZoneOutOfMemory = false;
-    CurrentZoneAllocatedButIncomplete = false;
-    CurrentZoneNonReplayLoad = false;
-    CurrentZoneFarLoad = true;
-    StartLoadingTime = 0.0f;
-    CurrentZoneName[0] = 0;
-    MemorySafetyMargin = 0;
-    AmountJettisoned = 0;
-    NumJettisonedSections = 0;
-    bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
-    RemoveCurrentStreamingSections();
+    this->LoadingPhase = LOADING_IDLE;
+    this->LoadingBacklog = 0.0f;
+    this->CurrentZoneOutOfMemory = false;
+    this->CurrentZoneAllocatedButIncomplete = false;
+    this->CurrentZoneNonReplayLoad = false;
+    this->CurrentZoneFarLoad = true;
+    this->StartLoadingTime = 0.0f;
+    this->CurrentZoneName[0] = 0;
+    this->MemorySafetyMargin = 0;
+    this->AmountJettisoned = 0;
+    this->NumJettisonedSections = 0;
+    bMemSet(this->JettisonedSections, 0, sizeof(this->JettisonedSections));
+    this->RemoveCurrentStreamingSections();
 }
 
 void TrackStreamer::InitMemoryPool(int size) {
-    MemoryPoolSize = size;
-    pMemoryPoolMem = bMalloc(size, "Track Streaming Buffer", 0, 0x2000);
-    pMemoryPool = new ("TSMemoryPool", 0) TSMemoryPool(reinterpret_cast<intptr_t>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+    this->MemoryPoolSize = size;
+    this->pMemoryPoolMem = bMalloc(size, "Track Streaming Buffer", 0, 0x2000);
+    this->pMemoryPool = new ("TSMemoryPool", 0) TSMemoryPool(reinterpret_cast<intptr_t>(this->pMemoryPoolMem), this->MemoryPoolSize, "Track Streaming", 7);
 }
 
 int TrackStreamer::GetMemoryPoolSize() {
-    if (pMemoryPool->IsUpdated()) {
-        UserMemoryAllocationSize = CountUserAllocations(nullptr);
+    if (this->pMemoryPool->IsUpdated()) {
+        this->UserMemoryAllocationSize = this->CountUserAllocations(nullptr);
     }
-    return MemoryPoolSize - UserMemoryAllocationSize;
+    return this->MemoryPoolSize - this->UserMemoryAllocationSize;
 }
 
 int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation) {
@@ -631,27 +631,27 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
     int num_fragmented_user_allocations = 0;
     int user_allocation_size = 0;
     bool start_from_top = false;
-    TSMemoryNode *node = pMemoryPool->GetFirstAllocatedNode(start_from_top);
+    TSMemoryNode *node = this->pMemoryPool->GetFirstAllocatedNode(start_from_top);
     while (node) {
-        TrackStreamingSection *section = FindSectionByAddress(node->Address);
+        TrackStreamingSection *section = this->FindSectionByAddress(node->Address);
         if (section == nullptr) {
             user_allocation_size += node->Size;
-            if (pMemoryPool->GetNextFreeNode(start_from_top, node) && pMemoryPool->GetNextFreeNode(!start_from_top, node) &&
+            if (this->pMemoryPool->GetNextFreeNode(start_from_top, node) && this->pMemoryPool->GetNextFreeNode(!start_from_top, node) &&
                 pfragmented_user_allocation) {
                 *pfragmented_user_allocation = node->DebugName;
                 num_fragmented_user_allocations++;
             }
         }
 
-        node = pMemoryPool->GetNextAllocatedNode(start_from_top, node);
+        node = this->pMemoryPool->GetNextAllocatedNode(start_from_top, node);
     }
 
     return user_allocation_size;
 }
 
 TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         if (section->SectionNumber == static_cast<short>(section_number)) {
             return section;
         }
@@ -661,15 +661,15 @@ TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
 
 TrackStreamingSection *TrackStreamer::FindSectionByAddress(intptr_t address) {
     int n;
-    for (n = 0; n < NumCurrentStreamingSections; n++) {
-        TrackStreamingSection *section = CurrentStreamingSections[n];
+    for (n = 0; n < this->NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[n];
         if (section->pMemory == reinterpret_cast<void *>(address)) {
             return section;
         }
     }
 
-    for (n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         if (section->pMemory == reinterpret_cast<void *>(address)) {
             return section;
         }
@@ -681,8 +681,8 @@ TrackStreamingSection *TrackStreamer::FindSectionByAddress(intptr_t address) {
 int TrackStreamer::GetCombinedSectionNumber(int section_number) {
     if (IsScenerySectionDrivable(section_number)) {
         int lod_section_number = GetLODScenerySectionNumber(section_number);
-        if (!FindSection(section_number)) {
-            if (FindSection(lod_section_number)) {
+        if (!this->FindSection(section_number)) {
+            if (this->FindSection(lod_section_number)) {
                 return lod_section_number;
             }
         }
@@ -694,26 +694,26 @@ int TrackStreamer::GetCombinedSectionNumber(int section_number) {
 void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_screen) {
     bool flush_hibernating_sections = false;
 
-    if (SplitScreen != split_screen) {
-        SplitScreen = split_screen;
+    if (this->SplitScreen != split_screen) {
+        this->SplitScreen = split_screen;
         flush_hibernating_sections = true;
     }
-    if (!bStrEqual(StreamFilenames[1], region_stream_filename)) {
+    if (!bStrEqual(this->StreamFilenames[1], region_stream_filename)) {
         flush_hibernating_sections = true;
-        bStrCpy(StreamFilenames[1], region_stream_filename);
+        bStrCpy(this->StreamFilenames[1], region_stream_filename);
     }
     if (flush_hibernating_sections) {
-        FlushHibernatingSections();
+        this->FlushHibernatingSections();
     }
-    if (PermFileLoading) {
+    if (this->PermFileLoading) {
         BlockWhileQueuedFileBusy();
     }
 
-    ClearCurrentZones();
-    ClearStreamingPositions();
+    this->ClearCurrentZones();
+    this->ClearStreamingPositions();
 
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
 
         position_entry->PredictedZone = 0;
         position_entry->PredictedZoneValidTime = 0;
@@ -727,8 +727,8 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
         position_entry->AudioBlockingPosition.y = 0.0f;
     }
 
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         int boundary_section_number = GetBoundarySectionNumber(section->SectionNumber, bGetPlatformName());
         VisibleSectionBoundary *boundary = TheVisibleSectionManager.FindBoundary(boundary_section_number);
 #ifndef EA_BUILD_A124
@@ -736,7 +736,7 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
 #endif
     }
 
-    EmptyCaffeineLayers();
+    this->EmptyCaffeineLayers();
 }
 
 // UNSOLVED because it's empty and the stack is too small
@@ -763,11 +763,11 @@ void TrackStreamer::HibernateStreamingSections() {
 }
 
 void TrackStreamer::FlushHibernatingSections() {
-    for (int n = 0; n < NumHibernatingSections; n++) {
-        TrackStreamingSection *section = &HibernatingSections[n];
+    for (int n = 0; n < this->NumHibernatingSections; n++) {
+        TrackStreamingSection *section = &this->HibernatingSections[n];
         bFree(section->pMemory);
     }
-    NumHibernatingSections = 0;
+    this->NumHibernatingSections = 0;
 }
 
 void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocation_params) {
@@ -789,8 +789,8 @@ void TrackStreamer::LoadDiscBundle(DiscBundleSection *disc_bundle) {
         section->Status = TrackStreamingSection::LOADING;
     }
 
-    NumSectionsLoading++;
-    AddQueuedFile(memory, StreamFilenames[1], disc_bundle->FileOffset, disc_bundle->FileSize, DiscBundleLoadedCallback,
+    this->NumSectionsLoading++;
+    AddQueuedFile(memory, this->StreamFilenames[1], disc_bundle->FileOffset, disc_bundle->FileSize, DiscBundleLoadedCallback,
                   reinterpret_cast<intptr_t>(disc_bundle), nullptr);
 }
 
@@ -799,27 +799,27 @@ void TrackStreamer::DiscBundleLoadedCallback(intptr_t param, int error_status) {
 }
 
 void TrackStreamer::DiscBundleLoadedCallback(DiscBundleSection *disc_bundle) {
-    NumSectionsLoading += disc_bundle->NumMembers - 1;
+    this->NumSectionsLoading += disc_bundle->NumMembers - 1;
     for (int i = 0; i < disc_bundle->NumMembers; i++) {
         DiscBundleSectionMember *member = &disc_bundle->Members[i];
         TrackStreamingSection *section = member->pSection;
         section->pDiscBundle = nullptr;
-        SectionLoadedCallback(section);
+        this->SectionLoadedCallback(section);
     }
 }
 
 void TrackStreamer::LoadSection(TrackStreamingSection *section) {
-    NumSectionsLoading++;
+    this->NumSectionsLoading++;
     section->Status = TrackStreamingSection::LOADING;
 
     if (section->CompressedSize == section->Size) {
-        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
+        AddQueuedFile(section->pMemory, this->StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
                       reinterpret_cast<intptr_t>(section), nullptr);
     } else {
         QueuedFileParams params;
         params.Compressed = true;
         params.UncompressedSize = section->Size;
-        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
+        AddQueuedFile(section->pMemory, this->StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
                       reinterpret_cast<intptr_t>(section), &params);
     }
 }
@@ -827,7 +827,7 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
 void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     ProfileNode profile_node("TODO", 0);
     int allocation_params = 0x2087;
-    NumSectionsActivated++;
+    this->NumSectionsActivated++;
     eAllowDuplicateSolids(true);
     SetDuplicateTextureWarning(false);
 
@@ -850,13 +850,13 @@ void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
     section->UnactivatedFrameCount = eGetFrameCounter();
     UnloadChunks(reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize, section->SectionName);
     EnableWaitUntilRenderingDone();
-    NumSectionsActivated--;
+    this->NumSectionsActivated--;
     section->Status = TrackStreamingSection::LOADED;
 }
 
 bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
     if ((section->UnactivatedFrameCount != 0) && (section->UnactivatedFrameCount == eGetFrameCounter())) {
-        if (LastWaitUntilRenderingDoneFrameCount != section->UnactivatedFrameCount) {
+        if (this->LastWaitUntilRenderingDoneFrameCount != section->UnactivatedFrameCount) {
             return true;
         }
     }
@@ -866,15 +866,15 @@ bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
 void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
     ProfileNode profile_node("TODO", 0);
     if (section->Status == TrackStreamingSection::ACTIVATED) {
-        UnactivateSection(section);
+        this->UnactivateSection(section);
     }
 
     if (section->Status == TrackStreamingSection::LOADED) {
-        if (WillUnloadBlock(section)) {
+        if (this->WillUnloadBlock(section)) {
             DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
             EnableWaitForFrameBufferSwap();
-            LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
+            this->LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
         }
 
         section->UnactivatedFrameCount = 0;
@@ -882,7 +882,7 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
         section->pMemory = nullptr;
         section->Status = TrackStreamingSection::UNLOADED;
         section->LoadedTime = 0;
-        NumSectionsLoaded--;
+        this->NumSectionsLoaded--;
     }
 }
 
@@ -904,24 +904,24 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
     section->Status = TrackStreamingSection::LOADED;
     section->LoadedSize = section->Size;
     EndianSwapChunkHeadersRecursive(reinterpret_cast<bChunk *>(section->pMemory), section->Size);
-    NumSectionsLoading--;
-    NumSectionsLoaded++;
+    this->NumSectionsLoading--;
+    this->NumSectionsLoaded++;
     section->LoadedTime = RealTimeFrames;
 
-    if (section->CurrentlyVisible && !NeedsGameStateActivation(section)) {
-        ActivateSection(section);
+    if (section->CurrentlyVisible && !this->NeedsGameStateActivation(section)) {
+        this->ActivateSection(section);
     }
 
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         if ((section->CurrentlyVisible >> position_number) & 1) {
-            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+            StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
             position_entry->NumSectionsLoaded++;
             position_entry->AmountLoaded += section->Size;
         }
     }
 
-    CalculateLoadingBacklog();
+    this->CalculateLoadingBacklog();
 #ifdef EA_PLATFORM_GAMECUBE
     DCStoreRange(section->pMemory, section->LoadedSize);
 #endif
@@ -948,7 +948,7 @@ void TrackStreamer::EmptyCaffeineLayers() {
 }
 
 void TrackStreamer::SetLoadingPhase(eLoadingPhase phase) {
-    LoadingPhase = phase;
+    this->LoadingPhase = phase;
     if (phase == LOADING_IDLE || phase == LOADING_REGULAR_SECTIONS) {
         SetQueuedFileMinPriority(0);
     } else {
@@ -959,8 +959,8 @@ void TrackStreamer::SetLoadingPhase(eLoadingPhase phase) {
 int TrackStreamer::UnloadLeastRecentlyUsedSection() {
     TrackStreamingSection *best_section = nullptr;
 
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::LOADED && !section->CurrentlyVisible &&
             (!best_section || section->LastNeededTimestamp < best_section->LastNeededTimestamp)) {
             best_section = section;
@@ -971,40 +971,40 @@ int TrackStreamer::UnloadLeastRecentlyUsedSection() {
         return 0;
     }
 
-    UnloadSection(best_section);
+    this->UnloadSection(best_section);
     return best_section->LoadedSize;
 }
 
 void TrackStreamer::JettisonSection(TrackStreamingSection *section) {
-    AmountJettisoned += section->Size;
-    JettisonedSections[NumJettisonedSections++] = section;
+    this->AmountJettisoned += section->Size;
+    this->JettisonedSections[this->NumJettisonedSections++] = section;
 
     if (section->Status == TrackStreamingSection::ACTIVATED) {
-        UnactivateSection(section);
+        this->UnactivateSection(section);
     }
     if (section->Status == TrackStreamingSection::LOADED) {
-        UnloadSection(section);
+        this->UnloadSection(section);
     }
 
     section->CurrentlyVisible = false;
 
     int i = 0;
-    while (CurrentStreamingSections[i] != section) {
+    while (this->CurrentStreamingSections[i] != section) {
         i++;
     }
 
-    while (i < NumCurrentStreamingSections - 1) {
-        CurrentStreamingSections[i] = CurrentStreamingSections[i + 1];
+    while (i < this->NumCurrentStreamingSections - 1) {
+        this->CurrentStreamingSections[i] = this->CurrentStreamingSections[i + 1];
         i++;
     }
 
-    NumCurrentStreamingSections--;
+    this->NumCurrentStreamingSections--;
 }
 
 bool TrackStreamer::JettisonLeastImportantSection() {
-    TrackStreamingSection *best_section = ChooseSectionToJettison();
+    TrackStreamingSection *best_section = this->ChooseSectionToJettison();
     if (best_section) {
-        JettisonSection(best_section);
+        this->JettisonSection(best_section);
         return true;
     }
     return false;
@@ -1018,26 +1018,26 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
 
     last_jettison_print = RealLoopCounter;
 
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+    for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
         int discard_priority = 0;
-        TrackStreamingSection *section = CurrentStreamingSections[i];
+        TrackStreamingSection *section = this->CurrentStreamingSections[i];
 
         if (IsTextureSection(section->SectionNumber) || IsLibrarySection(section->SectionNumber)) {
             discard_priority = 2;
             if (section->SectionNumber == GetScenerySectionNumber('Y', 0) || section->SectionNumber == GetScenerySectionNumber('W', 0) ||
                 section->SectionNumber == GetScenerySectionNumber('X', 0)) {
                 discard_priority = 1;
-            } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS && IsTextureSection(section->SectionNumber) &&
-                       section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+            } else if (this->LoadingPhase == ALLOCATING_TEXTURE_SECTIONS && IsTextureSection(section->SectionNumber) &&
+                       section->Status == TrackStreamingSection::ACTIVATED && !this->SplitScreen) {
                 discard_priority = 10000;
-            } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsLibrarySection(section->SectionNumber) &&
-                       section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+            } else if (this->LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsLibrarySection(section->SectionNumber) &&
+                       section->Status == TrackStreamingSection::ACTIVATED && !this->SplitScreen) {
                 discard_priority = 10000;
             }
         } else if (IsRegularScenerySection(section->SectionNumber)) {
-            int loading_priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
-            if (SplitScreen) {
-                int loading_priority2 = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
+            int loading_priority = this->GetLoadingPriority(section, &this->StreamingPositionEntries[0], true);
+            if (this->SplitScreen) {
+                int loading_priority2 = this->GetLoadingPriority(section, &this->StreamingPositionEntries[1], true);
                 if (loading_priority2 < loading_priority) {
                     loading_priority = loading_priority2;
                 }
@@ -1061,13 +1061,13 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
 }
 
 void TrackStreamer::UnJettisonSections() {
-    for (int n = 0; n < NumJettisonedSections; n++) {
-        TrackStreamingSection *section = JettisonedSections[n];
-        CurrentStreamingSections[NumCurrentStreamingSections++] = section;
+    for (int n = 0; n < this->NumJettisonedSections; n++) {
+        TrackStreamingSection *section = this->JettisonedSections[n];
+        this->CurrentStreamingSections[this->NumCurrentStreamingSections++] = section;
         section->CurrentlyVisible = 1;
     }
-    NumJettisonedSections = 0;
-    AmountJettisoned = 0;
+    this->NumJettisonedSections = 0;
+    this->AmountJettisoned = 0;
 }
 
 // total size: 0x10
@@ -1083,32 +1083,32 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                       int max_amount_to_move) {
     ProfileNode profile_node("TODO", 0);
     int ticks = bGetTicker();
-    unsigned int checksum = pMemoryPool->GetPoolChecksum();
+    unsigned int checksum = this->pMemoryPool->GetPoolChecksum();
     bool failed;
     int num_movements;
     int amount_moved;
     int total_needing_allocation;
 
-    pMemoryPool->EnableTracing(false);
+    this->pMemoryPool->EnableTracing(false);
     total_needing_allocation = -1;
     failed = false;
     num_movements = 0;
     amount_moved = 0;
     while (true) {
         if (largest_free != 0) {
-            if (pMemoryPool->GetLargestFreeBlock() >= largest_free) {
+            if (this->pMemoryPool->GetLargestFreeBlock() >= largest_free) {
                 break;
             }
         } else {
-            int out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
-            FreeSectionMemory();
+            int out_of_memory_size = this->AllocateSectionMemory(&total_needing_allocation);
+            this->FreeSectionMemory();
             if (out_of_memory_size == 0) {
                 break;
             }
         }
 
         if (filler_method != 0) {
-            if (pMemoryPool->GetAmountFree() == pMemoryPool->GetLargestFreeBlock()) {
+            if (this->pMemoryPool->GetAmountFree() == this->pMemoryPool->GetLargestFreeBlock()) {
                 break;
             }
         }
@@ -1124,8 +1124,8 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         if (filler_method == HOLE_FILLER_METHOD_LINEAR_BOTTOM || filler_method == HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY ||
             filler_method == HOLE_FILLER_METHOD_LINEAR_TOP) {
             bool start_from_top = filler_method == HOLE_FILLER_METHOD_LINEAR_TOP;
-            TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
-            TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
+            TSMemoryNode *free_node = this->pMemoryPool->GetFirstFreeNode(start_from_top);
+            TSMemoryNode *node = this->pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
             if (filler_method == HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY && !node) {
                 break;
             }
@@ -1134,26 +1134,26 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                 movement->Size = node->Size;
                 movement->Address = node->Address;
                 movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
-                if (filler_method == HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY && !FindSectionByAddress(movement->Address)) {
+                if (filler_method == HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY && !this->FindSectionByAddress(movement->Address)) {
                     break;
                 }
             }
         } else if (filler_method == HOLE_FILLER_METHOD_BIGGEST_FIRST_BOTTOM || filler_method == HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP) {
             bool start_from_top = filler_method == HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP;
-            TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
+            TSMemoryNode *free_node = this->pMemoryPool->GetFirstFreeNode(start_from_top);
             int best_hole_size = 0;
             bool first = true;
             TSMemoryNode *next_node = free_node;
 
-            while ((next_node = pMemoryPool->GetNextAllocatedNode(start_from_top, next_node)) != nullptr) {
-                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, next_node);
+            while ((next_node = this->pMemoryPool->GetNextAllocatedNode(start_from_top, next_node)) != nullptr) {
+                TSMemoryNode *next_free = this->pMemoryPool->GetNextFreeNode(start_from_top, next_node);
                 if (next_free == nullptr) {
                     continue;
                 }
                 if (first || next_node->Size <= free_node->Size) {
                     first = false;
-                    TSMemoryNode *node1 = pMemoryPool->GetNextNode(!start_from_top, next_node);
-                    TSMemoryNode *node2 = pMemoryPool->GetNextNode(start_from_top, next_node);
+                    TSMemoryNode *node1 = this->pMemoryPool->GetNextNode(!start_from_top, next_node);
+                    TSMemoryNode *node2 = this->pMemoryPool->GetNextNode(start_from_top, next_node);
                     int hole_size = next_node->Size;
                     if (node1 && node1->IsFree()) {
                         hole_size += node1->Size;
@@ -1198,23 +1198,23 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             do {
                 if (first_pass) {
                     first_pass = false;
-                    top_free_top = pMemoryPool->GetFirstNode(true);
+                    top_free_top = this->pMemoryPool->GetFirstNode(true);
                 } else {
-                    top_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
+                    top_free_top = this->pMemoryPool->GetNextFreeNode(true, top_free_top);
                 }
 
                 if (!top_free_top) {
                     done = true;
                 } else {
                     top_free_memory = top_free_top->Size;
-                    bottom_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
+                    bottom_free_top = this->pMemoryPool->GetNextFreeNode(true, top_free_top);
                     if (!bottom_free_top) {
                         done = true;
                     } else {
                         bottom_free_memory = bottom_free_top->Size;
                         total_free_memory = top_free_memory + bottom_free_memory;
-                        top_allocated = pMemoryPool->GetNextNode(true, top_free_top);
-                        pMemoryPool->GetNextNode(false, bottom_free_top);
+                        top_allocated = this->pMemoryPool->GetNextNode(true, top_free_top);
+                        this->pMemoryPool->GetNextNode(false, bottom_free_top);
 
                         middle_allocated_memory = top_allocated->Size;
                         for (int i = 0; i < 32; i++) {
@@ -1225,8 +1225,8 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                         largest_allocated = top_allocated;
                         cursor = top_allocated;
                         found_nodes = 1;
-                        while (pMemoryPool->GetNextNode(true, cursor) != bottom_free_top && cursor && found_nodes < 32) {
-                            cursor = pMemoryPool->GetNextNode(true, cursor);
+                        while (this->pMemoryPool->GetNextNode(true, cursor) != bottom_free_top && cursor && found_nodes < 32) {
+                            cursor = this->pMemoryPool->GetNextNode(true, cursor);
                             if (cursor != nullptr) {
                                 size_checking[found_nodes] = cursor->Size;
                                 middle_allocated_memory += cursor->Size;
@@ -1243,7 +1243,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                             nodes_to_move = 0;
                             std::sort(size_checking, size_checking + found_nodes + 1);
                             largest_flag = false;
-                            evaluated_top_free = pMemoryPool->GetFirstFreeNode(true);
+                            evaluated_top_free = this->pMemoryPool->GetFirstFreeNode(true);
                             position = 0;
 
                             while (found_nodes > nodes_to_move && evaluated_top_free) {
@@ -1264,9 +1264,9 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                         largest_moves_here = evaluated_top_free->Address;
                                         largest_flag = true;
                                     }
-                                    evaluated_top_free = pMemoryPool->GetNextFreeNode(true, nullptr);
+                                    evaluated_top_free = this->pMemoryPool->GetNextFreeNode(true, nullptr);
                                 }
-                                evaluated_top_free = pMemoryPool->GetNextFreeNode(true, evaluated_top_free);
+                                evaluated_top_free = this->pMemoryPool->GetNextFreeNode(true, evaluated_top_free);
                                 position++;
                             }
 
@@ -1285,7 +1285,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                 }
             } while (!done);
 
-            if (found_one && evaluated_largest_allocated && FindSectionByAddress(evaluated_largest_allocated->Address)) {
+            if (found_one && evaluated_largest_allocated && this->FindSectionByAddress(evaluated_largest_allocated->Address)) {
                 movement->Size = evaluated_largest_allocated->Size;
                 movement->Address = evaluated_largest_allocated->Address;
                 movement->NewAddress = evaluated_largest_moves_here;
@@ -1298,9 +1298,9 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         }
 
         num_movements++;
-        movement->Checksum = pMemoryPool->GetPoolChecksum();
-        pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        pMemoryPool->Malloc(movement->Size, "HoleMovement", false, false, movement->NewAddress);
+        movement->Checksum = this->pMemoryPool->GetPoolChecksum();
+        this->pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
+        this->pMemoryPool->Malloc(movement->Size, "HoleMovement", false, false, movement->NewAddress);
         amount_moved += movement->Size;
         if (amount_moved > max_amount_to_move) {
             failed = true;
@@ -1310,16 +1310,16 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 
     for (int n = num_movements - 1; n >= 0; n--) {
         HoleMovement *movement = &hole_movements[n];
-        pMemoryPool->Free(reinterpret_cast<void *>(movement->NewAddress));
+        this->pMemoryPool->Free(reinterpret_cast<void *>(movement->NewAddress));
         char *debug_name = "UndoHoleMovement";
-        TrackStreamingSection *section = FindSectionByAddress(movement->Address);
+        TrackStreamingSection *section = this->FindSectionByAddress(movement->Address);
         if (section != nullptr) {
             debug_name = section->SectionName;
         }
-        pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
+        this->pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
     }
 
-    pMemoryPool->EnableTracing(true);
+    this->pMemoryPool->EnableTracing(true);
     if (pamount_moved) {
         *pamount_moved = amount_moved;
     }
@@ -1334,9 +1334,9 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     const char *fragmented_user_allocation;
     HoleMovement hole_movement_table[128];
 
-    CountUserAllocations(&fragmented_user_allocation);
+    this->CountUserAllocations(&fragmented_user_allocation);
     if (fragmented_user_allocation) {
-        pMemoryPool->DebugPrint();
+        this->pMemoryPool->DebugPrint();
 #ifdef MILESTONE_OPT
         bReleasePrintf("WARNING:  TrackStreamer::DoHoleFilling() is aborting due to fragmented user alloc ation %s\n");
 #endif
@@ -1346,7 +1346,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     int best_method = -1;
     if (ForceHoleFillerMethod >= 0) {
         int filler_method = ForceHoleFillerMethod;
-        int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, filler_method, largest_free, 0, 0x7FFFFFFF);
+        int num_hole_movements = this->BuildHoleMovements(hole_movement_table, 0x80, filler_method, largest_free, 0, 0x7FFFFFFF);
         if (num_hole_movements > 0) {
             best_method = filler_method;
         }
@@ -1354,7 +1354,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         int best_amount_moved = 0x7FFFFFFF;
         for (int filler_method = 1; filler_method < 6; filler_method++) {
             int amount_moved;
-            int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
+            int num_hole_movements = this->BuildHoleMovements(hole_movement_table, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
             if (num_hole_movements > 0 && amount_moved < best_amount_moved) {
                 best_method = filler_method;
                 best_amount_moved = amount_moved;
@@ -1366,24 +1366,24 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         return 0;
     }
 
-    int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
+    int num_hole_movements = this->BuildHoleMovements(hole_movement_table, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
     for (int n = 0; n < num_hole_movements; n++) {
         ProfileNode profile_node("TODO", 0);
         HoleMovement *movement = &hole_movement_table[n];
-        TrackStreamingSection *section = FindSectionByAddress(movement->Address);
-        if (LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
+        TrackStreamingSection *section = this->FindSectionByAddress(movement->Address);
+        if (this->LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
             int start_ticks = bGetTicker();
             DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
-            LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
+            this->LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
             EnableWaitForFrameBufferSwap();
             float time = bGetTickerDifference(start_ticks);
         }
 
         int start_ticks = bGetTicker();
         void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
-        pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        pMemoryPool->Malloc(movement->Size, section->SectionName, false, false, movement->NewAddress);
+        this->pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
+        this->pMemoryPool->Malloc(movement->Size, section->SectionName, false, false, movement->NewAddress);
         if (section->Status == TrackStreamingSection::ACTIVATED) {
             eAllowDuplicateSolids(true);
             SetDuplicateTextureWarning(false);
@@ -1400,7 +1400,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         }
         section->pMemory = new_memory;
         float move_time = bGetTickerDifference(start_ticks);
-        NumSectionsMoved++;
+        this->NumSectionsMoved++;
 #ifdef EA_PLATFORM_GAMECUBE
         PPCSync();
 #endif
@@ -1410,7 +1410,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
 }
 
 void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *position) {
-    StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+    StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
     position_entry->Position.x = position->x;
     position_entry->Position.y = position->y;
     position_entry->Elevation = position->z;
@@ -1424,7 +1424,7 @@ void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *po
     position_entry->FollowingCar = false;
 #endif
     position_entry->PredictedZone = 0;
-    CurrentZoneNeedsRefreshing = true;
+    this->CurrentZoneNeedsRefreshing = true;
 
     {
         // TODO
@@ -1434,7 +1434,7 @@ void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *po
 
 void TrackStreamer::PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction,
                                              bool following_car) {
-    StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+    StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
     position_entry->Position.x = position->x;
     position_entry->Position.y = position->y;
     position_entry->Elevation = position->z;
@@ -1499,8 +1499,8 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
 
     if (predict_position_used) {
         if (!bEqual(&predict_position, &position_entry->Position, 0.001f)) {
-            for (int barrier_num = 0; barrier_num < NumBarriers; barrier_num++) {
-                TrackStreamingBarrier *barrier = &pBarriers[barrier_num];
+            for (int barrier_num = 0; barrier_num < this->NumBarriers; barrier_num++) {
+                TrackStreamingBarrier *barrier = &this->pBarriers[barrier_num];
                 if (barrier->Intersects(&position_entry->Position, &predict_position)) {
                     predict_position_used = false;
                     predict_zone_number = 0;
@@ -1544,7 +1544,7 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
 
 void TrackStreamer::ClearStreamingPositions() {
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         position_entry->PositionSet = false;
 #ifndef EA_BUILD_A124
         position_entry->FollowingCar = false;
@@ -1553,39 +1553,39 @@ void TrackStreamer::ClearStreamingPositions() {
 }
 
 void TrackStreamer::RemoveCurrentStreamingSections() {
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        CurrentStreamingSections[i]->CurrentlyVisible = 0;
+    for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
+        this->CurrentStreamingSections[i]->CurrentlyVisible = 0;
     }
 
-    NumCurrentStreamingSections = 0;
-    CurrentVisibleSectionTable.ClearTable();
+    this->NumCurrentStreamingSections = 0;
+    this->CurrentVisibleSectionTable.ClearTable();
 }
 
 void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num_sections_to_load, int position_number) {
     for (int i = 0; i < num_sections_to_load; i++) {
-        CurrentVisibleSectionTable.Set(sections_to_load[i]);
+        this->CurrentVisibleSectionTable.Set(sections_to_load[i]);
 
         // TODO this variable is fake
         short &section_number = sections_to_load[i];
-        if (SplitScreen) {
+        if (this->SplitScreen) {
             section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
         }
 
-        TrackStreamingSection *section = FindSection(section_number);
+        TrackStreamingSection *section = this->FindSection(section_number);
         if (section == nullptr) {
             continue;
         }
 
         section->LastNeededTimestamp = RealTimeFrames;
         if (!section->CurrentlyVisible) {
-            CurrentStreamingSections[NumCurrentStreamingSections++] = section;
+            this->CurrentStreamingSections[this->NumCurrentStreamingSections++] = section;
         }
 
         // can this be simplified?
         if (((section->CurrentlyVisible >> position_number) ^ 1U) & 1) {
             section->CurrentlyVisible |= static_cast<unsigned char>(1 << position_number);
             if (section->Status < TrackStreamingSection::LOADED) {
-                StreamingPositionEntry *streaming_position = &StreamingPositionEntries[position_number];
+                StreamingPositionEntry *streaming_position = &this->StreamingPositionEntries[position_number];
                 streaming_position->NumSectionsToLoad++;
                 streaming_position->AmountToLoad += section->Size;
             }
@@ -1599,7 +1599,7 @@ void TrackStreamer::DetermineStreamingSections() {
     short sections_to_load[384];
     int num_sections_to_load = 3;
 
-    RemoveCurrentStreamingSections();
+    this->RemoveCurrentStreamingSections();
     sections_to_load[0] = GetScenerySectionNumber('Y', 0);
     sections_to_load[1] = GetScenerySectionNumber('X', 0);
     sections_to_load[2] = GetScenerySectionNumber('Z', 0);
@@ -1611,17 +1611,17 @@ void TrackStreamer::DetermineStreamingSections() {
 
     short section_number;
     for (int n = 0; n < 4; n++) {
-        section_number = KeepSectionTable[n];
+        section_number = this->KeepSectionTable[n];
         if (section_number != 0) {
             sections_to_load[num_sections_to_load] = section_number;
             num_sections_to_load++;
         }
     }
 
-    AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 0);
-    AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 1);
+    this->AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 0);
+    this->AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 1);
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         if (position_entry->CurrentZone > 0) {
             LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
             if (!loading_section) {
@@ -1636,7 +1636,7 @@ void TrackStreamer::DetermineStreamingSections() {
                 num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, max_sections_to_load);
             }
 
-            AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
+            this->AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
         }
     }
 }
@@ -1647,8 +1647,8 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
     int total_needing_allocation = 0;
     int num_sections_allocated = 0;
 
-    if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
-        for (DiscBundleSection *disc_bundle = pDiscBundleSections; disc_bundle < pLastDiscBundleSection;) {
+    if (this->LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
+        for (DiscBundleSection *disc_bundle = this->pDiscBundleSections; disc_bundle < this->pLastDiscBundleSection;) {
             int i;
             for (i = 0; i < disc_bundle->NumMembers; i++) {
                 DiscBundleSectionMember *member = &disc_bundle->Members[i];
@@ -1659,10 +1659,10 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
             }
 
             if (i == disc_bundle->NumMembers) {
-                if (disc_bundle->FileSize <= pMemoryPool->GetLargestFreeBlock()) {
+                if (disc_bundle->FileSize <= this->pMemoryPool->GetLargestFreeBlock()) {
                     unsigned char *pmemory =
-                        static_cast<unsigned char *>(pMemoryPool->Malloc(disc_bundle->FileSize, disc_bundle->SectionName, true, false, 0));
-                    pMemoryPool->Free(pmemory);
+                        static_cast<unsigned char *>(this->pMemoryPool->Malloc(disc_bundle->FileSize, disc_bundle->SectionName, true, false, 0));
+                    this->pMemoryPool->Free(pmemory);
 
                     for (i = 0; i < disc_bundle->NumMembers; i++) {
                         DiscBundleSectionMember *member = &disc_bundle->Members[i];
@@ -1674,7 +1674,7 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
                         void *realloc_mem = pmemory + member->FileOffset * 0x80;
                         section->Status = TrackStreamingSection::ALLOCATED;
                         section->pMemory = realloc_mem;
-                        pMemoryPool->Malloc(section->Size, disc_bundle->SectionName, false, false, reinterpret_cast<intptr_t>(realloc_mem));
+                        this->pMemoryPool->Malloc(section->Size, disc_bundle->SectionName, false, false, reinterpret_cast<intptr_t>(realloc_mem));
                     }
 
                     total_needing_allocation += disc_bundle->FileSize;
@@ -1685,8 +1685,8 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
         }
     }
 
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
+    for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[i];
         if (section->Status != TrackStreamingSection::UNLOADED) {
             continue;
         }
@@ -1694,13 +1694,13 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
         if (section->SectionNumber != GetScenerySectionNumber('Y', 0) && section->SectionNumber != GetScenerySectionNumber('X', 0) &&
             section->SectionNumber != GetScenerySectionNumber('W', 0) && section->SectionNumber != GetScenerySectionNumber('U', 0) &&
             section->SectionNumber != GetScenerySectionNumber('Z', 0)) {
-            if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
+            if (this->LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
                 if (!IsTextureSection(section->SectionNumber)) {
                     continue;
                 }
             }
 
-            if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
+            if (this->LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
                 if (!IsLibrarySection(section->SectionNumber)) {
                     continue;
                 }
@@ -1710,27 +1710,27 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
         total_needing_allocation += section->Size;
         if (section->Size > bLargestMalloc(7)) {
             out_of_memory_size += section->Size;
-            NumSectionsOutOfMemory++;
+            this->NumSectionsOutOfMemory++;
         } else {
             num_sections_allocated++;
-            section->pMemory = AllocateMemory(section, 0x80);
+            section->pMemory = this->AllocateMemory(section, 0x80);
             section->Status = TrackStreamingSection::ALLOCATED;
             if (num_sections_allocated > 99999) {
-                CurrentZoneAllocatedButIncomplete = true;
+                this->CurrentZoneAllocatedButIncomplete = true;
                 return out_of_memory_size;
             }
         }
     }
 
-    CurrentZoneAllocatedButIncomplete = false;
+    this->CurrentZoneAllocatedButIncomplete = false;
     *ptotal_needing_allocation = total_needing_allocation;
     return out_of_memory_size;
 }
 
 void TrackStreamer::FreeSectionMemory() {
-    NumSectionsOutOfMemory = 0;
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    this->NumSectionsOutOfMemory = 0;
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::ALLOCATED) {
             bFree(section->pMemory);
             section->pDiscBundle = nullptr;
@@ -1750,77 +1750,77 @@ bool TrackStreamer::HandleMemoryAllocation() {
         int amount_unloaded;
 
         do {
-            amount_unloaded = UnloadLeastRecentlyUsedSection();
+            amount_unloaded = this->UnloadLeastRecentlyUsedSection();
         } while (amount_unloaded != 0);
 
-        NumSectionsMoved = 0;
+        this->NumSectionsMoved = 0;
 
         while (true) {
-            FreeSectionMemory();
-            out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
+            this->FreeSectionMemory();
+            out_of_memory_size = this->AllocateSectionMemory(&total_needing_allocation);
             if (out_of_memory_size == 0) {
                 break;
             }
             if (total_amount_unloaded > 0x7FFFFFFF || total_amount_hole_filled > 0x200000) {
                 return false;
             }
-            if (NumSectionsMoved > 15) {
+            if (this->NumSectionsMoved > 15) {
                 return false;
             }
 
-            FreeSectionMemory();
-            amount_unloaded = UnloadLeastRecentlyUsedSection();
+            this->FreeSectionMemory();
+            amount_unloaded = this->UnloadLeastRecentlyUsedSection();
             total_amount_unloaded += amount_unloaded;
             if (amount_unloaded > 0) {
                 continue;
             }
 
             while (total_needing_allocation + 0x4000 > bCountFreeMemory(7)) {
-                CurrentZoneOutOfMemory = true;
-                if (!JettisonLeastImportantSection()) {
+                this->CurrentZoneOutOfMemory = true;
+                if (!this->JettisonLeastImportantSection()) {
                     break;
                 }
-                AllocateSectionMemory(&total_needing_allocation);
-                FreeSectionMemory();
+                this->AllocateSectionMemory(&total_needing_allocation);
+                this->FreeSectionMemory();
             }
 
             {
-                int amount_hole_filled = DoHoleFilling(0);
+                int amount_hole_filled = this->DoHoleFilling(0);
                 total_amount_hole_filled += amount_hole_filled;
                 if (amount_hole_filled != 0) {
                     continue;
                 }
             }
 
-            CurrentZoneOutOfMemory = true;
-            if (!JettisonLeastImportantSection()) {
-                AllocateSectionMemory(&total_needing_allocation);
+            this->CurrentZoneOutOfMemory = true;
+            if (!this->JettisonLeastImportantSection()) {
+                this->AllocateSectionMemory(&total_needing_allocation);
                 break;
             }
         }
     }
 
-    MemorySafetyMargin = 0;
-    out_of_memory_size += AmountJettisoned;
+    this->MemorySafetyMargin = 0;
+    out_of_memory_size += this->AmountJettisoned;
 
     {
         int free_memory = bCountFreeMemory(7) - out_of_memory_size;
 
-        for (int n = 0; n < NumTrackStreamingSections; n++) {
-            TrackStreamingSection *section = &pTrackStreamingSections[n];
+        for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+            TrackStreamingSection *section = &this->pTrackStreamingSections[n];
             if (!section->CurrentlyVisible && section->Status != TrackStreamingSection::UNLOADED) {
                 free_memory += section->PermSize;
             }
         }
-        MemorySafetyMargin = free_memory;
+        this->MemorySafetyMargin = free_memory;
     }
 
     if (out_of_memory_size != 0) {
-        for (int n = 0; n < NumJettisonedSections; n++) {
+        for (int n = 0; n < this->NumJettisonedSections; n++) {
         }
 
-        if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
-            for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        if (this->LoadingPhase == LOADING_REGULAR_SECTIONS) {
+            for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
                 TrackStreamingSection *section;
             }
         }
@@ -1840,55 +1840,55 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
 }
 
 void TrackStreamer::FreeUserMemory(void *mem) {
-    int free_before = pMemoryPool->GetAmountFree();
+    int free_before = this->pMemoryPool->GetAmountFree();
     bFree(mem);
-    int size = pMemoryPool->GetAmountFree();
+    int size = this->pMemoryPool->GetAmountFree();
 }
 
 bool TrackStreamer::IsUserMemory(void *mem) {
-    int pos = static_cast<char *>(mem) - static_cast<char *>(pMemoryPoolMem);
-    return pMemoryPoolMem && pos >= 0 && pos < MemoryPoolSize;
+    int pos = static_cast<char *>(mem) - static_cast<char *>(this->pMemoryPoolMem);
+    return this->pMemoryPoolMem && pos >= 0 && pos < this->MemoryPoolSize;
 }
 
 bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
-    WaitForCurrentLoadingToComplete();
+    this->WaitForCurrentLoadingToComplete();
     while (size > bCountFreeMemory(7)) {
-        if (UnloadLeastRecentlyUsedSection() == 0 && (!force_unloading || !JettisonLeastImportantSection())) {
+        if (this->UnloadLeastRecentlyUsedSection() == 0 && (!force_unloading || !this->JettisonLeastImportantSection())) {
             break;
         }
     }
 
     ForceHoleFillerMethod = 0;
-    DoHoleFilling(0x7FFFFFFF);
+    this->DoHoleFilling(0x7FFFFFFF);
     ForceHoleFillerMethod = -1;
     return size <= bLargestMalloc(7);
 }
 
 void TrackStreamer::MakeSpaceInPool(int size, void (*callback)(intptr_t), intptr_t param) {
-    if (LoadingPhase == LOADING_IDLE) {
-        IsLoadingInProgress();
+    if (this->LoadingPhase == LOADING_IDLE) {
+        this->IsLoadingInProgress();
     }
 
-    if (!IsLoadingInProgress()) {
-        MakeSpaceInPool(size, true);
+    if (!this->IsLoadingInProgress()) {
+        this->MakeSpaceInPool(size, true);
         callback(param);
     } else {
-        MakeSpaceInPoolSize = size;
-        MakeSpaceInPoolCallback = callback;
-        MakeSpaceInPoolCallbackParam = param;
-        pCallback = ReadyToMakeSpaceInPoolBridge;
-        CallbackParam = reinterpret_cast<int>(this);
+        this->MakeSpaceInPoolSize = size;
+        this->MakeSpaceInPoolCallback = callback;
+        this->MakeSpaceInPoolCallbackParam = param;
+        this->pCallback = ReadyToMakeSpaceInPoolBridge;
+        this->CallbackParam = reinterpret_cast<int>(this);
     }
 }
 
 void TrackStreamer::ReadyToMakeSpaceInPool() {
-    MakeSpaceInPool(MakeSpaceInPoolSize, true);
+    this->MakeSpaceInPool(this->MakeSpaceInPoolSize, true);
 
-    void (*callback)(intptr_t) = MakeSpaceInPoolCallback;
-    intptr_t param = MakeSpaceInPoolCallbackParam;
-    MakeSpaceInPoolCallback = nullptr;
-    MakeSpaceInPoolCallbackParam = 0;
-    MakeSpaceInPoolSize = 0;
+    void (*callback)(intptr_t) = this->MakeSpaceInPoolCallback;
+    intptr_t param = this->MakeSpaceInPoolCallbackParam;
+    this->MakeSpaceInPoolCallback = nullptr;
+    this->MakeSpaceInPoolCallbackParam = 0;
+    this->MakeSpaceInPoolSize = 0;
     callback(param);
 }
 
@@ -1896,10 +1896,10 @@ bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
     bool current_zones_different = false;
     int position_number;
     for (position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         short predict_zone_number = -1;
         if (position_entry->PositionSet) {
-            predict_zone_number = GetPredictedZone(position_entry);
+            predict_zone_number = this->GetPredictedZone(position_entry);
         }
         short zone_number = predict_zone_number;
 
@@ -1925,20 +1925,20 @@ bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
         current_zones[position_number] = zone_number;
     }
 
-    return current_zones_different | CurrentZoneNeedsRefreshing;
+    return current_zones_different | this->CurrentZoneNeedsRefreshing;
 }
 
 void TrackStreamer::ServiceGameState() {
     float start_time = GetDebugRealTime();
-    HandleZoneSwitching();
-    HandleSectionActivation();
+    this->HandleZoneSwitching();
+    this->HandleSectionActivation();
     float time = GetDebugRealTime();
 
-    AmountNotRendered = 0;
-    for (int n = 0; n < NumCurrentStreamingSections; n++) {
-        TrackStreamingSection *section = CurrentStreamingSections[n];
+    this->AmountNotRendered = 0;
+    for (int n = 0; n < this->NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[n];
         if (!section->WasRendered && IsRegularScenerySection(section->SectionNumber)) {
-            AmountNotRendered += section->Size;
+            this->AmountNotRendered += section->Size;
         }
         section->WasRendered = 0;
     }
@@ -1947,21 +1947,21 @@ void TrackStreamer::ServiceGameState() {
 void TrackStreamer::ServiceNonGameState() {
     ProfileNode profile_node("TODO", 0);
     float start_time = GetDebugRealTime();
-    HandleLoading();
+    this->HandleLoading();
     float time = GetDebugRealTime();
 }
 
 void TrackStreamer::BlockUntilLoadingComplete() {
-    RefreshLoading();
-    WaitForCurrentLoadingToComplete();
+    this->RefreshLoading();
+    this->WaitForCurrentLoadingToComplete();
 }
 
 void TrackStreamer::WaitForCurrentLoadingToComplete() {
-    while (!AreAllSectionsActivated()) {
-        HandleLoading();
-        short section_to_activate = static_cast<short>(GetSectionToActivate(0));
+    while (!this->AreAllSectionsActivated()) {
+        this->HandleLoading();
+        short section_to_activate = static_cast<short>(this->GetSectionToActivate(0));
         if (section_to_activate != 0) {
-            ActivateSection(FindSection(section_to_activate));
+            this->ActivateSection(this->FindSection(section_to_activate));
         }
         ServiceResourceLoading();
         bThreadYield(8);
@@ -1969,12 +1969,12 @@ void TrackStreamer::WaitForCurrentLoadingToComplete() {
 }
 
 bool TrackStreamer::IsLoadingInProgress() {
-    bool loading_in_progress = !AreAllSectionsActivated();
+    bool loading_in_progress = !this->AreAllSectionsActivated();
 
-    if (!loading_in_progress && !AreAllSectionsActivated()) {
-        while (!AreAllSectionsActivated()) {
+    if (!loading_in_progress && !this->AreAllSectionsActivated()) {
+        while (!this->AreAllSectionsActivated()) {
             ServiceResourceLoading();
-            ServiceNonGameState();
+            this->ServiceNonGameState();
         }
     }
 
@@ -1982,39 +1982,39 @@ bool TrackStreamer::IsLoadingInProgress() {
 }
 
 bool TrackStreamer::AreAllSectionsActivated() {
-    return LoadingPhase == LOADING_IDLE && NumSectionsActivated + NumSectionsOutOfMemory >= NumCurrentStreamingSections;
+    return this->LoadingPhase == LOADING_IDLE && this->NumSectionsActivated + this->NumSectionsOutOfMemory >= this->NumCurrentStreamingSections;
 }
 
 void TrackStreamer::RefreshLoading() {
-    CurrentZoneNeedsRefreshing = true;
+    this->CurrentZoneNeedsRefreshing = true;
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         position_entry->PredictedZoneValidTime = -1;
     }
-    HandleZoneSwitching();
+    this->HandleZoneSwitching();
 }
 
 void TrackStreamer::HandleZoneSwitching() {
     ProfileNode profile_node("TODO", 0);
     short current_zones[2];
     bool current_zones_different;
-    if (!ZoneSwitchingDisabled && pMemoryPoolMem) {
-        current_zones_different = DetermineCurrentZones(current_zones);
+    if (!this->ZoneSwitchingDisabled && this->pMemoryPoolMem) {
+        current_zones_different = this->DetermineCurrentZones(current_zones);
         if (current_zones_different) {
-            SwitchZones(current_zones);
+            this->SwitchZones(current_zones);
         }
     }
 }
 
 void TrackStreamer::SwitchZones(short *current_zones) {
-    StartLoadingTime = GetDebugRealTime();
-    CurrentZoneNeedsRefreshing = false;
+    this->StartLoadingTime = GetDebugRealTime();
+    this->CurrentZoneNeedsRefreshing = false;
 
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         int zone_number = current_zones[position_number];
         if (position_entry->CurrentZone != zone_number) {
-            PlotLoadingMarker(position_entry);
+            this->PlotLoadingMarker(position_entry);
 
             VisibleSectionBoundary *boundary1 = TheVisibleSectionManager.FindBoundary(position_entry->CurrentZone);
             VisibleSectionBoundary *boundary2 = TheVisibleSectionManager.FindBoundary(zone_number);
@@ -2027,7 +2027,7 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             }
 
             if (0.1f < best_distance) {
-                CurrentZoneFarLoad = true;
+                this->CurrentZoneFarLoad = true;
             }
 
             position_entry->CurrentZone = zone_number;
@@ -2040,20 +2040,20 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         }
 
         if (position_number == 0) {
-            GetScenerySectionName(CurrentZoneName, zone_number);
+            GetScenerySectionName(this->CurrentZoneName, zone_number);
         } else if (zone_number > 0) {
-            bSPrintf(CurrentZoneName, "%s - %s", CurrentZoneName, GetScenerySectionName(zone_number));
+            bSPrintf(this->CurrentZoneName, "%s - %s", this->CurrentZoneName, GetScenerySectionName(zone_number));
         }
     }
 
     int num_sections_unactivated = 0;
-    DetermineStreamingSections();
+    this->DetermineStreamingSections();
     PostLoadFixupDisabled = true;
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
             if (!IsTextureSection(section->SectionNumber) && !IsLibrarySection(section->SectionNumber)) {
-                UnactivateSection(section);
+                this->UnactivateSection(section);
                 num_sections_unactivated++;
             }
         }
@@ -2062,78 +2062,78 @@ void TrackStreamer::SwitchZones(short *current_zones) {
 
     if (num_sections_unactivated > 0) {
         PostLoadFixup();
-        SkipNextHandleLoad = true;
+        this->SkipNextHandleLoad = true;
     }
 
-    FreeSectionMemory();
-    SetLoadingPhase(ALLOCATING_TEXTURE_SECTIONS);
-    CurrentZoneOutOfMemory = false;
-    CurrentZoneAllocatedButIncomplete = false;
-    MemorySafetyMargin = 0;
-    AmountJettisoned = 0;
-    NumJettisonedSections = 0;
-    bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
-    AssignLoadingPriority();
-    CalculateLoadingBacklog();
+    this->FreeSectionMemory();
+    this->SetLoadingPhase(ALLOCATING_TEXTURE_SECTIONS);
+    this->CurrentZoneOutOfMemory = false;
+    this->CurrentZoneAllocatedButIncomplete = false;
+    this->MemorySafetyMargin = 0;
+    this->AmountJettisoned = 0;
+    this->NumJettisonedSections = 0;
+    bMemSet(this->JettisonedSections, 0, sizeof(this->JettisonedSections));
+    this->AssignLoadingPriority();
+    this->CalculateLoadingBacklog();
 }
 
 // UNSOLVED regswaps
 void TrackStreamer::HandleLoading() {
-    if (SkipNextHandleLoad) {
-        SkipNextHandleLoad = false;
+    if (this->SkipNextHandleLoad) {
+        this->SkipNextHandleLoad = false;
         return;
     }
-    if (LoadingPhase == LOADING_IDLE) {
+    if (this->LoadingPhase == LOADING_IDLE) {
         return;
     }
 
-    if ((LoadingPhase == LOADING_TEXTURE_SECTIONS || LoadingPhase == LOADING_GEOMETRY_SECTIONS || LoadingPhase == LOADING_REGULAR_SECTIONS)) {
-        StartLoadingSections();
-        if (NumSectionsLoading == 0) {
-            if (CurrentZoneAllocatedButIncomplete) {
-                SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase - 1));
+    if ((this->LoadingPhase == LOADING_TEXTURE_SECTIONS || this->LoadingPhase == LOADING_GEOMETRY_SECTIONS || this->LoadingPhase == LOADING_REGULAR_SECTIONS)) {
+        this->StartLoadingSections();
+        if (this->NumSectionsLoading == 0) {
+            if (this->CurrentZoneAllocatedButIncomplete) {
+                this->SetLoadingPhase(static_cast<eLoadingPhase>(this->LoadingPhase - 1));
             } else {
-                if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
-                    FinishedLoading();
+                if (this->LoadingPhase == LOADING_REGULAR_SECTIONS) {
+                    this->FinishedLoading();
                     return;
                 }
-                SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase + 1));
+                this->SetLoadingPhase(static_cast<eLoadingPhase>(this->LoadingPhase + 1));
             }
         }
     }
 
-    if ((LoadingPhase == ALLOCATING_TEXTURE_SECTIONS || LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS ||
-         LoadingPhase == ALLOCATING_REGULAR_SECTIONS) &&
-        NumSectionsLoading < 1) {
+    if ((this->LoadingPhase == ALLOCATING_TEXTURE_SECTIONS || this->LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS ||
+         this->LoadingPhase == ALLOCATING_REGULAR_SECTIONS) &&
+        this->NumSectionsLoading < 1) {
         int num_sections_unactivated = 0;
-        for (int n = 0; n < NumTrackStreamingSections; n++) {
-            TrackStreamingSection *section = &pTrackStreamingSections[n];
+        for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+            TrackStreamingSection *section = &this->pTrackStreamingSections[n];
             if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
                 // TODO writing this as two different branches switches byteswaps, but messes with the instructions
-                if ((LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsTextureSection(section->SectionNumber)) ||
-                    (LoadingPhase == ALLOCATING_REGULAR_SECTIONS && IsLibrarySection(section->SectionNumber))) {
-                    UnactivateSection(section);
+                if ((this->LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsTextureSection(section->SectionNumber)) ||
+                    (this->LoadingPhase == ALLOCATING_REGULAR_SECTIONS && IsLibrarySection(section->SectionNumber))) {
+                    this->UnactivateSection(section);
                     num_sections_unactivated++;
                 }
             }
         }
 
         if (num_sections_unactivated > 0) {
-            SkipNextHandleLoad = true;
+            this->SkipNextHandleLoad = true;
             return;
         }
         PostLoadFixupDisabled = true;
-        bool complete = HandleMemoryAllocation();
+        bool complete = this->HandleMemoryAllocation();
         PostLoadFixupDisabled = false;
-        if (NumSectionsMoved > 0) {
+        if (this->NumSectionsMoved > 0) {
             PostLoadFixup();
         }
         if (complete != 0) {
-            SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase + 1));
-            if (LoadingPhase == LOADING_TEXTURE_SECTIONS || LoadingPhase == LOADING_GEOMETRY_SECTIONS) {
-                UnJettisonSections();
+            this->SetLoadingPhase(static_cast<eLoadingPhase>(this->LoadingPhase + 1));
+            if (this->LoadingPhase == LOADING_TEXTURE_SECTIONS || this->LoadingPhase == LOADING_GEOMETRY_SECTIONS) {
+                this->UnJettisonSections();
             }
-            HandleLoading();
+            this->HandleLoading();
         }
     }
 }
@@ -2254,14 +2254,14 @@ void TrackStreamer::AssignLoadingPriority() {
         }
     }
 
-    for (int n = 0; n < NumCurrentStreamingSections; n++) {
-        TrackStreamingSection *section = CurrentStreamingSections[n];
+    for (int n = 0; n < this->NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[n];
         int best_priority = 99;
         for (int position_number = 0; position_number < 2; position_number++) {
-            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+            StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
             if ((section->CurrentlyVisible >> position_number) & 1) {
                 {
-                    int priority = GetLoadingPriority(section, position_entry, false);
+                    int priority = this->GetLoadingPriority(section, position_entry, false);
                     if (priority < best_priority) {
                         best_priority = priority;
                     }
@@ -2275,8 +2275,8 @@ void TrackStreamer::AssignLoadingPriority() {
 
 void TrackStreamer::CalculateLoadingBacklog() {
     float loading_backlog = 0.0f;
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
+    for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[i];
         // TODO
         if (section->CurrentlyVisible && (section->Status - TrackStreamingSection::LOADED > 1U)) {
             // TODO get rid of temp
@@ -2296,16 +2296,16 @@ void TrackStreamer::CalculateLoadingBacklog() {
         }
     }
 
-    LoadingBacklog = loading_backlog;
+    this->LoadingBacklog = loading_backlog;
 }
 
 void TrackStreamer::StartLoadingSections() {
     bool something_to_load = true;
-    while (NumSectionsLoading < 2 && something_to_load) {
+    while (this->NumSectionsLoading < 2 && something_to_load) {
         int best_priority = 0x7FFFFFFF;
         TrackStreamingSection *best_section = nullptr;
-        for (int i = 0; i < NumCurrentStreamingSections; i++) {
-            TrackStreamingSection *section = CurrentStreamingSections[i];
+        for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
+            TrackStreamingSection *section = this->CurrentStreamingSections[i];
             if (section->Status == TrackStreamingSection::ALLOCATED) {
                 int priority = section->LoadingPriority;
                 if (section->pDiscBundle) {
@@ -2315,7 +2315,7 @@ void TrackStreamer::StartLoadingSections() {
                     best_priority = priority;
                     best_section = section;
                 }
-            } else if (section->Status == TrackStreamingSection::LOADED && !NeedsGameStateActivation(section)) {
+            } else if (section->Status == TrackStreamingSection::LOADED && !this->NeedsGameStateActivation(section)) {
                 TheTrackStreamer.ActivateSection(section);
             }
         }
@@ -2325,9 +2325,9 @@ void TrackStreamer::StartLoadingSections() {
         } else {
             if (best_section->pDiscBundle) {
                 DiscBundleSection *disc_bundle = best_section->pDiscBundle;
-                LoadDiscBundle(disc_bundle);
+                this->LoadDiscBundle(disc_bundle);
             } else {
-                LoadSection(best_section);
+                this->LoadSection(best_section);
             }
         }
     }
@@ -2340,23 +2340,23 @@ void TrackStreamer::FinishedLoading() {
         StreamingPositionEntry *position_entry;
     }
 
-    LoadingPhase = LOADING_IDLE;
-    CurrentZoneNonReplayLoad = false;
-    CurrentZoneFarLoad = false;
+    this->LoadingPhase = LOADING_IDLE;
+    this->CurrentZoneNonReplayLoad = false;
+    this->CurrentZoneFarLoad = false;
     NotifySkyLoader();
 
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         if (position_entry->BeginLoadingTime != 0.0f) {
-            PlotLoadingMarker(position_entry);
+            this->PlotLoadingMarker(position_entry);
         }
         position_entry->BeginLoadingTime = 0.0f;
     }
 
-    if (pCallback != nullptr) {
-        SetDelayedResourceCallback(pCallback, CallbackParam);
-        pCallback = nullptr;
-        CallbackParam = 0;
+    if (this->pCallback != nullptr) {
+        SetDelayedResourceCallback(this->pCallback, this->CallbackParam);
+        this->pCallback = nullptr;
+        this->CallbackParam = 0;
     }
 }
 
@@ -2386,14 +2386,14 @@ bool TrackStreamer::CheckLoadingBar() {
     float closest_approach_speed;
 
     for (int position_number = 0; position_number < 2; position_number++) {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
         float speed;
         float max_speed;
-        if (!IsLoadingInProgress()) {
+        if (!this->IsLoadingInProgress()) {
             break;
         }
 
-        if (IsFarLoadingInProgress() || !position_entry->PositionSet || !position_entry->FollowingCar) {
+        if (this->IsFarLoadingInProgress() || !position_entry->PositionSet || !position_entry->FollowingCar) {
             break;
         }
 
@@ -2403,8 +2403,8 @@ bool TrackStreamer::CheckLoadingBar() {
             break;
         }
 
-        for (int n = 0; n < NumCurrentStreamingSections; n++) {
-            TrackStreamingSection *section = CurrentStreamingSections[n];
+        for (int n = 0; n < this->NumCurrentStreamingSections; n++) {
+            TrackStreamingSection *section = this->CurrentStreamingSections[n];
             VisibleSectionBoundary *boundary = section->pBoundary;
 
             if (boundary != nullptr) {
@@ -2444,9 +2444,9 @@ bool TrackStreamer::CheckLoadingBar() {
 #endif
 
 int TrackStreamer::GetSectionToActivate(int activation_delay) {
-    if (NumSectionsActivated < NumCurrentStreamingSections) {
-        for (int n = 0; n < NumCurrentStreamingSections; n++) {
-            TrackStreamingSection *section = CurrentStreamingSections[n];
+    if (this->NumSectionsActivated < this->NumCurrentStreamingSections) {
+        for (int n = 0; n < this->NumCurrentStreamingSections; n++) {
+            TrackStreamingSection *section = this->CurrentStreamingSections[n];
             if (section->Status == TrackStreamingSection::LOADED && TheTrackStreamer.NeedsGameStateActivation(section) &&
                 RealTimeFrames - section->LoadedTime >= activation_delay) {
                 return section->SectionNumber;
@@ -2460,9 +2460,9 @@ int TrackStreamer::GetSectionToActivate(int activation_delay) {
 void TrackStreamer::HandleSectionActivation() {
     ProfileNode profile_node("TODO", 0);
     int activation_delay;
-    short section_to_activate = static_cast<short>(GetSectionToActivate(0));
+    short section_to_activate = static_cast<short>(this->GetSectionToActivate(0));
     if (section_to_activate != 0) {
-        TrackStreamingSection *section = FindSection(section_to_activate);
+        TrackStreamingSection *section = this->FindSection(section_to_activate);
         if (section->Status != TrackStreamingSection::ACTIVATED) {
             if (section->Status != TrackStreamingSection::LOADED) {
                 if (!section->CurrentlyVisible) {
@@ -2470,28 +2470,28 @@ void TrackStreamer::HandleSectionActivation() {
                 }
 
                 do {
-                    HandleLoading();
+                    this->HandleLoading();
                     ServiceResourceLoading();
                 } while (section->Status != TrackStreamingSection::LOADED);
             }
-            ActivateSection(section);
+            this->ActivateSection(section);
         }
     }
 }
 
 void TrackStreamer::UnloadEverything() {
-    while (NumSectionsLoading != 0) {
+    while (this->NumSectionsLoading != 0) {
         ServiceResourceLoading();
     }
 
-    for (int n = 0; n < NumTrackStreamingSections; n++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[n];
+    for (int n = 0; n < this->NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &this->pTrackStreamingSections[n];
         // TODO
         if (section->Status >= TrackStreamingSection::LOADED && section->Status <= TrackStreamingSection::ACTIVATED) {
-            UnloadSection(section);
+            this->UnloadSection(section);
         }
     }
 
-    FreeSectionMemory();
-    ClearCurrentZones();
+    this->FreeSectionMemory();
+    this->ClearCurrentZones();
 }

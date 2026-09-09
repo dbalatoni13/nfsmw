@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Src/AI/Activities/AITrafficManager.cpp"
 
 #include "Speed/Indep/Src/AI/Activities/AICopManager.cpp"
@@ -59,3 +64,13 @@
 #include "Speed/Indep/Src/AI/Common/AIGoal.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AIPursuit.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIRoadBlock.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIRoadBlockSetups.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AISpawnManager.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIMath.cpp"
+
+#include "Speed/Indep/Src/AI/Gps.cpp"

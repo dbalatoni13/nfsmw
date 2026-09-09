@@ -11,6 +11,20 @@
 #include "Speed/Indep/Src/World/WorldTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
+#define BIND_AUDIO_EVENT(_TYPE_, _function_) Sound::AudioEvent::Prototype __##_TYPE_(Attrib::ClassName::_TYPE_, _function_); // Decl: 22
+
+#define SD_IS_PRIMARY (1 << 0)        // Decl: 31
+#define SD_SMOKABLE_INVOLVED (1 << 1) // Decl: 32
+#define SD_WALL_INVOLVED (1 << 2)     // Decl: 33
+#define SD_TWO_CAR_COLLISION (1 << 3) // Decl: 34
+#define SD_IS_CAR_INVOLVED (1 << 4)   // Decl: 35
+#define SD_IS_ROLLOVER (1 << 5)       // Decl: 36
+#define SD_IS_BOTTOMOUT (1 << 6)      // Decl: 37
+#define SD_IS_FRONT (1 << 7)          // Decl: 38
+#define SD_IS_SIDE (1 << 8)           // Decl: 39
+#define SD_IS_SCRAPE (1 << 9)         // Decl: 40
+#define SD_IS_EVENT (1 << 10)         // Decl: 41
+
 namespace Sound {
 
 // Decl: 57
@@ -31,10 +45,20 @@ class AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEvent
         return UTL::COM::Factory<const AudioEventParams &, AudioEvent, unsigned int>::CreateInstance(params.attributes.GetClassKey(), params);
     }
 
+    AudioEvent(const AudioEventParams &params)
+        : mParams(params), //
+          mAttributes(params.attributes, 0, nullptr) {}
+
     virtual ~AudioEvent() {}
     virtual void Release() = 0;
     virtual void Pause(bool pause) = 0;
-    virtual void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {}
+
+    virtual void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
+        this->mParams.position = p;
+        this->mParams.normal = n;
+        this->mParams.velocity = v;
+        this->mParams.magnitude = mag;
+    }
 
     const AudioEventParams &GetParameters() const {
         return mParams;

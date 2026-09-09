@@ -44,8 +44,8 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
         USE_FASTALLOC(Effect);
 
         void ResetEmitterGroup() {
-            mEmitterGroup = nullptr;
-            mKey = 0;
+            this->mEmitterGroup = nullptr;
+            this->mKey = 0;
         }
 
         bMatrix4 mLocalMatrix;       // offset 0x8, size 0x40
@@ -94,7 +94,7 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
     }
 
     void Hide() {
-        mHide = true;
+        this->mHide = true;
     }
 
     bool IsLoaded() const {

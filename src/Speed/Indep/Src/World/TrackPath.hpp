@@ -5,23 +5,24 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+// Decl: 28
 enum eTrackPathZoneType {
-    NUM_TRACK_PATH_ZONES = 15,
-    TRACK_PATH_ZONE_PURSUIT_START = 14,
-    TRACK_PACH_ZONE_NO_COP_SPAWN = 13,
-    TRACK_PATH_ZONE_JUMP_CAM = 12,
-    TRACK_PATH_ZONE_NEIGHBOURHOOD = 11,
-    TRACK_PATH_ZONE_DYNAMIC = 10,
-    TRACK_PATH_ZONE_TRAFFIC_PATTERN = 9,
-    TRACK_PATH_ZONE_HIDDEN = 8,
-    TRACK_PATH_ZONE_GARAGE = 7,
-    TRACK_PATH_ZONE_STREAMER_PREDICTION = 6,
-    TRACK_PATH_ZONE_OVERPASS_SMALL = 5,
-    TRACK_PATH_ZONE_OVERPASS = 4,
-    TRACK_PATH_ZONE_TUNNEL = 3,
-    TRACK_PATH_ZONE_GUIDED_RESET = 2,
-    TRACK_PATH_ZONE_RESET_TO_POINT = 1,
     TRACK_PATH_ZONE_RESET = 0,
+    TRACK_PATH_ZONE_RESET_TO_POINT = 1,
+    TRACK_PATH_ZONE_GUIDED_RESET = 2,
+    TRACK_PATH_ZONE_TUNNEL = 3,
+    TRACK_PATH_ZONE_OVERPASS = 4,
+    TRACK_PATH_ZONE_OVERPASS_SMALL = 5,
+    TRACK_PATH_ZONE_STREAMER_PREDICTION = 6,
+    TRACK_PATH_ZONE_GARAGE = 7,
+    TRACK_PATH_ZONE_HIDDEN = 8,
+    TRACK_PATH_ZONE_TRAFFIC_PATTERN = 9,
+    TRACK_PATH_ZONE_DYNAMIC = 10,
+    TRACK_PATH_ZONE_NEIGHBOURHOOD = 11,
+    TRACK_PATH_ZONE_JUMP_CAM = 12,
+    TRACK_PACH_ZONE_NO_COP_SPAWN = 13,
+    TRACK_PATH_ZONE_PURSUIT_START = 14,
+    NUM_TRACK_PATH_ZONES = 15,
 };
 
 bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d);
@@ -32,27 +33,27 @@ class TrackPathBarrier {
     TrackPathBarrier();
 
     void EndianSwap() {
-        bPlatEndianSwap(&Points[0]);
-        bPlatEndianSwap(&Points[1]);
-        bPlatEndianSwap(&GroupHash);
+        bPlatEndianSwap(&this->Points[0]);
+        bPlatEndianSwap(&this->Points[1]);
+        bPlatEndianSwap(&this->GroupHash);
     }
 
     bool IsEnabled() {
-        return Enabled != 0;
+        return this->Enabled != 0;
     }
 
     bool IsPlayerBarrier() {
-        return PlayerBarrier != 0;
+        return this->PlayerBarrier != 0;
     }
 
     void SetGroup(uint32 group_hash);
 
     bool HasGroup(uint32 group_hash) {
-        return GroupHash == group_hash;
+        return this->GroupHash == group_hash;
     }
 
     bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {
-        return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+        return DoLinesIntersect(this->Points[0], this->Points[1], *pointa, *pointb);
     }
 
     bVector2 Points[2]; // offset 0x0, size 0x10
@@ -88,35 +89,39 @@ class TrackPathZone {
     float GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b);
 
     bVector2 *GetDirection() {
-        return &Direction;
+        return &this->Direction;
     }
 
     bVector2 *GetPosition() {
-        return &Position;
+        return &this->Position;
     }
 
     eTrackPathZoneType GetType() {
-        return Type;
+        return this->Type;
     }
 
     float GetElevation() {
-        return Elevation;
+        return this->Elevation;
     }
 
     int32 GetData(int index) {
-        return Data[index];
+        return this->Data[index];
     }
 
     void SetVisitInfo(int v) {
-        VisitInfo = v;
+        this->VisitInfo = v;
+    }
+
+    int GetVisitInfo() {
+        return this->VisitInfo;
     }
 
     int GetMemoryImageSize() {
-        return MemoryImageSize;
+        return this->MemoryImageSize;
     }
 
     TrackPathZone *GetMemoryImageNext() {
-        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
+        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + this->GetMemoryImageSize());
     }
 };
 
@@ -139,7 +144,7 @@ class TrackPathManager {
 
   public:
     TrackPathManager() {
-        Clear();
+        this->Clear();
     }
 
     int Loader(bChunk *chunk);
@@ -147,7 +152,7 @@ class TrackPathManager {
     void Clear();
 
     int GetNumBarriers() {
-        return NumBarriers;
+        return this->NumBarriers;
     }
 
     void EnableBarriers(const char *group_name);
@@ -159,12 +164,12 @@ class TrackPathManager {
     void Close() {}
 
     TrackPathBarrier *GetBarrier(int n) {
-        return &pBarriers[n];
+        return &this->pBarriers[n];
     }
 
   private:
     TrackPathZone *GetLastZone() {
-        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(pZones) + SizeofZones);
+        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this->pZones) + this->SizeofZones);
     }
 
     int NumZones;                // offset 0x0, size 0x4

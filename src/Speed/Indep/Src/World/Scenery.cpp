@@ -35,21 +35,21 @@ class PrecullerBooBooManager {
     }
 
     void Set(bVector3 &pos) {
-        int n = GetSectionNumber(pos);
-        unsigned char *p = GetByte(n);
-        *p |= GetBit(n);
+        int n = this->GetSectionNumber(pos);
+        unsigned char *p = this->GetByte(n);
+        *p |= this->GetBit(n);
     }
 
     void Clr(bVector3 &pos) {
-        int n = GetSectionNumber(pos);
-        unsigned char *p = GetByte(n);
-        *p &= ~0 - GetBit(n);
+        int n = this->GetSectionNumber(pos);
+        unsigned char *p = this->GetByte(n);
+        *p &= ~0 - this->GetBit(n);
     }
 
     bool IsSet(bVector3 &pos) {
-        int n = GetSectionNumber(pos);
-        unsigned char *p = GetByte(n);
-        return (*p & GetBit(n)) != 0;
+        int n = this->GetSectionNumber(pos);
+        unsigned char *p = this->GetByte(n);
+        return (*p & this->GetBit(n)) != 0;
     }
 
     int GetSectionNumber(bVector3 &position) {
@@ -60,7 +60,7 @@ class PrecullerBooBooManager {
 
   private:
     unsigned char *GetByte(int section_number) {
-        return &BitField[section_number >> 3];
+        return &this->BitField[section_number >> 3];
     }
 
     unsigned char GetBit(int section_number) {
@@ -135,9 +135,9 @@ SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number) {
 }
 
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
-    SceneryInstance *scenery_instance = section_header->GetSceneryInstance(InstanceNumber);
+    SceneryInstance *scenery_instance = section_header->GetSceneryInstance(this->InstanceNumber);
 
-    if ((scenery_instance->ExcludeFlags & 0x800000) != 0 && ((scenery_instance->ExcludeFlags ^ ExcludeFlags) & 0x400) != 0) {
+    if ((scenery_instance->ExcludeFlags & 0x800000) != 0 && ((scenery_instance->ExcludeFlags ^ this->ExcludeFlags) & 0x400) != 0) {
         bMatrix4 matrix;
 
         scenery_instance->GetRotation(&matrix);
@@ -153,13 +153,13 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
         scenery_instance->SetMatrix(&matrix);
     }
 
-    scenery_instance->ExcludeFlags = ExcludeFlags + (scenery_instance->ExcludeFlags & 0xFFFF0000);
+    scenery_instance->ExcludeFlags = this->ExcludeFlags + (scenery_instance->ExcludeFlags & 0xFFFF0000);
 }
 
 void SceneryOverrideInfo::AssignOverrides() {
-    ScenerySectionHeader *section_header = GetScenerySectionHeader(SectionNumber);
+    ScenerySectionHeader *section_header = GetScenerySectionHeader(this->SectionNumber);
     if (section_header != nullptr) {
-        AssignOverrides(section_header);
+        this->AssignOverrides(section_header);
     }
 }
 
@@ -676,15 +676,15 @@ int ToggleIsInTable(short *table, int num_entries, int max_entries, int entry) {
 }
 
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {
-    SceneryInstance *scenery_instance = &pSceneryInstance[scenery_instance_number];
-    tPrecullerInfo *preculler_info = GetPrecullerInfo(scenery_instance->PrecullerInfoIndex);
+    SceneryInstance *scenery_instance = &this->pSceneryInstance[scenery_instance_number];
+    tPrecullerInfo *preculler_info = this->GetPrecullerInfo(scenery_instance->PrecullerInfoIndex);
     if (scenery_cull_info->PrecullerSectionNumber >= 0) {
         if (!preculler_info->IsVisible(scenery_cull_info->PrecullerSectionNumber)) {
             return;
         }
     }
 
-    SceneryInfo *my_scenery_info = &pSceneryInfo[scenery_instance->SceneryInfoNumber];
+    SceneryInfo *my_scenery_info = &this->pSceneryInfo[scenery_instance->SceneryInfoNumber];
     static bool bPrintName = false;
     int exclude_bits = scenery_instance->ExcludeFlags & 0xFF;
     int exclude_mask = 0x60;
@@ -692,7 +692,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     if (exclude_flagxor & scenery_cull_info->ExcludeFlags) {
         return;
     }
-    SceneryInfo *scenery_info = &pSceneryInfo[scenery_instance->SceneryInfoNumber];
+    SceneryInfo *scenery_info = &this->pSceneryInfo[scenery_instance->SceneryInfoNumber];
 
     if (bPrintName) {
     }
@@ -861,7 +861,7 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
     SceneryTreeNode **pnode = node_stack + 1;
     unsigned char *pvisibility_state = visibility_state_stack + 1;
 
-    node_stack[0] = SceneryTreeNodeTable;
+    node_stack[0] = this->SceneryTreeNodeTable;
     visibility_state_stack[0] = 1;
     while (pnode != node_stack) {
         pnode--;
@@ -880,7 +880,7 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
             for (int child_number = 0; child_number < node->NumChildren; child_number++) {
                 short child_code = node->ChildCodes[child_number];
                 if (child_code >= 0) {
-                    DrawAScenery(child_code, scenery_cull_info, visibility_state);
+                    this->DrawAScenery(child_code, scenery_cull_info, visibility_state);
                 } else {
                     // TODO, DebugBreak() stuff
                     {
@@ -888,7 +888,7 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
                     }
                     {
                         child_code = -child_code;
-                        SceneryTreeNode *child_node = &SceneryTreeNodeTable[child_code];
+                        SceneryTreeNode *child_node = &this->SceneryTreeNodeTable[child_code];
                         *pnode = child_node;
                     }
                     *pvisibility_state = visibility_state;
@@ -976,7 +976,7 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
     ProfileNode profile_node("TODO", 0);
     const int max_sections_to_draw = 128;
     short sections_to_draw[max_sections_to_draw];
-    int num_sections_to_draw = WhatSectionsShouldWeDraw(sections_to_draw, max_sections_to_draw, scenery_cull_info);
+    int num_sections_to_draw = this->WhatSectionsShouldWeDraw(sections_to_draw, max_sections_to_draw, scenery_cull_info);
 
     for (int i = 0; i < num_sections_to_draw; i++) {
         int section_number = sections_to_draw[i];
@@ -991,13 +991,13 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
 
 void GrandSceneryCullInfo::DoCulling() {
     ProfileNode profile_node("TODO", 0);
-    pFirstDrawInfo = SceneryDrawInfoTable;
-    pCurrentDrawInfo = SceneryDrawInfoTable;
-    pTopDrawInfo = SceneryDrawInfoTable + 3500;
+    this->pFirstDrawInfo = SceneryDrawInfoTable;
+    this->pCurrentDrawInfo = SceneryDrawInfoTable;
+    this->pTopDrawInfo = SceneryDrawInfoTable + 3500;
 
     int n;
-    for (n = 0; n < NumCullInfos; n++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
+    for (n = 0; n < this->NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &this->SceneryCullInfos[n];
         bool enable_preculling = true;
 
         scenery_cull_info->Position = *scenery_cull_info->pView->GetCamera()->GetPosition();
@@ -1031,13 +1031,13 @@ void GrandSceneryCullInfo::DoCulling() {
         }
     }
 
-    for (n = 0; n < NumCullInfos; n++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
-        scenery_cull_info->pFirstDrawInfo = pCurrentDrawInfo;
-        scenery_cull_info->pCurrentDrawInfo = pCurrentDrawInfo;
-        scenery_cull_info->pTopDrawInfo = pTopDrawInfo;
-        CullView(scenery_cull_info);
-        pCurrentDrawInfo = scenery_cull_info->pCurrentDrawInfo;
+    for (n = 0; n < this->NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &this->SceneryCullInfos[n];
+        scenery_cull_info->pFirstDrawInfo = this->pCurrentDrawInfo;
+        scenery_cull_info->pCurrentDrawInfo = this->pCurrentDrawInfo;
+        scenery_cull_info->pTopDrawInfo = this->pTopDrawInfo;
+        this->CullView(scenery_cull_info);
+        this->pCurrentDrawInfo = scenery_cull_info->pCurrentDrawInfo;
     }
 
     // TODO
@@ -1048,8 +1048,8 @@ void GrandSceneryCullInfo::DoCulling() {
         SceneryCullInfo *scenery_cull_info;
     }
 
-    for (n = 0; n < NumCullInfos; n++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
+    for (n = 0; n < this->NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &this->SceneryCullInfos[n];
         // TODO
         if (false) {
             for (SceneryDrawInfo *info = scenery_cull_info->pFirstDrawInfo; info < scenery_cull_info->pCurrentDrawInfo; info++) {
@@ -1094,8 +1094,8 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
         exclusive_flags = 0x1000000;
     }
 
-    for (int n = 0; n < NumCullInfos; n++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
+    for (int n = 0; n < this->NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &this->SceneryCullInfos[n];
         if (scenery_cull_info->pView != view) {
             continue;
         }

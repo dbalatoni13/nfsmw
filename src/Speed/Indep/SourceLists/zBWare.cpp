@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/bWare/Src/bCrc32.cpp"
 
 #include "Speed/Indep/bWare/Src/bDebug.cpp"

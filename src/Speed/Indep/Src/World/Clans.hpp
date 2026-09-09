@@ -29,27 +29,27 @@ class Clan : public bTNode<Clan> {
     ~Clan();
 
     bVector3 *GetBBoxMin() {
-        return &BBoxMin;
+        return &this->BBoxMin;
     }
 
     bVector3 *GetBBoxMax() {
-        return &BBoxMax;
+        return &this->BBoxMax;
     }
 
     int GetLastUpdateTime() {
-        return LastUpdateTime;
+        return this->LastUpdateTime;
     }
 
     uint32 GetHash() {
-        return Hash;
+        return this->Hash;
     }
 
     void SetLastUpdateTime(int time) {
-        LastUpdateTime = time;
+        this->LastUpdateTime = time;
     }
 
     void ExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
-        bExpandBoundingBox(&BBoxMin, &BBoxMax, bbox_min, bbox_max);
+        bExpandBoundingBox(&this->BBoxMin, &this->BBoxMax, bbox_min, bbox_max);
     }
 
     bPList<SkidSet> SkidSetList; // offset 0x8, size 0x8

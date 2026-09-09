@@ -28,4 +28,6 @@ struct stREVERB_PARAMS {
     int FadeIn;   // offset 0x14, size 0x4, Decl: 78
 };
 
+extern stREVERB_PARAMS g_REVERBFXMODULES[12]; // size: 0x120, Decl: 82
+
 #endif

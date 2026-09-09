@@ -12,6 +12,8 @@ Use **NFSMW: Refresh Match Annotations for Current File** from the Command Palet
 
 Running refresh again for the same file cancels its in-progress comparison and immediately starts a new one. Use **NFSMW: Disable objdiff Metrics** when objdiff is too slow; refreshes then retain DWARF annotations on non-PS2 versions and PS2 type annotations on PS2 versions. **NFSMW: Enable objdiff Metrics** restores the function metric. Any successfully fetched metric below 100% is also published as an editor warning, so it appears on the source line and in the scrollbar overview ruler.
 
+Set `nfsmwMatch.autoRefresh` to `false` to prevent processing on extension activation and document open. Manual **NFSMW: Refresh Match Annotations for Current File** remains available, and disabling the setting cancels in-progress comparisons.
+
 Annotations are suspended while a source file has unsaved edits so CodeLens rows do not move the editor viewport while typing. Saving only remaps the last known results to the updated symbol positions; it does not rerun comparison tools or recalculate percentages. Use the refresh command when new metrics are wanted.
 
 On the first PS2 refresh, select the ccc `stdump.exe` when prompted. The selected path is stored in the global `nfsmwMatch.stdumpPath` setting. Use **NFSMW: Set PS2 stdump Path** to change it later. Clicking a PS2 type percentage opens its normalized struct-definition diff in the remembered diff editor group.

@@ -8,18 +8,18 @@
 class WSurface : public CARP::CollisionSurface {
   public:
     WSurface() {
-        fSurface = 0;
-        fFlags = 0;
+        this->fSurface = 0;
+        this->fFlags = 0;
     }
 
     WSurface(const CollisionSurface &surface) {
-        fSurface = surface.fSurface;
-        fFlags = surface.fFlags;
+        this->fSurface = surface.fSurface;
+        this->fFlags = surface.fFlags;
     }
 
     WSurface(unsigned char surface, unsigned char flags) {
-        fSurface = surface;
-        fFlags = flags;
+        this->fSurface = surface;
+        this->fFlags = flags;
     }
 
     static void InitSystem();
@@ -29,19 +29,19 @@ class WSurface : public CARP::CollisionSurface {
     }
 
     unsigned int Surface() const {
-        return fSurface;
+        return this->fSurface;
     }
 
     unsigned char &FlagsRef() {
-        return fFlags;
+        return this->fFlags;
     }
 
     unsigned char Flags() const {
-        return fFlags;
+        return this->fFlags;
     }
 
     bool HasFlag(unsigned char flag) const {
-        return (fFlags & flag) != 0;
+        return (this->fFlags & flag) != 0;
     }
 
     static const WSurface kNull;

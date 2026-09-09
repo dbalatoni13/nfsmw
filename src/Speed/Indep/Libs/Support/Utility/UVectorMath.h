@@ -287,6 +287,7 @@ void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::V
 void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
+void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b);
 void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
@@ -318,7 +319,11 @@ void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath:
 
 // Decl: Carbon: 789, GC MW: 868
 inline float VU0_ASin(float x) {
-    return asinf(x) / (float)M_TWOPI;
+    return asinf(x) / (2 * MATH_PI);
+}
+
+inline float VU0_ACos(float x) {
+    return acosf(x) / (2 * MATH_PI);
 }
 
 // Decl: Carbon: 800, GC MW: 878

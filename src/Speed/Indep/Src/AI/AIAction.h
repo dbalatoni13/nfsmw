@@ -1,9 +1,16 @@
-#ifndef AI_AIACTION_H
-#define AI_AIACTION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AIACTION_H
+#define __AIACTION_H 1 // Decl: 13
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
@@ -11,6 +18,7 @@
 #include "Speed/Indep/Src/Sim/SimObject.h"
 
 // total size: 0x4
+// Dcel: 21
 struct AIActionParams {
     AIActionParams(ISimable *owner) : mOwner(owner) {}
 
@@ -18,83 +26,62 @@ struct AIActionParams {
 };
 
 // total size: 0x48
+// Decl: 30
 class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, AIAction, UCrc32> {
   public:
-    struct List : public UTL::Std::list<AIAction *, _type_list> {
-        // void *operator new(size_t size, void *ptr) {}
-
-        // void operator delete(void *mem, void *ptr) {}
-
-        // void *operator new(size_t size) {}
-
-        void operator delete(void *mem, size_t size) {
-            if (mem) {
-                return gFastMem.Free(mem, size, nullptr);
-            }
-        }
-
-        // void *operator new(size_t size, const char *name) {}
-
-        // void operator delete(void *mem, const char *name) {}
-
-        // void operator delete(void *mem, size_t size, const char *name) {}
+    class List : public UTL::Std::list<AIAction *, _type_list> {
+      public:
+        USE_FASTALLOC(AIAction::List);
     };
 
-    AIAction(AIActionParams *params, float score);
+    USE_FASTALLOC(AIAction);
+
+    // Decl: 37
     ~AIAction() override {}
 
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
+    virtual bool CanBeAttempted(float dT) = 0;
+    virtual bool IsFinished() = 0;
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) = 0;
+    virtual void BeginAction(float dT) = 0;
+    virtual void FinishAction(float dT) = 0;
+    virtual void Update(float dT) = 0;
 
-    void operator delete(void *mem, size_t bytes) {
-        if (mem) {
-            return gFastMem.Free(mem, bytes, nullptr);
-        }
-    }
-
-    // Virtual functions
-    virtual bool CanBeAttempted(float dT);
-    virtual bool IsFinished();
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual void BeginAction(float dT);
-    virtual void FinishAction(float dT);
-    virtual void Update(float dT);
-
-    ISimable *GetOwner() const {
-        return mActionParams.mOwner;
-    }
-
-    const AIActionParams &GetActionParams() const {
-        return mActionParams;
-    }
-
-    const char *GetActionNameString() {
-        return mActionNameString;
-    }
-
-    void SetActionName(const char *name) {
-        mActionNameString = name;
-        mActionNameCrc = name;
-    }
-
-    UCrc32 GetActionName() {
-        return mActionNameCrc;
-    }
-
-    IVehicle *GetVehicle() const {
-        return mVehicle;
+    float GetScore() {
+        return this->mScore;
     }
 
     IVehicleAI *GetAI() const {
-        return mAI;
+        return this->mAI;
     }
 
-    float GetScore() {
-        return mScore;
+    IVehicle *GetVehicle() const {
+        return this->mVehicle;
+    }
+
+    ISimable *GetOwner() const {
+        return this->mActionParams.mOwner;
+    }
+
+    const AIActionParams &GetActionParams() const {
+        return this->mActionParams;
+    }
+
+    void SetActionName(const char *name) {
+        this->mActionNameString = name;
+        this->mActionNameCrc = name;
+    }
+
+    UCrc32 GetActionName() {
+        return this->mActionNameCrc;
+    }
+
+    const char *GetActionNameString() {
+        return this->mActionNameString;
     }
 
   protected:
+    AIAction(AIActionParams *params, float score);
+
     virtual bool ShouldRestartWhenFinished() {
         return false;
     }
@@ -108,14 +95,20 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
     float mScore;                  // offset 0x44, size 0x4
 };
 
+#define BIND_AIACTION_FACTORY(_TYPE_) AIAction::Prototype _##_TYPE_(UCrc32(#_TYPE_), _TYPE_::Construct); // Decl: 99
+
+#define AIACTION_SCORE_LOW 0.0f  // Decl: 102
+#define AIACTION_SCORE_HIGH 1.0f // Decl: 103
+
 // total size: 0x4
+// Decl: 106
 class performance_limiter {
   public:
     void init(float speed);
     void update(float speed, float maxspeed, float maxaccel, float dt);
 
     float get_speed_limit() {
-        return speed_limit;
+        return this->speed_limit;
     }
 
   private:

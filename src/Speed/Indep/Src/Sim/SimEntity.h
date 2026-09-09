@@ -1,6 +1,7 @@
 #ifndef SIM_SIMENTITY_H
 #define SIM_SIMENTITY_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -16,32 +17,23 @@ namespace Sim {
 // total size: 0x50
 class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 8>, public IEntity, public IAttachable {
   public:
+    USE_FASTALLOC(Entity);
+
     Entity();
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    // Virtual methods
-    // IUnknown
     ~Entity() override;
 
     // IEntity
     void AttachPhysics(ISimable *object) override;
     void DetachPhysics() override;
 
-    // Own
-    virtual const UMath::Vector3 &GetPosition() const;
+    const UMath::Vector3 &GetPosition() const override;
     virtual bool SetPosition(const UMath::Vector3 &position) const; // the const here is likely a bug
 
     // IEntity
     ISimable *GetSimable() const override {
         return mSimable;
     }
-    // Own
-    virtual void Kill();
+    void Kill() override;
 
     // IAttachable
     bool Attach(IUnknown *object) override;
@@ -55,7 +47,7 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
 
     void OnDetached(IAttachable *pOther) override;
 
-    const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override {
+    const IAttachable::List *GetAttachments() const override {
         return &mAttachments->GetList();
     }
 

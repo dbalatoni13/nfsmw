@@ -264,29 +264,29 @@ static bool MyIsPointInPoly(const bVector2 *point, const bVector2 *points, int n
 }
 
 bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
-    if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, 0.0f)) {
+    if (!bBoundingBoxIsInside(&this->BBoxMin, &this->BBoxMax, point, 0.0f)) {
         return false;
     }
 
-    return MyIsPointInPoly(point, Points, NumPoints);
+    return MyIsPointInPoly(point, this->Points, this->NumPoints);
 }
 
 float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float max_distance) {
-    if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, max_distance)) {
+    if (!bBoundingBoxIsInside(&this->BBoxMin, &this->BBoxMax, point, max_distance)) {
         return max_distance;
     }
 
-    if (IsPointInside(point)) {
+    if (this->IsPointInside(point)) {
         return 0.0f;
     }
 
     float closest_distance = max_distance;
     {
         int point_number = 0;
-        while (point_number < NumPoints) {
+        while (point_number < this->NumPoints) {
             int next = point_number + 1; // TODO get rid of the temporary
-            bVector2 *point1 = GetPoint(point_number);
-            bVector2 *point2 = GetPoint(next - (next / NumPoints) * NumPoints);
+            bVector2 *point1 = this->GetPoint(point_number);
+            bVector2 *point2 = this->GetPoint(next - (next / this->NumPoints) * this->NumPoints);
             float distance = bDistToLine(point, point1, point2);
             if (distance < closest_distance) {
                 closest_distance = distance;
@@ -299,17 +299,17 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
 }
 
 void DrivableScenerySection::AddVisibleSection(int section_number) {
-    if (NumVisibleSections < MaxVisibleSections && !IsSectionVisible(section_number)) {
-        VisibleSections[NumVisibleSections++] = static_cast<short>(section_number);
-        if (NumVisibleSections > MostVisibleSections) {
-            MostVisibleSections = NumVisibleSections;
+    if (this->NumVisibleSections < this->MaxVisibleSections && !this->IsSectionVisible(section_number)) {
+        this->VisibleSections[this->NumVisibleSections++] = static_cast<short>(section_number);
+        if (this->NumVisibleSections > this->MostVisibleSections) {
+            this->MostVisibleSections = this->NumVisibleSections;
         }
     }
 }
 
 bool DrivableScenerySection::IsSectionVisible(int section_number) {
-    for (int n = 0; n < NumVisibleSections; n++) {
-        if (VisibleSections[n] == section_number) {
+    for (int n = 0; n < this->NumVisibleSections; n++) {
+        if (this->VisibleSections[n] == section_number) {
             return 1;
         }
     }
@@ -317,14 +317,14 @@ bool DrivableScenerySection::IsSectionVisible(int section_number) {
 }
 
 void DrivableScenerySection::RemoveVisibleSection(int section_number) {
-    for (int n = 0; n < NumVisibleSections; n++) {
-        if (VisibleSections[n] == section_number) {
-            for (int i = n; i < NumVisibleSections - 1; i++) {
-                VisibleSections[i] = VisibleSections[i + 1];
+    for (int n = 0; n < this->NumVisibleSections; n++) {
+        if (this->VisibleSections[n] == section_number) {
+            for (int i = n; i < this->NumVisibleSections - 1; i++) {
+                this->VisibleSections[i] = this->VisibleSections[i + 1];
             }
 
-            NumVisibleSections--;
-            VisibleSections[NumVisibleSections] = 0;
+            this->NumVisibleSections--;
+            this->VisibleSections[this->NumVisibleSections] = 0;
             return;
         }
     }
@@ -334,11 +334,11 @@ void DrivableScenerySection::SortVisibleSections() {
     bool did_something;
     do {
         did_something = false;
-        for (int n = 0; n < NumVisibleSections - 1; n++) {
-            if (VisibleSections[n + 1] < VisibleSections[n]) {
-                short swap = VisibleSections[n + 1];
-                VisibleSections[n + 1] = VisibleSections[n];
-                VisibleSections[n] = swap;
+        for (int n = 0; n < this->NumVisibleSections - 1; n++) {
+            if (this->VisibleSections[n + 1] < this->VisibleSections[n]) {
+                short swap = this->VisibleSections[n + 1];
+                this->VisibleSections[n + 1] = this->VisibleSections[n];
+                this->VisibleSections[n] = swap;
                 did_something = true;
             }
         }
@@ -346,7 +346,7 @@ void DrivableScenerySection::SortVisibleSections() {
 }
 
 LoadingSection *VisibleSectionManager::FindLoadingSection(int section_number) {
-    for (LoadingSection *loading_section = LoadingSectionList.GetHead(); loading_section != LoadingSectionList.EndOfList();
+    for (LoadingSection *loading_section = this->LoadingSectionList.GetHead(); loading_section != this->LoadingSectionList.EndOfList();
          loading_section = loading_section->GetNext()) {
         if (loading_section->HasDrivableSection(section_number)) {
             return loading_section;
@@ -363,7 +363,7 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
 
     int num_sections = 0;
     for (int n = 0; n < loading_section->NumDrivableSections; n++) {
-        DrivableScenerySection *drivable_section = FindDrivableSection(loading_section->DrivableSections[n]);
+        DrivableScenerySection *drivable_section = this->FindDrivableSection(loading_section->DrivableSections[n]);
         if (!drivable_section) {
             continue;
         }
@@ -399,33 +399,33 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
 class UnallocatedVisibleSectionUserInfo : public bTNode<UnallocatedVisibleSectionUserInfo> {};
 
 VisibleSectionManager::VisibleSectionManager() {
-    pBoundaryChunks = nullptr;
-    pInfo = nullptr;
-    pActiveOverlay = nullptr;
-    pUndoOverlay = nullptr;
+    this->pBoundaryChunks = nullptr;
+    this->pInfo = nullptr;
+    this->pActiveOverlay = nullptr;
+    this->pUndoOverlay = nullptr;
 
-    bMemSet(UserInfoTable, 0, sizeof(UserInfoTable));
-    NumAllocatedUserInfo = 0;
+    bMemSet(this->UserInfoTable, 0, sizeof(this->UserInfoTable));
+    this->NumAllocatedUserInfo = 0;
 
-    bNode *head = UnallocatedUserInfoList.GetHead();
+    bNode *head = this->UnallocatedUserInfoList.GetHead();
     for (int n = 0; n < 512; n++) {
-        UnallocatedVisibleSectionUserInfo *unallocated_info = reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(&UserInfoStorageTable[n]);
-        UnallocatedUserInfoList.AddTail(unallocated_info);
+        UnallocatedVisibleSectionUserInfo *unallocated_info = reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(&this->UserInfoStorageTable[n]);
+        this->UnallocatedUserInfoList.AddTail(unallocated_info);
     }
 
-    VisibleBitTables = nullptr;
-    bMemSet(EnabledGroups, 0, sizeof(EnabledGroups));
+    this->VisibleBitTables = nullptr;
+    bMemSet(this->EnabledGroups, 0, sizeof(this->EnabledGroups));
 }
 
 VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_number) {
-    VisibleSectionUserInfo *info = GetUserInfo(section_number);
+    VisibleSectionUserInfo *info = this->GetUserInfo(section_number);
     if (info == nullptr) {
-        NumAllocatedUserInfo++;
-        UnallocatedVisibleSectionUserInfo *unallocated_info = UnallocatedUserInfoList.RemoveHead();
+        this->NumAllocatedUserInfo++;
+        UnallocatedVisibleSectionUserInfo *unallocated_info = this->UnallocatedUserInfoList.RemoveHead();
         info = reinterpret_cast<VisibleSectionUserInfo *>(unallocated_info);
 
         bMemSet(info, 0, sizeof(VisibleSectionUserInfo));
-        UserInfoTable[section_number] = info;
+        this->UserInfoTable[section_number] = info;
     }
 
     info->ReferenceCount++;
@@ -433,32 +433,32 @@ VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_numb
 }
 
 void VisibleSectionManager::UnallocateUserInfo(int section_number) {
-    VisibleSectionUserInfo *info = GetUserInfo(section_number);
+    VisibleSectionUserInfo *info = this->GetUserInfo(section_number);
     if (info != nullptr) {
         if (--info->ReferenceCount != 0) {
             return;
         }
 
-        NumAllocatedUserInfo--;
+        this->NumAllocatedUserInfo--;
         UnallocatedVisibleSectionUserInfo *unallocated_info =
-            UnallocatedUserInfoList.AddTail(reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(info));
+            this->UnallocatedUserInfoList.AddTail(reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(info));
 
-        UserInfoTable[section_number] = 0;
+        this->UserInfoTable[section_number] = 0;
     }
 }
 
 void VisibleSectionManager::ActivateOverlay(const char *name) {
-    for (VisibleSectionOverlay *overlay = OverlayList.GetHead(); overlay != OverlayList.EndOfList(); overlay = overlay->GetNext()) {
+    for (VisibleSectionOverlay *overlay = this->OverlayList.GetHead(); overlay != this->OverlayList.EndOfList(); overlay = overlay->GetNext()) {
         if (bStrICmp(overlay->Name, name) == 0) {
-            if (overlay != pActiveOverlay) {
-                if (pActiveOverlay != nullptr) {
-                    UnactivateOverlay();
+            if (overlay != this->pActiveOverlay) {
+                if (this->pActiveOverlay != nullptr) {
+                    this->UnactivateOverlay();
                 }
 
                 DisablePreculler();
-                pActiveOverlay = overlay;
-                pUndoOverlay = new ("VisibleSectionOverlay", 0) VisibleSectionOverlay("Undo");
-                ActivateOverlay(overlay, pUndoOverlay);
+                this->pActiveOverlay = overlay;
+                this->pUndoOverlay = new ("VisibleSectionOverlay", 0) VisibleSectionOverlay("Undo");
+                this->ActivateOverlay(overlay, this->pUndoOverlay);
                 RefreshTrackStreamer();
             }
             break;
@@ -469,7 +469,7 @@ void VisibleSectionManager::ActivateOverlay(const char *name) {
 void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, VisibleSectionOverlay *undo_overlay) {
     for (int n = 0; n < overlay->NumEntries; n++) {
         VisibleSectionOverlay::OverlayEntry *entry = &overlay->EntryTable[n];
-        DrivableScenerySection *section = FindDrivableSection(entry->DrivableSectionNumber);
+        DrivableScenerySection *section = this->FindDrivableSection(entry->DrivableSectionNumber);
         if (section != nullptr) {
             bool did_something = false;
             if (entry->AddRemove != 0) {
@@ -495,11 +495,11 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
 }
 
 void VisibleSectionManager::UnactivateOverlay() {
-    if (pActiveOverlay != nullptr) {
+    if (this->pActiveOverlay != nullptr) {
         EnablePreculler();
-        ActivateOverlay(pUndoOverlay, nullptr);
-        delete pUndoOverlay;
-        pActiveOverlay = nullptr;
+        this->ActivateOverlay(this->pUndoOverlay, nullptr);
+        delete this->pUndoOverlay;
+        this->pActiveOverlay = nullptr;
     }
 }
 
@@ -519,9 +519,9 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                 while (boundary < last_boundary) {
                     boundary->EndianSwap();
                     if (IsScenerySectionDrivable(boundary->GetSectionNumber())) {
-                        DrivableBoundaryList.AddTail(boundary);
+                        this->DrivableBoundaryList.AddTail(boundary);
                     } else {
-                        NonDrivableBoundaryList.AddTail(boundary);
+                        this->NonDrivableBoundaryList.AddTail(boundary);
                     }
 
                     boundary = reinterpret_cast<VisibleSectionBoundary *>(reinterpret_cast<char *>(boundary) + boundary->GetMemoryImageSize());
@@ -531,18 +531,18 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                 DrivableScenerySection *last_section = reinterpret_cast<DrivableScenerySection *>(chunk->GetNext());
 
                 while (section < last_section) {
-                    DrivableSectionList.AddTail(section);
+                    this->DrivableSectionList.AddTail(section);
                     section->EndianSwap();
-                    section->pBoundary = FindBoundary(section->GetSectionNumber());
+                    section->pBoundary = this->FindBoundary(section->GetSectionNumber());
                     section = reinterpret_cast<DrivableScenerySection *>(reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
                 }
 
-                pSectionD9 = FindDrivableSection(GetScenerySectionNumber('D', 9));
-                pSectionC14 = FindDrivableSection(GetScenerySectionNumber('C', 14));
+                pSectionD9 = this->FindDrivableSection(GetScenerySectionNumber('D', 9));
+                pSectionC14 = this->FindDrivableSection(GetScenerySectionNumber('C', 14));
             } else if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_MANAGE_INFO) {
-                pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(chunk->GetData());
-                pInfo->EndianSwap();
-                ScenerySectionLODOffset = GetLODOffset();
+                this->pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(chunk->GetData());
+                this->pInfo->EndianSwap();
+                ScenerySectionLODOffset = this->GetLODOffset();
             } else if (chunk->GetID() == 0x34154) {
             } else if (chunk->GetID() == BCHUNK_LOADING_SECTIONS) {
                 LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(chunk->GetData());
@@ -550,7 +550,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
                 for (int n = 0; n < num_loading_sections; n++) {
                     LoadingSection *section = &loading_sections[n];
-                    LoadingSectionList.AddTail(section);
+                    this->LoadingSectionList.AddTail(section);
                     section->EndianSwap();
                 }
             }
@@ -563,7 +563,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_OVERLAYS) {
         VisibleSectionOverlay *overlay = reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData());
-        OverlayList.AddTail(overlay);
+        this->OverlayList.AddTail(overlay);
         overlay->EndianSwap();
         return 1;
     }
@@ -574,17 +574,17 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 // UNSOLVED
 int VisibleSectionManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_MANAGER) {
-        pInfo = nullptr;
-        NonDrivableBoundaryList.InitList();
-        LoadingSectionList.InitList();
-        DrivableSectionList.InitList();
-        DrivableBoundaryList.InitList();
+        this->pInfo = nullptr;
+        this->NonDrivableBoundaryList.InitList();
+        this->LoadingSectionList.InitList();
+        this->DrivableSectionList.InitList();
+        this->DrivableBoundaryList.InitList();
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_OVERLAYS) {
         VisibleSectionOverlay *overlay = reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData());
-        OverlayList.Remove(overlay);
+        this->OverlayList.Remove(overlay);
         return 1;
     }
 
@@ -593,13 +593,13 @@ int VisibleSectionManager::Unloader(bChunk *chunk) {
 
 VisibleSectionBoundary *VisibleSectionManager::FindBoundary(int section_number) {
     VisibleSectionBoundary *boundary;
-    for (boundary = DrivableBoundaryList.GetHead(); boundary != DrivableBoundaryList.EndOfList(); boundary = boundary->GetNext()) {
+    for (boundary = this->DrivableBoundaryList.GetHead(); boundary != this->DrivableBoundaryList.EndOfList(); boundary = boundary->GetNext()) {
         if (boundary->SectionNumber == section_number) {
             return boundary;
         }
     }
 
-    for (boundary = NonDrivableBoundaryList.GetHead(); boundary != NonDrivableBoundaryList.EndOfList(); boundary = boundary->GetNext()) {
+    for (boundary = this->NonDrivableBoundaryList.GetHead(); boundary != this->NonDrivableBoundaryList.EndOfList(); boundary = boundary->GetNext()) {
         if (boundary->SectionNumber == section_number) {
             return boundary;
         }
@@ -612,13 +612,13 @@ VisibleSectionBoundary *VisibleSectionManager::FindClosestBoundary(const bVector
     VisibleSectionBoundary *closest_section_boundary = nullptr;
     float closest_distance = 9999999.0f;
 
-    for (VisibleSectionBoundary *section_boundary = DrivableBoundaryList.GetHead(); section_boundary != DrivableBoundaryList.EndOfList();
+    for (VisibleSectionBoundary *section_boundary = this->DrivableBoundaryList.GetHead(); section_boundary != this->DrivableBoundaryList.EndOfList();
          section_boundary = section_boundary->GetNext()) {
         if (section_boundary->IsPointInside(point)) {
             closest_distance = 0.0f;
             closest_section_boundary = section_boundary;
-            DrivableBoundaryList.Remove(section_boundary);
-            DrivableBoundaryList.AddHead(section_boundary);
+            this->DrivableBoundaryList.Remove(section_boundary);
+            this->DrivableBoundaryList.AddHead(section_boundary);
             break;
         }
 
@@ -638,17 +638,17 @@ VisibleSectionBoundary *VisibleSectionManager::FindClosestBoundary(const bVector
 }
 
 VisibleSectionBoundary *VisibleSectionManager::FindBoundary(const bVector2 *point) {
-    for (VisibleSectionBoundary *section_boundary = DrivableBoundaryList.GetHead(); section_boundary != DrivableBoundaryList.EndOfList();
+    for (VisibleSectionBoundary *section_boundary = this->DrivableBoundaryList.GetHead(); section_boundary != this->DrivableBoundaryList.EndOfList();
          section_boundary = section_boundary->GetNext()) {
         if (section_boundary->IsPointInside(point)) {
-            DrivableBoundaryList.Remove(section_boundary);
-            DrivableBoundaryList.AddHead(section_boundary);
+            this->DrivableBoundaryList.Remove(section_boundary);
+            this->DrivableBoundaryList.AddHead(section_boundary);
             return section_boundary;
         }
     }
 
     float distance_outside;
-    VisibleSectionBoundary *closest_section_boundary = FindClosestBoundary(point, &distance_outside);
+    VisibleSectionBoundary *closest_section_boundary = this->FindClosestBoundary(point, &distance_outside);
     if (distance_outside < 0.1f) {
         return closest_section_boundary;
     } else {
@@ -657,25 +657,25 @@ VisibleSectionBoundary *VisibleSectionManager::FindBoundary(const bVector2 *poin
 }
 
 DrivableScenerySection *VisibleSectionManager::FindDrivableSection(const bVector2 *point) {
-    for (DrivableScenerySection *section = DrivableSectionList.GetHead(); section != DrivableSectionList.EndOfList(); section = section->GetNext()) {
+    for (DrivableScenerySection *section = this->DrivableSectionList.GetHead(); section != this->DrivableSectionList.EndOfList(); section = section->GetNext()) {
         if (section->pBoundary->IsPointInside(point)) {
-            DrivableSectionList.Remove(section);
-            DrivableSectionList.AddHead(section);
+            this->DrivableSectionList.Remove(section);
+            this->DrivableSectionList.AddHead(section);
             return section;
         }
     }
 
     float distance;
-    VisibleSectionBoundary *boundary = FindClosestBoundary(point, &distance);
+    VisibleSectionBoundary *boundary = this->FindClosestBoundary(point, &distance);
     if (distance < 0.1f) {
-        return FindDrivableSection(boundary->SectionNumber);
+        return this->FindDrivableSection(boundary->SectionNumber);
     }
 
     return nullptr;
 }
 
 DrivableScenerySection *VisibleSectionManager::FindDrivableSection(int section_number) {
-    for (DrivableScenerySection *scenery_section = DrivableSectionList.GetHead(); scenery_section != DrivableSectionList.EndOfList();
+    for (DrivableScenerySection *scenery_section = this->DrivableSectionList.GetHead(); scenery_section != this->DrivableSectionList.EndOfList();
          scenery_section = scenery_section->GetNext()) {
         if (scenery_section->GetSectionNumber() == section_number) {
             return scenery_section;
@@ -701,8 +701,8 @@ VisibleGroupInfo *VisibleSectionManager::GetGroupInfo(const char *selection_set_
 
 void VisibleSectionManager::EnableGroup(uint32 group_name_hash) {
     for (int n = 0; n < 256; n++) {
-        if (EnabledGroups[n] == 0) {
-            EnabledGroups[n] = group_name_hash;
+        if (this->EnabledGroups[n] == 0) {
+            this->EnabledGroups[n] = group_name_hash;
             return;
         }
     }

@@ -1,8 +1,8 @@
 #include "eLight.hpp"
 #include "Ecstasy.hpp"
-#include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -25,7 +25,7 @@ int UnloaderLights(bChunk *bchunk) {
         eLightMaterial *light_material = reinterpret_cast<eLightMaterial *>(bchunk->GetData());
         if (light_material->Version == 3) {
             light_material->Remove();
-            if (light_material->NameHash == BINHASH(DEFAULT)) {
+            if (light_material->NameHash == STRINGHASH_DEFAULT) {
                 DefaultLightMaterial = &DefaultLightMaterialData;
             }
         }

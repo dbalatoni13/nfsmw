@@ -3,14 +3,11 @@
 // total size: 0x48
 class AIActionNone : public AIAction {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
-
     AIActionNone(AIActionParams *params, float score) : AIAction(params, score) {}
-
     ~AIActionNone() override {}
 
-    // Virtual overrides
-    // AIAction
+    static AIAction *Construct(AIActionParams *params);
+
     bool CanBeAttempted(float dT) override {
         return false;
     }
@@ -28,6 +25,9 @@ class AIActionNone : public AIAction {
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
 };
 
+// Decl: 38
+BIND_AIACTION_FACTORY(AIActionNone);
+
 AIAction *AIActionNone::Construct(AIActionParams *params) {
-    return new AIActionNone(params, 0.0f);
+    return new AIActionNone(params, AIACTION_SCORE_LOW);
 }

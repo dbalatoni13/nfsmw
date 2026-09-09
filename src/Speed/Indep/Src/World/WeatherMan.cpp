@@ -121,31 +121,31 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
     bVector3 cPos(*view->GetCamera()->GetPosition());
 
     if (FogControlOverRide) {
-        DistFogStart = BaseWeatherFogStart;
-        FogFalloff = BaseFogFalloff;
-        FogFalloffX = BaseFogFalloffX;
-        FogFalloffY = BaseFogFalloffY;
+        this->DistFogStart = BaseWeatherFogStart;
+        this->FogFalloff = BaseFogFalloff;
+        this->FogFalloffX = BaseFogFalloffX;
+        this->FogFalloffY = BaseFogFalloffY;
 
         unsigned int fog_colour = ((BaseWeatherFogColourB << 16) | (BaseWeatherFogColourG << 8) | BaseWeatherFogColourR) & 0xFFFFFF;
         unsigned int retcol = fog_colour | 0x80000000;
-        DistFogPower = BaseWeatherFog;
-        DistFogColour = retcol;
+        this->DistFogPower = BaseWeatherFog;
+        this->DistFogColour = retcol;
 
-        if (oldDistFogColour == retcol && oldDistFogPower == DistFogPower && oldDistFogStart == DistFogStart) {
+        if (oldDistFogColour == retcol && oldDistFogPower == this->DistFogPower && oldDistFogStart == this->DistFogStart) {
             return 0;
         }
 
-        oldDistFogColour = DistFogColour;
-        oldDistFogPower = DistFogPower;
-        oldDistFogStart = DistFogStart;
+        oldDistFogColour = this->DistFogColour;
+        oldDistFogPower = this->DistFogPower;
+        oldDistFogStart = this->DistFogStart;
         return 1;
     }
 
-    DistFogStart = 0.0f;
-    DistFogPower = 0.0f;
-    FogFalloff = 0.0f;
-    FogFalloffX = 0.0f;
-    FogFalloffY = 0.0f;
+    this->DistFogStart = 0.0f;
+    this->DistFogPower = 0.0f;
+    this->FogFalloff = 0.0f;
+    this->FogFalloffX = 0.0f;
+    this->FogFalloffY = 0.0f;
     float smallest = 9999999.0f;
     bTList<GenericRegion> *region_list = &RegionLists[regionKind];
 
@@ -194,11 +194,11 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
         }
 
         if (region->effect != 0.0f) {
-            FogFalloff += region->FogFalloff * region->effect;
-            FogFalloffX += region->FogFalloffX * region->effect;
-            FogFalloffY += region->FogFalloffY * region->effect;
-            DistFogStart += region->FogStart * region->effect;
-            DistFogPower += region->Intensity * region->effect;
+            this->FogFalloff += region->FogFalloff * region->effect;
+            this->FogFalloffX += region->FogFalloffX * region->effect;
+            this->FogFalloffY += region->FogFalloffY * region->effect;
+            this->DistFogStart += region->FogStart * region->effect;
+            this->DistFogPower += region->Intensity * region->effect;
 
             unsigned int tcolr_r = region->FogColour & 0xFF;
             unsigned int tcolr_g = (region->FogColour & 0xFF00) >> 8;
@@ -211,14 +211,14 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
     }
 
     unsigned int retcol = colr_r | (colr_g << 8) | (colr_b << 16) | 0x80000000;
-    DistFogColour = retcol;
-    if (oldDistFogColour == retcol && oldDistFogPower == DistFogPower && oldDistFogStart == DistFogStart) {
+    this->DistFogColour = retcol;
+    if (oldDistFogColour == retcol && oldDistFogPower == this->DistFogPower && oldDistFogStart == this->DistFogStart) {
         return 0;
     }
 
-    oldDistFogColour = DistFogColour;
-    oldDistFogPower = DistFogPower;
-    oldDistFogStart = DistFogStart;
+    oldDistFogColour = this->DistFogColour;
+    oldDistFogPower = this->DistFogPower;
+    oldDistFogStart = this->DistFogStart;
     return 1;
 }
 

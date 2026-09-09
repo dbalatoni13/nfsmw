@@ -1,8 +1,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include <cfloat>
 
 bVector3 bUnitVector3(1.0f, 0.0f, 0.0f);
 bVector4 bUnitVector4(1.0f, 0.0f, 0.0f, 0.0f);
-bVector3 bVector3FLT_MAX(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+bVector3 bVector3FLT_MAX(FLT_MAX, FLT_MAX, FLT_MAX);
 
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     float x = v1->x - v2->x;
@@ -157,11 +158,11 @@ bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
 }
 
 void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max) {
-    bbox_min->x = 3.4028235e+38f;
-    bbox_min->y = 3.4028235e+38f;
+    bbox_min->x = FLT_MAX;
+    bbox_min->y = FLT_MAX;
 
-    bbox_max->x = -3.4028235e+38f;
-    bbox_max->y = -3.4028235e+38f;
+    bbox_max->x = -FLT_MAX;
+    bbox_max->y = -FLT_MAX;
 }
 
 // STRIPPED
@@ -206,13 +207,13 @@ int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, 
 float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {}
 
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
-    bbox_min->x = 3.4028235e+38f;
-    bbox_min->y = 3.4028235e+38f;
-    bbox_min->z = 3.4028235e+38f;
+    bbox_min->x = FLT_MAX;
+    bbox_min->y = FLT_MAX;
+    bbox_min->z = FLT_MAX;
 
-    bbox_max->x = -3.4028235e+38f;
-    bbox_max->y = -3.4028235e+38f;
-    bbox_max->z = -3.4028235e+38f;
+    bbox_max->x = -FLT_MAX;
+    bbox_max->y = -FLT_MAX;
+    bbox_max->z = -FLT_MAX;
 }
 
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {

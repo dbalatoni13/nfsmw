@@ -1,0 +1,5 @@
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
+
+DEFINE_CREATABLE(0x70000, SFXCTL_3DColPos, SFXCTL_3DObjPos);
+
+DEFINE_CREATABLE(0x70010, SFXCTL_3DScrapePos, SFXCTL_3DObjPos);

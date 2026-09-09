@@ -24,10 +24,12 @@ namespace Speech {
 // total size: 0x8
 // Decl: 59
 struct copPair {
-    inline bool operator<(const struct copPair &from) const {}
+    bool operator<(const copPair &from) const {
+        return this->hsimable < from.hsimable;
+    }
 
-    HSIMABLE hsimable;  // offset 0x0, size 0x4
-    struct EAXCop *cop; // offset 0x4, size 0x4
+    HSIMABLE hsimable; // offset 0x0, size 0x4
+    EAXCop *cop;       // offset 0x4, size 0x4
 };
 
 DECLARE_CONTAINER_TYPE(copMap);
@@ -35,6 +37,11 @@ DECLARE_CONTAINER_TYPE(copMap);
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
     copMap(int size) {}
+
+    void Add(HSIMABLE hsimable, EAXCop *cop);
+    EAXCop *Remove(HSIMABLE hsimable);
+    void ModifyHandle(HSIMABLE hsimable, HSIMABLE newhandle);
+    EAXCop *Find(HSIMABLE hsimable) const;
 };
 
 DECLARE_CONTAINER_TYPE(copList);
@@ -90,9 +97,8 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     // total size: 0x8
     // Decl: 165
     struct HeatCutoffs {
-        // Members
-        float value;                // offset 0x0, size 0x4
-        Type_heat_level heat_level; // offset 0x4, size 0x4
+        float value;                      // offset 0x0, size 0x4
+        Csis::Type_heat_level heat_level; // offset 0x4, size 0x4
     };
     // total size: 0x8
     // Decl: 173

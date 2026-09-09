@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 
 Attrib::Gen::shiftpattern *EAXCar::g_ShiftInfo = nullptr;
 Attrib::Gen::turbosfx *EAXCar::g_TurboInfo = nullptr;

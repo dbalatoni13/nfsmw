@@ -1,9 +1,16 @@
-#ifndef AI_AIVEHICLEHELICOPTER_H
-#define AI_AIVEHICLEHELICOPTER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AIVEHICLEHELICOPTER_H
+#define __AIVEHICLEHELICOPTER_H 1
 
 #include "AIVehiclePursuit.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
@@ -12,18 +19,7 @@
 // total size: 0x8C0
 class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
   public:
-    AIVehicleHelicopter(const BehaviorParams &bp);
-
-    // Overrides: IUnknown
-    ~AIVehicleHelicopter() override;
-
     static Behavior *Construct(const BehaviorParams &bp);
-
-    // Overrides: IAIHelicopter
-    void SetFuelFull() override;
-
-    // Overrides: IAIHelicopter
-    void SetDestinationVelocity(const UMath::Vector3 &v) override;
 
     // Overrides: AIVehicle
     void Update(float dT) override;
@@ -33,84 +29,89 @@ class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
     // Overrides: IPursuitAI
     bool CanSeeTarget(AITarget *target) override;
 
-    // Overrides: IAIHelicopter
-    bool StartPathToPoint(UMath::Vector3 &point) override;
-
-    // Overrides: IAIHelicopter
-    void SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest) override;
-
-    // Overrides: IAIHelicopter
-    bool FilterHeliAltitude(UMath::Vector3 &point) override;
-
-    bool CheckHeliSheet(const UMath::Vector3 &myPosition, const UMath::Vector3 &LookAheadDest, const UMath::Vector3 &myWorkingPosition,
-                        UMath::Vector3 &dest, UMath::Vector3 &smoothingVel);
-
-    // Overrides: IAIHelicopter
-    void RestrictPointToRoadNet(UMath::Vector3 &seekPosition) override;
-
-    void AvoidCamera(UMath::Vector3 &dest);
-
-    // Overrides: AIVehicle
-    void OnDriving(float dT) override;
+  protected:
+    AIVehicleHelicopter(const BehaviorParams &bp);
+    ~AIVehicleHelicopter() override;
 
     // Overrides: IAIHelicopter
     float GetDesiredHeightOverDest() const override {
-        return mHeight;
+        return this->mHeight;
     }
 
     // Overrides: IAIHelicopter
     void SetDesiredHeightOverDest(const float height) override {
-        mHeight = height;
+        this->mHeight = height;
     }
 
     // Overrides: IAIHelicopter
     void SetLookAtPosition(UMath::Vector3 la) override {
-        mLookAtPosition = la;
+        this->mLookAtPosition = la;
     }
 
     // Overrides: IAIHelicopter
     UMath::Vector3 GetLookAtPosition() const override {
-        return mLookAtPosition;
+        return this->mLookAtPosition;
     }
 
     // Overrides: IAIHelicopter
+    void SetDestinationVelocity(const UMath::Vector3 &v) override;
+    void SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest) override;
+    bool StartPathToPoint(UMath::Vector3 &point) override;
+    void SetFuelFull() override;
+
+    // Overrides: IAIHelicopter
     bool StrafeToDestIsSet() const override {
-        return mStrafeToDest;
+        return this->mStrafeToDest;
     }
 
     // Overrides: IAIHelicopter
     void SetStrafeToDest(bool strafe) override {
-        mStrafeToDest = strafe;
+        this->mStrafeToDest = strafe;
     }
 
+    // Overrides: IAIHelicopter
+    bool FilterHeliAltitude(UMath::Vector3 &point) override;
+
+    // Overrides: IAIHelicopter
+    void RestrictPointToRoadNet(UMath::Vector3 &seekPosition) override;
+
     virtual const HeliSheetCoordinate &GetHeliSheetCoord() const {
-        return mHeliSheetCoord;
+        return this->mHeliSheetCoord;
     }
 
     // Overrides: IAIHelicopter
     float GetFuelTimeRemaining() override {
-        return mHeliFuelTimeRemaining;
+        return this->mHeliFuelTimeRemaining;
     }
 
     // Overrides: IAIHelicopter
     void SetShadowScale(float s) override {
-        mShadowScale = s;
+        this->mShadowScale = s;
     }
 
     // Overrides: IAIHelicopter
     float GetShadowScale() override {
-        return mShadowScale;
+        return this->mShadowScale;
     }
 
     // Overrides: IAIHelicopter
     void SetDustStormIntensity(float d) override {
-        mDustStormIntensity = d;
+        this->mDustStormIntensity = d;
     }
 
     // Overrides: IAIHelicopter
     float GetDustStormIntensity() override {
-        return mDustStormIntensity;
+        return this->mDustStormIntensity;
     }
+
+  private:
+    // Overrides: AIVehicle
+    void OnDriving(float dT) override;
+
+    bool CheckHeliSheet(const UMath::Vector3 &myPosition, const UMath::Vector3 &LookAheadDest, const UMath::Vector3 &myWorkingPosition,
+                        UMath::Vector3 &dest, UMath::Vector3 &smoothingVel);
+
+    void AvoidCamera(UMath::Vector3 &dest);
 
   private:
     UMath::Vector3 mDestinationVelocity;          // offset 0x7D8, size 0xC
@@ -129,7 +130,5 @@ class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
 };
 
 bool HeliVehicleActive();
-
-extern AIVehicleHelicopter *gHeliVehicle;
 
 #endif

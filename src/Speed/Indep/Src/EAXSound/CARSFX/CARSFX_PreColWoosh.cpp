@@ -4,12 +4,11 @@
 
 DEFINE_CREATABLE(0x20120, CARSFX_PreColWoosh, SndBase);
 
-// UNSOLVED, stack issues (because the second UCRC32 reuses sp8), but functionally equivalent
-CARSFX_PreColWoosh::CARSFX_PreColWoosh() {
-    this->mMsgBarrier = Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrier,
-                                                                                                          UCrc32("FRONT_BARRIER"), 0);
-    this->mMsgBarrierHit = Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrierHit,
-                                                                                                             UCrc32("FRONT_BARRIER_HIT"), 0);
+CARSFX_PreColWoosh::CARSFX_PreColWoosh()
+    : mMsgBarrier(Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrier,
+                                                                                                    UCrc32("FRONT_BARRIER"), 0)),
+      mMsgBarrierHit(Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrierHit,
+                                                                                                       UCrc32("FRONT_BARRIER_HIT"), 0)) {
     this->m_pWoosh = nullptr;
     this->mResetTime = 0.0f;
     this->mDurationActive = 0.0f;
@@ -56,6 +55,9 @@ void CARSFX_PreColWoosh::MsgBarrier(const MAudioReflection &message) {
         this->WooshFadeOut.Initialize(1.0f, 1.0f, 1, LINEAR);
     }
 }
+
+#define FADEOUT_DURATION 130              // Decl: 75
+#define MAX_DURATION_WITHOUT_IMPACT 0.40f // Decl: 76
 
 void CARSFX_PreColWoosh::MsgBarrierHit(const MAudioReflection &message) {
     if ((this->GetPhysCar() != nullptr) && message.GetPlayerNum() == static_cast<int>(this->GetPhysCar()->mWorldID)) {

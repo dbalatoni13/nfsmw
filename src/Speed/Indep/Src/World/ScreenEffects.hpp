@@ -67,36 +67,36 @@ class ScreenEffectDB {
     void AddPaletteEffect(ScreenEffectPaletteDef *palette);
 
     uint32 IsActive(ScreenEffectType type) {
-        return SE_inf[type].active;
+        return this->SE_inf[type].active;
     }
 
     void RemoveScreenEffect(ScreenEffectType type) {
-        SE_inf[type].active = 0;
-        numType[type] = 0;
+        this->SE_inf[type].active = 0;
+        this->numType[type] = 0;
     }
 
     ScreenEffectControl GetController(ScreenEffectType type) {
-        return SE_inf[type].Controller;
+        return this->SE_inf[type].Controller;
     }
 
     void SetController(ScreenEffectType type, ScreenEffectControl SEC) {
-        SE_inf[type].Controller = SEC;
+        this->SE_inf[type].Controller = SEC;
     }
 
     void SetMyView(eView *view) {
-        MyView = view;
+        this->MyView = view;
     }
 
     float GetIntensity(ScreenEffectType type) {
-        return SE_data[type].intensity;
+        return this->SE_data[type].intensity;
     }
 
     float GetDATA(ScreenEffectType type, int index) {
-        return SE_data[type].data[index];
+        return this->SE_data[type].data[index];
     }
 
     void SetDATA(ScreenEffectType type, float data, int index) {
-        SE_data[type].data[index] = data;
+        this->SE_data[type].data[index] = data;
     }
 
   private:

@@ -1,9 +1,16 @@
-#ifndef AI_AISTEER_H
-#define AI_AISTEER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AISTEER_H
+#define __AISTEER_H 1
 
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
 

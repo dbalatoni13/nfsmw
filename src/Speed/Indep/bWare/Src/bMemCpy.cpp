@@ -1,6 +1,9 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern "C" {
+
+// TODO
+#ifndef EA_PLATFORM_WIN32
 void bMemCpy(void *dest, const void *src, unsigned int numbytes) {
     char *pdest = (char *)dest;
     char *psrc = (char *)src;
@@ -92,6 +95,7 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
     }
     return *reinterpret_cast<const unsigned char *>(s1) - *reinterpret_cast<const unsigned char *>(s2);
 }
+#endif
 
 void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes) {
     char *cdest = reinterpret_cast<char *>(dest);

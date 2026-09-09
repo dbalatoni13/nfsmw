@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribClass.cpp"
 
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribCollection.cpp"

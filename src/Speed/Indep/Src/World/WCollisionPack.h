@@ -19,7 +19,7 @@ class WCollisionPack {
     const WCollisionInstance *Instance(unsigned short index) const;
 
     unsigned int InstanceCount() {
-        return mInstanceNum;
+        return this->mInstanceNum;
     }
 
     const WCollisionObject *Object(unsigned short index) const;

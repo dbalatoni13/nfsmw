@@ -126,7 +126,7 @@ void AsyncCloseFileCallback(int fop, int status, void *userdata) {
     int result = FILESYS_completeop(fop);
 }
 
-void AsyncCloseFile(int file_handle) {
+void AsyncCloseFile(EAFileHandle file_handle) {
     int fop = FILESYS_close(file_handle, 100, nullptr);
     FILESYS_callbackop(fop, AsyncCloseFileCallback);
 }
@@ -135,7 +135,7 @@ void AsyncCloseFile(int file_handle) {
 // Decl: 725
 class CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
   public:
-    CachedRealFileHandle(const char *filename, int file_handle, int file_size) {
+    CachedRealFileHandle(const char *filename, EAFileHandle file_handle, int file_size) {
         NumInstances++;
         NumReferences = 0;
         FileHandle = file_handle;
@@ -147,7 +147,7 @@ class CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
 
     USE_SLOTALLOC(bFileSlotPool);
 
-    int GetFileHandle() {
+    EAFileHandle GetFileHandle() {
         return FileHandle;
     }
 
@@ -164,7 +164,7 @@ class CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
     }
 
     static CachedRealFileHandle *FindHandle(const char *filename);
-    static CachedRealFileHandle *AddHandle(const char *filename, int file_handle, int file_size);
+    static CachedRealFileHandle *AddHandle(const char *filename, EAFileHandle file_handle, int file_size);
     static bool RemoveUnusedHandle();
     static void FlushUnusedHandle(const char *filename);
     static void FlushUnusedHandles(bool print_warning);
@@ -172,10 +172,10 @@ class CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
     static int NumInstances;
     static bTList<CachedRealFileHandle> HandleList;
 
-    int NumReferences;    // offset 0x8, size 0x4
-    int FileHandle;       // offset 0xC, size 0x4
-    int FileSize;         // offset 0x10, size 0x4
-    const char *Filename; // offset 0x14, size 0x4
+    int NumReferences;       // offset 0x8, size 0x4
+    EAFileHandle FileHandle; // offset 0xC, size 0x4
+    int FileSize;            // offset 0x10, size 0x4
+    const char *Filename;    // offset 0x14, size 0x4
 };
 
 bTList<CachedRealFileHandle> CachedRealFileHandle::HandleList;

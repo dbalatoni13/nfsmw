@@ -66,6 +66,6 @@ int TopologyCoordinate::HasTopology(const bVector2 *position) {
     bVector3 test_position(position->x, position->y, 99999.1f);
     bool point_valid;
 
-    test_elevation = GetElevation(&test_position, nullptr, nullptr, &point_valid);
+    test_elevation = this->GetElevation(&test_position, nullptr, nullptr, &point_valid);
     return static_cast<int>(point_valid);
 }

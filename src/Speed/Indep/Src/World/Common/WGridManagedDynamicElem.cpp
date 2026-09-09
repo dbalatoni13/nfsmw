@@ -14,20 +14,20 @@ WGridManagedDynamicElem::WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, cons
       fSrcPosRad(srcPosRad),                  //
       fDstCInst(nullptr),                     //
       fDstTrigger(nullptr) {
-    fPosRad = srcPosRad;
+    this->fPosRad = srcPosRad;
 }
 
 void WGridManagedDynamicElem::Update() {
-    switch (fType) {
+    switch (this->fType) {
         case 1: {
-            *reinterpret_cast<UMath::Vector3 *>(fDstPosRad) = *reinterpret_cast<const UMath::Vector3 *>(fSrcPosRad);
+            *reinterpret_cast<UMath::Vector3 *>(this->fDstPosRad) = *reinterpret_cast<const UMath::Vector3 *>(this->fSrcPosRad);
 
-            if ((UMath::Abs(fPosRad->x - fLastPosRad.x) > 0.01f) || (UMath::Abs(fPosRad->z - fLastPosRad.z) > 0.01f)) {
-                UMath::Vector4 tempPosRad = UMath::Vector4Make(*UMath::Vector4To3(fSrcPosRad), fDstPosRad->w);
+            if ((UMath::Abs(this->fPosRad->x - this->fLastPosRad.x) > 0.01f) || (UMath::Abs(this->fPosRad->z - this->fLastPosRad.z) > 0.01f)) {
+                UMath::Vector4 tempPosRad = UMath::Vector4Make(*UMath::Vector4To3(this->fSrcPosRad), this->fDstPosRad->w);
 
-                AddElem(&fLastPosRad, &tempPosRad, fElem.fType, fElem.fInd);
+                AddElem(&this->fLastPosRad, &tempPosRad, this->fElem.fType, this->fElem.fInd);
                 WCollider::InvalidateIntersectingColliders(tempPosRad);
-                fLastPosRad = tempPosRad;
+                this->fLastPosRad = tempPosRad;
             }
             break;
         }
@@ -42,17 +42,17 @@ void WGridManagedDynamicElem::Update() {
 #endif
 
                 // TODO scheduling issue
-                reinterpret_cast<UMath::Vector3 &>(fDstCInst->fInvMatRow0Width) = reinterpret_cast<UMath::Vector3 &>(m[0]);
-                reinterpret_cast<UMath::Vector3 &>(fDstCInst->fInvMatRow2Length) = reinterpret_cast<UMath::Vector3 &>(m[2]);
-                reinterpret_cast<UMath::Vector3 &>(fDstCInst->fInvPosRadius) = reinterpret_cast<UMath::Vector3 &>(m[3]);
+                reinterpret_cast<UMath::Vector3 &>(this->fDstCInst->fInvMatRow0Width) = reinterpret_cast<UMath::Vector3 &>(m[0]);
+                reinterpret_cast<UMath::Vector3 &>(this->fDstCInst->fInvMatRow2Length) = reinterpret_cast<UMath::Vector3 &>(m[2]);
+                reinterpret_cast<UMath::Vector3 &>(this->fDstCInst->fInvPosRadius) = reinterpret_cast<UMath::Vector3 &>(m[3]);
 
-                if ((UMath::Abs(fPosRad->x - fLastPosRad.x) > 0.01f) || (UMath::Abs(fPosRad->z - fLastPosRad.z) > 0.01f)) {
+                if ((UMath::Abs(this->fPosRad->x - this->fLastPosRad.x) > 0.01f) || (UMath::Abs(this->fPosRad->z - this->fLastPosRad.z) > 0.01f)) {
                     UMath::Vector4 tempPosRad =
-                        UMath::Vector4Make(*UMath::Vector4To3(fPosRad), reinterpret_cast<UMath::Vector4 &>(fDstCInst->fInvPosRadius).w);
+                        UMath::Vector4Make(*UMath::Vector4To3(this->fPosRad), reinterpret_cast<UMath::Vector4 &>(this->fDstCInst->fInvPosRadius).w);
 
-                    AddElem(&fLastPosRad, &tempPosRad, fElem.fType, fElem.fInd);
+                    AddElem(&this->fLastPosRad, &tempPosRad, this->fElem.fType, this->fElem.fInd);
                     WCollider::InvalidateIntersectingColliders(tempPosRad);
-                    fLastPosRad = tempPosRad;
+                    this->fLastPosRad = tempPosRad;
                 }
             }
             break;
@@ -61,22 +61,22 @@ void WGridManagedDynamicElem::Update() {
             {
                 UMath::Matrix4 m;
 
-                reinterpret_cast<UMath::Vector3 &>(fDstTrigger->fMatRow0Width) = reinterpret_cast<UMath::Vector3 &>(m[0]);
-                reinterpret_cast<UMath::Vector3 &>(fDstTrigger->fMatRow2Length) = reinterpret_cast<UMath::Vector3 &>(m[2]);
-                v3add(1, reinterpret_cast<const UMath::Vector3 *>(&m[3]), UMath::Vector4To3(&fOffsetVec),
-                      UMath::Vector4To3(&fDstTrigger->fPosRadius));
+                reinterpret_cast<UMath::Vector3 &>(this->fDstTrigger->fMatRow0Width) = reinterpret_cast<UMath::Vector3 &>(m[0]);
+                reinterpret_cast<UMath::Vector3 &>(this->fDstTrigger->fMatRow2Length) = reinterpret_cast<UMath::Vector3 &>(m[2]);
+                v3add(1, reinterpret_cast<const UMath::Vector3 *>(&m[3]), UMath::Vector4To3(&this->fOffsetVec),
+                      UMath::Vector4To3(&this->fDstTrigger->fPosRadius));
 
-                if ((UMath::Abs(fPosRad->x - fLastPosRad.x) > 0.01f) || (UMath::Abs(fPosRad->z - fLastPosRad.z) > 0.01f)) {
-                    UMath::Vector4 tempPosRad = UMath::Vector4Make(*UMath::Vector4To3(fPosRad), fDstTrigger->fPosRadius.w);
+                if ((UMath::Abs(this->fPosRad->x - this->fLastPosRad.x) > 0.01f) || (UMath::Abs(this->fPosRad->z - this->fLastPosRad.z) > 0.01f)) {
+                    UMath::Vector4 tempPosRad = UMath::Vector4Make(*UMath::Vector4To3(this->fPosRad), this->fDstTrigger->fPosRadius.w);
                     UMath::Vector4 offsetPosRad = tempPosRad;
 
-                    v3add(1, UMath::Vector4To3(&tempPosRad), UMath::Vector4To3(&fOffsetVec), UMath::Vector4To3(&offsetPosRad));
+                    v3add(1, UMath::Vector4To3(&tempPosRad), UMath::Vector4To3(&this->fOffsetVec), UMath::Vector4To3(&offsetPosRad));
 
-                    UMath::Vector4 offsetLastPosRad = fLastPosRad;
-                    v3add(1, UMath::Vector4To3(&fLastPosRad), UMath::Vector4To3(&fOffsetVec), UMath::Vector4To3(&offsetLastPosRad));
+                    UMath::Vector4 offsetLastPosRad = this->fLastPosRad;
+                    v3add(1, UMath::Vector4To3(&this->fLastPosRad), UMath::Vector4To3(&this->fOffsetVec), UMath::Vector4To3(&offsetLastPosRad));
 
-                    AddElem(&offsetLastPosRad, &offsetPosRad, fElem.fType, fElem.fInd);
-                    fLastPosRad = tempPosRad;
+                    AddElem(&offsetLastPosRad, &offsetPosRad, this->fElem.fType, this->fElem.fInd);
+                    this->fLastPosRad = tempPosRad;
                 }
             }
             break;

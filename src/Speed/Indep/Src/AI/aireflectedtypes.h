@@ -3,6 +3,15 @@
 
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
+// total size: 0x18
+// Decl: 9
+struct CopCountRecord {
+    Attrib::StringKey CopType; // offset 0x0, size 0x10
+    uint32_t Count;            // offset 0x10, size 0x4
+    uint32_t Chance;           // offset 0x14, size 0x4
+};
+
+// Decl: 16
 enum FormationType {
     PIT = 1,
     BOX_IN = 2,
@@ -13,12 +22,14 @@ enum FormationType {
     STAGGER_FOLLOW = 7,
 };
 
+// Decl: 29
 struct CopFormationRecord {
     FormationType Formation; // offset 0x0, size 0x4
     float Duration;          // offset 0x4, size 0x4
     float Frequency;         // offset 0x8, size 0x4
 };
 
+// Decl: 37
 enum AirSupportStrategy {
     HI_PATROL = 0,
     PURSUIT = 1,
@@ -26,12 +37,14 @@ enum AirSupportStrategy {
     SPIKE_DROP = 3,
 };
 
+// Decl: 48
 struct AirSupport {
     AirSupportStrategy HeliStrategy; // offset 0x0, size 0x4
-    uint32 Chance;                   // offset 0x4, size 0x4
+    uint32_t Chance;                 // offset 0x4, size 0x4
     float Duration;                  // offset 0x8, size 0x4
 };
 
+// Decl: 56
 enum HeavySupportStrategy {
     E_BRAKE = 1,
     COORDINATED_E_BRAKE = 2,
@@ -39,12 +52,14 @@ enum HeavySupportStrategy {
     HEAVY_ROADBLOCK = 4,
 };
 
+// Decl: 64
 enum LeaderSupportStrategy {
     CROSS_FOLLOW = 5,
     CROSS_BRAKE = 6,
     CROSS_PLUS_V_BLOCK = 7,
 };
 
+// Decl: 74
 struct HeavySupport {
     HeavySupportStrategy HeavyStrategy; // offset 0x0, size 0x4
     uint32_t Chance;                    // offset 0x4, size 0x4
@@ -52,6 +67,7 @@ struct HeavySupport {
     uint32_t ChanceBigSUV;              // offset 0xC, size 0x4
 };
 
+// Decl: 83
 struct LeaderSupport {
     LeaderSupportStrategy LeaderStrategy; // offset 0x0, size 0x4
     uint32_t Chance;                      // offset 0x4, size 0x4
@@ -60,14 +76,8 @@ struct LeaderSupport {
     float PriorityTime;                   // offset 0x10, size 0x4
 };
 
-// total size: 0x18
-struct CopCountRecord {
-    Attrib::StringKey CopType; // offset 0x0, size 0x10
-    unsigned int Count;        // offset 0x10, size 0x4
-    unsigned int Chance;       // offset 0x14, size 0x4
-};
-
 // total size: 0x10
+// Decl: 94
 struct AICollisionReactionRecord {
     uint32 Goal;              // offset 0x0, size 0x4
     Attrib::RefSpec Reaction; // offset 0x4, size 0xC

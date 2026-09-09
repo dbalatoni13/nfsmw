@@ -7,6 +7,15 @@
 
 #include "types.h"
 
+// TODO move, this is a leftover from UG
+enum eRaceStage {
+    RACE_STAGE_NONE = 0,
+    RACE_STAGE_FLYBY = 1,
+    RACE_STAGE_PRERACE = 2,
+    RACE_STAGE_COUNTDOWN = 3,
+    RACE_STAGE_RACING = 4,
+};
+
 namespace GRace {
 
 enum Difficulty {

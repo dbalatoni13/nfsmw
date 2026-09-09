@@ -92,6 +92,429 @@ typedef struct {
 
 // Unused classes TODO
 
+// Decl: 116
+inline Result CacheHandlesFE_AEMS() {
+    int result;
+    result = gPlayCommonSampleHandle.Set(&PlayCommonSampleId);
+    result = gPlayFrontEndSampleHandle.Set(&PlayFrontEndSampleId);
+    result = gPlayFrontEndSample_RSHandle.Set(&PlayFrontEndSample_RSId);
+    result = gFEDriveOnHandle.Set(&FEDriveOnId);
+    return static_cast<Result>(result);
+}
+
+// Decl: 135
+
+class PlayCommonSample {
+  public:
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2000) {
+            x = 2000;
+        }
+        this->mData.id = x;
+    }
+
+    int GetId() {
+        return this->mData.id;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.volume = x;
+    }
+
+    int GetVolume() {
+        return this->mData.volume;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
+        this->mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return this->mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        this->mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return this->mData.azimuth;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    PlayCommonSample(int id, int volume, int pitch, int azimuth) {
+        this->SetId(id);
+        this->SetVolume(volume);
+        this->SetPitch(pitch);
+        this->SetAzimuth(azimuth);
+
+        Result result = Class::CreateInstance(&gPlayCommonSampleHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gPlayCommonSampleHandle.Set(&PlayCommonSampleId);
+            Class::CreateInstance(&gPlayCommonSampleHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~PlayCommonSample() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    PlayCommonSampleStruct mData;
+};
+
+// Decl: 393
+class PlayFrontEndSample {
+  public:
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2000) {
+            x = 2000;
+        }
+        this->mData.id = x;
+    }
+
+    int GetId() {
+        return this->mData.id;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.volume = x;
+    }
+
+    int GetVolume() {
+        return this->mData.volume;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
+        this->mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return this->mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        this->mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return this->mData.azimuth;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    PlayFrontEndSample(int id, int volume, int pitch, int azimuth) {
+        this->SetId(id);
+        this->SetVolume(volume);
+        this->SetPitch(pitch);
+        this->SetAzimuth(azimuth);
+
+        Result result = Class::CreateInstance(&gPlayFrontEndSampleHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gPlayFrontEndSampleHandle.Set(&PlayFrontEndSampleId);
+            Class::CreateInstance(&gPlayFrontEndSampleHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~PlayFrontEndSample() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    PlayFrontEndSampleStruct mData;
+};
+
+// Decl: 522
+class PlayFrontEndSample_RS {
+  public:
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 500) {
+            x = 500;
+        }
+        this->mData.id = x;
+    }
+
+    int GetId() {
+        return this->mData.id;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.volume = x;
+    }
+
+    int GetVolume() {
+        return this->mData.volume;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
+        this->mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return this->mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        this->mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return this->mData.azimuth;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    PlayFrontEndSample_RS(int id, int volume, int pitch, int azimuth) {
+        this->SetId(id);
+        this->SetVolume(volume);
+        this->SetPitch(pitch);
+        this->SetAzimuth(azimuth);
+
+        Result result = Class::CreateInstance(&gPlayFrontEndSample_RSHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gPlayFrontEndSample_RSHandle.Set(&PlayFrontEndSample_RSId);
+            Class::CreateInstance(&gPlayFrontEndSample_RSHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~PlayFrontEndSample_RS() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    PlayFrontEndSample_RSStruct mData;
+};
+
+// Decl: 651
+class FEDriveOn {
+  public:
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.id = x;
+    }
+
+    int GetId() {
+        return this->mData.id;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.volume = x;
+    }
+
+    int GetVolume() {
+        return this->mData.volume;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
+        this->mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return this->mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        this->mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return this->mData.azimuth;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    FEDriveOn(int id, int volume, int pitch, int azimuth) {
+        this->SetId(id);
+        this->SetVolume(volume);
+        this->SetPitch(pitch);
+        this->SetAzimuth(azimuth);
+
+        Result result = Class::CreateInstance(&gFEDriveOnHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gFEDriveOnHandle.Set(&FEDriveOnId);
+            Class::CreateInstance(&gFEDriveOnHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~FEDriveOn() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    FEDriveOnStruct mData;
+};
+
 }; // namespace Csis
 
 #endif

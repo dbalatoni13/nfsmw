@@ -25,9 +25,7 @@ class SFXCTL_MasterVol : public SFXCTL {
 class SFXCTL_GameState : public SFXCTL {
   public:
     DECLARE_CREATABLE();
-
-    SFXCTL_GameState() {}           // Decl: 31
-    ~SFXCTL_GameState() override {} // Decl: 31
+    SFXCTL_GameState() {} // Decl: 31
 
     // Overrides: SndBase
     void UpdateMixerOutputs() override;

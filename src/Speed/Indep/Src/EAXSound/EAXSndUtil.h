@@ -205,9 +205,7 @@ class PanEffect {
 class Slope {
   public:
     Slope();
-
     Slope(float _Min, float _Max, float _Start, float _Finish);
-
     ~Slope();
 
     float GetValue();

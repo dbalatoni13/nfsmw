@@ -11,7 +11,12 @@
 // total size: 0x10
 // Decl: 10
 struct EngineMix {
-    EngineMix() {} // Decl: 11
+    // Decl: 11
+    EngineMix()
+        : Aems(0.0f),       //
+          AccelGinsu(0.0f), //
+          DecelGinsu(0.0f), //
+          Cutoff(0) {}
 
     float Aems;       // offset 0x0, size 0x4, Decl: 19
     float AccelGinsu; // offset 0x4, size 0x4, Decl: 20

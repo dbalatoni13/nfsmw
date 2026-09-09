@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Src/Physics/Behaviors/BehaviorSpecs.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.cpp"

@@ -14,8 +14,8 @@ struct WCollisionTri {
     WCollisionTri() {}
 
     float MinY() const {
-        float minY = UMath::Min(fPt0.y, fPt1.y);
-        return UMath::Min(minY, fPt2.y);
+        float minY = UMath::Min(this->fPt0.y, this->fPt1.y);
+        return UMath::Min(minY, this->fPt2.y);
     }
 
     void GetNormal(UMath::Vector3 *norm) const {
@@ -23,13 +23,13 @@ struct WCollisionTri {
         UMath::Vector3 vecZ;
         UMath::Vector3 normal;
 
-        vecZ.x = fPt1.x - fPt0.x;
-        vecZ.y = fPt1.y - fPt0.y;
-        vecZ.z = fPt1.z - fPt0.z;
+        vecZ.x = this->fPt1.x - this->fPt0.x;
+        vecZ.y = this->fPt1.y - this->fPt0.y;
+        vecZ.z = this->fPt1.z - this->fPt0.z;
 
-        vecX.x = fPt0.x - fPt2.x;
-        vecX.y = fPt0.y - fPt2.y;
-        vecX.z = fPt0.z - fPt2.z;
+        vecX.x = this->fPt0.x - this->fPt2.x;
+        vecX.y = this->fPt0.y - this->fPt2.y;
+        vecX.z = this->fPt0.z - this->fPt2.z;
         UMath::Cross(vecZ, vecX, normal);
 
         if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {

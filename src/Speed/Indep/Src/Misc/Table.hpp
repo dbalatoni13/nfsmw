@@ -121,11 +121,11 @@ class Average : public AverageBase {
     void Reset(float fValue);
     void Flush(float fValue);
 
-    float GetValue() {
+    float GetValue() const {
         return fAverage;
     }
 
-    float GetTotal() {
+    float GetTotal() const {
         return fTotal;
     }
 
@@ -145,6 +145,7 @@ class AverageWindow : public Average {
     AverageWindow(float f_timewindow, float f_frequency);
     ~AverageWindow();
 
+    // TODO out of line
     float GetOldestValue() {
         return pData[iOldestValue];
     }
@@ -153,7 +154,7 @@ class AverageWindow : public Average {
         return pTimeData[iOldestValue];
     }
 
-    void Record(const float fValue, const float fTimeNow);
+    void Record(float fValue, float fTimeNow);
     void Reset(float fValue);
 
     float fTimeWindow;
@@ -228,32 +229,9 @@ template <typename T> class tGraph {
 };
 
 // total size: 0x84
-struct PidError {
-    // void *operator new(unsigned int size, void *ptr) {}
-
-    // void operator delete(void *mem, void *ptr) {}
-
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    void *operator new(size_t size, const char *name) {
-        return gFastMem.Alloc(size, name);
-    }
-
-    void operator delete(void *mem, const char *name) {
-        if (mem) {
-            gFastMem.Free(mem, sizeof(PidError), name);
-        }
-    }
-
-    // void operator delete(void *mem, unsigned int size, const char *name) {}
+class PidError {
+  public:
+    USE_FASTALLOC(PidError);
 
     PidError(int nIntegralTerms, int nDerivativeTerms, float f_frequency)
         : aTimes(nIntegralTerms),        //

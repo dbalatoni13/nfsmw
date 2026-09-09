@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 extern "C" {
 
 #include "Speed/Indep/Src/Lua/source/lapi.c"

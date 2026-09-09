@@ -176,11 +176,11 @@ void WCollisionAssets::RemovePackLoadCallback(void (*callback)(int, bool)) {
     unsigned int onCallback = 0;
 
     while (onCallback < this->fNumPackLoadCallbacks) {
-        if (fPackLoadCallback[onCallback] == callback) {
+        if (this->fPackLoadCallback[onCallback] == callback) {
             if (onCallback < this->fNumPackLoadCallbacks - 1) {
-                fPackLoadCallback[onCallback] = fPackLoadCallback[this->fNumPackLoadCallbacks - 1];
+                this->fPackLoadCallback[onCallback] = this->fPackLoadCallback[this->fNumPackLoadCallbacks - 1];
             } else {
-                fPackLoadCallback[onCallback] = nullptr;
+                this->fPackLoadCallback[onCallback] = nullptr;
             }
             this->fNumPackLoadCallbacks--;
         } else {
@@ -210,9 +210,9 @@ void WCollisionAssets::UnLoadCollisionPack(bChunk *chunk) {
     bChunkCarpHeader *chunk_header = reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(16));
     int sectionId = chunk_header->GetSectionNumber();
     if (this->mCollisionPackList[sectionId]) {
-        for (unsigned int onCallback = 0; onCallback < fNumPackLoadCallbacks; ++onCallback) {
-            if (fPackLoadCallback[onCallback]) {
-                fPackLoadCallback[onCallback](sectionId, false);
+        for (unsigned int onCallback = 0; onCallback < this->fNumPackLoadCallbacks; ++onCallback) {
+            if (this->fPackLoadCallback[onCallback]) {
+                this->fPackLoadCallback[onCallback](sectionId, false);
             }
         }
         delete this->mCollisionPackList[sectionId];

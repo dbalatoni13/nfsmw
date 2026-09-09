@@ -7,6 +7,8 @@
 #include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_WIN32)
+#include "Speed/PC/Src/Ecstasy/TextureInfoPlat.hpp"
 #endif
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"

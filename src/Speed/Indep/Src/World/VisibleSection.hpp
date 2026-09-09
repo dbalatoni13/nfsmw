@@ -86,29 +86,29 @@ class VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     float GetDistanceInside(const bVector2 *point);
 
     int GetNumPoints() {
-        return NumPoints;
+        return this->NumPoints;
     }
 
     bVector2 *GetPoint(int n) {
-        return &Points[n];
+        return &this->Points[n];
     }
 
     void EndianSwap() {
-        bPlatEndianSwap(&SectionNumber);
-        bPlatEndianSwap(&NumPoints);
-        bPlatEndianSwap(&BBoxMin);
-        bPlatEndianSwap(&BBoxMax);
-        for (int i = 0; i < NumPoints; i++) {
-            bPlatEndianSwap(&Points[i]);
+        bPlatEndianSwap(&this->SectionNumber);
+        bPlatEndianSwap(&this->NumPoints);
+        bPlatEndianSwap(&this->BBoxMin);
+        bPlatEndianSwap(&this->BBoxMax);
+        for (int i = 0; i < this->NumPoints; i++) {
+            bPlatEndianSwap(&this->Points[i]);
         }
     }
 
     int GetSectionNumber() {
-        return SectionNumber;
+        return this->SectionNumber;
     }
 
     int GetMemoryImageSize() {
-        return sizeof(*this) - (16 - NumPoints) * sizeof(bVector2);
+        return sizeof(*this) - (16 - this->NumPoints) * sizeof(bVector2);
     }
 
     void GetCentre(bVector2 *centre);
@@ -155,21 +155,21 @@ class DrivableScenerySection : public bTNode<DrivableScenerySection> {
     void SortVisibleSections();
 
     int GetSectionNumber() {
-        return SectionNumber;
+        return this->SectionNumber;
     }
 
     void EndianSwap() {
-        bPlatEndianSwap(&SectionNumber);
-        bPlatEndianSwap(&NumVisibleSections);
-        bPlatEndianSwap(&MostVisibleSections);
-        bPlatEndianSwap(&MaxVisibleSections);
-        for (int i = 0; i < NumVisibleSections; i++) {
-            bPlatEndianSwap(&VisibleSections[i]);
+        bPlatEndianSwap(&this->SectionNumber);
+        bPlatEndianSwap(&this->NumVisibleSections);
+        bPlatEndianSwap(&this->MostVisibleSections);
+        bPlatEndianSwap(&this->MaxVisibleSections);
+        for (int i = 0; i < this->NumVisibleSections; i++) {
+            bPlatEndianSwap(&this->VisibleSections[i]);
         }
     }
 
     int GetMemoryImageSize() {
-        return sizeof(*this) - (sizeof(VisibleSections) / sizeof(*VisibleSections) - MaxVisibleSections) * sizeof(*VisibleSections);
+        return sizeof(*this) - (sizeof(this->VisibleSections) / sizeof(*this->VisibleSections) - this->MaxVisibleSections) * sizeof(*this->VisibleSections);
     }
 
     int GetNumVisibleSections() {
@@ -181,7 +181,7 @@ class DrivableScenerySection : public bTNode<DrivableScenerySection> {
     }
 
     VisibleSectionBoundary *GetBoundary() {
-        return pBoundary;
+        return this->pBoundary;
     }
 };
 
@@ -195,9 +195,9 @@ class DrivableSectionsInRegion {
     void AddSection(int16 section_number);
     void RemoveSection(int16 section_number);
     void EndianSwap() {
-        bPlatEndianSwap(&NumSections);
-        for (int i = 0; i < NumSections; i++) {
-            bPlatEndianSwap(&Sections[i]);
+        bPlatEndianSwap(&this->NumSections);
+        for (int i = 0; i < this->NumSections; i++) {
+            bPlatEndianSwap(&this->Sections[i]);
         }
     }
 };
@@ -235,7 +235,7 @@ class LoadingSection : public bTNode<LoadingSection> {
     ~LoadingSection();
     void SetName(const char *name);
     char *GetName() {
-        return Name;
+        return this->Name;
     };
     void AddDrivableSection(int section_number);
     void AddExtraSection(int section_number);
@@ -243,7 +243,7 @@ class LoadingSection : public bTNode<LoadingSection> {
     void RemoveExtraSection(int section_number);
 
     bool HasDrivableSection(int section_number) {
-        return HasSection(DrivableSections, NumDrivableSections, section_number);
+        return HasSection(this->DrivableSections, this->NumDrivableSections, section_number);
     }
 
     bool HasExtraSection(int);
@@ -251,13 +251,13 @@ class LoadingSection : public bTNode<LoadingSection> {
     char *GetDrivableSectionNames(char *text, int max_len);
 
     void EndianSwap() {
-        bPlatEndianSwap(&NumDrivableSections);
-        for (int i = 0; i < NumDrivableSections; i++) {
-            bPlatEndianSwap(&DrivableSections[i]);
+        bPlatEndianSwap(&this->NumDrivableSections);
+        for (int i = 0; i < this->NumDrivableSections; i++) {
+            bPlatEndianSwap(&this->DrivableSections[i]);
         }
-        bPlatEndianSwap(&NumExtraSections);
-        for (int j = 0; j < NumExtraSections; j++) {
-            bPlatEndianSwap(&ExtraSections[j]);
+        bPlatEndianSwap(&this->NumExtraSections);
+        for (int j = 0; j < this->NumExtraSections; j++) {
+            bPlatEndianSwap(&this->ExtraSections[j]);
         }
     }
 
@@ -337,15 +337,15 @@ class VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
     };
 
     VisibleSectionOverlay(const char *name) {
-        NumEntries = 0;
-        bMemSet(Name, 0, sizeof(Name));
-        bSafeStrCpy(Name, name, sizeof(Name));
+        this->NumEntries = 0;
+        bMemSet(this->Name, 0, sizeof(this->Name));
+        bSafeStrCpy(this->Name, name, sizeof(this->Name));
     }
 
     void EndianSwap() {
-        bPlatEndianSwap(&NumEntries);
-        for (int n = 0; n < NumEntries; n++) {
-            OverlayEntry *entry = &EntryTable[n];
+        bPlatEndianSwap(&this->NumEntries);
+        for (int n = 0; n < this->NumEntries; n++) {
+            OverlayEntry *entry = &this->EntryTable[n];
             bPlatEndianSwap(&entry->DrivableSectionNumber);
             bPlatEndianSwap(&entry->SectionNumber);
         }
@@ -364,8 +364,8 @@ struct VisibleSectionManagerInfo {
     DrivableSectionsInRegion TheDrivableSectionsInRegion; // offset 0x4, size 0x324
 
     void EndianSwap() {
-        bPlatEndianSwap(&LODOffset);
-        TheDrivableSectionsInRegion.EndianSwap();
+        bPlatEndianSwap(&this->LODOffset);
+        this->TheDrivableSectionsInRegion.EndianSwap();
     }
 };
 
@@ -456,7 +456,7 @@ class VisibleSectionManager {
     void DisableGroup(uint32 group_name_hash);
 
     void DisableAllGroups() {
-        bMemSet(EnabledGroups, 0, 0x400);
+        bMemSet(this->EnabledGroups, 0, 0x400);
     }
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
@@ -464,7 +464,7 @@ class VisibleSectionManager {
     }
 
     int GetLODOffset() {
-        return pInfo->LODOffset;
+        return this->pInfo->LODOffset;
     }
 
   private:

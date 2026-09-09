@@ -1,7 +1,6 @@
 #ifndef SIM_ACTIVITIES_QUICKGAME_H
 #define SIM_ACTIVITIES_QUICKGAME_H
 
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -54,6 +53,13 @@ class QuickGame : public Sim::Activity, public Sim::ITimeManager, Sim::IStateMan
     // IVehicleCache
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+
+#ifndef EA_BUILD_A124
+    // IVehicleCache
+    const char *GetCacheName() const override {
+        return "QuickGame";
+    }
+#endif
 
     // IGameState
     void RaceReset() override;

@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Src/EAGL4Anim/eagl4AnimBank.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/Attribute.cpp"

@@ -44,7 +44,9 @@ class World {
 
     int GetNumCars() {}
     int GetNumRacingCars() {}
-    int GetNumPlayerCars() {}
+    int GetNumPlayerCars() {
+        return this->AICarPos;
+    }
     int GetNumAICars() {}
     int GetNumCopCars() {}
     int GetNumTrafficCars() {}
@@ -134,8 +136,9 @@ class World {
     uint32 PotentialDriveTargetID;  // offset 0xE4, size 0x4
 };
 
-extern int g_tweakIsDragRace;  // TODO move?
-extern int g_tweakIsDriftRace; // TODO move?
+extern int g_tweakIsDragRace;
+extern int g_tweakIsDriftRace;
+extern int g_tweakIsShortTrackRace;
 
 void World_Service();
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);

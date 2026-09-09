@@ -25,11 +25,15 @@ class Packet {
     }
 
     // Virtual functions
-    virtual UCrc32 ConnectionClass();
-    virtual unsigned int Compress(Packet *to) const;
-    virtual unsigned int Decompress(Packet *to) const;
-    virtual unsigned int Type();
-    virtual unsigned int Size();
+    virtual UCrc32 ConnectionClass() = 0;
+    virtual unsigned int Compress(Packet *to) const {
+        return 0;
+    }
+    virtual unsigned int Decompress(Packet *to) const {
+        return 0;
+    }
+    virtual unsigned int Type() = 0;
+    virtual unsigned int Size() = 0;
 
   protected:
     Packet() {}

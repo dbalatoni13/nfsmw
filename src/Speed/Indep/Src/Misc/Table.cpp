@@ -2,9 +2,9 @@
 
 // Credits: Brawltendo
 // TODO variables aren't dwarf matching
-float Table::GetValue(float input) {
+float Table::GetValue(float arg) {
     const int entries = NumEntries;
-    const float normarg = IndexMultiplier * (input - MinArg);
+    const float normarg = IndexMultiplier * (arg - MinArg);
     const int index = (int)normarg;
 
     if (index < 0 || normarg < 0.0f)
@@ -157,11 +157,11 @@ void Average::Flush(float fValue) {
 
 float Average::GetLastRecordedValue() const {
     if (nSamples != 0) {
-        int idx = nCurrentSlot - 1;
-        if (idx < 0) {
-            idx = nSlots - 1;
+        int last_slot = nCurrentSlot - 1;
+        if (last_slot < 0) {
+            last_slot = nSlots - 1;
         }
-        return pData[idx];
+        return pData[last_slot];
     }
     return 0.0f;
 }
@@ -192,7 +192,7 @@ void AverageWindow::Reset(float fValue) {
     this->nCurrentSlot = 0;
 }
 
-void AverageWindow::Record(const float fValue, const float fTimeNow) {
+void AverageWindow::Record(float fValue, float fTimeNow) {
     if (pData[nCurrentSlot] == 0.0f && pTimeData[nCurrentSlot] == 0.0f) {
         nSamples++;
     } else {

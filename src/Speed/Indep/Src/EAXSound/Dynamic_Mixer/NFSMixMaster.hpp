@@ -51,7 +51,9 @@ class NFSMixMaster : public AudioMemBase {
 
     void ProcessMixMap(float dt, eCamStates ecam);
 
-    // bool IsMixMapReady() {}
+    bool IsMixMapReady() {
+      return this->m_bMapReady;
+    }
 
     void AssignMixMap(int *mapfile);
 

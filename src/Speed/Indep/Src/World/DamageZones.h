@@ -26,24 +26,24 @@ UCrc32 GetImpactStimulus(unsigned int level);
 // total size: 0x4
 struct Info {
     Info() {
-        Value = 0;
+        this->Value = 0;
     }
 
     Info(const Info &from) {
-        Value = from.Value;
+        this->Value = from.Value;
     }
 
     void Set(ID id, unsigned int level) {
-        Value &= ~(7 << (id * 3));
-        Value |= (level & 7) << (id * 3);
+        this->Value &= ~(7 << (id * 3));
+        this->Value |= (level & 7) << (id * 3);
     }
 
     unsigned int Get(ID id) const {
-        return (Value >> (id * 3)) & 7;
+        return (this->Value >> (id * 3)) & 7;
     }
 
     void Clear() {
-        Value = 0;
+        this->Value = 0;
     }
 
     uint32 Value; // offset 0x0, size 0x4

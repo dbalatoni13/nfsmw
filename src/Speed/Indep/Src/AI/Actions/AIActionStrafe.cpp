@@ -3,15 +3,10 @@
 // total size: 0x48
 class AIActionStrafe : public AIAction {
   public:
-    static AIAction *Construct(AIActionParams *params);
-
     AIActionStrafe(AIActionParams *params, float score) : AIAction(params, score) {}
-
-    void UpdateNavPos(UMath::Vector3 &dest, float lookAheadDistance);
-
-    // Virtual overrides
-    // IUnknown
     ~AIActionStrafe() override {}
+
+    static AIAction *Construct(AIActionParams *params);
 
     // AIAction
     bool CanBeAttempted(float dT) override {
@@ -28,10 +23,15 @@ class AIActionStrafe : public AIAction {
 
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
+
+  private:
+    void UpdateNavPos(UMath::Vector3 &dest, float lookAheadDistance);
 };
 
+BIND_AIACTION_FACTORY(AIActionStrafe);
+
 AIAction *AIActionStrafe::Construct(AIActionParams *params) {
-    return new AIActionStrafe(params, 0.0f);
+    return new AIActionStrafe(params, AIACTION_SCORE_LOW);
 }
 
 void AIActionStrafe::Update(float dT) {}

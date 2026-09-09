@@ -9,18 +9,10 @@
 
 class IReputation : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IReputation);
 
-    IReputation(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    virtual ~IReputation() {}
-
-  public:
-    virtual void SetReputationCareer(int rep);
-    virtual void SetReputationPursuit(int rep);
+    virtual void SetReputationCareer(int rep) = 0;
+    virtual void SetReputationPursuit(int rep) = 0;
 };
 
 #endif

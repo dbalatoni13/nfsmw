@@ -103,5 +103,6 @@ class IVisualTreatment {
 
 void OpenVisualTreatment();
 void CloseVisualTreatment();
+float GetValueFromSpline(float value, bMatrix4 *curve);
 
 #endif

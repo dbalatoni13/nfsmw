@@ -47,9 +47,11 @@ class EAXS_StreamChannel : public SndStrmWrapper {
 
     int CreateStreamChannel();
 
-    int InitChannel(const int maxChunks, const int maxRequests, const int buffersize, enum eSTRMTYPE strmtype); // Decl: 54
+    int InitChannel(const int maxChunks, const int maxRequests, const int buffersize, eSTRMTYPE strmtype); // Decl: 54
 
-    virtual int InitChannel(const int maxChunks, const int maxRequests, char *pmem, const int buffersize, enum eSTRMTYPE strmtype) {} // Decl: 54
+    virtual int InitChannel(const int maxChunks, const int maxRequests, char *pmem, const int buffersize, eSTRMTYPE strmtype) {
+        return 0;
+    }
 
     int PlayStrmReq(const char *filename, long int offset);
 
@@ -61,7 +63,10 @@ class EAXS_StreamChannel : public SndStrmWrapper {
 
     virtual void ProcessTrackStreamerOff();
 
-    int GetMinStarveTime() {} // Decl: 67
+    // Decl: 67
+    int GetMinStarveTime() {
+        return this->m_SChP.MinStarveTime;
+    }
 
     void SetMinStarveTime(int minstarvetime);
 

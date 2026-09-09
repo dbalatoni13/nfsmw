@@ -46,7 +46,7 @@ enum RaceTypes {
 // total size: 0xA0
 struct RaceParameters {
     RaceParameters() {
-        InitWithDefaults();
+        this->InitWithDefaults();
     }
 
     void DoSnapshot(ReplaySnapshot *snapshot);
@@ -78,7 +78,9 @@ struct RaceParameters {
         return this->bDriftRaceFlag || (g_tweakIsDriftRace != 0);
     }
     bool IsBurnout() {}
-    bool IsShortTrackRace() {}
+    bool IsShortTrackRace() {
+        return (this->bShortRaceFlag) || (g_tweakIsShortTrackRace != 0);
+    }
     bool IsDriftPhysics() {}
     bool IsBurnoutPhysics() {}
     bool IsTestTrack() {}

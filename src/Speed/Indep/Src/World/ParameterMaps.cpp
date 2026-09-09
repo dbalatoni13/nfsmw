@@ -13,7 +13,7 @@ ParameterMapLayer::ParameterMapLayer()
       QuadData16(nullptr) {}
 
 ParameterMapLayer::~ParameterMapLayer() {
-    Unload();
+    this->Unload();
 }
 
 void ParameterMapLayer::Load(bChunk **chunk) {
@@ -157,7 +157,7 @@ void *ParameterMapLayer::GetParameterData(float x, float y) {
 }
 
 float ParameterMapLayer::GetDataFloat(int field_index, void *parameter_data) {
-    float *data = reinterpret_cast<float *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
+    float *data = reinterpret_cast<float *>(static_cast<char *>(parameter_data) + this->FieldOffsets[field_index]);
     if (data == nullptr) {
         return 0.0f;
     }
@@ -165,7 +165,7 @@ float ParameterMapLayer::GetDataFloat(int field_index, void *parameter_data) {
 }
 
 int ParameterMapLayer::GetDataInt(int field_index, void *parameter_data) {
-    int *data = reinterpret_cast<int *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
+    int *data = reinterpret_cast<int *>(static_cast<char *>(parameter_data) + this->FieldOffsets[field_index]);
     if (data == nullptr) {
         return 0;
     }
@@ -274,18 +274,18 @@ int ParameterMapLayer::GetParameterSetIndexFromQuadData16(float x, float y) {
 }
 
 void *ParameterMapLayer::GetFieldPointer(int set_index, int field_index) {
-    if (!Header->NumberOfParameterSets || !Header->SizeOfParameterSet || !Header->NumberOfFields || (FieldTypes == nullptr) ||
-        (FieldOffsets == nullptr) || (ParameterData == nullptr)) {
+    if (!this->Header->NumberOfParameterSets || !this->Header->SizeOfParameterSet || !this->Header->NumberOfFields || (this->FieldTypes == nullptr) ||
+        (this->FieldOffsets == nullptr) || (this->ParameterData == nullptr)) {
         return nullptr;
     }
-    if (set_index >= Header->NumberOfParameterSets) {
+    if (set_index >= this->Header->NumberOfParameterSets) {
         return nullptr;
     }
-    if (field_index >= Header->NumberOfFields) {
+    if (field_index >= this->Header->NumberOfFields) {
         return nullptr;
     }
-    int data_offset = Header->SizeOfParameterSet * set_index + FieldOffsets[field_index];
-    return static_cast<char *>(ParameterData) + data_offset;
+    int data_offset = this->Header->SizeOfParameterSet * set_index + this->FieldOffsets[field_index];
+    return static_cast<char *>(this->ParameterData) + data_offset;
 }
 
 static const int EnableAutoParameterAccessorsListDump = 0;
@@ -309,14 +309,14 @@ ParameterAccessor::ParameterAccessor(const char *layer_name)
       AutoAttachLayerNamehash(0), //
       DebugName(layer_name),      //
       CurrentParameterData(nullptr) {
-    AutoAttachLayerNamehash = bStringHash(layer_name);
-    if (!GetParameterMapsManager().GetDataForLayer(AutoAttachLayerNamehash, this, 0)) {
+    this->AutoAttachLayerNamehash = bStringHash(layer_name);
+    if (!GetParameterMapsManager().GetDataForLayer(this->AutoAttachLayerNamehash, this, 0)) {
         GetAutoParameterAccessors().AddTail(this);
     }
 }
 
 ParameterAccessor::~ParameterAccessor() {
-    ClearLayer();
+    this->ClearLayer();
     if (GetAutoParameterAccessors().IsInList(this)) {
         GetAutoParameterAccessors().Remove(this);
     }
@@ -421,14 +421,14 @@ void ParameterAccessorBlend::ClearData() {
         this->LastData = nullptr;
     }
     this->HaveLastData = 0;
-    ParameterAccessor::ClearData();
+    this->ParameterAccessor::ClearData();
 }
 
 void ParameterAccessorBlend::SetUpForNewLayer() {
-    if (Layer != nullptr) {
-        int data_size = Layer->GetSizeOfParameterSet();
+    if (this->Layer != nullptr) {
+        int data_size = this->Layer->GetSizeOfParameterSet();
         if (data_size > 0) {
-            LastData = new ("Parameter Accessor Blend Buffer", 0) char[data_size];
+            this->LastData = new ("Parameter Accessor Blend Buffer", 0) char[data_size];
         }
     }
 }
@@ -455,7 +455,7 @@ void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_
         }
     }
 
-    ParameterAccessorBlend::CaptureData(x, y, ratio);
+    this->ParameterAccessorBlend::CaptureData(x, y, ratio);
     this->last_y = y;
     this->last_x = x;
     this->HaveLastPosition = 1;
@@ -465,7 +465,7 @@ void ParameterAccessorBlendByDistance::SetUpForNewLayer() {
     this->last_x = 0.0f;
     this->last_y = 0.0f;
     this->HaveLastPosition = 0;
-    ParameterAccessorBlend::SetUpForNewLayer();
+    this->ParameterAccessorBlend::SetUpForNewLayer();
 }
 
 void ParameterAccessorBlendByDistance::CaptureData(float x, float y) {}

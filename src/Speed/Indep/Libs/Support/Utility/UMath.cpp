@@ -20,7 +20,9 @@ float Mod(const float x, const float e) {
 }
 
 bool IsNaN(const float f) {
+#ifndef _MSC_VER // TODO
     return isnanf(f) ? true : false;
+#endif
 }
 
 // STRIPPED

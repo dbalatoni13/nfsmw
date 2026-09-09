@@ -12,47 +12,108 @@
 // Decl: 15
 class EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
   public:
-    static EAX_HeliState *Find(WUID objectid) {} // Decl: 17
+    // Decl: 17
+    static EAX_HeliState *Find(WUID objectid) {
+        for (List::const_iterator iter = GetList().begin(); iter != GetList().end(); ++iter) {
+            EAX_HeliState *state = *iter;
 
+            if (state->mWorldID == objectid) {
+                return state;
+            }
+        }
+
+        return nullptr;
+    }
+
+    // Decl: 28
     EAX_HeliState(const Attrib::Collection *atr, WUID wuid)
-        : mAttributes(atr, 0, nullptr), //
-          mWorldID(wuid) {}             // Decl: 28
+        : mVel0(0.0f, 0.0f, 0.0f),         //
+          mMovementMode(PHYSICS_MOVEMENT), //
+          mPlayerZone(PLAYER_ZONE_NONE),   //
+          mAttributes(atr, 0, nullptr),    //
+          mSimUpdating(true),              //
+          mWorldID(wuid) {
+        this->mVel1 = this->mVel0;
+        bIdentity(&this->mMatrix);
+    }
 
     ~EAX_HeliState() {} // Decl: 41
 
-    EAX_HeliState *GetState() {}  // Decl: 43
-    EAX_HeliState *GetDriver() {} // Decl: 44
+    // Decl: 43
+    EAX_HeliState *GetState() {
+        return this;
+    }
+    // Decl: 44
+    EAX_HeliState *GetDriver() {
+        return this;
+    }
 
+    // Decl: 46
     const bVector3 *GetForwardVector() {
         return reinterpret_cast<const bVector3 *>(&this->mMatrix.v0);
-    } // Decl: 46
+    }
+    // Decl: 47
     bVector3 *GetPosition() {
         return reinterpret_cast<bVector3 *>(&this->mMatrix.v3);
-    } // Decl: 47
-    const bVector2 *GetPosition2D() {} // Decl: 48
-    float GetForwardSpeed() {}         // Decl: 49
+    }
+    // Decl: 48
+    const bVector2 *GetPosition2D() {
+        return reinterpret_cast<const bVector2 *>(this->GetPosition());
+    }
+    // Decl: 49
+    float GetForwardSpeed() {
+        return this->mFWSpeed;
+    }
 
-    MovementMode GetMovementMode() {}
+    MovementMode GetMovementMode() {
+        return this->mMovementMode;
+    }
 
-    PlayerZones GetZone() {} // Decl: 51
+    // Decl: 51
+    PlayerZones GetZone() {
+        return this->mPlayerZone;
+    }
 
-    const bVector3 *GetAcceleration() {} // Decl: 55
+    // const bVector3 *GetAcceleration() {} // Decl: 55
 
-    const bVector3 *GetOldVel() {} // Decl: 60
+    // Decl: 60
+    const bVector3 *GetOldVel() {
+        return &this->mVel1;
+    }
+    // Decl: 61
     const bVector3 *GetVelocity() {
         return &this->mVel0;
-    } // Decl: 61
-    const bVector2 *GetVelocity2D() {} // Decl: 62
-    float GetVelocityMagnitude() {}    // Decl: 63
-    float GetVelocityMagnitudeMPH() {} // Decl: 64
+    }
+    // Decl: 62
+    const bVector2 *GetVelocity2D() {
+        return reinterpret_cast<const bVector2 *>(this->GetVelocity());
+    }
+    // Decl: 63
+    float GetVelocityMagnitude() {
+        return bLength(this->mVel0);
+    }
+    // Decl: 64
+    float GetVelocityMagnitudeMPH() {
+        return MPS2MPH(this->GetVelocityMagnitude());
+    }
 
-    const bMatrix4 *GetBodyMatrix() {} // Decl: 66
+    // Decl: 66
+    const bMatrix4 *GetBodyMatrix() {
+        return &this->mMatrix;
+    }
 
-    Attrib::Instance *GetAttributes() {} // Decl: 69
-    Sound::Context GetContext() {}       // Decl: 70
+    // Decl: 69
+    Attrib::Instance *GetAttributes() {
+        return &this->mAttributes;
+    }
+    // Decl: 70
+    Sound::Context GetContext() {
+        return this->mContext;
+    }
+    // Decl: 71
     bool IsSimUpdating() {
         return this->mSimUpdating;
-    } // Decl: 71
+    }
 
     bMatrix4 mMatrix;             // offset 0x4, size 0x40, Decl: 74
     bVector3 mVel0;               // offset 0x44, size 0x10, Decl: 75

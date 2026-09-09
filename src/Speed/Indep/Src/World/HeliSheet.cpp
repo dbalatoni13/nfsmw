@@ -75,7 +75,7 @@ bChunkLoader bChunkLoaderHeliSheet(BCHUNK_SPEED_HELI_SHEET, LoaderHeliSheet, Unl
 
 void HeliPoly::GetVertices(bVector3 *vertices) {
     for (int n = 0; n < NUM_ELEMENTS(this->VertexX); n++) {
-        vertices[n] = GetVertex(n);
+        vertices[n] = this->GetVertex(n);
     }
 }
 
@@ -183,14 +183,14 @@ HeliPoly *HeliSheetManager::FindHeliPoly(const bVector2 &point) {
         int max_x = bMax(heli_poly->VertexX[0], heli_poly->VertexX[1]);
         max_x = bMax(max_x, heli_poly->VertexX[2]);
 
-        int min_x = bMin(heli_poly->VertexX[1], heli_poly->VertexX[0]);
-        min_x = bMin(heli_poly->VertexX[2], min_x);
+        int min_x = bMin(heli_poly->VertexX[0], heli_poly->VertexX[1]);
+        min_x = bMin(min_x, heli_poly->VertexX[2]);
 
         if (x <= max_x && x >= min_x) {
             int max_y = bMax(heli_poly->VertexY[0], heli_poly->VertexY[1]);
             max_y = bMax(max_y, heli_poly->VertexY[2]);
-            int min_y = bMin(heli_poly->VertexY[1], heli_poly->VertexY[0]);
-            min_y = bMin(heli_poly->VertexY[2], min_y);
+            int min_y = bMin(heli_poly->VertexY[0], heli_poly->VertexY[1]);
+            min_y = bMin(min_y, heli_poly->VertexY[2]);
 
             if (y <= max_y && y >= min_y) {
                 bVector3 vertices[3];

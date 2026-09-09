@@ -37,7 +37,9 @@ template <typename T, int U> class Listable {
         typedef value_type *pointer;
         typedef value_type const *const_pointer;
 
-        const static int Limit = U;
+        enum {
+            Limit = U,
+        };
 
         // List(const List &);
         List() {
@@ -98,6 +100,10 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
     class List : public _Storage<pointer, ListSize> {
       public:
+        enum {
+            Limit = ListSize,
+        };
+
         // List(const List &);
         List() {}
         ~List() override {}
@@ -108,7 +114,12 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     class _ListSet {
       public:
-        _ListSet();
+        _ListSet() {
+            for (unsigned int i = 0; i < EnumMax; i++) {
+                _buckets[i].reserve(ListSize);
+            }
+        }
+
         // _ListSet(_ListSet &);
         ~_ListSet();
 
@@ -144,6 +155,10 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
     static const List &GetList(Enum idx) {
         return _mLists._buckets[idx];
+    }
+
+    void UnList(Enum from) {
+        _mLists._remove(static_cast<iterator>(this), from);
     }
 
     void UnList() {

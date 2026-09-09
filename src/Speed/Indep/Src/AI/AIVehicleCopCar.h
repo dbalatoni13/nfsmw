@@ -1,34 +1,33 @@
-#ifndef AI_AIVEHICLECOPCAR_H
-#define AI_AIVEHICLECOPCAR_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AIVEHICLECOPCAR_H
+#define __AIVEHICLECOPCAR_H 1
 
 #include "AIVehiclePursuit.h"
 
 // total size: 0x7D8
+// Decl: 25
 class AIVehicleCopCar : public AIVehiclePursuit {
   public:
-    AIVehicleCopCar(const BehaviorParams &bp);
-
-    // Overrides: IUnknown
-    ~AIVehicleCopCar() override;
-
     static Behavior *Construct(const BehaviorParams &bp);
 
     // Overrides: AIVehicle
     void Update(float dT) override;
 
-    // Overrides: AIVehicle
-    bool IsTetheredToTarget(IUnknown *object) override;
-
     // Overrides: IPursuitAI
     bool CanSeeTarget(AITarget *target) override;
 
-    void WatchForPerps();
-
-    bool CheckForPursuit(IVehicle *itargetVehicle);
+    // Overrides: AIVehicle
+    bool IsTetheredToTarget(IUnknown *object) override;
 
     // Overrides: IVehicleAI
     float GetSkill() const override {
@@ -40,9 +39,17 @@ class AIVehicleCopCar : public AIVehiclePursuit {
         return 1.0f;
     }
 
-  private:
+  protected:
+    AIVehicleCopCar(const BehaviorParams &bp);
+    ~AIVehicleCopCar() override;
+
+    void WatchForPerps();
+
     float mLOSAngleFront;   // offset 0x7D0, size 0x4
     bool mPerpHiddenFromMe; // offset 0x7D4, size 0x1
+
+  private:
+    bool CheckForPursuit(IVehicle *itargetVehicle);
 };
 
 #endif

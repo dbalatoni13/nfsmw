@@ -207,6 +207,8 @@ float Noise(float x) {
     return total;
 }
 
+static unsigned short aBaselineFovNoise = 0x2aaa;
+
 unsigned short Camera::FovRelativeAngle(unsigned short a) {
     float f = bSin(a) * bSin(static_cast<unsigned short>(CurrentKey.FieldOfView >> 1)) / bSin(static_cast<unsigned short>(aBaselineFovNoise >> 1));
     return bASin(f);

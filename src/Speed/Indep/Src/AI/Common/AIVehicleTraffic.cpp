@@ -1,11 +1,10 @@
-
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
+#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 // total size: 0x75C
 class AIVehicleTraffic : public AIVehicle, public ITrafficAI {
@@ -27,17 +26,20 @@ class AIVehicleTraffic : public AIVehicle, public ITrafficAI {
     static float mStagger; // size: 0x4
 };
 
-float AIVehicleTraffic::mStagger = 0.0f;
+static const float Traffic_AIUpdateRate = 0.1f; // Decl: 24
+float AIVehicleTraffic::mStagger = 0.0f;        // Decl: 25
 
 Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
     return new AIVehicleTraffic(bp);
 }
 
+BIND_BEHAVIOR_FACTORY(AIVehicleTraffic);
+
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
-    : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
+    : AIVehicle(bp, Traffic_AIUpdateRate, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {
-    SetGoal("AIGoalNone");
-    mStagger += 0.1f;
+    this->SetGoal(UCrc32("AIGoalNone"));
+    mStagger += Traffic_AIUpdateRate;
     if (mStagger >= 1.0f) {
         mStagger = 0.0f;
     }
@@ -46,49 +48,49 @@ AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
 AIVehicleTraffic::~AIVehicleTraffic() {}
 
 void AIVehicleTraffic::Update(float dT) {
-    AIVehicle::Update(dT);
-    UpdateSpawnTimer(dT);
-    if (GetGoal()) {
-        GetGoal()->Update(dT);
+    this->AIVehicle::Update(dT);
+    this->UpdateSpawnTimer(dT);
+    if (this->GetGoal() != nullptr) {
+        this->GetGoal()->Update(dT);
     }
 }
 
 void AIVehicleTraffic::StartDriving(float speed) {
-    ClearGoal();
-    SetGoal("AIGoalTraffic");
+    this->ClearGoal();
+    this->SetGoal(UCrc32("AIGoalTraffic"));
 
     IDamageable *idamage;
-    if (GetOwner()->QueryInterface(&idamage)) {
+    if (this->GetOwner()->QueryInterface(&idamage)) {
         idamage->ResetDamage();
     }
 
     IInput *input;
-    if (GetOwner()->QueryInterface(&input)) {
+    if (this->GetOwner()->QueryInterface(&input)) {
         input->ClearInput();
     }
 
     IRBVehicle *vehiclebody;
-    if (GetOwner()->QueryInterface(&vehiclebody)) {
+    if (this->GetOwner()->QueryInterface(&vehiclebody)) {
         vehiclebody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
         vehiclebody->EnableObjectCollisions(true);
     }
 
-    GetVehicle()->SetSpeed(speed);
-    SetDriveSpeed(speed);
+    this->GetVehicle()->SetSpeed(speed);
+    this->SetDriveSpeed(speed);
 
-    WRoadNav *road_nav = GetDriveToNav();
-    AITarget *target = GetTarget();
+    WRoadNav *road_nav = this->GetDriveToNav();
+    AITarget *target = this->GetTarget();
 
-    if (target && target->IsValid()) {
-        SetDriveTarget(target->GetPosition());
-    } else if (road_nav && road_nav->IsValid()) {
-        SetDriveTarget(road_nav->GetPosition());
+    if (target != nullptr && target->IsValid()) {
+        this->SetDriveTarget(target->GetPosition());
+    } else if (road_nav != nullptr && road_nav->IsValid()) {
+        this->SetDriveTarget(road_nav->GetPosition());
     } else {
         UMath::Vector3 forward;
-        GetVehicle()->ComputeHeading(&forward);
+        this->GetVehicle()->ComputeHeading(&forward);
         UMath::Scale(forward, 10.0f, forward);
-        SetDriveTarget(forward);
+        this->SetDriveTarget(forward);
     }
 
-    DoDriving(3);
+    this->DoDriving(3);
 }

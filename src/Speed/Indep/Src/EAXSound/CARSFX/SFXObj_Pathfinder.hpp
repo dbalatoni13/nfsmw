@@ -4,6 +4,7 @@
 #define SFXOBJ_PATHFINDER_H
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Pathfinder5.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
@@ -82,7 +83,10 @@ class SFXObj_Pathfinder : public CARSFX {
         }
     } // Decl: 119
 
-    void Set321(bool bon) {} // Decl: 120
+    // Decl: 120
+    void Set321(bool bon) {
+        m_Flags |= static_cast<unsigned int>(bon);
+    }
 
     stPFParms m_PFParms[2];                  // offset 0x28, size 0xF0, Decl: 117
     SFXCTL_Pathfinder *m_pSFXCTL_Pathfinder; // offset 0x118, size 0x4, Decl: 118

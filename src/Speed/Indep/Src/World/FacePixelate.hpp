@@ -15,8 +15,8 @@ class FacePixelation {
     }
 
     void Update(float x, float y) {
-        mScreenX = x;
-        mScreenY = y;
+        this->mScreenX = x;
+        this->mScreenY = y;
     }
 
     void Render();

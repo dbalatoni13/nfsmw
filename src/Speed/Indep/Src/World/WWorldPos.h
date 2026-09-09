@@ -16,14 +16,14 @@ class WWorldPos {
     USE_FASTALLOC(WWorldPos);
 
     WWorldPos(float yOffset) {
-        fYOffset = yOffset;
-        fFaceValid = 0;
-        fMissCount = 0;
-        fUsageCount = 0;
-        fFace.fPt0 = UMath::Vector3::kZero;
-        fFace.fPt1 = UMath::Vector3::kZero;
-        fFace.fPt2 = UMath::Vector3::kZero;
-        fSurface = nullptr;
+        this->fYOffset = yOffset;
+        this->fFaceValid = 0;
+        this->fMissCount = 0;
+        this->fUsageCount = 0;
+        this->fFace.fPt0 = UMath::Vector3::kZero;
+        this->fFace.fPt1 = UMath::Vector3::kZero;
+        this->fFace.fPt2 = UMath::Vector3::kZero;
+        this->fSurface = nullptr;
     }
 
     ~WWorldPos() {}
@@ -33,11 +33,11 @@ class WWorldPos {
     // bool OffEdge() const {}
 
     bool OnValidFace() const {
-        return fFaceValid;
+        return this->fFaceValid;
     }
 
     void ForceFaceValidity() {
-        fFaceValid = 1;
+        this->fFaceValid = 1;
     }
 
     // const WSurface &Surface() const {}
@@ -48,12 +48,12 @@ class WWorldPos {
     bool FindClosestFace(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, const UMath::Vector3 &endPt);
 
     void SetTolerance(float liftAmount) {
-        fYOffset = liftAmount;
+        this->fYOffset = liftAmount;
     }
 
     void UNormal(UMath::Vector3 *norm) const {
-        if (fFaceValid) {
-            fFace.GetNormal(norm);
+        if (this->fFaceValid) {
+            this->fFace.GetNormal(norm);
             if (norm->y < 0.0f) {
                 norm->y = -norm->y;
                 norm->x = -norm->x;
@@ -70,20 +70,20 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector4 *norm) const {
-        UNormal(&UMath::Vector4To3(*norm));
+        this->UNormal(&UMath::Vector4To3(*norm));
         norm->w = 0.0f;
     }
 
     float HeightAtPoint(const UMath::Vector3 &pt) const;
 
     const UMath::Vector4 &FacePoint(int ptInd) const {
-        return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];
+        return reinterpret_cast<const UMath::Vector4 *>(&this->fFace)[ptInd];
     }
 
     void MakeFaceAtPoint(const UMath::Vector3 &inPoint);
 
     const Attrib::Collection *GetSurface() const {
-        return fSurface;
+        return this->fSurface;
     }
 
   private:

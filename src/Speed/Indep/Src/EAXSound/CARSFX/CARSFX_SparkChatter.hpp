@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/ENGINES_AEMS2.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 
 // total size: 0x74
 // Decl: 27

@@ -5,6 +5,7 @@
 #define NO_SKILL_LEVEL -1
 #define PLAYER_SKILL_LEVEL -2
 
+// Decl: 20
 enum eTrafficDensity {
     eTRAFFICDENSITY_OFF = 0,
     eTRAFFICDENSITY_LOW = 1,
@@ -13,6 +14,7 @@ enum eTrafficDensity {
     NUM_TRAFFIC_DENSITIES = 4,
 };
 
+// Decl: 30
 enum eOpponentStrength {
     eOPPONENTSTRENGTH_LOW = 0,
     eOPPONENTSTRENGTH_MEDIUM = 1,

@@ -2,6 +2,7 @@
 #define _SIMRANDOM_H_
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+
 #define SimRandom_Float() _SimRandom_Float()
 #define SimRandom_FloatRange(_range) _SimRandom_FloatRange((_range))
 #define SimRandom_IntRange(_range) _SimRandom_IntRange((_range))
@@ -9,22 +10,27 @@
 
 // total size: 0x10
 class SimRandom {
-public:
+  public:
     USE_FASTALLOC(SimRandom)
 
     SimRandom();
     ~SimRandom();
     void Reset();
 
-    int _SimRandom_IntRange(const int range) {
-        int r = SimRandom_Generate() * range;
-        return r >> 16;
+    float _SimRandom_Float() {
+        int r = SimRandom_Generate();
+        return static_cast<float>(r) / 65536.0f;
     }
 
     float _SimRandom_FloatRange(const float range) {
         int r = SimRandom_Generate();
         float rf = r * range;
         return rf / 65536.0f;
+    }
+
+    int _SimRandom_IntRange(const int range) {
+        int r = (range * SimRandom_Generate()) >> 16;
+        return r;
     }
 
   private:

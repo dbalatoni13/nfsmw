@@ -14,6 +14,7 @@
 #define _STRM_H_ // Decl: 14
 
 #include "snd/sndo.h"
+#include "types.h"
 
 #define STRM_OK 0 // Decl: 22
 
@@ -90,16 +91,28 @@ class SndStrmWrapper {
     void Pause();  // Decl: 137
     void Resume(); // Decl: 138
 
-    int PurgeStream();                                // Decl: 140
-    int GetStrmHandle() {}                            // Decl: 141
-    char *GetBuffer() {}                              // Decl: 142
-    int GetRealStrmHandle() {}                        // Decl: 143
-    int GetBufferSize() {}                            // Decl: 144
+    int PurgeStream(); // Decl: 140
+    // Decl: 141
+    int GetStrmHandle() {
+        return this->m_handle;
+    }
+    char *GetBuffer() {
+        // Decl: 142
+        return this->m_buffer;
+    }
+    // Decl: 143
+    int GetRealStrmHandle() {
+        return this->m_RealStrmHandle;
+    }
+    // Decl: 144
+    int GetBufferSize() {
+        return this->m_BufferSize;
+    }
     void AssignSTRMHANDLE(unsigned int strmhandle) {} // Decl: 145
     int m_StreamID;                                   // offset 0x0, size 0x4, Decl: 146
 
   private:
-    int m_RealStreamBuffer;        // offset 0x4, size 0x4, Decl: 149
+    intptr_t m_RealStreamBuffer;   // offset 0x4, size 0x4, Decl: 149
     unsigned int m_RealStrmHandle; // offset 0x8, size 0x4, Decl: 150
     char *m_buffer;                // offset 0xC, size 0x4, Decl: 151
     int m_BufferSize;              // offset 0x10, size 0x4, Decl: 152
