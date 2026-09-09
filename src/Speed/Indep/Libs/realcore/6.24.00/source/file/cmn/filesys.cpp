@@ -603,6 +603,7 @@ struct ExistOperation : public FILEOPERATION {
     ExistOperation(const char *name, int priority, void *userdata, FILEDEVICE *dev)
         : FILEOPERATION(priority, userdata, dev) {
         this->SetName(name);
+        this->AddToQueue();
     }
 
     virtual ~ExistOperation() override {}
@@ -622,10 +623,7 @@ struct ExistOperation : public FILEOPERATION {
 };
 
 int FILESYS_exists(const char *name, int priority, void *userdata) {
-    ExistOperation *op =
-        new ExistOperation(name, priority, userdata, FILE_nametodevice(name));
-    op->AddToQueue();
-    return op->GetId();
+    return (new ExistOperation(name, priority, userdata, FILE_nametodevice(name)))->GetId();
 }
 
 struct OpenOperation : public FILEOPERATION {
@@ -634,6 +632,7 @@ struct OpenOperation : public FILEOPERATION {
         : FILEOPERATION(priority, userdata, dev) {
         this->SetName(name);
         this->value = modeflags;
+        this->AddToQueue();
     }
 
     virtual ~OpenOperation() override {}
@@ -662,16 +661,14 @@ struct OpenOperation : public FILEOPERATION {
 };
 
 int FILESYS_open(const char *name, unsigned int modeflags, int priority, void *userdata) {
-    OpenOperation *op =
-        new OpenOperation(name, modeflags, priority, userdata, FILE_nametodevice(name));
-    op->AddToQueue();
-    return op->GetId();
+    return (new OpenOperation(name, modeflags, priority, userdata, FILE_nametodevice(name)))->GetId();
 }
 
 struct CloseOperation : public FILEOPERATION {
     CloseOperation(FILESYSHANDLE *_filehandle, int priority, void *userdata, FILEDEVICE *dev)
         : FILEOPERATION(priority, userdata, dev) {
         this->filehandle = _filehandle;
+        this->AddToQueue();
     }
 
     virtual ~CloseOperation() override {}
@@ -689,9 +686,7 @@ struct CloseOperation : public FILEOPERATION {
 
 int FILESYS_close(int filehandle, int priority, void *userdata) {
     FILESYSHANDLE *hFile = reinterpret_cast<FILESYSHANDLE *>(filehandle);
-    CloseOperation *op = new CloseOperation(hFile, priority, userdata, hFile->dev);
-    op->AddToQueue();
-    return op->GetId();
+    return (new CloseOperation(hFile, priority, userdata, hFile->dev))->GetId();
 }
 
 struct ReadOperation : public FILEOPERATION {
@@ -703,6 +698,7 @@ struct ReadOperation : public FILEOPERATION {
         this->value = offset;
         this->data = buffer;
         this->totalbytes = 0;
+        this->AddToQueue();
     }
 
     virtual ~ReadOperation() override {}
@@ -739,10 +735,7 @@ struct ReadOperation : public FILEOPERATION {
 int FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority,
                  void *userdata) {
     FILESYSHANDLE *hFile = reinterpret_cast<FILESYSHANDLE *>(filehandle);
-    ReadOperation *op =
-        new ReadOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev);
-    op->AddToQueue();
-    return op->GetId();
+    return (new ReadOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev))->GetId();
 }
 
 struct ReadLargeOperation : public FILEOPERATION {
@@ -755,6 +748,7 @@ struct ReadLargeOperation : public FILEOPERATION {
         this->value = offset;
         this->data = buffer;
         this->totalbytes = 0;
+        this->AddToQueue();
     }
 
     virtual ~ReadLargeOperation() override {}
@@ -794,10 +788,7 @@ struct ReadLargeOperation : public FILEOPERATION {
 int FILESYS_readlarge(int filehandle, unsigned long long offset, void *buffer,
                       unsigned long long bytes, int priority, void *userdata) {
     FILESYSHANDLE *hFile = reinterpret_cast<FILESYSHANDLE *>(filehandle);
-    ReadLargeOperation *op =
-        new ReadLargeOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev);
-    op->AddToQueue();
-    return op->GetId();
+    return (new ReadLargeOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev))->GetId();
 }
 
 struct WriteOperation : public FILEOPERATION {
@@ -808,6 +799,7 @@ struct WriteOperation : public FILEOPERATION {
         this->amount = bytes;
         this->value = offset;
         this->data = buffer;
+        this->AddToQueue();
     }
 
     virtual ~WriteOperation() override {}
@@ -830,16 +822,14 @@ struct WriteOperation : public FILEOPERATION {
 int FILESYS_write(int filehandle, int offset, void *buffer, int bytes, int priority,
                   void *userdata) {
     FILESYSHANDLE *hFile = reinterpret_cast<FILESYSHANDLE *>(filehandle);
-    WriteOperation *op =
-        new WriteOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev);
-    op->AddToQueue();
-    return op->GetId();
+    return (new WriteOperation(hFile, bytes, offset, buffer, priority, userdata, hFile->dev))->GetId();
 }
 
 struct SizeOperation : public FILEOPERATION {
     SizeOperation(FILESYSHANDLE *_filehandle, int priority, void *userdata, FILEDEVICE *dev)
         : FILEOPERATION(priority, userdata, dev) {
         this->filehandle = _filehandle;
+        this->AddToQueue();
     }
 
     virtual ~SizeOperation() override {}
@@ -855,9 +845,7 @@ struct SizeOperation : public FILEOPERATION {
 
 int FILESYS_size(int filehandle, int priority, void *userdata) {
     FILESYSHANDLE *hFile = reinterpret_cast<FILESYSHANDLE *>(filehandle);
-    SizeOperation *op = new SizeOperation(hFile, priority, userdata, hFile->dev);
-    op->AddToQueue();
-    return op->GetId();
+    return (new SizeOperation(hFile, priority, userdata, hFile->dev))->GetId();
 }
 
 int FILESYS_atomic(FILESYS_ATOM func, FILEDEVICE *device, int priority, void *userdata) {

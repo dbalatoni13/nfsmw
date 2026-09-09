@@ -188,7 +188,7 @@ unsigned long long GcDvdFileDeviceDriver::Getsize(EAFileHandle h) {
     return reinterpret_cast<DvdFileHandle *>(h)->size;
 }
 
-unsigned long long GcDvdFileDeviceDriver::QueryLocation(EAFileHandle) {
+unsigned long long GcDvdFileDeviceDriver::QueryLocation(EAFileHandle h) {
     return 0;
 }
 
