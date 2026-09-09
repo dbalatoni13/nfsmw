@@ -3,7 +3,12 @@
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Src/Input/Common/FFBTypes.h"
 #include "Speed/Indep/Src/Input/Device.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/Input/SteeringWheelDevice.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin/pad.h"
 
@@ -48,6 +53,12 @@ bool gShowPortInfo;
 float input_buzz[8];
 RealInput::Device *input_devices[4];
 RealInput::Effect *input_effects[4]; // size: 0x10, address: 0x8041E4A0
+
+unsigned int pad_ticker; // size: 0x4, address: 0x8041E4B8
+float pad_elapsed_ms;    // size: 0x4, address: 0x8041E4BC
+
+static void UpdatePads(float ms) {
+}
 
 static int MyEnumDeviceCallback(RealInput::Device *pDevice, unsigned int userData,
                                 RealInput::Interface *pInterface) {
@@ -152,8 +163,103 @@ void GameDevice::StopVibration() {
   }
 }
 
-void GameDevice::PollDevice() { 
+void GameDevice::PollDevice() {
+  RealInput::Device *device;
+  RealInput::Data *data;
+  int axis;
+  int axis_min;
+  int axis_max;
+  const DeviceScalarInfo *di;
+  float *value;
+  bool wheel_connected;
 
+  if (this->GetDeviceIndex() == 0) {
+    unsigned int tick = bGetTicker();
+
+    pad_elapsed_ms = pad_ticker != 0 ? bGetTickerDifference(pad_ticker) : 0.0f;
+    UpdatePads(pad_elapsed_ms);
+    pad_ticker = tick;
+  }
+
+  bMemSet(this->fCurrentValues, 0, 0x50);
+  if (this->mWheelDevice != nullptr) {
+    this->mWheelDevice->ReadInput(this->fCurrentValues + 20);
+  }
+  if (SteeringWheelDevice::WheelConnected(this->GetDeviceIndex())) {
+    return;
+  }
+
+  device = input_devices[this->GetDeviceIndex()];
+  if (device == nullptr) {
+    return;
+  }
+  if (!device->IsPad()) {
+    return;
+  }
+
+  bMemCpy(this->fPrevValues, this->fCurrentValues, 0x94);
+  data = device->GetData();
+
+  axis = data->mPad.mAxes[0];
+  axis_min = -0x48;
+  axis_max = 0x48;
+  this->fCurrentValues[0] =
+      UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, 0.0f, 1.0f);
+  this->fCurrentValues[1] =
+      -UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, -1.0f, 0.0f);
+
+  axis = data->mPad.mAxes[1];
+  axis_min = 0x48;
+  axis_max = -0x48;
+  this->fCurrentValues[2] =
+      UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, 0.0f, 1.0f);
+  this->fCurrentValues[3] =
+      -UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, -1.0f, 0.0f);
+
+  axis = data->mPad.mAxes[3];
+  axis_min = -0x3b;
+  axis_max = 0x3b;
+  this->fCurrentValues[4] =
+      UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, 0.0f, 1.0f);
+  this->fCurrentValues[5] =
+      -UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, -1.0f, 0.0f);
+
+  axis = data->mPad.mAxes[4];
+  axis_min = 0x3b;
+  axis_max = -0x3b;
+  this->fCurrentValues[6] =
+      UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, 0.0f, 1.0f);
+  this->fCurrentValues[7] =
+      -UMath::Clamp(((float)(axis - axis_min) / (float)(axis_max - axis_min) + -0.5f) * -2.0f, -1.0f, 0.0f);
+
+  di = device_infos;
+  value = this->fCurrentValues + 8;
+  wheel_connected = SteeringWheelDevice::WheelConnected(this->GetDeviceIndex());
+
+  // UNSOLVED 2 instructions: di++ feeds the loop condition, so the scheduler
+  // always hoists it above value++
+  while (di->name != nullptr) {
+    if (wheel_connected || di->system_index >= 0) {
+      if (di->type == kAnalogButton) {
+        float newval = (float)data->mPad.mButtons[di->system_index] * 0.00666667f;
+
+        if (di->ramp_max > di->ramp_min) {
+          float range = di->ramp_max - di->ramp_min;
+
+          newval = UMath::Clamp((newval - di->ramp_min) / range, 0.0f, 1.0f);
+        }
+        *value = newval;
+      } else if (di->type == kDigitalButton) {
+        if (data->mPad.mButtons[di->system_index] != 0) {
+          *value = 1.0f;
+        } else {
+          *value = 0.0f;
+        }
+      }
+    }
+    value = value + 1;
+    di = di + 1;
+  }
 }
 
 int GameDevice::GetNumDeviceScalar() {  
@@ -174,15 +280,9 @@ GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(th
   bMemSet(this->fPrevValues, 0, sizeof(this->fPS2PrevValues));
   bMemSet(this->fCurrentValues, 0, sizeof(this->fPS2CurrentValues));
 
-  // Retail allocates through the global operator new(size, const char *, int)
-  // in bWare.hpp. Spelling that here (`new (file, line) SteeringWheelDevice`)
-  // makes ngccc.exe die part-way through emitting DWARF -- it exits 0 with a
-  // truncated .s and ngcas then fails on undefined labels. The trigger is
-  // inlining a *global* operator new: a class-level one is fine, as is a local
-  // SteeringWheelDevice, and placement-new of a trivial type. So the allocation
-  // goes through SteeringWheelDevice::operator new instead, which emits the
-  // same `li r3, 0x24; bl __builtin_vec_new`. Code matches; the only DWARF
-  // difference in this function is that one inlined-operator-new line.
+  // UNSOLVED Dwarf: retail uses the global operator new(size, const char *,
+  // int); inlining that one crashes ngccc, so this goes through a class-level
+  // operator new instead. Same code, one inline record differs.
   this->mWheelDevice = new SteeringWheelDevice(deviceIndex);
 }
 
@@ -271,6 +371,94 @@ void GameDevice::UpdateShifting(bool shifting) {
 
 }
 
-void GameDevice::ReportCollision(const COLLISION_INFO & cinfo, bool iamA) { 
+void GameDevice::ReportCollision(const COLLISION_INFO &cinfo, bool iamA) {
+  if (this->IsWheel()) {
+    return;
+  }
 
+  InputEffectState &state = effect_states[this->GetDeviceIndex()];
+  float magnitude;
+  ISimable *me;
+  ISimable *them;
+  UMath::Vector3 current_velocity;
+  float myspeed;
+  float speedchange;
+  float their_speed_change;
+  char cType;
+  float amplitude;
+  float time;
+
+  if (!state.Enabled) {
+    return;
+  }
+
+  magnitude = 0.0f;
+  me = ISimable::FindInstance(iamA ? cinfo.objA : cinfo.objB);
+  them = ISimable::FindInstance(iamA ? cinfo.objB : cinfo.objA);
+  if (me == nullptr) {
+    return;
+  }
+
+  me->GetLinearVelocity(current_velocity);
+  myspeed = UMath::Length(current_velocity);
+  speedchange = UMath::Distance(current_velocity, iamA ? cinfo.objAVel : cinfo.objBVel);
+  their_speed_change = 0.0f;
+  if (them != nullptr) {
+    UMath::Vector3 tmp;
+
+    them->GetLinearVelocity(tmp);
+    their_speed_change = UMath::Distance(tmp, iamA ? cinfo.objAVel : cinfo.objBVel);
+  }
+
+  switch (cinfo.type) {
+  case Sim::Collision::Info::WORLD:
+    magnitude = UMath::Min(speedchange * 0.0333333f, 1.0f);
+    break;
+  case Sim::Collision::Info::GROUND:
+    magnitude = UMath::Min((speedchange - 1.0f) * 0.333333f, 1.0f);
+    break;
+  case Sim::Collision::Info::OBJECT:
+    if (speedchange < 5.0f) {
+      bool backEnder = false;
+
+      if (them != nullptr) {
+        IVehicle *theirVehicle;
+
+        if (them->QueryInterface(&theirVehicle)) {
+          UMath::Vector3 myVelocity = iamA ? cinfo.objAVel : cinfo.objBVel;
+          UMath::Vector3 theirVelocity = iamA ? cinfo.objBVel : cinfo.objAVel;
+
+          UMath::Normalize(myVelocity);
+          UMath::Normalize(theirVelocity);
+          if (UMath::Dot(myVelocity, theirVelocity) > 0.1f) {
+            speedchange = UMath::Max(UMath::Length(cinfo.objAVel),
+                                     UMath::Length(cinfo.objAVel)) *
+                          0.5f;
+            backEnder = true;
+          }
+        }
+      }
+
+      if (backEnder && speedchange > 5.0f) {
+        magnitude = UMath::Min((speedchange - 5.0f) * 0.05f, 1.0f);
+      } else if (myspeed > 2.0f && their_speed_change > 2.0f) {
+        magnitude = UMath::Ramp(myspeed, 20.0f, 50.0f);
+      }
+    } else {
+      magnitude = UMath::Min((speedchange - 5.0f) * 0.05f, 1.0f);
+    }
+    break;
+  }
+
+  amplitude = UMath::Min(magnitude, 0.5f);
+
+  EffectBinary &ramp = state.CollisionNoise;
+
+  if (ramp.Time > 0.0f) {
+    ramp.MaxTime = UMath::Max(amplitude, ramp.MaxTime);
+    ramp.Time = UMath::Max(amplitude, ramp.Time);
+  } else {
+    ramp.MaxTime = amplitude;
+    ramp.Time = amplitude;
+  }
 }

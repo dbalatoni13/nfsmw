@@ -112,12 +112,10 @@ struct Capabilities {
     unsigned int mUnused : 30; // offset 0x8, size 0x4
 };
 
-// UNSOLVED
-// The three payload structs are only known by size, taken from the union's
-// members in the original DWARF. Replace with the real layouts when found --
-// only the 0x118 total matters here, it is what puts _vptr.Device at 0x138.
+// UNSOLVED names: inferred from PollDevice's use of them
 struct Pad {
-    uint8_t mUnknown[0x118]; // offset 0x0, size 0x118
+    int mAxes[6];     // offset 0x0,  size 0x18
+    int mButtons[64]; // offset 0x18, size 0x100
 };
 struct Keyboard {
     uint8_t mUnknown[0x100]; // offset 0x0, size 0x100
