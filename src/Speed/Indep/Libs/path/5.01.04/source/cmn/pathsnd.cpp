@@ -1,7 +1,5 @@
 #include "types.h"
-#define PATH_SND_EMIT_METHODS
 #include "path/PathToSnd.h"
-#undef PATH_SND_EMIT_METHODS
 #include "pathi.h"
 #include <string.h>
 
@@ -24,7 +22,6 @@ int SNDCTRL_timemult(int shandle, int timemult);
 int SNDstop(int shandle);
 }
 
-Path::IPathToSnd::~IPathToSnd() {}
 
 void PATH_vectortosnd() {
     if (Path::IPathToSnd::sndimp != 0) {
@@ -68,6 +65,9 @@ int Path::PathToSnd::CreateStreamTrack(Path::IPathTrack **ppPathTrack, int maxRe
 }
 
 int Path::PathToSnd::CreateBankTrack(Path::IPathTrack **ppPathTrack, int maxsubbanks) {
+    int result;
+    Path::IPathTrack *track;
+
     *ppPathTrack = new Path::PathTrackSndBank(maxsubbanks);
     return 0;
 }
@@ -89,7 +89,10 @@ Path::PathToSnd::~PathToSnd() {
 }
 
 void Path::PathToSnd::GetDefaultPlayOpts(void *playopts) {
-    SNDplaysetdef(static_cast<SNDPLAYOPTS *>(playopts));
+    SNDPLAYOPTS *sndplayopts;
+
+    sndplayopts = static_cast<SNDPLAYOPTS *>(playopts);
+    SNDplaysetdef(sndplayopts);
 }
 
 Path::PathTrackSnd::PathTrackSnd() {
@@ -177,15 +180,15 @@ int Path::PathTrackSnd::GetVolume() {
 }
 
 int Path::PathTrackSnd::SetVolume(int volume) {
-    int current;
+    int vol;
 
     if (static_cast<unsigned int>(volume) > 0x7f) {
         return PATHERR_INV_PARAM;
     }
-    current = this->GetVolume();
-    if (current != volume) {
+    vol = this->GetVolume();
+    if (vol != volume) {
         if (volume >= 0) {
-            if (current >= 0) {
+            if (vol >= 0) {
                 return 0;
             }
         }
@@ -202,15 +205,15 @@ int Path::PathTrackSnd::SetFXSendLevel(int bus, int level) {
 }
 
 int Path::PathTrackSnd::SetPitchMult(int pitchmult) {
-    int current;
+    int pm;
 
     if (static_cast<unsigned int>(pitchmult) > 0x4000) {
         return PATHERR_INV_PARAM;
     }
-    current = this->GetPitchMult();
-    if (current != pitchmult) {
+    pm = this->GetPitchMult();
+    if (pm != pitchmult) {
         if (pitchmult >= 0) {
-            if (current >= 0) {
+            if (pm >= 0) {
                 return 0;
             }
         }
@@ -219,15 +222,15 @@ int Path::PathTrackSnd::SetPitchMult(int pitchmult) {
 }
 
 int Path::PathTrackSnd::SetStretchMult(int stretchmult) {
-    int current;
+    int pm;
 
     if (static_cast<unsigned int>(stretchmult - 0x800) > 0x1800) {
         return PATHERR_INV_PARAM;
     }
-    current = this->GetStretchMult();
-    if (current != stretchmult) {
+    pm = this->GetStretchMult();
+    if (pm != stretchmult) {
         if (stretchmult >= 0) {
-            if (current >= 0) {
+            if (pm >= 0) {
                 return 0;
             }
         }
@@ -288,8 +291,8 @@ Path::PathTrackSndBank::PathTrackSndBank(int maxsubbanks) {
 }
 
 Path::PathTrackSndBank::~PathTrackSndBank() {
-    for (int i = 0; i < this->GetNumSubBanks(); i++) {
-        this->RemoveSubBank(i);
+    for (int sb = 0; sb < this->GetNumSubBanks(); sb++) {
+        this->RemoveSubBank(sb);
     }
     if (this->mSubBanks != 0) {
         PATHI_memfree(this->mSubBanks);
@@ -596,17 +599,20 @@ int Path::PathTrackSndBank::DetachSubBankHeader(int subbanknum, int status) {
 
     result = -8;
     subbank = this->GetSubBankPtr(subbanknum);
-    if (subbank != 0 && subbank->bankhandle != -1 && status == 7) {
+    if (subbank != nullptr && subbank->bankhandle != -1 && status == 7) {
         int headersize;
-        char *newbankhdr;
 
         headersize = SNDbankheadersize(subbank->bankhandle);
-        newbankhdr = static_cast<char *>(PATHI_memalloc(headersize));
-        if (newbankhdr != 0) {
-            result = 0;
-            SNDbankheadercopy(newbankhdr, subbank->bankhandle);
-            PATHI_memfree(subbank->filedata);
-            subbank->filedata = newbankhdr;
+        {
+            char *newbankhdr;
+
+            newbankhdr = static_cast<char *>(PATHI_memalloc(headersize));
+            if (newbankhdr != nullptr) {
+                result = 0;
+                SNDbankheadercopy(newbankhdr, subbank->bankhandle);
+                PATHI_memfree(subbank->filedata);
+                subbank->filedata = newbankhdr;
+            }
         }
     }
     return result;
@@ -640,12 +646,9 @@ Path::PathTrackSndStream::PathTrackSndStream(int maxrequests) {
 }
 
 Path::PathTrackSndStream::~PathTrackSndStream() {
-    int sndstreamhandle;
-
-    sndstreamhandle = this->mHandle;
-    if (sndstreamhandle >= 0) {
-        SNDSTRM_destroy(sndstreamhandle);
-        if (this->mBuffer != 0) {
+    if (this->mHandle >= 0) {
+        SNDSTRM_destroy(this->mHandle);
+        if (this->mBuffer != nullptr) {
             PATHI_memfree(this->mBuffer);
         }
     }
@@ -665,13 +668,13 @@ int Path::PathTrackSndStream::AttachStreamInstance(int streamhandle, char *buffe
 int Path::PathTrackSndStream::DetachStreamInstance(char *&buffer) {
     int streamhandle;
 
-    streamhandle = this->mHandle;
-    if (streamhandle < 0) {
+    if (this->mHandle < 0) {
         return -43;
     }
+    streamhandle = this->mHandle;
     this->mHandle = -1;
     buffer = this->mBuffer;
-    this->mBuffer = 0;
+    this->mBuffer = nullptr;
     return streamhandle;
 }
 
@@ -847,6 +850,8 @@ int Path::PathTrackSndStream::SetFXSendLevel(int bus, int level) {
 }
 
 int Path::PathTrackSndStream::ModifyHold(int holdtime) {
+    int result;
+
     return SNDSTRM_modifyhold(this->mRequests->requesthandle, holdtime);
 }
 
