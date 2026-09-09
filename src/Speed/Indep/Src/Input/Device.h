@@ -1,9 +1,9 @@
-// #ifndef INPUT_DEVICE_H
-// #define INPUT_DEVICE_H
+#ifndef INPUT_DEVICE_H
+#define INPUT_DEVICE_H
 
-// #ifdef EA_PRAGMA_ONCE_SUPPORTED
-// #pragma once
-// #endif
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
 
 #include "types.h"
 
@@ -46,8 +46,8 @@ struct ConfigOptions {
     unsigned int mMaxNumEffects; // offset 0x10, size 0x4
 
     ConfigOptions() {
-        mAllocator = NULL;
-        mpEnumDevicesCallback = NULL;
+        mAllocator = nullptr;
+        mpEnumDevicesCallback = nullptr;
         mEnumDevicesCallbackUserData = 0;
     }
 };
@@ -199,4 +199,4 @@ protected:
 
 } // namespace RealInput
 
-// #endif
+#endif
