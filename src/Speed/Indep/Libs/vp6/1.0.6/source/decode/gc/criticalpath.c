@@ -11,7 +11,7 @@ extern void (*ReconIntra)(short *, unsigned char *, unsigned short *, unsigned i
 extern void (*ReconInter)(short *, unsigned char *, unsigned char *, short *, unsigned int);
 extern void (*ReconBlock)(short *, short *, unsigned char *, unsigned int);
 extern void VP6_PredictFilteredBlock(struct PB_INSTANCE *pbi, short *OutputPtr,
-                                     int bp);
+                                     BLOCK_POSITION bp);
 extern void VP6_DecodeBlock(struct PB_INSTANCE *pbi, unsigned int MBrow,
                              unsigned int MBcol, BLOCK_POSITION bp);
 extern void FilterBlock1d(unsigned char *SrcPtr, unsigned short *OutputPtr,
@@ -550,6 +550,8 @@ void VP6_DecodeMacroBlock(struct PB_INSTANCE *pbi, unsigned int MBrow,
     pbi->mbi.Plane = 2;
     VP6_DecodeBlock(pbi, MBrow, MBcol, V_BLOCK);
 }
+
+#include "../cmn/recon.inl"
 
 void VP6_ReconstructBlock(struct PB_INSTANCE *pbi, BLOCK_POSITION bp) {
     if (pbi->mbi.Mode == 0) {
