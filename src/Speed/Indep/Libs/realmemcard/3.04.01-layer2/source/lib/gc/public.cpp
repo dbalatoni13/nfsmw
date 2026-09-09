@@ -10,8 +10,7 @@ extern wchar_t sCardName[48] asm("_6Realmc.sCardName");
 void GCInterface::TrcStartGame(const StartGameInfo &info) {
     this->CheckMessageCompatibility();
     this->mMutex->Lock();
-    mTaskTrcStartGame.Start(&info);
-    mTaskTrcStartGame.mParent->StartTask(&mTaskTrcStartGame);
+    GCInterface::mTaskTrcStartGame.Start(&info);
     this->mMutex->Unlock();
 }
 
@@ -31,30 +30,26 @@ void GCInterface::TrcGetCardInfo(const CardID &cardID) {
 
 void GCInterface::TrcLoadFile(const CardID &cardID, const FileInfo &fileInfo) {
     this->mMutex->Lock();
-    mTaskTrcLoadFile.Start(cardID, &fileInfo);
-    mTaskTrcLoadFile.mParent->StartTask(&mTaskTrcLoadFile);
+    GCInterface::mTaskTrcLoadFile.Start(cardID, &fileInfo);
     this->mMutex->Unlock();
 }
 
 void GCInterface::TrcSaveFile(const CardID &cardID, const FileInfo &fileInfo, SaveTaskType saveTaskType,
                               unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
     this->mMutex->Lock();
-    mTaskTrcSaveFile.Start(cardID, &fileInfo, saveTaskType, nBlocksNeeded, nFilesNeeded);
-    mTaskTrcSaveFile.mParent->StartTask(&mTaskTrcSaveFile);
+    GCInterface::mTaskTrcSaveFile.Start(cardID, &fileInfo, saveTaskType, nBlocksNeeded, nFilesNeeded);
     this->mMutex->Unlock();
 }
 
 void GCInterface::TrcListFiles(const CardID &cardID, const FileInfo &fileInfo, ListTaskType) {
     this->mMutex->Lock();
     GCInterface::mTaskTrcListFiles.Start(cardID, &fileInfo);
-    GCInterface::mTaskTrcListFiles.mParent->StartTask(&GCInterface::mTaskTrcListFiles);
     this->mMutex->Unlock();
 }
 
 void GCInterface::TrcDeleteFile(const CardID &cardID, const FileInfo &fileInfo) {
     this->mMutex->Lock();
     GCInterface::mTaskTrcDeleteFile.Start(cardID, &fileInfo);
-    GCInterface::mTaskTrcDeleteFile.mParent->StartTask(&GCInterface::mTaskTrcDeleteFile);
     this->mMutex->Unlock();
 }
 

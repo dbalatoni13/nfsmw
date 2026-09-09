@@ -736,14 +736,7 @@ struct TaskTrcStartGame : public TaskTrc {
         this->mSlotStatus[1] = STATUS_UNKNOWN;
     }
 
-    void Start(const StartGameInfo *info) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mInfo = *info;
-        this->mFirstCardChecked = info->checkCardID;
-        this->mSlotStatus[0] = STATUS_UNKNOWN;
-        this->mSlotStatus[1] = STATUS_UNKNOWN;
-    }
+    void Start(const StartGameInfo *info);
 
     StartGameInfo mInfo;
     CardID mFirstCardChecked;
@@ -803,17 +796,7 @@ struct TaskTrcSaveFile : public TaskTrc {
         this->mFilesNeeded = 0;
     }
 
-    void Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileFound = false;
-        this->mFileInfo = *finfo;
-        this->mFileName = finfo->fileName;
-        this->mBlocksNeeded = nBlocksNeeded;
-        this->mFilesNeeded = nFilesNeeded;
-        this->mState = saveTaskType == SAVETASK_CHECK ? TS_START : TS_SAVE_READY;
-    }
+    void Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded);
 
     FileInfo mFileInfo;
     OpenFileDescriptor *mFileHandle;
@@ -837,13 +820,7 @@ struct TaskTrcListFiles : public TaskTrc {
         this->mNumFilesFound = 0;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mListingStarted = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     unsigned int mNumFilesFound;
@@ -864,13 +841,7 @@ struct TaskTrcLoadFile : public TaskTrc {
         this->mFileFound = false;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mFileFound = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     bool mFileFound;
@@ -889,13 +860,7 @@ struct TaskTrcDeleteFile : public TaskTrc {
         this->mFileFound = false;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mFileFound = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     bool mFileFound;
@@ -1209,6 +1174,58 @@ inline void TaskTrcCheckSpace::Start(CardID cardID, FileInfo *fileInfo, unsigned
 inline void GcTask::End() {
     this->mParent->EndTask(this);
 }
+
+
+inline void TaskTrcStartGame::Start(const StartGameInfo *info) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mInfo = *info;
+        this->mCardID = info->checkCardID;
+        this->mFirstCardChecked = info->checkCardID;
+        this->mSlotStatus[0] = STATUS_UNKNOWN;
+        this->mSlotStatus[1] = STATUS_UNKNOWN;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcSaveFile::Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mFileName = this->mFileInfo.fileName;
+        this->mBlocksNeeded = nBlocksNeeded;
+        this->mFilesNeeded = nFilesNeeded;
+        this->mID = saveTaskType == SAVETASK_SAVE ? TID_TRC_SAVEFILE : TID_TRC_SAVECHECK;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcLoadFile::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcListFiles::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mListingStarted = false;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcDeleteFile::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mParent->StartTask(this);
+    }
 
 struct GCMessage : public Message {
     GCMessage() {
