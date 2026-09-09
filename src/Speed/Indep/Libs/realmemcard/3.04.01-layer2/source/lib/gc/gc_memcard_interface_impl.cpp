@@ -969,6 +969,8 @@ void MemcardInterfaceImpl::LoadAlternate(const char *entryName, char *header, ch
 }
 
 void MemcardInterfaceImpl::_CheckForCardRemoval() {
+    int result;
+
     if (static_cast<unsigned int>(CARDProbeEx(this->mAutosaveCard.slot, nullptr, nullptr) + 1) > 1) {
         if (this->mIMemcard->CheckForAutosaveCardRemoval()) {
             this->_DisableAutosave();
@@ -991,10 +993,6 @@ void MemcardInterfaceImpl::_ReleaseInsufficientSpaceMessage() {
 }
 
 void MemcardInterfaceImpl::_MakeInsufficientSpaceMessage(unsigned int nSaveReqs, SaveReq **saveReqs) {
-    int lenText;
-    const wchar_t *endMsg;
-    int lenEndText;
-
     {
         this->mInsufficientSpaceMsg = static_cast<wchar_t *>(this->mISystem.mAllocator->Alloc(
             0x800,
@@ -1004,6 +1002,10 @@ void MemcardInterfaceImpl::_MakeInsufficientSpaceMessage(unsigned int nSaveReqs,
     }
 
     Realmc::GCMessage message;
+    int lenText;
+    const wchar_t *endMsg;
+    int lenEndText;
+
     message.LC_msg(0x13, 0, this->mActiveCard.slot, this->mGameInfo.mGameTitle);
     lenText = Realmc::Locale::GetWstrLength(message.info.trc.mMsg);
     memcpy(this->mInsufficientSpaceMsg, message.info.trc.mMsg, lenText * 2);
@@ -1036,41 +1038,3 @@ void MemcardInterfaceImpl::_MakeInsufficientSpaceMessage(unsigned int nSaveReqs,
 }
 
 } // namespace RealmcIface
-
-namespace Realmc {
-
-void GCMessage::Init() {
-    this->Clear();
-}
-
-void GCMessage::Clear() {
-    memset(this, 0, 0x78);
-}
-
-void GCMessage::_SetMsgOptions(int options) {
-    int curOption;
-    int iOption;
-
-    this->info.trc.mNumOptions = 0;
-    if (options != 0) {
-        while (options != 0) {
-            curOption = options & 0xff;
-            iOption = this->info.trc.mNumOptions++;
-            this->info.trc.mOptions[iOption].mMsgId = curOption;
-            this->info.trc.mOptions[iOption].mMsg = Locale::GetString(curOption, nullptr);
-            options >>= 8;
-        }
-    }
-}
-
-short *GCMessage::_LcGetSlotString(int slotnum) {
-    static short slotA[2] = {'A', 0};
-    static short slotB[2] = {'B', 0};
-
-    if (slotnum == 1) {
-        return slotB;
-    }
-    return slotA;
-}
-
-} // namespace Realmc

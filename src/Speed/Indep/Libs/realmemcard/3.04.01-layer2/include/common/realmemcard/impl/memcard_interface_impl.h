@@ -1216,24 +1216,13 @@ struct GCMessage : public Message {
     }
     virtual ~GCMessage() {}
 
-#ifdef REALMC_GC_MESSAGE_INIT_INLINE
-    inline void Init() {
+    void Init() {
         this->Clear();
     }
-#else
-    void Init();
-#endif
 
-    void _SetMsgOptions(int options);
-    short *_LcGetSlotString(int slotnum);
-
-#ifdef REALMC_GC_MESSAGE_INLINE
-    inline void Clear() {
+    void Clear() {
         memset(this, 0, 0x78);
     }
-#else
-    void Clear();
-#endif
 
     void Set(LibMessage msg) {
         this->Clear();
@@ -1306,6 +1295,32 @@ struct GCMessage : public Message {
         this->info.trc.mMsgId = msgId;
         this->info.trc.mMsg = Locale::GetString(msgId, "ssii", this->_LcGetSlotString(nSlot), name, space, files);
         this->_SetMsgOptions(options);
+    }
+
+    void _SetMsgOptions(int options) {
+        this->info.trc.mNumOptions = 0;
+        if (options != 0) {
+            while (options != 0) {
+                int curOption;
+                int iOption;
+
+                curOption = options & 0xff;
+                iOption = this->info.trc.mNumOptions++;
+                this->info.trc.mOptions[iOption].mMsgId = curOption;
+                this->info.trc.mOptions[iOption].mMsg = Locale::GetString(curOption, nullptr);
+                options >>= 8;
+            }
+        }
+    }
+
+    short *_LcGetSlotString(int slotnum) {
+        static short slotA[2] = {'A', 0};
+        static short slotB[2] = {'B', 0};
+
+        if (slotnum == 1) {
+            return slotB;
+        }
+        return slotA;
     }
 };
 
@@ -1551,6 +1566,7 @@ struct McTask {
     }
 
     void InitFindEntries(const char *entryNamePattern, const TitleInfo *titleInfo) {
+        this->mTask = TASK_FINDENTRIES;
         this->mDetails.mFindEntries.Init(entryNamePattern, titleInfo);
     }
 
@@ -1648,7 +1664,9 @@ struct TaskManager {
     TaskManager(MemcardInterfaceImpl *, IGameInterface *);
 
     void _ClearMainTask() {
-        this->mMainTask = TASK_NONE;
+        if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
+            this->mMainTask = TASK_NONE;
+        }
     }
 
     void BootupCheck(const BootupCheckParams *, unsigned int, const char **, wchar_t *);

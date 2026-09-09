@@ -1,4 +1,3 @@
-#define REALMC_GC_MESSAGE_INLINE
 #pragma implementation "gc_blockcalculator.h"
 #include <stdio.h>
 #include <string.h>
@@ -222,7 +221,7 @@ const Message *GCInterface::GetMessage(int elapsedTime) {
     return pMsg;
 }
 
-void GCInterface::SendMessage(UserMessage msg, int) {
+void GCInterface::SendMessage(UserMessage msg, int value) {
     gInterfaceMutex->Lock();
     GCInterface::mUserMsg = msg;
     if (msg == UMSG_EXPIRE_DELAY) {
@@ -283,7 +282,7 @@ void GCInterface::ClearTask() {
         GCInterface::mpDriver->Unmount(curTask->mCardID);
     }
     GCInterface::mpNewTaskMsg = nullptr;
-    memset(&GCInterface::mTaskMsg, 0, sizeof(GCInterface::mTaskMsg));
+    GCInterface::mTaskMsg.Clear();
     GCInterface::mTaskManager.ClearTask();
     gInterfaceMutex->Unlock();
 }
@@ -297,13 +296,7 @@ inline BlockCalculator *GCInterface::GetBlockCalculator() {
 }
 
 inline bool GCInterface::CheckForAutosaveCardRemoval() {
-    bool removed;
-
-    removed = false;
-    if (!GCInterface::mpDriver->IsCardPresent() && GCInterface::mpDriver->WasCardPresent()) {
-        removed = true;
-    }
-    return removed;
+    return !GCInterface::mpDriver->IsCardPresent() && GCInterface::mpDriver->WasCardPresent();
 }
 
 inline void GCInterface::ResetAutosaveCardDetection() {

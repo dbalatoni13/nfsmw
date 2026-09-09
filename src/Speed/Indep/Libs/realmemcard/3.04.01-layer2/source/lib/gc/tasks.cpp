@@ -1,6 +1,4 @@
-#define REALMC_GC_MESSAGE_INLINE
 #include "../../../include/common/realmemcard/impl/memcard_interface_impl.h"
-#undef REALMC_GC_MESSAGE_INLINE
 #include "../../../include/common/realmemcard/gc_driver.h"
 #include "../../../include/common/realmemcard/memcard_utilities.h"
 
