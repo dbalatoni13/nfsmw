@@ -91,7 +91,11 @@ struct AV_MS_TIMER {
         rcmp_sys.FreeMem(ptr);
     }
 
-    inline AV_MS_TIMER() {}
+    inline AV_MS_TIMER() {
+        this->m_Elapsed = 0;
+        this->m_Time = OSGetTime();
+        this->m_TimeBase = 0x1000;
+    }
     inline ~AV_MS_TIMER() {}
     inline void Update();
     inline unsigned int GetMS();
@@ -99,6 +103,7 @@ struct AV_MS_TIMER {
 };
 
 inline unsigned int AV_MS_TIMER::GetMS() {
+    this->Update();
     return static_cast<unsigned int>(
         static_cast<unsigned long long>(this->m_Elapsed) /
         (OS_TIMER_CLOCK / 1000));
@@ -226,28 +231,28 @@ void AV_PLAYER::Init(const char *VideoFileName, int SizeOfVideoFile, int VideoBu
     }
 
     MEM_fill(this, 0, sizeof(AV_PLAYER));
-    this->m_SndMode = SndMode;
     this->m_LoadMode = LoadMode;
-    this->m_CurChunk = 0;
-    this->m_VideoData = 0;
+    this->m_SndMode = SndMode;
+    this->m_VideoData = nullptr;
+    this->m_AudioData = nullptr;
     this->m_AyncVideoFileHandle = 0;
-    this->m_AudioData = 0;
     this->m_AyncAudioFileHandle = 0;
-    this->m_ap = 0;
     this->m_CurFrame = 0;
-    this->m_MSTimer = 0;
-    this->m_pdecoder = 0;
-    this->m_SubtitleArray = 0;
-    this->m_CurRCMPFrame = 0;
+    this->m_MSTimer = nullptr;
+    this->m_pdecoder = nullptr;
+    this->m_ap = nullptr;
+    this->m_SubtitleArray = nullptr;
+    this->m_CurRCMPFrame = nullptr;
+    this->m_CurChunk = 0;
     this->m_VideoFileName = VideoFileName;
     this->m_AudioFileName = AudioFileName;
 
-    if (!rcmp_sys.IsInited() || rcmp_sys.FreeMemFunc == 0) {
+    if (!rcmp_sys.IsInited()) {
         DEBUG_break();
         return;
     }
 
-    if (AudioFileName != 0) {
+    if (AudioFileName != nullptr) {
         this->m_SndFromDifferentFile = true;
         this->m_VideoStreamBuff = static_cast<unsigned char *>(rcmp_sys.AllocMem(
             lbl_8040FEFC, VideoBufferSize, 0, 0, rcmp_sys.m_DefaultMemDir));
@@ -278,15 +283,15 @@ void AV_PLAYER::Init(const char *VideoFileName, int SizeOfVideoFile, int VideoBu
                 this->m_VideoStream, VideoFileName, VideoStreamOffset, 0);
         } else if (this->m_LoadMode == FROM_MEM) {
             this->m_VideoStreamRequestID = STREAM_queuemem(
-                this->m_VideoStream, const_cast<char *>(VideoFileName), SizeOfVideoFile, 0);
+                this->m_VideoStream, const_cast<char *>(this->m_VideoFileName), SizeOfVideoFile, 0);
             this->m_AudioStreamRequestID = STREAM_queuemem(
-                this->m_AudioStream, const_cast<char *>(AudioFileName), SizeOfAudioFile, 0);
+                this->m_AudioStream, const_cast<char *>(this->m_AudioFileName), SizeOfAudioFile, 0);
         }
     } else {
         this->m_SndFromDifferentFile = false;
         this->m_VideoStreamBuff = static_cast<unsigned char *>(rcmp_sys.AllocMem(
             lbl_8040FEFC, VideoBufferSize, 0, 0, rcmp_sys.m_DefaultMemDir));
-        this->m_AudioStreambuff = 0;
+        this->m_AudioStreambuff = nullptr;
         this->m_VideoStream = STREAM_create(2, 3, 2, this->m_VideoStreamBuff, VideoBufferSize);
         this->m_AudioStream = STREAM_taphandle(this->m_VideoStream, 2);
         STREAM_setpriority(this->m_AudioStream, 0x98, 0x34);
@@ -352,8 +357,8 @@ FRAME *AV_PLAYER::GetFirstFrame(unsigned int MaxFramesOutstanding, int VideoLate
         this->m_trackingaudio = 0;
     }
 
-    this->m_pdecoder = 0;
-    if (rcmp_sys.IsInited() && rcmp_sys.FreeMemFunc != 0) {
+    this->m_pdecoder = nullptr;
+    if (rcmp_sys.IsInited()) {
         this->m_data_streamer.SetStreamer(this);
         CODEC_IDATA cidata(&this->m_data_streamer, StaticGetRCMPChunk,
                            StaticReleaseRCMPChunk, MaxFramesOutstanding);
@@ -362,15 +367,10 @@ FRAME *AV_PLAYER::GetFirstFrame(unsigned int MaxFramesOutstanding, int VideoLate
 
     this->m_CurRCMPFrame = this->m_pdecoder->GetFrame(0);
     this->m_MSTimer = new AV_MS_TIMER;
-    this->m_MSTimer->m_Elapsed = 0;
-    this->m_MSTimer->m_Time = OSGetTime();
-    this->m_MSTimer->m_TimeBase = 0x1000;
-    this->m_MSTimer->Update();
     this->m_refms = this->m_MSTimer->GetMS();
-    this->m_filterederror = 0;
+    this->m_filterederror = this->m_oldaudiotime = 0;
     this->m_VideoLatencyInMs = VideoLatencyInMs;
-    this->m_oldaudiotime = 0;
-    if (this->m_ap != 0) {
+    if (this->m_ap != nullptr) {
         this->m_ap->StartSound();
     }
     this->SetSpeed(0x1000);
@@ -418,15 +418,12 @@ AV_PLAYER::~AV_PLAYER() {
 FRAME *AV_PLAYER::GetFrame(float GoalFrame) {
     this->m_GoalFrame = GoalFrame;
     this->m_CurRCMPFrame = this->m_pdecoder->GetFrame(
-        GoalFrame < lbl_8040FF30
-            ? static_cast<int>(GoalFrame)
-            : static_cast<unsigned int>(static_cast<int>(GoalFrame - lbl_8040FF30) ^ 0x80000000));
+        static_cast<unsigned int>(GoalFrame));
     this->m_CurFrame = this->m_pdecoder->GetCurrentFrameNumber();
     return this->m_CurRCMPFrame;
 }
 
 unsigned int AV_PLAYER::SyncedAudioTime() {
-    AV_MS_TIMER &timer = *this->m_MSTimer;
     SNDREQUESTSTATUS status;
     SNDSTREAMSTATUS sndstrmsstatus;
     int audiotime;
@@ -434,8 +431,7 @@ unsigned int AV_PLAYER::SyncedAudioTime() {
     int ellapsed;
     unsigned int ms;
 
-    timer.Update();
-    ms = timer.GetMS();
+    ms = this->m_MSTimer->GetMS();
     ellapsed = ms - this->m_refms;
     if (this->m_trackingaudio != 0) {
         SNDSYS_entercritical();
@@ -449,11 +445,8 @@ unsigned int AV_PLAYER::SyncedAudioTime() {
             error = audiotime - ellapsed;
             this->m_filterederror = this->m_filterederror - this->m_filterederror / 8;
             this->m_filterederror += error;
-            error = -this->m_filterederror;
-            if (error < this->m_filterederror) {
-                error = this->m_filterederror;
-            }
-            if (error > 0x108) {
+            if ((-this->m_filterederror < this->m_filterederror
+                     ? this->m_filterederror : -this->m_filterederror) > 0x108) {
                 this->m_refms -= this->m_filterederror / 8;
                 this->m_filterederror = 0;
                 ellapsed = ms - this->m_refms;

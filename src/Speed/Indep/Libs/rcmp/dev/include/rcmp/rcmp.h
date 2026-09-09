@@ -1,6 +1,8 @@
 #ifndef RCMP_RCMP_H
 #define RCMP_RCMP_H
 
+#include "types.h"
+
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -48,7 +50,7 @@ struct RCMP_SYSTEM {
     inline virtual ~RCMP_SYSTEM() {}
 
     inline bool IsInited() {
-        return this->AllocMemFunc != 0;
+        return this->AllocMemFunc != nullptr && this->FreeMemFunc != nullptr;
     }
 
     inline void *AllocMem(const char *name, unsigned int size, int alignment, int headersize, int type) {
