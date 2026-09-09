@@ -61,13 +61,8 @@ static int iSPCH_TestBit(unsigned char *bitArray, int bitIndex) {
     int bit;
     int result;
 
-    if (bitIndex < 0) {
-        byteIndex = bitIndex + 7;
-    } else {
-        byteIndex = bitIndex;
-    }
-    byteIndex >>= 3;
-    bit = bitIndex - byteIndex * 8;
+    byteIndex = bitIndex / 8;
+    bit = bitIndex % 8;
     mask = 1 << bit;
     result = bitArray[byteIndex] & mask;
     return result;
@@ -123,8 +118,8 @@ unsigned int iSPCH_DecodeWeight(unsigned char weight) {
     exp = weight >> 5;
     mant = weight & 0x1F;
     unsigned int num;
-    num = multiple[exp];
-    return mant * num;
+    num = mant * multiple[exp];
+    return num;
 }
 
 int iSPCH_OneChosen(unsigned int inChannel) {
@@ -670,15 +665,9 @@ static void iSPCH_ClearCycleBit(VOXBANKHDR *bank, int sampleIndex) {
     int byteIndex;
     int bit;
 
-    byteIndex = sampleIndex;
-    if (sampleIndex < 0) {
-        byteIndex = sampleIndex + 7;
-    } else {
-        byteIndex = sampleIndex;
-    }
+    byteIndex = sampleIndex / 8;
+    bit = sampleIndex % 8;
     bankBits = BANKHDR_GetCycleBitsAddr(bank);
-    byteIndex >>= 3;
-    bit = sampleIndex - byteIndex * 8;
     mask = ~(1 << bit);
     byteIndex++;
     bankBits[byteIndex] &= mask;

@@ -73,14 +73,16 @@ unsigned int iSPCH_EACrandom() {
 }
 
 static void iSPCH_EACseedrandom(unsigned int seed) {
-    unsigned int ax = seed + 0xF22D0E56;
+    unsigned int ax;
 
-    seedX[0] = ax;
-    seedX[1] = ax += 0x96041893;
-    seedX[2] = ax += 0x3DF3B646;
-    seedX[3] = ax += 0x40DDE76D;
-    seedX[4] = ax += 0x97327AE1;
-    seedX[5] = ax += 0xD1A9FBE7;
+    seed += 0xF22D0E56;
+
+    seedX[0] = seed;
+    seedX[1] = seed += 0x96041893;
+    seedX[2] = seed += 0x3DF3B646;
+    seedX[3] = seed += 0x40DDE76D;
+    seedX[4] = seed += 0x97327AE1;
+    seedX[5] = seed += 0xD1A9FBE7;
 }
 
 static int iSPCH_FindRandInQueue(unsigned short rand, int checkBack, unsigned short randHandle) {

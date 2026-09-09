@@ -292,7 +292,7 @@ struct EventChoice {
     PhraseChoice phrases[12];
 };
 
-extern VOXINGAME gVoxInGame[8];
+extern VOXINGAME gVoxInGame[];
 
 // Decl: 123
 #define SPCH_SetVecsToReal(extVecs)                                                                                                                  \
