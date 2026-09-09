@@ -15,6 +15,8 @@ struct SteeringWheelDevice : public UTL::COM::Object, public ISteeringWheel {
     bool isActivated;         // offset 0x20, size 0x1
 
   public:
+    void *operator new(std::size_t size) { return new char[size]; }
+
     static void InitWheelSupport();
     static void PollWheels();
     static bool WheelConnected(int port);

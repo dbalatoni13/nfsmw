@@ -74,14 +74,25 @@ static void InitPads() {
   RealInput::ConfigOptions opts;
   RealInput::Interface *m_pInputInterface;
 
-  opts.mAllocator = gMemoryAllocator;
+  // The store order below is derived, not guessed: all four value registers
+  // die at their own store, so the stores tie on INSN_REG_WEIGHT and emit in
+  // source order. Retail's 0x14, 0xc, 0x18, 0x8 reads back as exactly this.
+  //
+  // The last 4 instructions still differ from retail by an r9/r11 swap: the
+  // callback address is a high+lo_sum pair that local-alloc combines into one
+  // quantity (4 refs / 12 insns -> priority 0.667), which outranks the 0x20
+  // constant (2 refs / 6 insns -> 0.333) and so takes r9 first. Retail has it
+  // the other way round, which needs the 0x20's live range under 3 insns --
+  // sched1 puts the `li 4` in between and widens it. Not reachable from source
+  // without disturbing the store order above.
   opts.mEventQueueSize = 32;
   opts.mpEnumDevicesCallback = MyEnumDeviceCallback;
   opts.mMaxNumEffects = 4;
+  opts.mAllocator = gMemoryAllocator;
 
-  m_pInputInterface = RealInput::Interface::CreateInstance(opts);
-  inputsys = m_pInputInterface;
-  m_pInputInterface->AddRef();
+  inputsys = RealInput::Interface::CreateInstance(opts);
+  m_pInputInterface = inputsys;
+  inputsys->AddRef();
   SteeringWheelDevice::InitWheelSupport();
 }
 
@@ -176,16 +187,16 @@ GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(th
   bMemSet(this->fPrevValues, 0, sizeof(this->fPS2PrevValues));
   bMemSet(this->fCurrentValues, 0, sizeof(this->fPS2CurrentValues));
 
-  // UNSOLVED (blocked, not unknown): retail ends with
-  //     mWheelDevice = new (file, line) SteeringWheelDevice(deviceIndex);
-  // which allocates via the global operator new(size, const char*, int) in
-  // bWare.hpp (-> __builtin_vec_new, 0x24 bytes) and inlines the constructor.
-  // Writing that here makes ngccc.exe die part-way through emitting DWARF: it
-  // exits 0 having truncated the .s, so ngcas then fails on undefined labels.
-  // Placement-new of a trivial type is fine, and an empty SteeringWheelDevice
-  // body fails identically, so the trigger is inlining this class (multiple
-  // inheritance, nested inline base constructors) into a placement-new.
-  this->mWheelDevice = nullptr;
+  // Retail allocates through the global operator new(size, const char *, int)
+  // in bWare.hpp. Spelling that here (`new (file, line) SteeringWheelDevice`)
+  // makes ngccc.exe die part-way through emitting DWARF -- it exits 0 with a
+  // truncated .s and ngcas then fails on undefined labels. The trigger is
+  // inlining a *global* operator new: a class-level one is fine, as is a local
+  // SteeringWheelDevice, and placement-new of a trivial type. So the allocation
+  // goes through SteeringWheelDevice::operator new instead, which emits the
+  // same `li r3, 0x24; bl __builtin_vec_new`. Code matches; the only DWARF
+  // difference in this function is that one inlined-operator-new line.
+  this->mWheelDevice = new SteeringWheelDevice(deviceIndex);
 }
 
 GameDevice::~GameDevice() {
@@ -224,9 +235,9 @@ void GameDevice::ResetEffects() {
   effect->Stop();
 
   effect_states[dIndex].Enabled = false;
-  effect_states[dIndex].CollisionNoise.MaxTime = 0.0f;
   effect_states[dIndex].On = 0.0f;
   effect_states[dIndex].CollisionNoise.Time = 0.0f;
+  effect_states[dIndex].CollisionNoise.MaxTime = 0.0f;
   effect_states[dIndex].Push(input_effects[dIndex]);
   SteeringWheels_StopAllForces();
 }
