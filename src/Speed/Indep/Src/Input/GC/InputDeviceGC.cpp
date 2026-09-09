@@ -236,8 +236,11 @@ void GameDevice::PollDevice() {
   value = this->fCurrentValues + 8;
   wheel_connected = SteeringWheelDevice::WheelConnected(this->GetDeviceIndex());
 
-  // UNSOLVED 2 instructions: di++ feeds the loop condition, so the scheduler
-  // always hoists it above value++
+  // UNSOLVED 2 instructions: di++ shares a block with the loop-condition load,
+  // so its INSN_PRIORITY beats value++ and both sched passes hoist it (each
+  // one does so on its own; only -fno-schedule-insns -fno-schedule-insns2
+  // keeps source order). A for(;;)+break body fixes the order but loses the
+  // rotated pre-check, which costs more than it gains.
   while (di->name != nullptr) {
     if (wheel_connected || di->system_index >= 0) {
       if (di->type == kAnalogButton) {
