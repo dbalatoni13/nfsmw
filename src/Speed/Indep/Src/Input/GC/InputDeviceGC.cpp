@@ -118,7 +118,7 @@ void GameDevice::Initialize() {
         this->mNumScalars = this->mNumScalars + 1;
     }
  }
- 
+
 // void calls are likely from a debug build that are stripped out.
 // TODO figure out using undercover
 bool GameDevice::IsConnected() { 
@@ -269,6 +269,7 @@ int GameDevice::GetNumDeviceScalar() {
         return this->mNumScalars;
 };
 
+// UNSOLVED Figure out what constructor to put there
 GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(this) {
   this->mNumScalars = 0;
   if (GameDevice::mCount == 0) {
@@ -283,10 +284,7 @@ GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(th
   bMemSet(this->fPrevValues, 0, sizeof(this->fPS2PrevValues));
   bMemSet(this->fCurrentValues, 0, sizeof(this->fPS2CurrentValues));
 
-  // UNSOLVED Dwarf: retail uses the global operator new(size, const char *,
-  // int); inlining that one crashes ngccc, so this goes through a class-level
-  // operator new instead. Same code, one inline record differs.
-  this->mWheelDevice = new SteeringWheelDevice(deviceIndex);
+//   this->mWheelDevice = new SteeringWheelDevice(deviceIndex);
 }
 
 GameDevice::~GameDevice() {
