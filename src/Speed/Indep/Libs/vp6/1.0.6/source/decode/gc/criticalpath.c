@@ -155,7 +155,7 @@ int nDecodeBool(BOOL_CODER *br, int probability) {
     return bit;
 }
 
-int VP6_DecodeBlockMode(struct PB_INSTANCE *pbi) {
+CODING_MODE VP6_DecodeBlockMode(struct PB_INSTANCE *pbi) {
     int choice;
 
     choice = VP6_DecodeBool128((BOOL_CODER *)&pbi->br) << 1;
@@ -310,64 +310,46 @@ void VP6_FindNearestandNextNearest(struct PB_INSTANCE *pbi,
     unsigned int thisMv;
     int typet;
 
-    OffsetMB = MBrow * pbi->MBCols + MBcol;
-    BaseMB = pbi->mvNearOffset[0];
+    BaseMB = MBrow * pbi->MBCols + MBcol;
     Nearest = 0;
     NextNearest = 0;
     typet = 1;
-    i = 0;
-    thisMv = pbi->predictionMode[BaseMB + OffsetMB];
-    while (1) {
-        if (VP6_Mode2Frame[(int)thisMv] == Frame) {
-            thisMv = ((unsigned int *)pbi->MBMotionVector)[BaseMB + OffsetMB];
+    for (i = 0; i < 12; i++) {
+        OffsetMB = pbi->mvNearOffset[i] + BaseMB;
+        if (VP6_Mode2Frame[pbi->predictionMode[OffsetMB]] == Frame) {
+            thisMv = ((unsigned int *)pbi->MBMotionVector)[OffsetMB];
             if (thisMv != 0) {
-                Nearest = (int)thisMv;
+                Nearest = thisMv;
                 typet = 2;
-                goto FirstNearestFound;
+                break;
             }
         }
-        i++;
-        BaseMB = pbi->mvNearOffset[i];
-        if (i > 11) {
-            break;
-        }
-        thisMv = pbi->predictionMode[BaseMB + OffsetMB];
     }
-
-FirstNearestFound:
     nearestIndex = i;
     i = nearestIndex + 1;
-    if (i <= 11) {
-        BaseMB = pbi->mvNearOffset[i];
-        thisMv = pbi->predictionMode[BaseMB + OffsetMB];
-        while (1) {
-            if (VP6_Mode2Frame[(int)thisMv] == Frame) {
-                thisMv = ((unsigned int *)pbi->MBMotionVector)[BaseMB + OffsetMB];
+    if (i < 12) {
+        do {
+            OffsetMB = pbi->mvNearOffset[i] + BaseMB;
+            if (VP6_Mode2Frame[pbi->predictionMode[OffsetMB]] == Frame) {
+                thisMv = ((unsigned int *)pbi->MBMotionVector)[OffsetMB];
                 if (thisMv != (unsigned int)Nearest && thisMv != 0) {
-                    NextNearest = (int)thisMv;
+                    NextNearest = thisMv;
                     typet = 0;
-                    goto SecondNearestFound;
+                    break;
                 }
             }
             i++;
-            if (i > 11) {
-                break;
-            }
-            BaseMB = pbi->mvNearOffset[i];
-            thisMv = pbi->predictionMode[BaseMB + OffsetMB];
-        }
+        } while (i < 12);
     }
-
-SecondNearestFound:
-    *type = typet;
     if (Frame == 1) {
-        *(unsigned int *)&pbi->mbi.NearInterMVect = (unsigned int)NextNearest;
+        *type = typet;
         pbi->mbi.NearestMvIndex = nearestIndex;
-        *(unsigned int *)&pbi->mbi.NearestInterMVect = (unsigned int)Nearest;
+        pbi->mbi.NearestInterMVect = *(MOTION_VECTOR *)&Nearest;
+        pbi->mbi.NearInterMVect = *(MOTION_VECTOR *)&NextNearest;
     } else {
-        *(unsigned int *)&pbi->mbi.NearGoldMVect = (unsigned int)NextNearest;
         pbi->mbi.NearestGMvIndex = nearestIndex;
-        *(unsigned int *)&pbi->mbi.NearestGoldMVect = (unsigned int)Nearest;
+        pbi->mbi.NearestGoldMVect = *(MOTION_VECTOR *)&Nearest;
+        pbi->mbi.NearGoldMVect = *(MOTION_VECTOR *)&NextNearest;
     }
 }
 
@@ -393,11 +375,10 @@ void VP6_decodeModeAndMotionVector(struct PB_INSTANCE *pbi,
         pbi->mbi.BlockMode[1] = VP6_DecodeBlockMode(pbi);
         pbi->mbi.BlockMode[2] = VP6_DecodeBlockMode(pbi);
         pbi->mbi.BlockMode[3] = VP6_DecodeBlockMode(pbi);
-        pbi->mbi.BlockMode[5] = mode;
         pbi->mbi.BlockMode[4] = mode;
+        pbi->mbi.BlockMode[5] = mode;
 
-        k = 0;
-        while (k <= 3) {
+        for (k = 0; k < 4; k++) {
             if (pbi->mbi.BlockMode[k] == 0) {
                 pbi->mbi.Mv[k].x = 0;
                 pbi->mbi.Mv[k].y = 0;
@@ -418,21 +399,16 @@ void VP6_decodeModeAndMotionVector(struct PB_INSTANCE *pbi,
                 x += mv.x;
                 y += mv.y;
             }
-            k++;
         }
 
-        if (x < 0) {
-            x = (x + 1) >> 2;
-        } else {
-            x = (x + 2) >> 2;
-        }
-        if (y < 0) {
-            y = (y + 1) >> 2;
-        } else {
-            y = (y + 2) >> 2;
-        }
+        x = (x + 1 + (x >= 0)) >> 2;
+        y = (y + 1 + (y >= 0)) >> 2;
         pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].x = pbi->mbi.Mv[3].x;
         pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].y = pbi->mbi.Mv[3].y;
+        pbi->mbi.Mv[4].x = x;
+        pbi->mbi.Mv[4].y = y;
+        pbi->mbi.Mv[5].x = x;
+        pbi->mbi.Mv[5].y = y;
     } else {
         switch (mode) {
         case 3:
@@ -459,6 +435,7 @@ void VP6_decodeModeAndMotionVector(struct PB_INSTANCE *pbi,
             y = mv.y;
             break;
         case 6:
+            VP6_FindNearestandNextNearest(pbi, MBrow, MBcol, 2, &type);
             VP6_decodeMotionVector(pbi, &mv, 6);
             x = mv.x;
             y = mv.y;
@@ -468,14 +445,14 @@ void VP6_decodeModeAndMotionVector(struct PB_INSTANCE *pbi,
             y = 0;
             break;
         }
-    }
 
-    pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].x = x;
-    pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].y = y;
-    for (k = 0; k < 6; k++) {
-        pbi->mbi.Mv[k].x = x;
-        pbi->mbi.Mv[k].y = y;
-        pbi->mbi.BlockMode[k] = mode;
+        pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].x = x;
+        pbi->MBMotionVector[MBrow * pbi->MBCols + MBcol].y = y;
+        for (k = 0; k < 6; k++) {
+            pbi->mbi.Mv[k].x = x;
+            pbi->mbi.Mv[k].y = y;
+            pbi->mbi.BlockMode[k] = mode;
+        }
     }
 }
 
