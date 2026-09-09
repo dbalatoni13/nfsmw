@@ -26,7 +26,8 @@ void SYNCTASK_add(void (*taskfunc)(void *, int), int rate, int delay, void *para
         rate = 1;
     }
 
-    skipcount = reentry++;
+    skipcount = reentry;
+    reentry++;
     for (index = 0; index < 16; index++) {
         if (systemtasksubs[index].func == taskfunc) {
             entry = index;

@@ -25,11 +25,11 @@ InterfaceImp::~InterfaceImp() {
     if (this->mpEventQueue != nullptr) {
         delete this->mpEventQueue;
     }
-    do {
+    while (this->mNumDevices > 0) {
         if (this->mpDeviceList[0] != nullptr) {
             delete this->mpDeviceList[0];
         }
-    } while (this->mNumDevices > 0);
+    }
     this->mNumDevices = 0;
 }
 

@@ -34,15 +34,21 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
     if (gCurRead.CurState == ALIGN_THE_START) {
         nBytesToKeep = gCurRead.TA;
         MEM_copy(reinterpret_cast<void *>(gCurRead.MemBase), gCurRead.Data + gCurRead.SD, nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else if (gCurRead.CurState == ALIGN_READ) {
         nBytesToKeep = gCurRead.MEA - gCurRead.MemBase;
         DCInvalidateRange(reinterpret_cast<void *>(gCurRead.MemBase), nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else if (gCurRead.CurState == NONALIGN_READ) {
         nBytesToKeep = gCurRead.ME - gCurRead.MemBase;
         if (nBytesToKeep > 0x4000) {
             nBytesToKeep = 0x4000;
         }
         MEM_copy(reinterpret_cast<void *>(gCurRead.MemBase), gCurRead.Data, nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else {
         if (gCurRead.CurState == SMALL_FILE) {
             nBytesToKeep = gCurRead.Size;
@@ -53,8 +59,6 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
         }
     }
 
-    gCurRead.FileBase += nBytesToKeep;
-    gCurRead.MemBase += nBytesToKeep;
 
     if (gCurRead.MemBase == gCurRead.MSA && gCurRead.MemBase < gCurRead.MEA) {
         gCurRead.CurState = ALIGN_READ;
@@ -63,7 +67,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
                                        AyncDVDCallback, 2);
         return nBytesToKeep;
     }
-    if (gCurRead.MemBase < gCurRead.ME) {
+    if (gCurRead.ME > gCurRead.MemBase) {
         nBytesToRead = (gCurRead.ME - gCurRead.MemBase + 0x1f) & ~0x1f;
         if (nBytesToRead > 0x4000) {
             nBytesToRead = 0x4000;
@@ -202,22 +206,22 @@ EAFileHandle GcDvdFileDeviceDriver::Open(const char *filename, int, int *) {
 
     name = newname;
     dvd_fh = this->_AllocateDvdFileHandle();
-    while (*filename != '\0') {
-        if (*filename == '\\') {
-            *name = '/';
+    namesrc = filename;
+    while (*namesrc != '\0') {
+        if (*namesrc == '\\') {
+            *name++ = '/';
         } else {
-            *name = *filename;
+            *name++ = *namesrc;
         }
-        filename++;
-        name++;
+        namesrc++;
     }
     *name = '\0';
-    namesrc = newname;
-    if (strncmp(namesrc, "dvd:", 4) == 0) {
-        namesrc = newname + 4;
+    name = newname;
+    if (strncmp(name, "dvd:", 4) == 0) {
+        name += 4;
     }
-    entryNum = DVDConvertPathToEntrynum(namesrc + 1);
     ret = 0;
+    entryNum = DVDConvertPathToEntrynum(name + 1);
     if (entryNum != -1) {
         ret = DVDFastOpen(entryNum, &dvd_fh->fileInfo);
     }
