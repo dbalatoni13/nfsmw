@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Input/Common/FFBTypes.h"
 #include "Speed/Indep/Src/Input/Device.h"
 #include "Speed/Indep/Src/Input/SteeringWheelDevice.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin/pad.h"
 
 // Decl: 23
@@ -22,8 +23,8 @@ static const struct DeviceScalarInfo device_infos[37] = {
 }; // size: 0x2E4, address: 0x803F424C, Decl: 89
 
 
-struct InputDevice* GameDevice::Construct(int port) { 
-
+inline struct InputDevice* GameDevice::Construct(int port) { // Decl: 197
+    return new ("GameDevice") GameDevice(port);
 }
 
 inline bool GameDevice::IsWheel() { 
@@ -39,7 +40,56 @@ inline struct UTL::COM::IUnknown* GameDevice::GetSecondaryDevice() { return mWhe
 
 int GameDevice::mCount; // size: 0x4, address: 0x8041E4B0, Decl: 734
 
-void GameDevice::Initialize() { 
+RealInput::Interface *inputsys; // size: 0x4, address: 0x8041E47C
+extern EA::Allocator::IAllocator *gMemoryAllocator; // 0x80457918
+
+bool input_connected[4];
+bool gShowPortInfo;
+float input_buzz[8];
+RealInput::Device *input_devices[4];
+RealInput::Effect *input_effects[4]; // size: 0x10, address: 0x8041E4A0
+
+static int MyEnumDeviceCallback(RealInput::Device *pDevice, unsigned int userData,
+                                RealInput::Interface *pInterface) {
+  int port;
+
+  port = pDevice->GetInfo()->mPortNum;
+  if (port <= 3) {
+    input_devices[port] = pDevice;
+    input_connected[port] = pDevice->GetCapabilities()->mAttached;
+  }
+  return 1;
+}
+
+static void InitEffects() {
+  for (int i = 0; i < 4; i++) {
+    RealInput::Device *device = input_devices[i];
+    if (device == nullptr || !device->IsPad() || !input_connected[i]) {
+      input_effects[i] = nullptr;
+    }
+  }
+}
+
+static void InitPads() {
+  RealInput::ConfigOptions opts;
+  RealInput::Interface *m_pInputInterface;
+
+  opts.mAllocator = gMemoryAllocator;
+  opts.mEventQueueSize = 32;
+  opts.mpEnumDevicesCallback = MyEnumDeviceCallback;
+  opts.mMaxNumEffects = 4;
+
+  m_pInputInterface = RealInput::Interface::CreateInstance(opts);
+  inputsys = m_pInputInterface;
+  m_pInputInterface->AddRef();
+  SteeringWheelDevice::InitWheelSupport();
+}
+
+static void ReleasePads() {
+  inputsys->Release();
+}
+
+void GameDevice::Initialize() {
     int i;
     const DeviceScalarInfo *info;
 
@@ -59,10 +109,6 @@ void GameDevice::Initialize() {
 
 // I am unsure where this is defined?
 // UNSOLVED
-bool input_connected[4];
-bool gShowPortInfo;
-float input_buzz[8];
-RealInput::Device *input_devices[4];
 
 // void calls are likely from a debug build that are stripped out.
 // TODO figure out using undercover
@@ -102,8 +148,10 @@ void GameDevice::StartVibration() {
   input_buzz[this->GetDeviceIndex()] = 500.0f;
 }
 
-void GameDevice::StopVibration() { 
-
+void GameDevice::StopVibration() {
+  if (input_buzz[this->GetDeviceIndex()] > 0.0f) {
+    input_buzz[this->GetDeviceIndex()] = 0.00001f;
+  }
 }
 
 void GameDevice::PollDevice() { 
@@ -114,66 +162,117 @@ int GameDevice::GetNumDeviceScalar() {
         return this->mNumScalars;
 };
 
-GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(nullptr){ 
+GameDevice::GameDevice(int deviceIndex) : InputDevice(deviceIndex), IFeedback(this) {
+  this->mNumScalars = 0;
+  if (GameDevice::mCount == 0) {
+    InitPads();
+    InitEffects();
+  }
+  GameDevice::mCount = GameDevice::mCount + 1;
+
+  this->fDeviceScalar = this->fPS2DeviceScalars;
+  this->fCurrentValues = this->fPS2CurrentValues;
+  this->fPrevValues = this->fPS2PrevValues;
+  bMemSet(this->fPrevValues, 0, sizeof(this->fPS2PrevValues));
+  bMemSet(this->fCurrentValues, 0, sizeof(this->fPS2CurrentValues));
+
+  // UNSOLVED (blocked, not unknown): retail ends with
+  //     mWheelDevice = new (file, line) SteeringWheelDevice(deviceIndex);
+  // which allocates via the global operator new(size, const char*, int) in
+  // bWare.hpp (-> __builtin_vec_new, 0x24 bytes) and inlines the constructor.
+  // Writing that here makes ngccc.exe die part-way through emitting DWARF: it
+  // exits 0 having truncated the .s, so ngcas then fails on undefined labels.
+  // Placement-new of a trivial type is fine, and an empty SteeringWheelDevice
+  // body fails identically, so the trigger is inlining this class (multiple
+  // inheritance, nested inline base constructors) into a placement-new.
+  this->mWheelDevice = nullptr;
+}
+
+GameDevice::~GameDevice() {
+  GameDevice::mCount = GameDevice::mCount - 1;
+  if (GameDevice::mCount == 0) {
+    ReleasePads();
+  }
+};
+
+void GameDevice::PauseEffects() {
+  effect_states[this->GetDeviceIndex()].Enabled = false;
+  effect_states[this->GetDeviceIndex()].Push(input_effects[this->GetDeviceIndex()]);
+  SteeringWheels_StopAllForces();
+}
+
+void GameDevice::ResumeEffects() {
+  effect_states[this->GetDeviceIndex()].Enabled = true;
+  effect_states[this->GetDeviceIndex()].Push(input_effects[this->GetDeviceIndex()]);
+}
+
+void GameDevice::ResetEffects() {
+  int dIndex;
+  RealInput::Effect *effect;
+
+  dIndex = this->GetDeviceIndex();
+  effect = input_effects[dIndex];
+  if (effect == nullptr) {
+    return;
+  }
+
+  RealInput::Effect::Info info;
+
+  effect->GetInfo(&info);
+  info.mFullStop = 1;
+  effect->SetInfo(&info);
+  effect->Stop();
+
+  effect_states[dIndex].Enabled = false;
+  effect_states[dIndex].CollisionNoise.MaxTime = 0.0f;
+  effect_states[dIndex].On = 0.0f;
+  effect_states[dIndex].CollisionNoise.Time = 0.0f;
+  effect_states[dIndex].Push(input_effects[dIndex]);
+  SteeringWheels_StopAllForces();
+}
+
+void GameDevice::BeginUpdate() {
+  InputEffectState &state = effect_states[this->GetDeviceIndex()];
+
+  state.On = 0.0f;
+}
+
+void GameDevice::EndUpdate() { 
 
 }
 
-GameDevice::~GameDevice(){ 
-
-}; 
-
-void PauseEffects() { 
+void GameDevice::UpdateRoadNoise(bool front, const struct SimSurface & surface, float speed) { 
 
 }
 
-void ResumeEffects() { 
+void GameDevice::UpdateTireSkid(bool front, const struct SimSurface & surface, float speed) { 
 
 }
 
-void ResetEffects() { 
+void GameDevice::UpdateTireSlip(bool front, const struct SimSurface & surface, float speed) { 
 
 }
 
-void BeginUpdate() { 
+void GameDevice::UpdateRPM(float powerband, float overrev, float throttle) { 
 
 }
 
-void EndUpdate() { 
+void GameDevice::UpdateShiftPotential(enum ShiftPotential potential) { 
 
 }
 
-void UpdateRoadNoise(bool front, const struct SimSurface & surface, float speed) { 
+void GameDevice::UpdateEngineBlown(bool blown) { 
 
 }
 
-void UpdateTireSkid(bool front, const struct SimSurface & surface, float speed) { 
+void GameDevice::UpdateNOS(bool engaged, float NOSLevel) { 
 
 }
 
-void UpdateTireSlip(bool front, const struct SimSurface & surface, float speed) { 
+void GameDevice::UpdateShifting(bool shifting) { 
 
 }
 
-void UpdateRPM(float powerband, float overrev, float throttle) { 
-
-}
-
-void UpdateShiftPotential(enum ShiftPotential potential) { 
-
-}
-
-void UpdateEngineBlown(bool blown) { 
-
-}
-
-void UpdateNOS(bool engaged, float NOSLevel) { 
-
-}
-
-void UpdateShifting(bool shifting) { 
-
-}
-
-void ReportCollision(const COLLISION_INFO & cinfo, bool iamA) { 
+void GameDevice::ReportCollision(const COLLISION_INFO & cinfo, bool iamA) { 
 
 }

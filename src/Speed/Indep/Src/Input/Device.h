@@ -7,6 +7,8 @@
 
 #include "types.h"
 
+namespace EA { namespace Allocator { class IAllocator; } }
+
 namespace RealInput {
 
 enum Platform {
@@ -32,6 +34,48 @@ enum RiResult {
 };
 
 struct Device;
+struct Event;
+struct Interface;
+
+// total size: 0x14
+struct ConfigOptions {
+    EA::Allocator::IAllocator* mAllocator; // offset 0x0, size 0x4
+    int (*mpEnumDevicesCallback)(Device*, unsigned int, Interface*); // offset 0x4, size 0x4
+    unsigned int mEnumDevicesCallbackUserData; // offset 0x8, size 0x4
+    unsigned int mEventQueueSize; // offset 0xC, size 0x4
+    unsigned int mMaxNumEffects; // offset 0x10, size 0x4
+
+    ConfigOptions() {
+        mAllocator = NULL;
+        mpEnumDevicesCallback = NULL;
+        mEnumDevicesCallbackUserData = 0;
+    }
+};
+
+// total size: 0x4 -- _vptr.Interface at offset 0x0.
+// Virtuals in vtable order (_vt.Q29RealInput9Interface, 0x80414BF0): slot 0x08
+// AddRef, 0x10 Release, 0x18 Update, 0x20 GetPad, 0x28 GetMouse,
+// 0x30 GetKeyboard, 0x38 GetEvent, 0x40 ~Interface -- the destructor is last
+// here, unlike Device and Effect.
+struct Interface {
+    static Interface* CreateInstance(const ConfigOptions& options);
+
+    virtual int AddRef();
+
+    virtual int Release();
+
+    virtual void Update();
+
+    virtual Device* GetPad();
+
+    virtual Device* GetMouse();
+
+    virtual Device* GetKeyboard();
+
+    virtual Event* GetEvent();
+
+    virtual ~Interface();
+};
 
 // total size: 0x4 -- _vptr.Effect is at offset 0x0, the class has no members.
 // Virtuals are declared in vtable order (_vt.Q29RealInput6Effect, 0x80414E20):
@@ -100,20 +144,20 @@ union Data {
 // slot 0x08 ~Device, 0x10 GetData, 0x18 Acquire, 0x20 Release, 0x28 Update,
 // slot 0x30 CreateEffect, 0x38 GetEffect, 0x40 GetKeyState.
 struct Device {
-    // total size: 0x14
-    struct Info {
-        Platform mPlatform; // offset 0x0, size 0x4
-        int mType; // offset 0x4, size 0x4
-        uint32_t mJoypadID; // offset 0x8, size 0x4
-        uint32_t mControllerID; // offset 0xC, size 0x4
-        uint32_t mPortNum; // offset 0x10, size 0x4
-    };
-
     enum Type {
         TYPE_UNKNOWN = 0,
         TYPE_KEYBOARD = 1,
         TYPE_MOUSE = 2,
         TYPE_PAD = 3,
+    };
+
+    // total size: 0x14
+    struct Info {
+        Platform mPlatform; // offset 0x0, size 0x4
+        Type mType; // offset 0x4, size 0x4
+        uint32_t mJoypadID; // offset 0x8, size 0x4
+        uint32_t mControllerID; // offset 0xC, size 0x4
+        uint32_t mPortNum; // offset 0x10, size 0x4
     };
 
     Device();
@@ -134,15 +178,15 @@ struct Device {
 
     virtual unsigned int GetKeyState(unsigned int key);
 
-    int32_t IsKeyboard() {}
+    int32_t IsKeyboard() { return mInfo.mType == TYPE_KEYBOARD; }
 
-    int32_t IsMouse() {}
+    int32_t IsMouse() { return mInfo.mType == TYPE_MOUSE; }
 
-    int32_t IsPad() {}
+    int32_t IsPad() { return mInfo.mType == TYPE_PAD; }
 
-    Info* GetInfo() {}
+    Info* GetInfo() { return &mInfo; }
 
-    Capabilities* GetCapabilities() {}
+    Capabilities* GetCapabilities() { return &mCapabilities; }
 
 private:
     void InitData();
