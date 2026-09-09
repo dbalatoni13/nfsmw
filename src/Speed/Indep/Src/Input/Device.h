@@ -5,11 +5,9 @@
 // #pragma once
 // #endif
 
-#include "ActionData.h"
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#include "Speed/Indep/Src/Sim/SimModel.h"
 #include "types.h"
 
+namespace RealInput {
 
 enum Platform {
     PLATFORM_WIN = 0,
@@ -33,6 +31,42 @@ enum RiResult {
     RI_NO_EFFECT = 7,
 };
 
+struct Device;
+
+// total size: 0x4 -- _vptr.Effect is at offset 0x0, the class has no members.
+// Virtuals are declared in vtable order (_vt.Q29RealInput6Effect, 0x80414E20):
+// slot 0x08 ~Effect, 0x10 Start, 0x18 Stop, 0x20 GetStatus, 0x28 GetDevice,
+// slot 0x30 GetInfo, 0x38 SetInfo.
+struct Effect {
+    // total size: 0x4
+    struct Info {
+        unsigned int mFullStop; // offset 0x0, size 0x4
+
+        Info(); // 0x803998C8
+    };
+
+    enum Status {
+        STATUS_STOPPED = 0,
+        STATUS_PLAYING = 1,
+    };
+
+    Effect();
+
+    virtual ~Effect();
+
+    virtual void Start();
+
+    virtual void Stop();
+
+    virtual Status GetStatus();
+
+    virtual Device* GetDevice();
+
+    virtual void GetInfo(Info* info);
+
+    virtual void SetInfo(Info* info);
+};
+
 struct Capabilities {
     uint32_t mNumDigitalButtons; // offset 0x0, size 0x4
     uint32_t mNumAnalogButtons; // offset 0x4, size 0x4
@@ -40,42 +74,66 @@ struct Capabilities {
     unsigned int mForceFeedback : 1; // offset 0x8, size 0x4
     unsigned int mUnused : 30; // offset 0x8, size 0x4
 };
+
+// UNSOLVED
+// The three payload structs are only known by size, taken from the union's
+// members in the original DWARF. Replace with the real layouts when found --
+// only the 0x118 total matters here, it is what puts _vptr.Device at 0x138.
+struct Pad {
+    uint8_t mUnknown[0x118]; // offset 0x0, size 0x118
+};
+struct Keyboard {
+    uint8_t mUnknown[0x100]; // offset 0x0, size 0x100
+};
+struct Mouse {
+    uint8_t mUnknown[0x14]; // offset 0x0, size 0x14
+};
+
 union Data {
-    // UNSOLVED can't seem to find these in the data?
-    // struct Pad mPad; // offset 0x0, size 0x118
-    // struct Keyboard mKeyboard; // offset 0x0, size 0x100
-    // struct Mouse mMouse; // offset 0x0, size 0x14
-};
-enum Type {
-    TYPE_UNKNOWN = 0,
-    TYPE_KEYBOARD = 1,
-    TYPE_MOUSE = 2,
-    TYPE_PAD = 3,
+    Pad mPad; // offset 0x0, size 0x118
+    Keyboard mKeyboard; // offset 0x0, size 0x100
+    Mouse mMouse; // offset 0x0, size 0x14
 };
 
-
+// total size: 0x13C -- _vptr.Device sits after the members, at offset 0x138.
+// Virtuals are declared in vtable order (_vt.Q29RealInput6Device, 0x80414DD0):
+// slot 0x08 ~Device, 0x10 GetData, 0x18 Acquire, 0x20 Release, 0x28 Update,
+// slot 0x30 CreateEffect, 0x38 GetEffect, 0x40 GetKeyState.
 struct Device {
+    // total size: 0x14
     struct Info {
         Platform mPlatform; // offset 0x0, size 0x4
-        Type mType; // offset 0x4, size 0x4
+        int mType; // offset 0x4, size 0x4
         uint32_t mJoypadID; // offset 0x8, size 0x4
         uint32_t mControllerID; // offset 0xC, size 0x4
         uint32_t mPortNum; // offset 0x10, size 0x4
     };
 
-protected:
-    Info mInfo; // offset 0x0, size 0x14
-    Capabilities mCapabilities; // offset 0x14, size 0xC
-    Data mData; // offset 0x20, size 0x118
-    // UNSOLVED
-    // This errors, unsure why
-    // const struct __vtbl_ptr_type * _vptr.Device; // offset 0x138, size 0x4
+    enum Type {
+        TYPE_UNKNOWN = 0,
+        TYPE_KEYBOARD = 1,
+        TYPE_MOUSE = 2,
+        TYPE_PAD = 3,
+    };
 
-    Device() ;
+    Device();
 
     virtual ~Device();
 
-public:
+    virtual Data* GetData();
+
+    virtual RiResult Acquire();
+
+    virtual RiResult Release();
+
+    virtual RiResult Update();
+
+    virtual Effect* CreateEffect(Effect::Info* info);
+
+    virtual Effect* GetEffect();
+
+    virtual unsigned int GetKeyState(unsigned int key);
+
     int32_t IsKeyboard() {}
 
     int32_t IsMouse() {}
@@ -86,28 +144,15 @@ public:
 
     Capabilities* GetCapabilities() {}
 
-    virtual Data* GetData() {}
-
-    virtual RiResult Acquire() {}
-
-    virtual RiResult Release() {}
-
-    virtual RiResult Update() {}
-
-    virtual Sim::Model::Effect* CreateEffect() {}
-
-    virtual Sim::Model::Effect* GetEffect() {}
-
-    virtual unsigned int GetKeyState(unsigned int) {}
-
-    virtual unsigned int GetKeyState(unsigned int, unsigned int) {}
-
 private:
-    void InitData() ;
+    void InitData();
 
-public:
-    USE_FASTALLOC(Device);
-    Device(enum Platform platform, enum Type type);
+protected:
+    Info mInfo; // offset 0x0, size 0x14
+    Capabilities mCapabilities; // offset 0x14, size 0xC
+    Data mData; // offset 0x20, size 0x118
 };
+
+} // namespace RealInput
 
 // #endif

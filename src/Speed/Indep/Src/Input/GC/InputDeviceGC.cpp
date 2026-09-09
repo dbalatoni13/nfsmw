@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Input/Common/FFBTypes.h"
 #include "Speed/Indep/Src/Input/Device.h"
 #include "Speed/Indep/Src/Input/SteeringWheelDevice.h"
-#include "Speed/Indep/Src/Sim/SimModel.h"
 #include "dolphin/pad.h"
 
 // Decl: 23
@@ -63,7 +62,7 @@ void GameDevice::Initialize() {
 bool input_connected[4];
 bool gShowPortInfo;
 float input_buzz[8];
-Device* input_devices[4];
+RealInput::Device *input_devices[4];
 
 // void calls are likely from a debug build that are stripped out.
 // TODO figure out using undercover
@@ -85,30 +84,23 @@ bool GameDevice::IsConnected() {
 }
 
 
-void GameDevice::StartVibration()
-{
-  int *piVar1;
-  Sim::Model::Effect *effect;
-  Sim::Model::Effect::Info effectInfo;
-  float local_18;
-  
-  local_18 = (float)(**(code **)(*(int *)&this->field_0x28 + 0x1c))
-                              ((int)this->fPS2DeviceScalars +
-                               ((int)*(short *)(*(int *)&this->field_0x28 + 0x18) - 0x38U));
-  if (local_18 == 0.0) {
-    Device::Info(local_18);
-    effect = input_devices[this->GetDeviceIndex()]->Get;
-    piVar1 = (int *)(*(code *)effect[0xd]._vptr.Effect)
-                              ((int)input_devices[*(int *)&this->field_0x20] +
-                               (int)*(short *)&effect[0xc]._vptr.Effect, (Info *)&local_18);
-    if (piVar1 != (int *)0x0) {
-      (**(code **)(*piVar1 + 0x14))((int)piVar1 + (int)*(short *)(*piVar1 + 0x10));
-    }
-    input_buzz[this->GetDeviceIndex()] = 500.0;
+void GameDevice::StartVibration() {
+  if (this->IsWheel()) {
+    return;
   }
-  return;
-}
 
+  RealInput::Effect::Info effectInfo;
+  RealInput::Device *device;
+  RealInput::Effect *effect;
+
+  effectInfo.mFullStop = 0;
+  device = input_devices[this->GetDeviceIndex()];
+  effect = device->CreateEffect(&effectInfo);
+  if (effect != nullptr) {
+    effect->Start();
+  }
+  input_buzz[this->GetDeviceIndex()] = 500.0f;
+}
 
 void GameDevice::StopVibration() { 
 
