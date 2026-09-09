@@ -17,9 +17,9 @@ static OSMessageQueue ReadFileThreadMsgQ;
 static void *ReadFileThreadMsgData[32];
 static ReadStatus gCurRead;
 
-static void AyncDVDCallback(long, DVDFileInfo *);
+static void AyncDVDCallback(s32, DVDFileInfo *);
 static int AyncDVDRead(DVDFileInfo *FileInfo);
-static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, long FileBase, long Size);
+static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, s32 FileBase, s32 Size);
 
 static void QEndOp() {
     gCurRead.CurState = DONE;
@@ -81,7 +81,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
     return nBytesToKeep;
 }
 
-static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, long FileBase, long Size) {
+static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, s32 FileBase, s32 Size) {
     int readSize;
 
     if (Size == 0) {
@@ -89,26 +89,27 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
         return;
     }
 
-    gCurRead.MBS = reinterpret_cast<int>(MemPointer) & ~0x1f;
-    gCurRead.MSA = (reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
-    gCurRead.FBS = FileBase & ~0x1f;
-    gCurRead.FE = FileBase + Size;
-    gCurRead.ME = reinterpret_cast<int>(MemPointer) + Size;
-    gCurRead.SD = FileBase - gCurRead.FBS;
-    gCurRead.FEA = gCurRead.FE & ~0x1f;
-    gCurRead.TA = 0x20 - gCurRead.SD;
-    gCurRead.MEA = gCurRead.ME & ~0x1f;
-    gCurRead.FSA = (FileBase + 0x1f) & ~0x1f;
-    gCurRead.ret = 0;
-    gCurRead.MemBase = reinterpret_cast<int>(MemPointer);
-    gCurRead.FileBase = FileBase;
     gCurRead.Size = Size;
+    gCurRead.FileBase = FileBase;
+    gCurRead.MemBase = reinterpret_cast<int>(MemPointer);
+    gCurRead.MBS = gCurRead.MemBase & ~0x1f;
+    gCurRead.MSA = (gCurRead.MemBase + 0x1f) & ~0x1f;
+    gCurRead.ME = gCurRead.MemBase + Size;
+    gCurRead.MEA = gCurRead.ME & ~0x1f;
+    gCurRead.FBS = FileBase & ~0x1f;
+    gCurRead.FSA = (FileBase + 0x1f) & ~0x1f;
+    gCurRead.FE = FileBase + Size;
+    gCurRead.FEA = gCurRead.FE & ~0x1f;
+    gCurRead.SD = FileBase - gCurRead.FBS;
+    gCurRead.TA = 0x20 - gCurRead.SD;
+    gCurRead.ret = 0;
 
     if (Size <= 0x1f) {
         int sizealigned;
 
         gCurRead.CurState = SMALL_FILE;
-        sizealigned = (gCurRead.FE - gCurRead.FBS + 0x1f) & ~0x1f;
+        sizealigned = gCurRead.FE - gCurRead.FBS;
+        sizealigned = (sizealigned + 0x1f) & ~0x1f;
         gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, sizealigned, gCurRead.FBS,
                                         AyncDVDCallback, 2);
     } else if (gCurRead.SD != 0) {
@@ -117,27 +118,27 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
         gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS,
                                          AyncDVDCallback, 2);
     } else {
-        if (MemPointer == reinterpret_cast<void *>(gCurRead.MSA) && gCurRead.MSA < gCurRead.MEA) {
+        if (gCurRead.MemBase == gCurRead.MSA && gCurRead.MSA < gCurRead.MEA) {
             gCurRead.CurState = ALIGN_READ;
             readSize = gCurRead.MEA - gCurRead.MSA;
             gCurRead.ret = DVDReadAsyncPrio(FileInfo, reinterpret_cast<void *>(gCurRead.MSA), readSize,
-                                            FileBase, AyncDVDCallback, 2);
+                                            gCurRead.FileBase, AyncDVDCallback, 2);
             return;
         }
-        if (gCurRead.ME <= reinterpret_cast<int>(MemPointer)) {
+        if (gCurRead.ME <= gCurRead.MemBase) {
             return;
         }
-        readSize = (gCurRead.ME - reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
+        readSize = (gCurRead.ME - gCurRead.MemBase + 0x1f) & ~0x1f;
         if (readSize > 0x4000) {
             readSize = 0x4000;
         }
         gCurRead.CurState = NONALIGN_READ;
-        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, FileBase,
+        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FileBase,
                                          AyncDVDCallback, 2);
     }
 }
 
-static void AyncDVDCallback(long, DVDFileInfo *) {
+static void AyncDVDCallback(s32, DVDFileInfo *) {
     OSSendMessage(&ReadFileThreadMsgQ, reinterpret_cast<void *>(1), 1);
 }
 
