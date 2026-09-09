@@ -58,7 +58,7 @@ void GCInterface::UpdateTaskMount() {
     case CR_NOCARD:
         GCInterface::mTaskMount.mCardStatus = STATUS_NO_CARD;
         break;
-    case CR_INSUFFICIENT_SPACE:
+    case CR_CORRUPT:
     case CR_ENCODINGERROR:
         GCInterface::mTaskMount.mCardStatus = STATUS_CARD_UNFORMATTED;
         break;

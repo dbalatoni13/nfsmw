@@ -18,7 +18,7 @@ void SetLocaleGetStrCallback(const char *(*cb)(int)) {
 }
 
 const wchar_t *GetString(int strID, char *parameterTypes, ...) {
-    int numParameters = parameterTypes ? strlen(parameterTypes) : 0;
+    int numParameters = parameterTypes != nullptr ? strlen(parameterTypes) : 0;
     const int MAX_LOCALE_PARAMETERS = 8;
     va_list val;
 
@@ -104,8 +104,7 @@ const wchar_t *GetString(int strID, char *parameterTypes, ...) {
             }
         }
 
-        stri++;
-    } while (*stri != 0);
+    } while (*stri++ != 0);
 
     *strd = 0;
     gTrcMsgBufferIndex = (gTrcMsgBufferIndex + 1) % NUM_TRC_MSG_BUFFERS;

@@ -631,6 +631,7 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
                 } else {
                     this->mActiveSubtask = SUBTASK_NONE;
                     this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
+                    this->mFilehandle = nullptr;
                 }
             } else {
                 this->mActiveSubtask = SUBTASK_READ_USER_BODY;
@@ -657,7 +658,10 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
                     this->mActiveSubtask = SUBTASK_NONE;
                     this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
                     this->mFilehandle = nullptr;
-                } else if (this->mFileHeader.mUserHeaderSize == 0 || this->mUserHeader == nullptr) {
+                } else if (this->mFileHeader.mUserHeaderSize != 0 && this->mUserHeader != nullptr) {
+                    this->mActiveSubtask = SUBTASK_READ_USER_HEADER;
+                    this->mIMemcard->Read(this->mFilehandle, this->mUserHeader, this->mFileHeader.mUserHeaderSize);
+                } else {
                     if (this->mFileHeader.mUserBodySize != 0 && this->mUserBody != nullptr) {
                         this->mActiveSubtask = SUBTASK_READ_USER_BODY;
                         this->mIMemcard->Seek(this->mFilehandle, this->mFileHeader.mUserHeaderSize, Realmc::SF_CUR);
@@ -666,9 +670,6 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
                         this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
                         this->mFilehandle = nullptr;
                     }
-                } else {
-                    this->mActiveSubtask = SUBTASK_READ_USER_HEADER;
-                    this->mIMemcard->Read(this->mFilehandle, this->mUserHeader, this->mFileHeader.mUserHeaderSize);
                 }
             }
             break;
@@ -679,7 +680,7 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
                 this->mFilehandle = nullptr;
             } else {
                 this->mActiveSubtask = SUBTASK_READ_USER_BODY;
-                this->mIMemcard->Seek(this->mFilehandle, this->mFileHeader.mUserHeaderSize, Realmc::SF_CUR);
+                this->mIMemcard->Read(this->mFilehandle, this->mUserBody, this->mFileHeader.mUserBodySize);
             }
             break;
         case SUBTASK_READ_USER_BODY:

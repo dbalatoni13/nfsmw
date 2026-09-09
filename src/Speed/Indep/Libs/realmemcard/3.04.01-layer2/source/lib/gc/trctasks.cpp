@@ -2064,7 +2064,13 @@ void GCInterface::UpdateTaskTrcFormat() {
         GCInterface::mTaskTrcFormat.SetState(TS_WAIT_FOR_USER_REPLY, TS_START);
         break;
     case TS_WAIT_FOR_USER_REPLY:
-        if (GCInterface::mUserMsg != UMSG_NONE) {
+        if (GCInterface::mUserMsg == UMSG_NONE) {
+            if (GCInterface::CheckCard(GCInterface::mTaskTrcFormat.mCardID) == STATUS_NO_CARD) {
+                GCInterface::mTaskTrcFormat.mTaskResult = RESULT_RETRY;
+                GCInterface::mTaskTrcFormat.mCardStatus = STATUS_NO_CARD;
+                GCInterface::mTaskTrcFormat.SetState(TS_DONE, TS_START);
+            }
+        } else {
             switch (GCInterface::ConvertUmsgToOption(GCInterface::mUserMsg,
                                                       7,
                                                       GCInterface::mTaskTrcFormat.mTrcTaskID)) {
@@ -2088,12 +2094,6 @@ void GCInterface::UpdateTaskTrcFormat() {
                 break;
             default:
                 break;
-            }
-        } else {
-            if (GCInterface::CheckCard(GCInterface::mTaskTrcFormat.mCardID) == STATUS_NO_CARD) {
-                GCInterface::mTaskTrcFormat.mTaskResult = RESULT_RETRY;
-                GCInterface::mTaskTrcFormat.mCardStatus = STATUS_NO_CARD;
-                GCInterface::mTaskTrcFormat.SetState(TS_DONE, TS_START);
             }
         }
         break;

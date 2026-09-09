@@ -255,13 +255,13 @@ InputOptions GCInterface::ConvertUmsgToOption(UserMessage umsg, int options, Tas
     if (umsg == UMSG_OPTION1 && numOptions > 0) {
         return static_cast<InputOptions>(ioptions[0]);
     }
-    if (umsg == UMSG_OPTION4 && numOptions > 1) {
+    if (umsg == UMSG_OPTION2 && numOptions > 1) {
         return static_cast<InputOptions>(ioptions[1]);
     }
-    if (umsg == UMSG_OPTION2 && numOptions > 2) {
+    if (umsg == UMSG_OPTION3 && numOptions > 2) {
         return static_cast<InputOptions>(ioptions[2]);
     }
-    if (umsg == UMSG_OPTION3 && numOptions > 3) {
+    if (umsg == UMSG_OPTION4 && numOptions > 3) {
         return static_cast<InputOptions>(ioptions[3]);
     }
 
