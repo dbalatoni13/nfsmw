@@ -508,7 +508,7 @@ void FilterBlock_GC(unsigned char *ReconPtr1, unsigned char *ReconPtr2,
             FilterBlock2dBil_GC(ReconPtr1 - 1, ReconRefPtr, PixelsPerLine,
                                 &BilinearFilters[ModX * 2],
                                 &BilinearFilters[ModY * 2]);
-        } else if (diff == (int)PixelsPerLine + 1) {
+        } else {
             FilterBlock2dBil_GC(ReconPtr1, ReconRefPtr, PixelsPerLine,
                                 &BilinearFilters[ModX * 2],
                                 &BilinearFilters[ModY * 2]);
@@ -524,7 +524,7 @@ void FilterBlock_GC(unsigned char *ReconPtr1, unsigned char *ReconPtr2,
             FilterBlock2d(ReconPtr1 - 1, ReconRefPtr, PixelsPerLine,
                           &BicubicFilters[ModX * 4],
                           &BicubicFilters[ModY * 4]);
-        } else if (diff == (int)PixelsPerLine + 1) {
+        } else {
             FilterBlock2d(ReconPtr1, ReconRefPtr, PixelsPerLine,
                           &BicubicFilters[ModX * 4],
                           &BicubicFilters[ModY * 4]);
