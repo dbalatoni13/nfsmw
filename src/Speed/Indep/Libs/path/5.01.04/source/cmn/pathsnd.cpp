@@ -373,7 +373,7 @@ void Path::PathTrackSndBank::CheckStatus() {
                     static_cast<float>(static_cast<int>(ssf.samplerate)) * 1000.0f);
                 nodeinfo = PATHI_getnode(this->mRequest.node);
                 if (nodeinfo->extra.beat.playbeats != 0) {
-                    remainingbeats = nodeinfo->beats - 1 - this->mRequest.beat;
+                    remainingbeats = nodeinfo->beats - (this->mRequest.beat + 1);
                     this->mStatus.nodeduration = duration * nodeinfo->beats;
                 }
                 else {
