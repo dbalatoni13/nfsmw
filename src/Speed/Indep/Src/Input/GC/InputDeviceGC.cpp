@@ -70,21 +70,11 @@ static void InitEffects() {
   }
 }
 
+// UNSOLVED Dwarf register issues
 static void InitPads() {
   RealInput::ConfigOptions opts;
   RealInput::Interface *m_pInputInterface;
 
-  // The store order below is derived, not guessed: all four value registers
-  // die at their own store, so the stores tie on INSN_REG_WEIGHT and emit in
-  // source order. Retail's 0x14, 0xc, 0x18, 0x8 reads back as exactly this.
-  //
-  // The last 4 instructions still differ from retail by an r9/r11 swap: the
-  // callback address is a high+lo_sum pair that local-alloc combines into one
-  // quantity (4 refs / 12 insns -> priority 0.667), which outranks the 0x20
-  // constant (2 refs / 6 insns -> 0.333) and so takes r9 first. Retail has it
-  // the other way round, which needs the 0x20's live range under 3 insns --
-  // sched1 puts the `li 4` in between and widens it. Not reachable from source
-  // without disturbing the store order above.
   opts.mEventQueueSize = 32;
   opts.mpEnumDevicesCallback = MyEnumDeviceCallback;
   opts.mMaxNumEffects = 4;
@@ -117,10 +107,7 @@ void GameDevice::Initialize() {
         this->mNumScalars = this->mNumScalars + 1;
     }
  }
-
-// I am unsure where this is defined?
-// UNSOLVED
-
+ 
 // void calls are likely from a debug build that are stripped out.
 // TODO figure out using undercover
 bool GameDevice::IsConnected() { 
