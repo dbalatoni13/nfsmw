@@ -23,10 +23,13 @@ struct IAllocatorToICoreAdaptor : public EA::Allocator::IAllocator {
         return ptr;
     }
 
+    static void operator delete(void *ptr, void *place) {}
+
     IAllocatorToICoreAdaptor() {}
     static IAllocatorToICoreAdaptor *CreateInstance(EA::Allocator::ICoreAllocator *pCoreAllocator) {
         IAllocatorToICoreAdaptor *ptemp;
-        ptemp = new (pCoreAllocator->Alloc(4, "CsisAlloc", 1)) IAllocatorToICoreAdaptor;
+        ptemp = static_cast<IAllocatorToICoreAdaptor *>(pCoreAllocator->Alloc(4, "CsisAlloc", 1));
+        new (ptemp) IAllocatorToICoreAdaptor;
         return ptemp;
     }
     virtual int Release() {
@@ -56,7 +59,9 @@ struct ICoreToIAllocatorAdaptor : public EA::Allocator::ICoreAllocator {
     ICoreToIAllocatorAdaptor() {}
 
     static ICoreToIAllocatorAdaptor *CreateInstance(EA::Allocator::IAllocator *pAllocator) {
-        ICoreToIAllocatorAdaptor *ptemp = new (pAllocator->Alloc(sizeof(ICoreToIAllocatorAdaptor), NULLALLOCTVP)) ICoreToIAllocatorAdaptor;
+        ICoreToIAllocatorAdaptor *ptemp;
+        ptemp = static_cast<ICoreToIAllocatorAdaptor *>(pAllocator->Alloc(sizeof(ICoreToIAllocatorAdaptor), NULLALLOCTVP));
+        new (ptemp) ICoreToIAllocatorAdaptor;
         return ptemp;
     }
 
@@ -82,12 +87,13 @@ struct InterfaceHandleData {
 inline Result ValidHandle(FunctionHandle *pHandle, FunctionDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<FunctionDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -97,12 +103,13 @@ inline Result ValidHandle(FunctionHandle *pHandle, FunctionDesc *pInterfaceDesc)
 inline Result ValidHandle(ClassHandle *pHandle, FunctionDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<FunctionDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -112,12 +119,13 @@ inline Result ValidHandle(ClassHandle *pHandle, FunctionDesc *pInterfaceDesc) {
 inline Result ValidHandle(GlobalVariableHandle *pHandle, GlobalVariableDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<GlobalVariableDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -186,7 +194,7 @@ Result FunctionHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     FunctionDesc *pFunctionDesc;
-    pFunctionDesc = reinterpret_cast<FunctionDesc *>(this->mpPrivate);
+    pFunctionDesc = static_cast<FunctionDesc *>(nullptr);
     return ValidHandle(this, pFunctionDesc);
 }
 
@@ -215,7 +223,7 @@ Result ClassHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     FunctionDesc *pClassDesc;
-    pClassDesc = reinterpret_cast<FunctionDesc *>(this->mpPrivate);
+    pClassDesc = static_cast<FunctionDesc *>(nullptr);
     return ValidHandle(this, pClassDesc);
 }
 
@@ -231,7 +239,7 @@ Result GlobalVariableHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     GlobalVariableDesc *pGlobalVariableDesc;
-    pGlobalVariableDesc = reinterpret_cast<GlobalVariableDesc *>(this->mpPrivate);
+    pGlobalVariableDesc = static_cast<GlobalVariableDesc *>(nullptr);
     return ValidHandle(this, pGlobalVariableDesc);
 }
 
