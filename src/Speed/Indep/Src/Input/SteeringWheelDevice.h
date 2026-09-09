@@ -21,7 +21,11 @@ struct SteeringWheelDevice : public UTL::COM::Object, public ISteeringWheel {
 
     static struct LGWheels *lgwheels;
 
-    SteeringWheelDevice(int deviceIndex) : UTL::COM::Object(0), ISteeringWheel(nullptr) {}
+    SteeringWheelDevice(int deviceIndex) : UTL::COM::Object(0), ISteeringWheel(this) {
+        mDeviceIndex = deviceIndex;
+        mManualTransmission = false;
+        isActivated = true;
+    }
 
     // ISteeringWheel
     virtual void UpdateForces(IPlayer *player);
@@ -38,5 +42,7 @@ struct SteeringWheelDevice : public UTL::COM::Object, public ISteeringWheel {
 
     static float sPedalScale;
 };
+
+void SteeringWheels_StopAllForces(); // 0x80134E6C
 
 #endif

@@ -18,3 +18,7 @@
 #include "Speed/Indep/Src/Main/Common/Event.cpp"
 
 #include "Speed/Indep/Src/Main/Common/EventSequencer.cpp"
+
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/Indep/Src/Input/GC/InputDeviceGC.cpp"
+#endif

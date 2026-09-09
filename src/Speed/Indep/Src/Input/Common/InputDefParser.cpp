@@ -19,7 +19,7 @@ InputMapping::InputMapping(InputDevice *device, const Attrib::Collection *spec) 
         Attrib::Attribute attribute = atr.Get(Attrib::StringToKey(actionName));
         unsigned int numattribs = attribute.GetLength();
 
-        for (int control = 0; control < numattribs; control++) {
+        for (unsigned int control = 0; control < numattribs; control++) {
             const ControllerDataRecord &button = attribute.Get<ControllerDataRecord>(control);
             const Attrib::StringKey &buttonName = button.mDeviceID;
             int buttonIndex;
