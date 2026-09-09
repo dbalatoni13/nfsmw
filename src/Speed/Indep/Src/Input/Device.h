@@ -52,11 +52,7 @@ struct ConfigOptions {
     }
 };
 
-// total size: 0x4 -- _vptr.Interface at offset 0x0.
-// Virtuals in vtable order (_vt.Q29RealInput9Interface, 0x80414BF0): slot 0x08
-// AddRef, 0x10 Release, 0x18 Update, 0x20 GetPad, 0x28 GetMouse,
-// 0x30 GetKeyboard, 0x38 GetEvent, 0x40 ~Interface -- the destructor is last
-// here, unlike Device and Effect.
+// total size: 0x4
 struct Interface {
     static Interface* CreateInstance(const ConfigOptions& options);
 
@@ -77,10 +73,7 @@ struct Interface {
     virtual ~Interface();
 };
 
-// total size: 0x4 -- _vptr.Effect is at offset 0x0, the class has no members.
-// Virtuals are declared in vtable order (_vt.Q29RealInput6Effect, 0x80414E20):
-// slot 0x08 ~Effect, 0x10 Start, 0x18 Stop, 0x20 GetStatus, 0x28 GetDevice,
-// slot 0x30 GetInfo, 0x38 SetInfo.
+// total size: 0x4
 struct Effect {
     // total size: 0x4
     struct Info {
@@ -139,10 +132,7 @@ union Data {
     Mouse mMouse; // offset 0x0, size 0x14
 };
 
-// total size: 0x13C -- _vptr.Device sits after the members, at offset 0x138.
-// Virtuals are declared in vtable order (_vt.Q29RealInput6Device, 0x80414DD0):
-// slot 0x08 ~Device, 0x10 GetData, 0x18 Acquire, 0x20 Release, 0x28 Update,
-// slot 0x30 CreateEffect, 0x38 GetEffect, 0x40 GetKeyState.
+// total size: 0x13C
 struct Device {
     enum Type {
         TYPE_UNKNOWN = 0,
