@@ -27,6 +27,8 @@
 #include "Speed/Indep/bWare/Inc/Espresso.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 
+#include "Speed/Indep/Src/Misc/Table.hpp"
+
 class eView;
 
 enum CameraMoverTypes {
@@ -75,8 +77,39 @@ class CameraAnchor {
         return mWorldID;
     }
 
+    inline struct bVector3 *GetAcceleration() {
+        return &mAccel;
+    }
+
+    // Range: 0x80066428 -> 0x80066428
+    inline bVector3 *GetForwardVector() {
+        return reinterpret_cast<bVector3 *>(&mGeomRot.v0);
+    }
+
     short GetPOVType() {
         return this->mPOV.Type;
+    }
+
+    inline const struct SimSurface &GetSurface() const {
+        return mSurface;
+    }
+
+    inline bool IsDragRace() const {
+        return mIsDragRace;
+    }
+
+    inline bool IsOverRev() const {
+        return mIsOverRev;
+    }
+
+    // Range: 0x800664B4 -> 0x800664B4
+    inline bool IsNosEngaged() const {
+        return mIsNosEngaged;
+    }
+
+    // Range: 0x800664D8 -> 0x800664D8
+    inline bool IsBrakeEngaged() const {
+        return mIsBrakeEngaged;
     }
 
   private:

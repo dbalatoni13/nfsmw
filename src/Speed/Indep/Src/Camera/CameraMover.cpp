@@ -156,6 +156,99 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
     }
 }
 
+void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera /* r26 */, CameraAnchor *p_car /* r30 */, float f_speed_scale /* f31 */,
+                                       float f_terrain_scale /* f28 */) {
+
+    if (p_car != nullptr)
+        return;
+
+    const float speed_tresh = 1.0f;
+    struct bVector4 v_speed_terrain_freq;    // r1+0x8
+    struct tTable<bVector4> speed_table;     // r1+0x18
+    float f_road_noise_amplitude;            // f29
+    float f_road_noise_grid_spacing_inverse; // f7
+    float f_speed_magnitude;                 // f31
+    float f_speed_frequency;                 // f30
+    float f_terrain_magnitude;               // f29
+    float f_terrain_frequency;               // f28
+    struct bVector4 v_speed_frequency;       // r1+0x30
+    struct bVector4 v_speed_magnitude;       // r1+0x40
+    struct bVector4 v_terrain_frequency;     // r1+0x50
+    struct bVector4 v_terrain_magnitude;     // r1+0x60
+
+    speed_table.SetMinMax(0.0f, 80.0f);
+
+    float velocity_mag = p_car->GetVelocityMagnitude();
+    float time_val = *(float *)((char *)&speed_table + 4);
+    // float scaled_time = *(float *)((char *)&speed_table + 12) * (p_car->mTime - time_val);
+
+    bVector4 interpolated;
+    // speed_table.GetValue(&interpolated, scaled_time);
+
+    const SimSurface &surface = p_car->GetSurface();
+    f_road_noise_grid_spacing_inverse = surface.CAMERA_NOISE(0);
+    f_road_noise_amplitude = surface.CAMERA_NOISE(1);
+
+    f_speed_scale *= f_road_noise_grid_spacing_inverse;
+
+    if (p_car->IsDragRace())
+        f_speed_scale *= 1.5f;
+
+    float vel_x = p_car->GetVelocityMagnitude();
+    if (vel_x < 5.0f) {
+        bVector3 *accel = p_car->GetAcceleration();
+        bVector3 *forward = p_car->GetForwardVector();
+        float accel_dot = bDot(accel, forward);
+
+        float accel_clamped = bClamp(accel_dot, 0.0f, 20.0f);
+        float result1 = accel_clamped * 0.1f;
+        float result2 = 0.75f - f_road_noise_amplitude;
+
+        f_road_noise_amplitude += result2 * result1;
+        f_speed_scale += result1 * 0.2f;
+    }
+
+    if (p_car->IsOverRev()) {
+        f_speed_scale += 0.2f;
+        f_road_noise_amplitude *= 0.4f;
+    }
+
+    if (p_car->IsNosEngaged()) {
+        if (!(vel_x < 5.0f)) {
+            f_speed_scale = 0.2f;
+            f_road_noise_amplitude = 16.0f;
+        }
+    }
+
+    if (p_car->IsBrakeEngaged()) {
+        if (!(vel_x < 5.0f)) {
+            f_road_noise_amplitude = 5.0f;
+            f_speed_scale = 0.2f;
+        }
+    }
+
+    bVector4 speed_freq_data = CameraNoiseSpeedFrequency;
+    bVector4 speed_amp_data = CameraNoiseSpeedAmplitude;
+    bVector4 terrain_freq_data = CameraNoiseTerrainFrequency;
+    bVector4 terrain_amp_data = CameraNoiseTerrainAmplitude;
+
+    bScale(&v_speed_frequency, &speed_freq_data, f_road_noise_amplitude);
+    bScale(&v_speed_magnitude, &speed_amp_data, f_speed_scale);
+
+    this->pCamera->SetNoiseFrequency1(&v_speed_frequency);
+    this->pCamera->SetNoiseAmplitude1(&v_speed_magnitude);
+
+    bScale(&v_terrain_frequency, &terrain_freq_data, f_terrain_scale);
+    bScale(&v_terrain_magnitude, &terrain_amp_data, 1.0f);
+
+    this->pCamera->SetNoiseFrequency2(&v_terrain_frequency);
+    this->pCamera->SetNoiseAmplitude2(&v_terrain_magnitude);
+
+    // float noise_time = WorldTimer.PackedTime * 0.001f;
+
+    this->pCamera->ApplyNoise(world_to_camera, WorldTimer.GetPackedTime() * 0.0025f, 1.0f);
+}
+
 void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
     bMatrix4 axis_rotation;
     bVector3 axis;
@@ -200,16 +293,16 @@ void UpdateCameraMovers(float dT) {
 
     if (JR2ServerExists) {
         eView *view = eGetView(1, false);
-        int elapsed = bAbs(RealTime - LastUpdateTimeJR2);
-        if (elapsed > 16) {
+
+        if (bAbs(RealTime - LastUpdateTimeJR2) > 16) {
             LastUpdateTimeJR2 = RealTime;
-            view->pCamera->CommunicateWithJollyRancher("SpeedCam");
+            view->GetCamera()->CommunicateWithJollyRancher("SpeedCam");
         }
     }
 
     if (RemoteCaffeinating != 0 && DisableCommunication == 0) {
         eView *view = eGetView(1, false);
-        if (view->pCamera != nullptr && bAbs(RealTime - LastUpdateTimeCaffeine) > 16) {
+        if (view->GetCamera() != nullptr && bAbs(RealTime - LastUpdateTimeCaffeine) > 16) {
 
             LastUpdateTimeCaffeine = RealTime;
 
@@ -222,8 +315,8 @@ void UpdateCameraMovers(float dT) {
 
             float scale = 50.0f;
 
-            bScale(&look, view->pCamera->GetPosition(), scale);
-            bScale(&look, view->pCamera->GetDirection(), scale);
+            bScale(&look, view->GetCamera()->GetPosition(), scale);
+            bScale(&look, view->GetCamera()->GetDirection(), scale);
             bVector3 diff = eye - prev_position;
 
             // espSetCameraPositionFix(&fix_eye, &fix_look); // need

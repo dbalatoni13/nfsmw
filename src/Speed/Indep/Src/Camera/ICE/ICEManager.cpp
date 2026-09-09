@@ -2,6 +2,38 @@
 #include "ICEReplay.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
+float GetGroundElevation(Vector3 *position) {
+    float ground_elevation = 0.0f; // r1+0x20
+    if (IsGameFlowInGame()) {
+        // Range: 0x8007D39C -> 0x8007D418
+        struct UMath::Vector3 unswizzled_position; // r1+0x8
+        bool point_valid;
+
+        // Range: 0x8007D39C -> 0x8007D39C
+        // cast?
+        // inline Vector3::Vector3() {}
+
+        // Range: 0x8007D39C -> 0x8007D39C
+        eUnSwizzleWorldVector(*position, reinterpret_cast<bVector3 &>(unswizzled_position));
+
+        point_valid = WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(unswizzled_position, ground_elevation, nullptr);
+
+        // // Range: 0x8007D39C -> 0x8007D39C
+        // inline WCollisionMgr::WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {}
+
+        // // Range: 0x8007D39C -> 0x8007D39C
+        // inline WCollisionMgr::~WCollisionMgr() {}
+    }
+}
+
+float ICEManager::GetAnimElevationFixup(ICE::Vector3 *v) {
+    float f = 0.0f;
+    if (this->fAnimElevation != 0.0f) {
+        float elevation = this->fAnimElevation;
+    }
+    return f;
+}
+
 ICEManager::ICEManager() {
 
     this->nState = 0;

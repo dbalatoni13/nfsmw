@@ -1,6 +1,7 @@
 #ifndef CAMERA_ICE_ICEMANAGER_H
 #define CAMERA_ICE_ICEMANAGER_H
 
+#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -8,6 +9,9 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 class ICEGroup {
   private:
@@ -56,6 +60,7 @@ class ICEShakeTrack : public bTNode<ICEShakeTrack> {
 // total size: 0x80
 class ICEManager {
   public:
+    float GetAnimElevationFixup(ICE::Vector3 *);
     ICEManager();
 
     void Init();
