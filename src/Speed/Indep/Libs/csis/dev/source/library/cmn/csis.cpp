@@ -4,6 +4,7 @@
 
 #include <csis/csis.h>
 #include "csisi.h"
+#include "types.h"
 
 namespace Csis {
 
@@ -138,17 +139,18 @@ Result FunctionHandle::Set(const InterfaceId *pInterfaceId) {
 
 template <typename Handle, typename Id, typename Desc>
 inline Result SetHandle(Handle *pHandle, const Id *pInterfaceId, Desc *pInterfaceDesc,
-                              unsigned int interfaceTypeOffset, unsigned int numInterfacesOffset) {
-    bool tryUnmatched = false;
-    char *pNode;
+                       int interfaceTypeOffset, int numInterfacesOffset) {
     SystemDesc *pSystemDesc;
+    char *pNode;
     int nodeOffset = offsetof(SystemDesc, linkNode);
+    bool tryUnmatched = false;
 
 TryUnmatched:
     pNode = reinterpret_cast<char *>(gSystems.GetHead());
-    while (pNode != NULL) {
+    while (pNode != nullptr) {
         pSystemDesc = reinterpret_cast<SystemDesc *>(pNode - nodeOffset);
         pInterfaceDesc = *reinterpret_cast<Desc **>(reinterpret_cast<char *>(pSystemDesc) + interfaceTypeOffset);
+        unsigned int *pInt;
         int numInterfaces = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(pSystemDesc) + numInterfacesOffset);
         if (pSystemDesc->crc == pInterfaceId->systemCrc || tryUnmatched) {
             int i = 0;
@@ -173,7 +175,10 @@ TryUnmatched:
 }
 
 Result FunctionHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(NULL), 0x14, 0xA);
+    FunctionDesc *pFunctionDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(nullptr), 0x14, 0xA);
 }
 
 Result FunctionHandle::Valid() {
@@ -199,7 +204,10 @@ Result ClassHandle::Set(const InterfaceId *pInterfaceId) {
 }
 
 Result ClassHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(NULL), 0x18, 0xC);
+    FunctionDesc *pClassDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(nullptr), 0x18, 0xC);
 }
 
 Result ClassHandle::Valid() {
@@ -212,7 +220,10 @@ Result ClassHandle::Valid() {
 }
 
 Result GlobalVariableHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<GlobalVariableDesc *>(NULL), 0x1C, 0xE);
+    GlobalVariableDesc *pGlobalVariableDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<GlobalVariableDesc *>(nullptr), 0x1C, 0xE);
 }
 
 Result GlobalVariableHandle::Valid() {
