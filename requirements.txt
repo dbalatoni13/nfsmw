@@ -4,3 +4,4 @@ spimdisasm>=1.36.1,<2.0.0
 rabbitizer==1.16.2
 tqdm
 pygfxd
+pyelftools
