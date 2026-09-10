@@ -541,6 +541,7 @@ extern DERING_BLOCK_FUNCTION DeringBlockStrong;
 extern DERING_BLOCK_FUNCTION DeringBlockWeak;
 extern COPY_BLOCK_FUNCTION CopyBlock;
 
+// NON_MATCHING: dispatch agrees with retail; loop/register ownership still differs.
 void DeringFrame(POSTPROC_INSTANCE *pbi, unsigned char *Src, unsigned char *Dst) {
     unsigned int Block;
     unsigned int col;
@@ -584,13 +585,9 @@ void DeringFrame(POSTPROC_INSTANCE *pbi, unsigned char *Src, unsigned char *Dst)
     SrcPtr = Src + pbi->ReconYDataOffset;
     DestPtr = Dst + pbi->ReconYDataOffset;
     Block = 0;
-    row = 0;
-    {
-        int Variance;
-
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
+    for (row = 0; row < BlocksDown; row++) {
+            for (col = 0; col < BlocksAcross; col++) {
+                int Variance;
                 Variance = pbi->FragmentVariances[Block];
                 if (pbi->PostProcessingLevel > 5 && Variance > Thresh3) {
                     DeringBlockStrong(pbi, SrcPtr + (col << 3),
@@ -622,26 +619,19 @@ void DeringFrame(POSTPROC_INSTANCE *pbi, unsigned char *Src, unsigned char *Dst)
                     CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
                 }
                 Block++;
-                col++;
             }
             SrcPtr += LineLength << 3;
             DestPtr += LineLength << 3;
-            row++;
-        }
     }
 
     BlocksAcross >>= 1;
     BlocksDown >>= 1;
-    LineLength = pbi->UVStride;
+    LineLength >>= 1;
     SrcPtr = Src + pbi->ReconUDataOffset;
     DestPtr = Dst + pbi->ReconUDataOffset;
-    row = 0;
-    {
-        int Variance;
-
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
+    for (row = 0; row < BlocksDown; row++) {
+            for (col = 0; col < BlocksAcross; col++) {
+                int Variance;
                 Variance = pbi->FragmentVariances[Block];
                 if (pbi->Vp3VersionNo <= 4) {
                     Quality = pbi->FragQIndex[Block];
@@ -668,23 +658,16 @@ void DeringFrame(POSTPROC_INSTANCE *pbi, unsigned char *Src, unsigned char *Dst)
                     CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
                 }
                 Block++;
-                col++;
             }
             SrcPtr += LineLength << 3;
             DestPtr += LineLength << 3;
-            row++;
-        }
     }
 
     SrcPtr = Src + pbi->ReconVDataOffset;
     DestPtr = Dst + pbi->ReconVDataOffset;
-    row = 0;
-    {
-        int Variance;
-
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
+    for (row = 0; row < BlocksDown; row++) {
+            for (col = 0; col < BlocksAcross; col++) {
+                int Variance;
                 Variance = pbi->FragmentVariances[Block];
                 if (pbi->Vp3VersionNo <= 4) {
                     Quality = pbi->FragQIndex[Block];
@@ -711,83 +694,13 @@ void DeringFrame(POSTPROC_INSTANCE *pbi, unsigned char *Src, unsigned char *Dst)
                     CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
                 }
                 Block++;
-                col++;
             }
             SrcPtr += LineLength << 3;
             DestPtr += LineLength << 3;
-            row++;
-        }
     }
 }
 
-#define DERING_PROCESS_Y_BLOCK()                                               \
-    do {                                                                       \
-        Variance = pbi->FragmentVariances[Block];                              \
-        if (pbi->PostProcessingLevel > 5 && Variance > Thresh3) {              \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-            if ((col != 0 &&                                                   \
-                 pbi->FragmentVariances[Block - 1] > Thresh4) ||              \
-                (col + 1 < BlocksAcross &&                                    \
-                 pbi->FragmentVariances[Block + 1] > Thresh4) ||               \
-                (row + 1 < BlocksDown &&                                       \
-                 pbi->FragmentVariances[Block + BlocksAcross] > Thresh4) ||    \
-                (row != 0 &&                                                    \
-                 pbi->FragmentVariances[Block - BlocksAcross] > Thresh4)) {    \
-                DeringBlockStrong(pbi, SrcPtr + (col << 3),                    \
-                                  DestPtr + (col << 3), LineLength, Quality,   \
-                                  QuantScale);                                  \
-                DeringBlockStrong(pbi, SrcPtr + (col << 3),                    \
-                                  DestPtr + (col << 3), LineLength, Quality,   \
-                                  QuantScale);                                  \
-            }                                                                   \
-        } else if (Variance > Thresh2) {                                        \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-        } else if (Variance > Thresh1) {                                        \
-            DeringBlockWeak(pbi, SrcPtr + (col << 3),                          \
-                            DestPtr + (col << 3), LineLength, Quality,         \
-                            QuantScale);                                       \
-        } else {                                                                \
-            CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);  \
-        }                                                                       \
-        Block++;                                                                \
-        col++;                                                                  \
-    } while (0)
-
-#define DERING_PROCESS_CHROMA_BLOCK()                                          \
-    do {                                                                       \
-        Variance = pbi->FragmentVariances[Block];                              \
-        if (pbi->Vp3VersionNo <= 4) {                                          \
-            Quality = pbi->FragQIndex[Block];                                  \
-        }                                                                      \
-        if (pbi->PostProcessingLevel > 5 && Variance > Thresh4) {              \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-        } else if (Variance > Thresh2) {                                        \
-            DeringBlockStrong(pbi, SrcPtr + (col << 3),                        \
-                              DestPtr + (col << 3), LineLength, Quality,       \
-                              QuantScale);                                     \
-        } else if (Variance > Thresh1) {                                        \
-            DeringBlockWeak(pbi, SrcPtr + (col << 3),                          \
-                            DestPtr + (col << 3), LineLength, Quality,         \
-                            QuantScale);                                       \
-        } else {                                                                \
-            CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);  \
-        }                                                                       \
-        Block++;                                                                \
-        col++;                                                                  \
-    } while (0)
-
+// NON_MATCHING: dispatch agrees with retail; loop/register ownership still differs.
 void DeringFrameInterlaced(POSTPROC_INSTANCE *pbi, unsigned char *Src,
                            unsigned char *Dst) {
     unsigned int Block;
@@ -795,17 +708,16 @@ void DeringFrameInterlaced(POSTPROC_INSTANCE *pbi, unsigned char *Src,
     unsigned int row;
     unsigned int BlocksAcross;
     unsigned int BlocksDown;
-    unsigned int *QuantScale;
     unsigned int LineLength;
+    unsigned int *QuantScale;
     int Thresh1;
     int Thresh2;
     int Thresh3;
     int Thresh4;
     unsigned char *SrcPtr;
     unsigned char *DestPtr;
-    int Quality;
+    int Quality = pbi->FrameQIndex;
 
-    Quality = pbi->FrameQIndex;
     if (pbi->Vp3VersionNo > 4) {
         Thresh1 = 0x180;
         Thresh2 = 0x900;
@@ -827,79 +739,162 @@ void DeringFrameInterlaced(POSTPROC_INSTANCE *pbi, unsigned char *Src,
     }
 
     BlocksAcross = pbi->HFragments;
-    BlocksDown = pbi->VFragments >> 1;
-    LineLength = pbi->YStride << 1;
+    BlocksDown = pbi->VFragments / 2;
+    LineLength = pbi->YStride * 2;
     SrcPtr = Src + pbi->ReconYDataOffset;
     DestPtr = Dst + pbi->ReconYDataOffset;
     Block = 0;
-    row = 0;
-    {
-        int Variance;
+    for (row = 0; row < BlocksDown; row++) {
+        for (col = 0; col < BlocksAcross; col++) {
+            int Variance;
 
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
-                DERING_PROCESS_Y_BLOCK();
+            Variance = pbi->FragmentVariances[Block];
+            if (pbi->PostProcessingLevel > 5 && Variance > Thresh3) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                if ((col != 0 &&
+                     (Variance = pbi->FragmentVariances[Block - 1]) > Thresh4) ||
+                    (col + 1 < BlocksAcross &&
+                     (Variance = pbi->FragmentVariances[Block + 1]) > Thresh4) ||
+                    (row + 1 < BlocksDown &&
+                     (Variance = pbi->FragmentVariances[Block + BlocksAcross]) > Thresh4) ||
+                    (row != 0 &&
+                     (Variance = pbi->FragmentVariances[Block - BlocksAcross]) > Thresh4)) {
+                    DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                      DestPtr + (col << 3), LineLength, Quality,
+                                      QuantScale);
+                    DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                      DestPtr + (col << 3), LineLength, Quality,
+                                      QuantScale);
+                }
+            } else if (Variance > Thresh2) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh1) {
+                DeringBlockWeak(pbi, SrcPtr + (col << 3),
+                                DestPtr + (col << 3), LineLength, Quality,
+                                QuantScale);
+            } else {
+                CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
             }
-            SrcPtr += LineLength << 3;
-            DestPtr += LineLength << 3;
-            row++;
+            Block++;
         }
+        SrcPtr += LineLength * 8;
+        DestPtr += LineLength * 8;
     }
 
     SrcPtr = Src + pbi->ReconYDataOffset + pbi->YStride;
     DestPtr = Dst + pbi->ReconYDataOffset + pbi->YStride;
-    row = 0;
-    {
-        int Variance;
+    for (row = 0; row < BlocksDown; row++) {
+        for (col = 0; col < BlocksAcross; col++) {
+            int Variance;
 
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
-                DERING_PROCESS_Y_BLOCK();
+            Variance = pbi->FragmentVariances[Block];
+            if (pbi->PostProcessingLevel > 5 && Variance > Thresh3) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                if ((col != 0 &&
+                     (Variance = pbi->FragmentVariances[Block - 1]) > Thresh4) ||
+                    (col + 1 < BlocksAcross &&
+                     (Variance = pbi->FragmentVariances[Block + 1]) > Thresh4) ||
+                    (row + 1 < BlocksDown &&
+                     (Variance = pbi->FragmentVariances[Block + BlocksAcross]) > Thresh4) ||
+                    (row != 0 &&
+                     (Variance = pbi->FragmentVariances[Block - BlocksAcross]) > Thresh4)) {
+                    DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                      DestPtr + (col << 3), LineLength, Quality,
+                                      QuantScale);
+                    DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                      DestPtr + (col << 3), LineLength, Quality,
+                                      QuantScale);
+                }
+            } else if (Variance > Thresh2) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh1) {
+                DeringBlockWeak(pbi, SrcPtr + (col << 3),
+                                DestPtr + (col << 3), LineLength, Quality,
+                                QuantScale);
+            } else {
+                CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
             }
-            SrcPtr += LineLength << 3;
-            DestPtr += LineLength << 3;
-            row++;
+            Block++;
         }
+        SrcPtr += LineLength * 8;
+        DestPtr += LineLength * 8;
     }
 
-    BlocksAcross >>= 1;
-    LineLength = pbi->UVStride;
+    BlocksAcross /= 2;
+    LineLength /= 4;
     SrcPtr = Src + pbi->ReconUDataOffset;
     DestPtr = Dst + pbi->ReconUDataOffset;
-    row = 0;
-    {
-        int Variance;
+    for (row = 0; row < BlocksDown; row++) {
+        for (col = 0; col < BlocksAcross; col++) {
+            int Variance;
 
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
-                DERING_PROCESS_CHROMA_BLOCK();
+            Variance = pbi->FragmentVariances[Block];
+            if (pbi->PostProcessingLevel > 5 && Variance > Thresh4) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh2) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh1) {
+                DeringBlockWeak(pbi, SrcPtr + (col << 3),
+                                DestPtr + (col << 3), LineLength, Quality,
+                                QuantScale);
+            } else {
+                CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
             }
-            SrcPtr += LineLength << 3;
-            DestPtr += LineLength << 3;
-            row++;
+            Block++;
         }
+        SrcPtr += LineLength * 8;
+        DestPtr += LineLength * 8;
     }
 
     SrcPtr = Src + pbi->ReconVDataOffset;
     DestPtr = Dst + pbi->ReconVDataOffset;
-    row = 0;
-    {
-        int Variance;
+    for (row = 0; row < BlocksDown; row++) {
+        for (col = 0; col < BlocksAcross; col++) {
+            int Variance;
 
-        while (row < BlocksDown) {
-            col = 0;
-            while (col < BlocksAcross) {
-                DERING_PROCESS_CHROMA_BLOCK();
+            Variance = pbi->FragmentVariances[Block];
+            if (pbi->PostProcessingLevel > 5 && Variance > Thresh4) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh2) {
+                DeringBlockStrong(pbi, SrcPtr + (col << 3),
+                                  DestPtr + (col << 3), LineLength, Quality,
+                                  QuantScale);
+            } else if (Variance > Thresh1) {
+                DeringBlockWeak(pbi, SrcPtr + (col << 3),
+                                DestPtr + (col << 3), LineLength, Quality,
+                                QuantScale);
+            } else {
+                CopyBlock(SrcPtr + (col << 3), DestPtr + (col << 3), LineLength);
             }
-            SrcPtr += LineLength << 3;
-            DestPtr += LineLength << 3;
-            row++;
+            Block++;
         }
+        SrcPtr += LineLength * 8;
+        DestPtr += LineLength * 8;
     }
 }
-
-#undef DERING_PROCESS_Y_BLOCK
-#undef DERING_PROCESS_CHROMA_BLOCK
