@@ -327,6 +327,7 @@ void PATHI_seeknextnode(int trackindex) {
     }
 }
 
+// NON_MATCHING: original beat-wrap state restored; shared-helper address scheduling still differs.
 int PATHI_queuenode(PATHTRACK *track) {
     PATHTRACK *mastertrack;
     PATHFINDNODE *nodeinfo;
@@ -336,17 +337,16 @@ int PATHI_queuenode(PATHTRACK *track) {
     int holdtime;
     int sampleoffset;
 
-    mastertrack = 0;
-    playbeat = 0;
-    holdtime = 0;
+    mastertrack = nullptr;
+    holdtime = duration = playbeat = 0;
     if (Path::pfstate->mastertrack > -1) {
         mastertrack = Path::pfstate->track[Path::pfstate->mastertrack];
     }
     if (track->node < 0) {
-        track->entryinfo = 0;
-        track->newestrequesthandle = -1;
-        track->nodebeat = -1;
+        track->entryinfo = nullptr;
         track->node = -1;
+        track->nodebeat = -1;
+        track->newestrequesthandle = -1;
         return 0;
     }
     nodeinfo = PATHI_getnode(track->node);
@@ -367,11 +367,11 @@ int PATHI_queuenode(PATHTRACK *track) {
         bool forcesynch;
         bool playbeats;
 
-        havemastertrack = mastertrack != 0 && mastertrack != track;
+        havemastertrack = mastertrack != nullptr && mastertrack != track;
         forcesynch = track->entryinfo->extra.beat.forcesynch != 0 && havemastertrack;
         playbeats = track->entryinfo->extra.beat.playbeats != 0;
-        masterinfo.beatduration = 0;
         masterinfo.timetonextbeat = 0;
+        masterinfo.beatduration = 0;
         if (havemastertrack) {
             PATHI_beatinfo(mastertrack, &masterinfo);
         }
@@ -382,7 +382,7 @@ int PATHI_queuenode(PATHTRACK *track) {
                 track->nextbeattime -= Path::pfstate->timerinterval * 5;
                 return 0;
             }
-        } else if (forcesynch && Path::pfstate->timerinterval <= masterinfo.timetonextbeat &&
+        } else if (forcesynch && masterinfo.timetonextbeat >= Path::pfstate->timerinterval &&
                    masterinfo.timetonextbeat < masterinfo.beatduration / 2) {
             return -9999;
         }
@@ -398,14 +398,11 @@ int PATHI_queuenode(PATHTRACK *track) {
             track->nextbeattime = masterinfo.timetonextbeat + Path::milliseconds;
             track->nextbeattime -= Path::pfstate->timerinterval * 5;
         }
+        if (!playbeats || track->nodebeat++ >= static_cast<int>(nodeinfo->beats * nodeinfo->bars)) {
+            track->nodebeat = 0;
+        }
         if (playbeats) {
-            track->nodebeat++;
-            if (nodeinfo->beats * nodeinfo->bars <= playbeat) {
-                track->nodebeat = -1;
-            }
             duration /= nodeinfo->beats * nodeinfo->bars;
-        } else {
-            track->nodebeat = -1;
         }
     }
     sampleoffset = PATHI_sampleoffset(track->node);
