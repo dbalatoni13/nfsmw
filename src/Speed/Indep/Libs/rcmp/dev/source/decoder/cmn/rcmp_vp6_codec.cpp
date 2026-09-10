@@ -2,8 +2,8 @@
 
 MyAllocator myalloc;
 extern "C" {
-int RCMP_global_VP6_skipK;
-int RCMP_global_VP6_skipK_frameNo;
+int RCMP_global_VP6_skipK __attribute__((section(".sbss")));
+int RCMP_global_VP6_skipK_frameNo __attribute__((section(".sbss")));
 }
 
 
@@ -83,20 +83,10 @@ VP6_CODEC_INTERNAL::~VP6_CODEC_INTERNAL() {
     int bRet;
 
     while (!this->m_UsedFrames.IsEmpty()) {
-        VP6_FRAME *CurFrame;
-
-        CurFrame = this->m_UsedFrames.RemoveHead();
-        if (CurFrame != 0) {
-            delete CurFrame;
-        }
+        delete this->m_UsedFrames.RemoveHead();
     }
     while (!this->m_FreeFrames.IsEmpty()) {
-        VP6_FRAME *CurFrame;
-
-        CurFrame = this->m_FreeFrames.RemoveHead();
-        if (CurFrame != 0) {
-            delete CurFrame;
-        }
+        delete this->m_FreeFrames.RemoveHead();
     }
     bRet = VP6_StopDecoder(&this->m_pPB_INST);
     VP6_VPDeInitLibrary();

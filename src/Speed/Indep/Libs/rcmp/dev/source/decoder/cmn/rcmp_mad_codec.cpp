@@ -62,20 +62,10 @@ MAD_CODEC_INTERNAL::MAD_CODEC_INTERNAL()
 
 MAD_CODEC_INTERNAL::~MAD_CODEC_INTERNAL() {
     while (!this->m_UsedFrames.IsEmpty()) {
-        MAD_FRAME *CurFrame;
-
-        CurFrame = this->m_UsedFrames.RemoveHead();
-        if (CurFrame != 0) {
-            delete CurFrame;
-        }
+        delete this->m_UsedFrames.RemoveHead();
     }
     while (!this->m_FreeFrames.IsEmpty()) {
-        MAD_FRAME *CurFrame;
-
-        CurFrame = this->m_FreeFrames.RemoveHead();
-        if (CurFrame != 0) {
-            delete CurFrame;
-        }
+        delete this->m_FreeFrames.RemoveHead();
     }
 }
 
