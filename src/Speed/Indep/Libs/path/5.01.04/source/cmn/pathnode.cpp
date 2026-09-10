@@ -61,6 +61,7 @@ int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) 
     return nextsynchtime - timeinbar;
 }
 
+// NON_MATCHING: ASM and normalized DWARF still differ.
 int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEATINFO &masterinfo,
                           unsigned int &waitms) {
     if (static_cast<short>(entryinfo.partID) < 0 || node < 0) {
@@ -82,14 +83,14 @@ int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEA
     int overbeatsleft = static_cast<int>(static_cast<float>(masterinfo.timetonextnode) / beatlen);
     int overbeatsdone = static_cast<int>(static_cast<float>(elapsedtime) / beatlen);
     switch (entryinfo.synch) {
-    case 2:
-        waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
-        nodebeat = nodeinfo->beats - (overbeatsleft % nodeinfo->beats) + 1;
-        break;
     case 1:
         overbeatsdone++;
         waitms = static_cast<int>(overbeatsdone * beatlen) - elapsedtime;
         nodebeat = (overbeatsdone % nodeinfo->beats) + 1;
+        break;
+    case 2:
+        waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
+        nodebeat = nodeinfo->beats - (overbeatsleft % nodeinfo->beats) + 1;
         break;
     case 3:
         nodebeat = 1;
@@ -153,6 +154,7 @@ int PATHI_pickclosestbranch(int numBranches, int control, PATHFINDBRANCH *branch
     return bestBranch->dstnode;
 }
 
+// NON_MATCHING: ASM and normalized DWARF still differ.
 int PATHI_nextnode(int node, int control, int forreal) {
     PATHFINDNODE *nodeinfo;
     PATHFINDBRANCH *branches;
@@ -171,10 +173,9 @@ int PATHI_nextnode(int node, int control, int forreal) {
     branches = reinterpret_cast<PATHFINDBRANCH *>(nodeinfo + 1);
     track = Path::pfstate->track[nodeinfo->trackID];
     if (track->repeatnode == node) {
-        control = track->control;
+        control = track->repeat & 0x7f;
         if (nodeinfo->repeat > 0 && forreal != 0) {
-            track->repeat--;
-            if (track->repeat == -1) {
+            if (--track->repeat == -1) {
                 track->repeatnode = -1;
             }
         }
