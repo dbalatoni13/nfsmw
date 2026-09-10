@@ -13,11 +13,11 @@ int madvlctbl4[0x40];
 extern int idctinput[0x40];
 extern int idctprescale[0x40];
 extern "C" void idctcompute(int *, int);
-extern int madvlcdecode();
+extern "C" int madvlcdecode();
 
 static unsigned char clipbiastbl[0x200];
 static int luma[0x100];
-static int chroma[0x80];
+static int chroma[2][64];
 static int initflag __attribute__((section(".sbss")));
 
 static const int encodetbl1[0x17c] = {
@@ -391,6 +391,7 @@ void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     }
 }
 
+// NON_MATCHING: normalized DWARF is exact; final chroma address scheduling still differs.
 void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_cb,
                           const unsigned char *src_cr, unsigned char *dest_y,
                           unsigned char *dest_cb, unsigned char *dest_cr, int width) {
@@ -418,10 +419,12 @@ void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_c
         dx = getdelta();
         dy = getdelta();
         src_y += dy * width + dx;
-        src_cb += (dy >> 1) * chromawidth + (dx >> 1);
-        src_cr += (dy >> 1) * chromawidth + (dx >> 1);
+        dx >>= 1;
+        dy >>= 1;
+        src_cb += dy * chromawidth + dx;
+        src_cr += dy * chromawidth + dx;
     }
-    if (!(flags & 1)) {
+    if ((flags & 1) == 0) {
         if (madvlcdecode() == 1) {
             dcblock(luma, 0x10);
         } else {
@@ -433,55 +436,55 @@ void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_c
     }
     if (!(flags & 2)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x20, 0x10);
+            dcblock(luma + 8, 0x10);
         } else {
-            idctcompute(luma + 0x20, 0x10);
+            idctcompute(luma + 8, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + 8, width, luma + 0x20, correction);
+        getluma(src_y + 8, width, luma + 8, correction);
     }
     if (!(flags & 4)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x200, 0x10);
+            dcblock(luma + 128, 0x10);
         } else {
-            idctcompute(luma + 0x200, 0x10);
+            idctcompute(luma + 128, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + width * 8, width, luma + 0x200, correction);
+        getluma(src_y + width * 8, width, luma + 128, correction);
     }
     if (!(flags & 8)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x220, 0x10);
+            dcblock(luma + 136, 0x10);
         } else {
-            idctcompute(luma + 0x220, 0x10);
+            idctcompute(luma + 136, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + width * 8 + 8, width, luma + 0x220, correction);
+        getluma(src_y + width * 8 + 8, width, luma + 136, correction);
     }
     if (!(flags & 0x10)) {
         if (madvlcdecode() == 1) {
-            dcblock(chroma, 8);
+            dcblock(chroma[0], 8);
         } else {
-            idctcompute(chroma, 8);
+            idctcompute(chroma[0], 8);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getchroma(src_cb, chromawidth, chroma, correction);
+        getchroma(src_cb, chromawidth, chroma[0], correction);
     }
     if (!(flags & 0x20)) {
         if (madvlcdecode() == 1) {
-            dcblock(chroma + 0x100, 8);
+            dcblock(chroma[1], 8);
         } else {
-            idctcompute(chroma + 0x100, 8);
+            idctcompute(chroma[1], 8);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getchroma(src_cr, chromawidth, chroma + 0x100, correction);
+        getchroma(src_cr, chromawidth, chroma[1], correction);
     }
     setluma(luma, dest_y, width);
-    setchroma(chroma, dest_cb, chromawidth);
-    setchroma(chroma + 0x100, dest_cr, chromawidth);
+    setchroma(chroma[0], dest_cb, chromawidth);
+    setchroma(chroma[1], dest_cr, chromawidth);
 }
