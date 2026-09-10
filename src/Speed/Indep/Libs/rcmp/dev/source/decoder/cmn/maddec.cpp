@@ -174,6 +174,7 @@ static void discardbits(int bits) {
 #define fixedmul(a, b) \
     static_cast<int>((static_cast<long long>(a) * (b) + 0x8000) >> 16)
 
+// NON_MATCHING: generated tables agree with retail; loop induction and DWARF locations differ.
 static void madinit() {
     int bits;
     int val;
@@ -182,7 +183,6 @@ static void madinit() {
     int count;
     int i;
     int j;
-    int *entry;
 
     count = 0x1ff;
     i = -0x100;
@@ -213,58 +213,60 @@ static void madinit() {
         madvlctbl1[i--] = 0x3f;
     } while (--count != 0);
 
-    entry = const_cast<int *>(encodetbl1) + 4;
-    i = 0x5e;
-    do {
-        bits = entry[3];
-        vlc = entry[0];
-        if (bits & 0xfc00) {
-            val = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | entry[1];
-            count = 1 << (9 - entry[0]);
-            prefix = bits >> 7;
-            j = count;
-            do {
-                madvlctbl1[prefix++] = val;
-            } while (--j != 0);
-        } else {
-            val = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[1] - 6);
-            count = 1 << (0xe - entry[0]);
-            prefix = bits >> 2;
-            j = count;
-            do {
-                madvlctbl3[prefix++] = val;
-            } while (--j != 0);
-        }
-        entry += 4;
-    } while (--i != 0);
-
-    entry = const_cast<int *>(encodetbl2);
-    i = 0x80;
-    do {
-        int value;
-        int count;
-
-        if (!(entry[3] & 0x8000)) {
-            value = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[0] - 1);
-            count = 1 << (0x11 - (entry[0] + 8));
-            for (j = 0; j < count; j++) {
-                madvlctbl2[(entry[3] >> 7) + j] = value;
+    for (i = 1; i < 95; i++) {
+        bits = (&encodetbl1[i * 4])[0];
+        val = (&encodetbl1[i * 4])[1];
+        vlc = (&encodetbl1[i * 4])[3];
+        if ((vlc & 0xfc00) != 0) {
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | bits;
+            count = 1 << (9 - bits);
+            prefix = vlc >> 7;
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl1[prefix++] = val;
+                }
             }
         } else {
-            value = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[0] + 2);
-            count = 1 << (0xe - (entry[0] + 8));
-            for (j = 0; j < count; j++) {
-                madvlctbl3[(entry[3] >> 0xa) + j] = value;
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
+            count = 1 << (14 - bits);
+            prefix = vlc >> 2;
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl3[prefix++] = val;
+                }
             }
         }
-        entry += 4;
-    } while (--i != 0);
-    for (i = 0; i < 0x20; i++) {
+    }
+    for (i = 0; i < 128; i++) {
+        bits = (&encodetbl2[i * 4])[0] + 8;
+        val = (&encodetbl2[i * 4])[1];
+        vlc = (&encodetbl2[i * 4])[3];
+        if ((vlc & 0x8000) == 0) {
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 9);
+            count = 1 << (17 - bits);
+            prefix = vlc >> 7;
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl2[prefix++] = val;
+                }
+            }
+        } else {
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
+            count = 1 << (14 - bits);
+            prefix = vlc >> 10;
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl3[prefix++] = val;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 32; i++) {
         madvlctbl4[i] = 1;
     }
-    for (i = 0; i < 0x10; i++) {
-        madvlctbl4[0x20 + i] = 0x400006 + i * 0x400000;
-        madvlctbl4[0x30 + i] = static_cast<int>(0xfc000006 + i * 0x400000);
+    for (i = 0; i < 16; i++) {
+        madvlctbl4[i + 32] = (static_cast<unsigned int>(i + 1) << 22) | 6;
+        madvlctbl4[i + 48] = (static_cast<unsigned int>(i - 16) << 22) | 6;
     }
     initflag = 1;
 }
