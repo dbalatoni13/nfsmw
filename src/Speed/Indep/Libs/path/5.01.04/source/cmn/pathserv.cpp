@@ -81,6 +81,7 @@ void PATHI_sortprojects() {
     } while (p1 < PATH_MAX_PROJECTS);
 }
 
+// NON_MATCHING: track traversal and readiness tests restored; global-address and DWARF locations differ.
 void PATHI_serviceproject() {
     PATHTRACK *track;
     int timeremaining;
@@ -97,14 +98,10 @@ void PATHI_serviceproject() {
     if (intimer == 0) {
         PATHI_serviceeventqueue();
     }
-    t = 0;
-    do {
+    for (t = 0; t < PATH_MAX_TRACKS; t++) {
         track = Path::pfstate->track[t];
-        if (track != 0 && track->trackimp != 0) {
-            trackplaying = 0;
-            if (track->node >= 0 && track->entryinfo != 0) {
-                trackplaying = 1;
-            }
+        if (track != nullptr && track->trackimp != nullptr) {
+            trackplaying = track->node >= 0 && track->entryinfo != nullptr;
             if (trackplaying != 0) {
                 if (track->volumefade.fadenum >= 0) {
                     PATHI_setfadevolume(track);
@@ -138,17 +135,11 @@ void PATHI_serviceproject() {
                 PATHI_subbankready(track, track->loadingsubbank);
             }
             if (track->ramtrack == intimer && trackplaying != 0 && track->paused == 0) {
-                timeremaining = 0;
-                if (track->loadingsubbank < 0) {
-                    timeremaining = PATHI_readyfornewrequest(track);
-                }
-                if (timeremaining != 0) {
+                if (PATHI_readyfornewrequest(track) != 0) {
                     timeremaining = PATHI_timeremaining(track);
-                    if (track->nextbeattime == 0) {
-                        if (timeremaining >= track->latency) {
-                            continue;
-                        }
-                    } else if (track->nextbeattime > Path::milliseconds) {
+                    if (track->nextbeattime != 0
+                            ? track->nextbeattime > Path::milliseconds
+                            : timeremaining >= static_cast<int>(track->latency)) {
                         continue;
                     }
                     if (track->volumefade.fadeto == 0 && track->trackimp->GetVolume() == 0) {
@@ -158,11 +149,8 @@ void PATHI_serviceproject() {
                 }
             }
         }
-        t++;
-    } while (t < PATH_MAX_TRACKS);
-    if (intimer == 0) {
-        while (PATHI_serviceeventqueue() != 0) {
-        }
+    }
+    while (intimer == 0 && PATHI_serviceeventqueue() != 0) {
     }
 }
 
