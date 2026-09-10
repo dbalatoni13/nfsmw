@@ -114,30 +114,8 @@ unsigned int DeringModifierV2[64] = {
     3, 3, 3, 3,
     2, 2, 2, 2
 };
-#define DERING_STRONG_PIXEL(index)                                             \
-    do {                                                                        \
-        al = LRMod[k * 9 + index];                                              \
-        ar = LRMod[k * 9 + index + 1];                                          \
-        au = UDMod[k * 8 + index];                                              \
-        ad = UDMod[(k + 1) * 8 + index];                                        \
-        pl = Src[index - 1];                                                    \
-        pr = Src[index + 1];                                                    \
-        pu = lastRow[rowOffset + index];                                        \
-        pd = nextRow[rowOffset + index];                                        \
-        p = Src[index];                                                          \
-        atot = 128 - al - ar - au - ad;                                         \
-        newVal = (atot * p + al * pl + ar * pr + au * pu + ad * pd + round) >> 7; \
-        if (newVal < Low) {                                                      \
-            newPixel[index] = Low;                                              \
-        } else {                                                                 \
-            if (newVal > High) {                                                 \
-                newVal = High;                                                   \
-            }                                                                    \
-            newPixel[index] = newVal;                                           \
-        }                                                                        \
-    } while (0)
 
-void DeringBlockStrong_C(POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
+void DeringBlockStrong_C(const POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
                          unsigned char *DstPtr, const int Pitch,
                          unsigned int FragQIndex, unsigned int *QuantScale) {
     int B;
@@ -159,42 +137,32 @@ void DeringBlockStrong_C(POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
     unsigned char pr;
     unsigned char pu;
     unsigned char pd;
-    unsigned int rowOffset;
-    unsigned int round;
-    unsigned int QValue;
-    int Sharpen;
-    const unsigned char *Src;
+    unsigned int rowOffset = 0;
+    unsigned int round = 64;
+    unsigned int QValue = QuantScale[FragQIndex];
+    int Sharpen = SharpenModifier[FragQIndex];
+    const unsigned char *Src = SrcPtr;
     const unsigned char *curRow;
-    const unsigned char *lastRow;
-    const unsigned char *nextRow;
+    const unsigned char *lastRow = SrcPtr - Pitch;
+    const unsigned char *nextRow = SrcPtr + Pitch;
     unsigned char *dstRow;
 
-    QValue = QuantScale[FragQIndex];
-    Sharpen = SharpenModifier[FragQIndex];
-    High = 255;
     Low = 0;
-    round = 64;
-    B = QValue + QValue + QValue;
-    if (B > 32) {
-        B = 32;
+    High = QValue * 3;
+    if (High > 32) {
+        High = 32;
     }
 
-    Src = SrcPtr;
     for (k = 0; k <= 8; k++) {
         curRow = Src;
         for (j = 0; j < 8; j++) {
-            TmpMod = curRow[j] - curRow[j - Pitch];
-            if (TmpMod < 0) {
-                TmpMod = -TmpMod;
-            }
-            TmpMod -= 32;
-            TmpMod = QValue - TmpMod;
+            TmpMod = 32 + QValue - (abs(curRow[j] - curRow[j - Pitch]));
             if (TmpMod < -64) {
                 TmpMod = Sharpen;
-            } else if (TmpMod < 0) {
-                TmpMod = 0;
-            } else if (TmpMod > B) {
-                TmpMod = B;
+            } else if (TmpMod < Low) {
+                TmpMod = Low;
+            } else if (TmpMod > High) {
+                TmpMod = High;
             }
             UDMod[k * 8 + j] = TmpMod;
         }
@@ -205,18 +173,13 @@ void DeringBlockStrong_C(POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
     for (k = 0; k <= 7; k++) {
         curRow = Src;
         for (j = 0; j <= 8; j++) {
-            TmpMod = curRow[j] - curRow[j - 1];
-            if (TmpMod < 0) {
-                TmpMod = -TmpMod;
-            }
-            TmpMod -= 32;
-            TmpMod = QValue - TmpMod;
+            TmpMod = 32 + QValue - (abs(curRow[j] - curRow[j - 1]));
             if (TmpMod < -64) {
                 TmpMod = Sharpen;
-            } else if (TmpMod < 0) {
-                TmpMod = 0;
-            } else if (TmpMod > B) {
-                TmpMod = B;
+            } else if (TmpMod < Low) {
+                TmpMod = Low;
+            } else if (TmpMod > High) {
+                TmpMod = High;
             }
             LRMod[k * 9 + j] = TmpMod;
         }
@@ -226,34 +189,244 @@ void DeringBlockStrong_C(POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
     {
         int newPixel[8];
 
-        rowOffset = 0;
-        lastRow = SrcPtr - Pitch;
-        nextRow = SrcPtr + Pitch;
         for (k = 0; k < 8; k++) {
-            Src = SrcPtr + rowOffset;
-            dstRow = DstPtr + rowOffset;
-            DERING_STRONG_PIXEL(0);
-            DERING_STRONG_PIXEL(1);
-            DERING_STRONG_PIXEL(2);
-            DERING_STRONG_PIXEL(3);
-            DERING_STRONG_PIXEL(4);
-            DERING_STRONG_PIXEL(5);
-            DERING_STRONG_PIXEL(6);
-            DERING_STRONG_PIXEL(7);
-            dstRow[0] = newPixel[0];
-            dstRow[1] = newPixel[1];
-            dstRow[2] = newPixel[2];
-            dstRow[3] = newPixel[3];
-            dstRow[4] = newPixel[4];
-            dstRow[5] = newPixel[5];
-            dstRow[6] = newPixel[6];
-            dstRow[7] = newPixel[7];
+            p = SrcPtr[rowOffset + 0];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 0 - 1];
+            al = LRMod[k * 9 + 0];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 0];
+            au = UDMod[k * 8 + 0];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 0];
+            ad = UDMod[(k + 1) * 8 + 0];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 0 + 1];
+            ar = LRMod[k * 9 + 0 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[0] = newVal;
+            } else {
+                newPixel[0] = 0;
+            }
+            p = SrcPtr[rowOffset + 1];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 1 - 1];
+            al = LRMod[k * 9 + 1];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 1];
+            au = UDMod[k * 8 + 1];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 1];
+            ad = UDMod[(k + 1) * 8 + 1];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 1 + 1];
+            ar = LRMod[k * 9 + 1 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[1] = newVal;
+            } else {
+                newPixel[1] = 0;
+            }
+            p = SrcPtr[rowOffset + 2];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 2 - 1];
+            al = LRMod[k * 9 + 2];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 2];
+            au = UDMod[k * 8 + 2];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 2];
+            ad = UDMod[(k + 1) * 8 + 2];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 2 + 1];
+            ar = LRMod[k * 9 + 2 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[2] = newVal;
+            } else {
+                newPixel[2] = 0;
+            }
+            p = SrcPtr[rowOffset + 3];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 3 - 1];
+            al = LRMod[k * 9 + 3];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 3];
+            au = UDMod[k * 8 + 3];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 3];
+            ad = UDMod[(k + 1) * 8 + 3];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 3 + 1];
+            ar = LRMod[k * 9 + 3 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[3] = newVal;
+            } else {
+                newPixel[3] = 0;
+            }
+            p = SrcPtr[rowOffset + 4];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 4 - 1];
+            al = LRMod[k * 9 + 4];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 4];
+            au = UDMod[k * 8 + 4];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 4];
+            ad = UDMod[(k + 1) * 8 + 4];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 4 + 1];
+            ar = LRMod[k * 9 + 4 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[4] = newVal;
+            } else {
+                newPixel[4] = 0;
+            }
+            p = SrcPtr[rowOffset + 5];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 5 - 1];
+            al = LRMod[k * 9 + 5];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 5];
+            au = UDMod[k * 8 + 5];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 5];
+            ad = UDMod[(k + 1) * 8 + 5];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 5 + 1];
+            ar = LRMod[k * 9 + 5 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[5] = newVal;
+            } else {
+                newPixel[5] = 0;
+            }
+            p = SrcPtr[rowOffset + 6];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 6 - 1];
+            al = LRMod[k * 9 + 6];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 6];
+            au = UDMod[k * 8 + 6];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 6];
+            ad = UDMod[(k + 1) * 8 + 6];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 6 + 1];
+            ar = LRMod[k * 9 + 6 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[6] = newVal;
+            } else {
+                newPixel[6] = 0;
+            }
+            p = SrcPtr[rowOffset + 7];
+            atot = 128;
+            B = round;
+            pl = SrcPtr[rowOffset + 7 - 1];
+            al = LRMod[k * 9 + 7];
+            atot -= al;
+            B += al * pl;
+            pu = lastRow[rowOffset + 7];
+            au = UDMod[k * 8 + 7];
+            atot -= au;
+            B += au * pu;
+            pd = nextRow[rowOffset + 7];
+            ad = UDMod[(k + 1) * 8 + 7];
+            atot -= ad;
+            B += ad * pd;
+            pr = SrcPtr[rowOffset + 7 + 1];
+            ar = LRMod[k * 9 + 7 + 1];
+            atot -= ar;
+            B += ar * pr;
+            newVal = (atot * p + B) >> 7;
+            if (newVal >= 0) {
+                if (newVal > 255) {
+                    newVal = 255;
+                }
+                newPixel[7] = newVal;
+            } else {
+                newPixel[7] = 0;
+            }
+            DstPtr[rowOffset + 0] = newPixel[0];
+            DstPtr[rowOffset + 1] = newPixel[1];
+            DstPtr[rowOffset + 2] = newPixel[2];
+            DstPtr[rowOffset + 3] = newPixel[3];
+            DstPtr[rowOffset + 4] = newPixel[4];
+            DstPtr[rowOffset + 5] = newPixel[5];
+            DstPtr[rowOffset + 6] = newPixel[6];
+            DstPtr[rowOffset + 7] = newPixel[7];
             rowOffset += Pitch;
         }
     }
 }
 
-#undef DERING_STRONG_PIXEL
 void DeringBlockWeak_C(const POSTPROC_INSTANCE *pbi, const unsigned char *SrcPtr,
                        unsigned char *DstPtr, const int Pitch,
                        unsigned int FragQIndex, unsigned int *QuantScale) {
