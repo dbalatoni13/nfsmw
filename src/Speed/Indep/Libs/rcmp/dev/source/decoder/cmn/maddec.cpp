@@ -218,18 +218,18 @@ static void madinit() {
         val = (&encodetbl1[i * 4])[1];
         vlc = (&encodetbl1[i * 4])[3];
         if ((vlc & 0xfc00) != 0) {
-            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | bits;
-            count = 1 << (9 - bits);
             prefix = vlc >> 7;
+            count = 1 << (9 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | bits;
             if (count > 0) {
                 for (j = count; j != 0; j--) {
                     madvlctbl1[prefix++] = val;
                 }
             }
         } else {
-            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
-            count = 1 << (14 - bits);
             prefix = vlc >> 2;
+            count = 1 << (14 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
             if (count > 0) {
                 for (j = count; j != 0; j--) {
                     madvlctbl3[prefix++] = val;
@@ -242,18 +242,18 @@ static void madinit() {
         val = (&encodetbl2[i * 4])[1];
         vlc = (&encodetbl2[i * 4])[3];
         if ((vlc & 0x8000) == 0) {
-            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 9);
-            count = 1 << (17 - bits);
             prefix = vlc >> 7;
+            count = 1 << (17 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 9);
             if (count > 0) {
                 for (j = count; j != 0; j--) {
                     madvlctbl2[prefix++] = val;
                 }
             }
         } else {
-            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
-            count = 1 << (14 - bits);
             prefix = vlc >> 10;
+            count = 1 << (14 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
             if (count > 0) {
                 for (j = count; j != 0; j--) {
                     madvlctbl3[prefix++] = val;
