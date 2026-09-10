@@ -140,7 +140,7 @@ PATHEVENT *PATHI_copyevent(PATHEVENT *event) {
         thisevent = Path::pfstate->eventqueue[e];
         if (thisevent >= minevent && thisevent < maxevent) {
             thiseventsize = sizeof(PATHEVENT) + thisevent->numactions * 12;
-            minevent = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(thisevent) + thiseventsize);
+            minevent = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(minevent) + thiseventsize);
         }
     }
     if (reinterpret_cast<char *>(minevent) + eventsize < reinterpret_cast<char *>(maxevent)) {
