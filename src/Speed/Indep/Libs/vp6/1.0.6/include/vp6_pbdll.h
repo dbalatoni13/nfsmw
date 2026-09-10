@@ -383,17 +383,17 @@ struct PB_INSTANCE {
     unsigned int avgPPTime[10]; // offset 0x91C, size 0x28
     unsigned int avgBlitTime; // offset 0x944, size 0x4
     int MultiStream; // offset 0x948, size 0x4
-    unsigned int DcHuffCode[12][2]; // offset 0x94C, size 0x60
-    unsigned char DcHuffLength[12][2]; // offset 0x9AC, size 0x18
-    unsigned int DcHuffProbs[12][2]; // offset 0x9C4, size 0x60
+    unsigned int DcHuffCode[2][12]; // offset 0x94C, size 0x60
+    unsigned char DcHuffLength[2][12]; // offset 0x9AC, size 0x18
+    unsigned int DcHuffProbs[2][12]; // offset 0x9C4, size 0x60
     struct _huffnode DcHuffTree[2][12]; // offset 0xA24, size 0x120
-    unsigned int AcHuffCode[12][6][2][3]; // offset 0xB44, size 0x6C0
-    unsigned char AcHuffLength[12][6][2][3]; // offset 0x1204, size 0x1B0
-    unsigned int AcHuffProbs[12][6][2][3]; // offset 0x13B4, size 0x6C0
+    unsigned int AcHuffCode[3][2][6][12]; // offset 0xB44, size 0x6C0
+    unsigned char AcHuffLength[3][2][6][12]; // offset 0x1204, size 0x1B0
+    unsigned int AcHuffProbs[3][2][6][12]; // offset 0x13B4, size 0x6C0
     struct _huffnode AcHuffTree[3][2][6][12]; // offset 0x1A74, size 0x1440
-    unsigned int ZeroHuffCode[14][2]; // offset 0x2EB4, size 0x70
-    unsigned char ZeroHuffLength[14][2]; // offset 0x2F24, size 0x1C
-    unsigned int ZeroHuffProbs[14][2]; // offset 0x2F40, size 0x70
+    unsigned int ZeroHuffCode[2][14]; // offset 0x2EB4, size 0x70
+    unsigned char ZeroHuffLength[2][14]; // offset 0x2F24, size 0x1C
+    unsigned int ZeroHuffProbs[2][14]; // offset 0x2F40, size 0x70
     struct _huffnode ZeroHuffTree[2][14]; // offset 0x2FB0, size 0x150
     unsigned short DcHuffLUT[2][64]; // offset 0x3100, size 0x100
     unsigned short AcHuffLUT[3][2][6][64]; // offset 0x3200, size 0x1200
