@@ -97,13 +97,13 @@ struct CODEC {
     }
 
     inline CODEC() {}
-    virtual ~CODEC();
+    inline virtual ~CODEC() {}
 
-    virtual DETECTED_USABILITY_ENUM Init(DECODER *Decoder, CHUNK *FirstChunk);
-    virtual FRAME *GetFrame(unsigned int GoalFrame);
-    virtual unsigned int GetCurrentFrameNumber();
-    virtual float GetFrameRate();
-    virtual void ReleaseFrame(FRAME *Frame);
+    virtual DETECTED_USABILITY_ENUM Init(DECODER *Decoder, CHUNK *FirstChunk) = 0;
+    virtual FRAME *GetFrame(unsigned int GoalFrame) = 0;
+    virtual unsigned int GetCurrentFrameNumber() = 0;
+    virtual float GetFrameRate() = 0;
+    virtual void ReleaseFrame(FRAME *Frame) = 0;
 };
 
 class DECODER {

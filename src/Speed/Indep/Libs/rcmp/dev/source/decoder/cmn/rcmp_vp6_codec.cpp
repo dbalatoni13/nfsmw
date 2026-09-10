@@ -6,8 +6,6 @@ int RCMP_global_VP6_skipK;
 int RCMP_global_VP6_skipK_frameNo;
 }
 
-RCMP::CODEC::~CODEC() {
-}
 
 struct STREAMCHUNKHDR {
     unsigned int type;
