@@ -177,32 +177,31 @@ int VP6_InitFrameDetails(struct PB_INSTANCE *pbi) {
         VP6_SetPbParam(pbi, 1, pbi->CPUFree);
     }
 
-    pbi->Configuration.YStride = pbi->Configuration.VideoFrameWidth + 0x60;
-    pbi->Configuration.UVStride = pbi->Configuration.YStride / 2;
-    pbi->HFragments = pbi->Configuration.VideoFrameWidth / pbi->Configuration.HFragPixels;
-    pbi->VFragments = pbi->Configuration.VideoFrameHeight / pbi->Configuration.VFragPixels;
-    pbi->YPlaneFragments = pbi->HFragments * pbi->VFragments;
-    pbi->UnitFragments = (pbi->YPlaneFragments * 3) / 2;
-    pbi->UVPlaneFragments = pbi->YPlaneFragments / 4;
     pbi->YPlaneSize = pbi->Configuration.VideoFrameWidth * pbi->Configuration.VideoFrameHeight;
     pbi->UVPlaneSize = pbi->YPlaneSize / 4;
+    pbi->HFragments = pbi->Configuration.VideoFrameWidth / pbi->Configuration.HFragPixels;
+    pbi->VFragments = pbi->Configuration.VideoFrameHeight / pbi->Configuration.VFragPixels;
+    pbi->UnitFragments = (pbi->VFragments * pbi->HFragments * 3) / 2;
+    pbi->YPlaneFragments = pbi->VFragments * pbi->HFragments;
+    pbi->UVPlaneFragments = pbi->YPlaneFragments / 4;
+
+    pbi->Configuration.YStride = pbi->Configuration.VideoFrameWidth + 0x60;
+    pbi->Configuration.UVStride = pbi->Configuration.YStride / 2;
     pbi->ReconYPlaneSize = pbi->Configuration.YStride *
                            (pbi->Configuration.VideoFrameHeight + 0x60);
     pbi->ReconUVPlaneSize = pbi->ReconYPlaneSize / 4;
+    FrameSize = pbi->ReconYPlaneSize + 2 * pbi->ReconUVPlaneSize;
+
+    pbi->YDataOffset = 0;
     pbi->UDataOffset = pbi->YPlaneSize;
     pbi->VDataOffset = pbi->YPlaneSize + pbi->UVPlaneSize;
+    pbi->ReconYDataOffset = 0;
     pbi->ReconUDataOffset = pbi->ReconYPlaneSize;
     pbi->ReconVDataOffset = pbi->ReconYPlaneSize + pbi->ReconUVPlaneSize;
-    pbi->YDataOffset = 0;
-    pbi->ReconYDataOffset = 0;
 
-    pbi->MBRows = (pbi->Configuration.VideoFrameHeight >> 4) + 6 +
-                  ((pbi->Configuration.VideoFrameHeight & 15) ? 1 : 0);
-    pbi->MBCols = (pbi->Configuration.VideoFrameWidth >> 4) + 6 +
-                  ((pbi->Configuration.VideoFrameWidth & 15) ? 1 : 0);
+    pbi->MBRows = (pbi->Configuration.VideoFrameHeight >> 4) + 6 + ((pbi->Configuration.VideoFrameHeight % 16) ? 1 : 0);
+    pbi->MBCols = (pbi->Configuration.VideoFrameWidth >> 4) + 6 + ((pbi->Configuration.VideoFrameWidth % 16) ? 1 : 0);
     pbi->MacroBlocks = pbi->MBRows * pbi->MBCols;
-
-    FrameSize = pbi->ReconYPlaneSize + 2 * pbi->ReconUVPlaneSize;
 
     for (i = 0; i < 12; i++) {
         pbi->mvNearOffset[i] = NearMacroBlocks[i][0] * pbi->MBCols + NearMacroBlocks[i][1];
