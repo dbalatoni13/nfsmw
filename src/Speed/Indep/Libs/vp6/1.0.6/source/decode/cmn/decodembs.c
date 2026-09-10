@@ -247,20 +247,19 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
     unsigned int Plane;
     unsigned int Band;
     int Prec;
-    unsigned int PrecNonZero;
+    unsigned char PrecNonZero;
     unsigned char LastProb[11];
 
     memset(LastProb, 128, 11);
 
-    for (j = 0; j < 2; j++) {
+    for (Plane = 0; Plane < 2; Plane++) {
         for (i = 0; i < 11; i++) {
-            if (nDecodeBool((void *)&pbi->br, VP6_DcUpdateProbs[j][i])) {
-                PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                PrecNonZero += PrecNonZero == 0;
-                pbi->DcProbs[j * 11 + i] = PrecNonZero;
-                LastProb[i] = PrecNonZero;
+            if (nDecodeBool((void *)&pbi->br, VP6_DcUpdateProbs[Plane][i])) {
+                LastProb[i] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                LastProb[i] += (LastProb[i] == 0);
+                pbi->DcProbs[Plane * 11 + i] = LastProb[i];
             } else if (FrameType == 0) {
-                pbi->DcProbs[j * 11 + i] = LastProb[i];
+                pbi->DcProbs[Plane * 11 + i] = LastProb[i];
             }
         }
     }
@@ -278,12 +277,11 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
         BuildScanOrder(pbi, pbi->ScanBands);
     }
 
-    for (j = 0; j < 2; j++) {
-        for (i = 0; i < 14; i++) {
-            if (nDecodeBool((void *)&pbi->br, ZrlUpdateProbs[j][i])) {
-                PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                PrecNonZero += PrecNonZero == 0;
-                pbi->ZeroRunProbs[j][i] = PrecNonZero;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 14; j++) {
+            if (nDecodeBool((void *)&pbi->br, ZrlUpdateProbs[i][j])) {
+                pbi->ZeroRunProbs[i][j] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                pbi->ZeroRunProbs[i][j] += (pbi->ZeroRunProbs[i][j] == 0);
             }
         }
     }
@@ -295,13 +293,11 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
                     if (nDecodeBool(
                             (void *)&pbi->br,
                             VP6_AcUpdateProbs[Prec][Plane][Band][i])) {
-                        PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                        PrecNonZero += PrecNonZero == 0;
-                        pbi->AcProbs[Prec * 66 + Plane * 198 + Band * 11 + i] =
-                            PrecNonZero;
-                        LastProb[i] = PrecNonZero;
+                        LastProb[i] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                        LastProb[i] += (LastProb[i] == 0);
+                        pbi->AcProbs[Plane * 198 + Prec * 66 + Band * 11 + i] = LastProb[i];
                     } else if (FrameType == 0) {
-                        pbi->AcProbs[Prec * 66 + Plane * 198 + Band * 11 + i] =
+                        pbi->AcProbs[Plane * 198 + Prec * 66 + Band * 11 + i] =
                             LastProb[i];
                     }
                 }
