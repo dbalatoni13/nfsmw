@@ -1,3 +1,4 @@
+#include "../../../../../realcore/6.21.00/include/common/realcore/impl/std/getm.inl"
 #include "rcmp/rcmp.h"
 #include "dolphin.h"
 #include "snd/sndo.h"
@@ -63,20 +64,7 @@ extern bool VP6_CODEC_is_head_chunk_for_codec(unsigned int chunktype);
 extern CODEC *MAD_CODEC_create();
 extern CODEC *VP6_CODEC_create();
 
-static inline unsigned int getm(const void *src, int bytes) {
-    return *static_cast<const unsigned int *>(src);
-}
 
-static inline unsigned int geti(const void *src, int bytes) {
-    if (bytes == 2) {
-        return (static_cast<const unsigned char *>(src)[5] << 8) |
-               static_cast<const unsigned char *>(src)[4];
-    }
-    return (static_cast<const unsigned char *>(src)[7] << 24) |
-           (static_cast<const unsigned char *>(src)[6] << 16) |
-           (static_cast<const unsigned char *>(src)[5] << 8) |
-           static_cast<const unsigned char *>(src)[4];
-}
 
 struct AV_MS_TIMER {
     long long m_Time;
@@ -538,6 +526,7 @@ void AV_PLAYER::StaticReleaseRCMPChunk(DECODER *, STREAMER *streamer, CHUNK *dch
     avp->ReleaseRCMPChunk(dchunk);
 }
 
+// NON_MATCHING: stream polling and byte-reader ownership restored; ASM scheduling differs.
 void AV_PLAYER::GetRCMPChunk(DECODER *decoder, CHUNK **ppdchunk) {
     CODEC_TYPE codecType;
     STREAMCHUNKHDR *chunk;
@@ -546,14 +535,11 @@ void AV_PLAYER::GetRCMPChunk(DECODER *decoder, CHUNK **ppdchunk) {
 
     stream = this->GetVideoStreamHandle();
     codecType = NONE_CODEC;
-    *ppdchunk = 0;
+    *ppdchunk = nullptr;
     for (;;) {
         chunk = STREAM_get(stream);
         SYNCTASK_run();
-        if (chunk == 0) {
-            return;
-        }
-        {
+        if (chunk != nullptr) {
             unsigned int tmp;
             char temp[5];
 
@@ -577,13 +563,13 @@ void AV_PLAYER::GetRCMPChunk(DECODER *decoder, CHUNK **ppdchunk) {
                 *ppdchunk = pdchunk;
                 pdchunk->SetUserChunkData(chunk);
                 if (codecType == MAD_CODEC) {
-                    pdchunk->SetSizeOfDataToDecode(geti(chunk, 4));
+                    pdchunk->SetSizeOfDataToDecode(geti(&chunk->size, 4));
                     pdchunk->SetDataToDecode(chunk);
                 } else if (codecType == VP6_CODEC || codecType == VP6_HEAD_CODEC) {
-                    pdchunk->SetSizeOfDataToDecode(geti(chunk, 4));
+                    pdchunk->SetSizeOfDataToDecode(geti(&chunk->size, 4));
                     pdchunk->SetDataToDecode(chunk);
                 } else {
-                    pdchunk->SetSizeOfDataToDecode(geti(chunk, 4));
+                    pdchunk->SetSizeOfDataToDecode(geti(&chunk->size, 4));
                     pdchunk->SetDataToDecode(reinterpret_cast<unsigned char *>(chunk) + 8);
                 }
 
@@ -606,9 +592,9 @@ void AV_PLAYER::GetRCMPChunk(DECODER *decoder, CHUNK **ppdchunk) {
             *reinterpret_cast<unsigned int *>(temp) = tmp;
             temp[4] = static_cast<char>(codecType);
             STREAM_release(stream, chunk);
-            if (STREAM_isendofstream(stream) != 0) {
-                return;
-            }
+        }
+        if (STREAM_isendofstream(stream) != 0) {
+            return;
         }
     }
 }
