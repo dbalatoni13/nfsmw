@@ -1,10 +1,5 @@
 #include "../../../include/vp6_pbdll.h"
 
-#define VP6_MV_SHORT_PROB(pbi, i, n) \
-    (((unsigned char *)(pbi)) + 0x70c)[(i) * 7 + (n)]
-#define VP6_MV_SIZE_PROB(pbi, i, n) \
-    (((unsigned char *)(pbi)) + 0x720)[(i) * 8 + (n)]
-
 extern int VP6_ModeUsesMC[10];
 extern int VP6_Mode2Frame[16];
 extern void (*ReconIntra)(short *, unsigned char *, unsigned short *, unsigned int);
@@ -175,43 +170,41 @@ CODING_MODE VP6_DecodeBlockMode(struct PB_INSTANCE *pbi) {
     }
 }
 
+// NON_MATCHING: lastmode still has a different DWARF register home.
 CODING_MODE VP6_DecodeMode(struct PB_INSTANCE *pbi, CODING_MODE lastmode,
                            unsigned int type) {
     CODING_MODE mode;
-    unsigned char *Stats;
 
     mode = lastmode;
-    if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                       pbi->probModeSame[type][lastmode])) {
-        return mode;
-    }
-
-    Stats = (unsigned char *)pbi + 0x7a8 + type * 90 + lastmode * 9;
-    if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[0])) {
-        if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[2])) {
-            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[6])) {
-                mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[8]) + 8;
+    if (!VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->probModeSame[type][lastmode])) {
+        unsigned char *Stats;
+        Stats = pbi->probMode[type][lastmode];
+        if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[0])) {
+            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[2])) {
+                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[6])) {
+                    mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[8]) + 8;
+                } else {
+                    mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[7]) + 5;
+                }
             } else {
-                mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[7]) + 5;
+                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[5])) {
+                    mode = 7;
+                } else {
+                    mode = 1;
+                }
             }
         } else {
-            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[5])) {
-                mode = 7;
+            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[1])) {
+                mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[4]) + 3;
             } else {
-                mode = 1;
+                mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[3]) << 1;
             }
         }
-    } else {
-        if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[1])) {
-            mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[4]) + 3;
-        } else {
-            mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[3]) << 1;
-        }
     }
-
     return mode;
 }
 
+// NON_MATCHING: probability-address hoisting changes ASM and pbi's DWARF home.
 void VP6_decodeMotionVector(
     struct PB_INSTANCE *pbi,
     MOTION_VECTOR *mv,
@@ -238,47 +231,37 @@ void VP6_decodeMotionVector(
 
     for (i = 0; i < 2; i++) {
         if (!VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->IsMvShortProb[i])) {
-            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                               VP6_MV_SHORT_PROB(pbi, i, 0))) {
-                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                   VP6_MV_SHORT_PROB(pbi, i, 4))) {
-                    if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                       VP6_MV_SHORT_PROB(pbi, i, 6))) {
-                        Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                VP6_MV_SHORT_PROB(pbi, i, 2)) + 6;
-                    } else {
-                        Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                VP6_MV_SHORT_PROB(pbi, i, 5)) + 4;
-                    }
+            if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][0])) {
+                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][4])) {
+                    Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][6]) + 6;
                 } else {
-                    if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                       VP6_MV_SHORT_PROB(pbi, i, 3))) {
-                        Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                VP6_MV_SHORT_PROB(pbi, i, 1)) + 2;
-                    } else {
-                        Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                VP6_MV_SHORT_PROB(pbi, i, 0));
-                    }
+                    Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][5]) + 4;
+                }
+            } else {
+                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][1])) {
+                    Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][3]) + 2;
+                } else {
+                    Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->MvShortProbs[i][2]);
                 }
             }
         } else {
             Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                    VP6_MV_SIZE_PROB(pbi, i, 0));
+                                    pbi->MvSizeProbs[i][0]);
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 1)) << 1;
+                                     pbi->MvSizeProbs[i][1]) << 1;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 2)) << 2;
+                                     pbi->MvSizeProbs[i][2]) << 2;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 7)) << 7;
+                                     pbi->MvSizeProbs[i][7]) << 7;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 6)) << 6;
+                                     pbi->MvSizeProbs[i][6]) << 6;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 5)) << 5;
+                                     pbi->MvSizeProbs[i][5]) << 5;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     VP6_MV_SIZE_PROB(pbi, i, 4)) << 4;
+                                     pbi->MvSizeProbs[i][4]) << 4;
             if (Vector & 0xf0) {
                 Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                         VP6_MV_SIZE_PROB(pbi, i, 3)) << 3;
+                                         pbi->MvSizeProbs[i][3]) << 3;
             } else {
                 Vector += 8;
             }
