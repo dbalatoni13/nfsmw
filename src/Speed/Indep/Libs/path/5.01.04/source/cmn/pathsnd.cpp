@@ -678,6 +678,7 @@ int Path::PathTrackSndStream::DetachStreamInstance(char *&buffer) {
     return streamhandle;
 }
 
+// NON_MATCHING: normalized DWARF is exact; address generation still differs in ASM.
 int Path::PathTrackSndStream::GetPathStatus(PATHSTATUS *psps) {
     int pitchmult;
     int timestretch;
@@ -715,9 +716,9 @@ int Path::PathTrackSndStream::GetPathStatus(PATHSTATUS *psps) {
                 fudge * static_cast<double>(this->mStatus.timeleftinbar));
             this->mStatus.timeleftinbeat = static_cast<unsigned int>(
                 fudge * static_cast<double>(this->mStatus.timeleftinbeat));
-            this->mStatus.timebuffered = static_cast<int>(
+            this->mStatus.timebuffered = static_cast<unsigned int>(
                 fudge * static_cast<double>(this->mStatus.timebuffered));
-            this->mStatus.timeremaining = static_cast<int>(
+            this->mStatus.timeremaining = static_cast<unsigned int>(
                 fudge * static_cast<double>(this->mStatus.timeremaining));
         }
         *psps = this->mStatus;

@@ -120,6 +120,7 @@ void PATHI_memfree(void *pmem) {
     }
 }
 
+// NON_MATCHING: global reloads and loop address allocation still differ in ASM.
 int PATH_addmapfile(char *pmap) {
     int p;
     int e;
@@ -166,7 +167,7 @@ int PATH_addmapfile(char *pmap) {
                 memset(Path::pfstates[slot], 0, sizeof(PATHFINDERSTATE));
                 Path::pfstates[slot]->pmap = reinterpret_cast<PATHFINDHEADER *>(pmap);
                 Path::pfstates[slot]->idflags =
-                    (0x10000000 << (voiceID & 0x3f)) | (0x01000000 << (projectID & 0x3f));
+                    (0x10000000 << voiceID) | (0x01000000 << projectID);
                 PATHI_switchproject(slot, Path::pfstates[slot]->idflags);
                 e = 0;
                 result = 0;
