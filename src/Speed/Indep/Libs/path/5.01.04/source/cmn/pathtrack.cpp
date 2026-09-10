@@ -76,6 +76,7 @@ int PATHI_createtrack(int trackhandle, char *musfilename) {
     return result;
 }
 
+// NON_MATCHING: normalized DWARF is exact, but instruction scheduling still differs.
 int PATHI_inittrack(int trackhandle, char *musfilename) {
     int i;
     int trackID;
@@ -94,23 +95,21 @@ int PATHI_inittrack(int trackhandle, char *musfilename) {
         while (++trackID <= PATH_MAX_TRACKS - 1 &&
                (((trackhandle >> trackID) ^ 1) & 1)) {}
     }
-    track = Path::pfstate->track[trackID];
     voiceID = trackhandle & (PATH_ALL_VOICES | PATH_ALL_PROJECTS);
-    if (track != 0) {
+    if (Path::pfstate->track[trackID] != nullptr) {
         return PATHERR_TOOMANY;
     }
     track = static_cast<PATHTRACK *>(PATHI_memalloc(sizeof(PATHTRACK)));
-    if (track == 0) {
+    if (track == nullptr) {
         return PATHERR_FAILALLOC;
     }
-    p = track->trackname + 1;
     memset(track, 0, sizeof(PATHTRACK));
     track->trackID = trackID;
     track->nobranch = 0;
-    track->volume = 0x7f;
     track->volscale = Path::volscale;
+    track->volume = 0x7f;
     track->node = -1;
-    track->repeatnode = -1;
+    track->nodebeat = -1;
     track->volumefade.fadeto = -1;
     track->volumefade.fadefrom = -1;
     track->volumefade.fadenum = -1;
@@ -123,13 +122,13 @@ int PATHI_inittrack(int trackhandle, char *musfilename) {
     track->pitchfade.fadenum = -1;
     track->stretchfade.fadefrom = -1;
     track->stretchfade.fadenum = -1;
+    track->sfxbus = Path::defaultfxbus;
+    track->repeatnode = -1;
     track->status = PATHTRACK_STOPPED;
+    track->newestrequesthandle = -1;
     track->loadingsubbank = -1;
     track->fileop = PATH_UNLIKELY_VALUE;
-    track->newestrequesthandle = -1;
-    track->nodebeat = -1;
     track->mainvoice = (voiceID & PATH_ALL_VOICES) == 0x10000000;
-    track->sfxbus = Path::defaultfxbus;
     strcpy(track->musicfilename, musfilename);
     p = musfilename + strlen(musfilename);
     while (p >= musfilename) {
@@ -139,23 +138,18 @@ int PATHI_inittrack(int trackhandle, char *musfilename) {
         p--;
     }
     p++;
-    voiceID >>= 28;
     i = 0;
-    while ((voiceID & 1) == 0 && ++i < PATH_MAX_VOICES) {
-        voiceID = (trackhandle & (PATH_ALL_VOICES | PATH_ALL_PROJECTS)) >> (28 + i);
+    if (((voiceID >> 28) & 1) == 0) {
+        while (++i < PATH_MAX_VOICES && ((voiceID >> (28 + i)) & 1) == 0) {}
     }
     sprintf(track->trackname, "%x%s", i + 1, p);
     p = track->trackname + 1;
     c = 'a';
     if (p < track->trackname + sizeof(track->trackname)) {
         do {
-            if (c == 0 || *p == 0) {
-                c = 0;
-            }
-            else {
-                c = static_cast<char>(*p | 0x20);
-            }
-            if ((c - 'a' > 25) && (c - '0' > 9)) {
+            c = c != 0 && *p != 0 ? static_cast<char>(*p | 0x20) : 0;
+            if (static_cast<unsigned int>(c - 'a') > 25 &&
+                static_cast<unsigned int>(c - '0') > 9) {
                 c = 0;
                 if (p >= track->trackname + 12) {
                     *p = 0;
