@@ -1043,11 +1043,11 @@ static int iSPCH_IterateChoice(VoxSentence *sentence, SentencePickInfo *sentence
     numPhrases = VoxSentence_GetNumPhrases(sentence);
     lastIndex = numPhrases - 1;
     phraseInfo = &sentenceInfo->phraseInfo[lastIndex];
-    lastPick = phraseInfo->numPicks + phraseInfo->pickStart;
+    numPicks = phraseInfo->numPicks;
+    lastPick = phraseInfo->pickStart + numPicks;
     do {
-        numPicks = phraseInfo->pickedIndex + 1;
-        phraseInfo->pickedIndex = static_cast<unsigned char>(numPicks);
-        if (static_cast<unsigned char>(numPicks) < lastPick) {
+        phraseInfo->pickedIndex++;
+        if (phraseInfo->pickedIndex < lastPick) {
             doneIterate = 1;
         } else {
             lastIndex--;
@@ -1057,7 +1057,8 @@ static int iSPCH_IterateChoice(VoxSentence *sentence, SentencePickInfo *sentence
                 done = 1;
             }
             phraseInfo = &sentenceInfo->phraseInfo[lastIndex];
-            lastPick = phraseInfo->numPicks + phraseInfo->pickStart;
+            numPicks = phraseInfo->numPicks;
+            lastPick = phraseInfo->pickStart + numPicks;
         }
     } while (doneIterate == 0);
     return done;
