@@ -237,10 +237,12 @@ void PATHI_releaseevent(int e, PATHEVENTRESULT result) {
     PATHI_removeevent(event);
 }
 
+// NON_MATCHING: full event-ID comparison restored; normalized DWARF is exact,
+// but the shared event lookup still has different address lifetimes.
 void PATHI_seteventfilter(PATHEVENT *in_event, int onOff) {
     PATHEVENT *event;
 
-    event = PATHI_getevent(in_event->eventID, 0xffffff);
+    event = PATHI_getevent(in_event->eventID, 0xffffffff);
     if (event == 0) {
         return;
     }
