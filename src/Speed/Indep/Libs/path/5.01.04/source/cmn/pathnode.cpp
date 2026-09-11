@@ -192,11 +192,13 @@ int PATHI_nextnode(int node, int control, int forreal) {
     return nextnode;
 }
 
+// NON_MATCHING: retail control and event-mask ownership restored; target
+// ASM and normalized DWARF still differ in shared inline/loop lifetimes.
 int PATHI_enternode(int origin, int node, int control, int forreal) {
     PATHFINDNODE *nodeinfo;
     PATHTRACK *track;
     PATHEVENT *eventp;
-    int savecontrol;
+    int savecontrol = control;
 
     if (node < 0) {
         return -1;
@@ -211,25 +213,24 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
     }
     track = Path::pfstate->track[nodeinfo->trackID];
     while (nodeinfo->index < 1) {
-        savecontrol = control;
         if (forreal != 0) {
             if (nodeinfo->index == 0) {
                 track->entryinfo = nodeinfo;
                 if (nodeinfo->controller == 1) {
-                    savecontrol = PATHI_random() & 0x7f;
+                    control = PATHI_random() & 0x7f;
                 }
                 if (Path::songprogress != 0) {
                     Path::songprogress(Path::pfstate->idflags, node);
                 }
             } else if (nodeinfo->index == -1) {
                 if (nodeinfo->repeat != 0 && node != track->repeatnode) {
-                    track->repeatnode = node;
                     track->repeat = nodeinfo->repeat;
+                    track->repeatnode = node;
                 }
             } else if (nodeinfo->index == -2) {
-                savecontrol = PATHI_random() & 0x7f;
+                control = PATHI_random() & 0x7f;
             } else if (nodeinfo->index == -3) {
-                eventp = PATHI_getevent(nodeinfo->extra.sendevent.eventID, 0xffffff);
+                eventp = PATHI_getevent(nodeinfo->extra.sendevent.eventID, 0xffffffff);
                 if (eventp != 0) {
                     eventp = PATHI_copyevent(eventp);
                     if (eventp != 0) {
@@ -238,16 +239,12 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
                 }
             }
         }
-        node = PATHI_nextnode(node, savecontrol, forreal);
-        if (node < 0) {
-            if (Path::songprogress != 0 && forreal != 0 && origin >= 0) {
-                Path::songprogress(Path::pfstate->idflags, node);
-            }
-            return -1;
+        node = PATHI_nextnode(node, control, forreal);
+        if (node >= 0) {
+            node = static_cast<short>(PATHI_routenode(origin, node));
         }
-        node = static_cast<short>(PATHI_routenode(origin, node));
         if (node < 0) {
-            if (Path::songprogress != 0 && forreal != 0 && origin >= 0) {
+            if (Path::songprogress != nullptr && forreal != 0 && origin >= 0) {
                 Path::songprogress(Path::pfstate->idflags, node);
             }
             return -1;
@@ -256,6 +253,7 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
         if (nodeinfo == 0) {
             return -1;
         }
+        control = savecontrol;
     }
     return static_cast<short>(PATHI_routenode(origin, node));
 }
