@@ -137,6 +137,7 @@ void FilterVert_Simple_C(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
     }
 }
 
+// NON_MATCHING: DWARF is exact; one commuted pointer-base add still differs in ASM.
 void SimpleDeblockFrame(POSTPROC_INSTANCE *ppi, unsigned char *SrcBuffer,
                         unsigned char *DestBuffer) {
     int j, m, n;
@@ -184,7 +185,7 @@ void SimpleDeblockFrame(POSTPROC_INSTANCE *ppi, unsigned char *SrcBuffer,
         memcpy(&DestBuffer[RowStart], &SrcBuffer[RowStart], 8 * LineLength);
 
         for (n = 1; n < FragsAcross; n++) {
-            FilterHoriz_Simple(ppi, &DestBuffer[RowStart + n * 8 - 2],
+            FilterHoriz_Simple(ppi, (DestBuffer + (n * 8 - 2)) + RowStart,
                                LineLength, BoundingValuePtr);
         }
 
