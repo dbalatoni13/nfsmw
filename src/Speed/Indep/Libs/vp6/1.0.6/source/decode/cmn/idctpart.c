@@ -39,9 +39,6 @@ void dequant_slow10(short *dequant_coeffs, short *quantized_list, int *DCT_block
 #define C6 25080
 #define C7 12785
 
-/* NON_MATCHING: normalized DWARF matches, but the compiler still folds two
- * product-result copies that are separate instructions in the retail routine.
- */
 void IDct10(short *InputData, short *QuantMatrix, short *OutputData) {
     int loop;
     int t1;
@@ -78,16 +75,17 @@ void IDct10(short *InputData, short *QuantMatrix, short *OutputData) {
             t1 = ip[1] * C7;
             _B = (t1 >> 16);
             t1 = ip[3] * C3;
+            t1 >>= 16;
+            _D = t1;
             t2 = ip[3] * C5;
             t2 >>= 16;
             _C = -t2;
-            _D = t1 >> 16;
-            _Cd = _A + _D;
-            _Dd = _B + _C;
             t1 = (_A - _D) * C4;
             _Ad = t1 >> 16;
             t1 = (_B - _C) * C4;
             _Bd = t1 >> 16;
+            _Cd = _A + _D;
+            _Dd = _B + _C;
             t1 = ip[0] * C4;
             _E = t1 >> 16;
             _F = _E;
@@ -120,16 +118,17 @@ void IDct10(short *InputData, short *QuantMatrix, short *OutputData) {
             t1 = ip[8] * C7;
             _B = (t1 >> 16);
             t1 = ip[24] * C3;
+            t1 >>= 16;
+            _D = t1;
             t2 = ip[24] * C5;
             t2 >>= 16;
             _C = -t2;
-            _D = t1 >> 16;
-            _Cd = _A + _D;
-            _Dd = _B + _C;
             t1 = (_A - _D) * C4;
             _Ad = t1 >> 16;
             t1 = (_B - _C) * C4;
             _Bd = t1 >> 16;
+            _Cd = _A + _D;
+            _Dd = _B + _C;
             t1 = ip[0] * C4;
             _E = t1 >> 16;
             _F = _E;
