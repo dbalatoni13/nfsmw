@@ -18,20 +18,20 @@ int PATHI_addevent(unsigned int projectflags, PATHEVENT *event) {
     projectflags &= 0xff000000;
     for (a = 0; a < event->numactions; a++, action++) {
         if (action->type == 1) {
-            if (action->assess > 3) {
-                if (static_cast<int>(action->assess) == 4) {
-                    indent--;
-                    action->indent = indent;
-                } else {
-                    action->indent = indent;
-                }
-            } else {
-                if (action->assess < 2) {
-                    action->indent = indent;
-                    indent++;
-                } else {
-                    action->indent = indent - 1;
-                }
+            switch (action->assess) {
+            case 0:
+            case 1:
+                action->indent = indent;
+                indent++;
+                break;
+            case 2:
+            case 3:
+                action->indent = indent - 1;
+                break;
+            case 4:
+                indent--;
+                action->indent = indent;
+                break;
             }
         } else {
             action->indent = indent;

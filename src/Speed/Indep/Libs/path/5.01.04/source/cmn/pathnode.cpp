@@ -300,27 +300,21 @@ void PATHI_seeknextnode(int trackindex) {
     savetrack = *track;
     nodeinfo = PATHI_getnode(track->node);
     nodebeat = track->ramtrack != 0 ? 1 : -1;
-    if (track->nodebeat < 1 || nodeinfo->extra.beat.playbeats == 0 ||
-        nodeinfo->beats * nodeinfo->bars < track->nodebeat) {
-        if (track->node >= 0) {
-            nextnode = PATHI_nextnode(track->node, track->control, 1);
-            if (Path::songprogress != 0 && nextnode < 0) {
-                Path::songprogress(Path::pfstate->idflags, nextnode);
-            }
-        }
-    } else {
+    if (track->nodebeat > 0 && nodeinfo->extra.beat.playbeats != 0 &&
+        track->nodebeat <= static_cast<int>(nodeinfo->beats * nodeinfo->bars)) {
         nextnode = track->node;
         nodebeat = track->nodebeat;
+    } else if (track->node >= 0) {
+        nextnode = PATHI_nextnode(track->node, track->control, 1);
+        if (Path::songprogress != 0 && nextnode < 0) {
+            Path::songprogress(Path::pfstate->idflags, nextnode);
+        }
     }
     if (nextnode >= 0) {
         nextnode = PATHI_enternode(track->node, nextnode, track->control, 1);
     }
     track->node = nextnode;
-    if (nextnode > -1) {
-        track->nodebeat = nodebeat;
-    } else {
-        track->nodebeat = -1;
-    }
+    track->nodebeat = nextnode >= 0 ? static_cast<signed char>(nodebeat) : -1;
     result = PATHI_queuenode(track);
     if (result < 0 && result != -9999) {
         Path::pfstate->eventindex = savenumevents;
