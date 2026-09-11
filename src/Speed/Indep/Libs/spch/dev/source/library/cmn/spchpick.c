@@ -1234,6 +1234,7 @@ abort:
     ;
 }
 
+// NON_MATCHING: normalized DWARF is exact; loop-invariant address generation still differs.
 static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, EventSpec *eventSpec) {
     VOXBANKHDR *bank;
     SPCHType_SampleRequestData sampleRequestData;
@@ -1293,20 +1294,19 @@ static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, Even
                     unsigned int dataOffset;
                     int bankBytes;
 
-                    bankBytes = (bank->blockSize + 1) << 8;
-                    dataOffset = bank->bankBlocks * bankBytes;
+                    bankBytes = bank->bankBlocks * ((bank->blockSize + 1) << 8);
+                    dataOffset = sampleOffset;
                     if (phraseChoice->subBankIndex != -1) {
-                        dataOffset *= phraseChoice->subBankIndex;
-                        sampleOffset += dataOffset;
+                        dataOffset += phraseChoice->subBankIndex * bankBytes;
                     }
                     totalBytes += sampleBytes;
                     sampleRequestData.bankNum = bankHandle;
-                    sampleRequestData.sampleOffset = sampleOffset;
+                    sampleRequestData.sampleOffset = dataOffset;
                     sampleRequestData.numBytes = sampleBytes;
                     sampleRequestData.eventSpec = *eventSpec;
                     sampleRequestData.channel = channel;
-                    sampleRequestData.subID = datID;
-                    sampleRequestData.datID = bank->subID;
+                    sampleRequestData.datID = datID;
+                    sampleRequestData.subID = bank->subID;
                     if (i == 0) {
                         sampleRequestData.interruptFlag = VoxEvent_GetInterruptFlag(event);
                     } else {
