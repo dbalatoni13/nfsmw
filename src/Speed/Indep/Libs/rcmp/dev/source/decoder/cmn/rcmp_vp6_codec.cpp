@@ -21,10 +21,10 @@ static inline unsigned int geti(const void *src, int bytes) {
         return (static_cast<const unsigned char *>(src)[1] << 8) |
                static_cast<const unsigned char *>(src)[0];
     }
-    return (static_cast<const unsigned char *>(src)[0] << 24) |
-           (static_cast<const unsigned char *>(src)[1] << 16) |
-           (static_cast<const unsigned char *>(src)[2] << 8) |
-           static_cast<const unsigned char *>(src)[3];
+    return (static_cast<const unsigned char *>(src)[3] << 24) |
+           (static_cast<const unsigned char *>(src)[2] << 16) |
+           (static_cast<const unsigned char *>(src)[1] << 8) |
+           static_cast<const unsigned char *>(src)[0];
 }
 
 static int GetChunkType(RCMP::CHUNK *Chunk) {
@@ -143,6 +143,8 @@ VP6_FRAME *VP6_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
     return CurFrame;
 }
 
+// NON_MATCHING: normalized DWARF is exact; retail frame-fetch control and
+// little-endian header reads are restored, but instruction allocation still differs.
 RCMP::FRAME *VP6_CODEC_INTERNAL::GetFrame(unsigned int GoalFrame) {
     RCMP::CHUNK *NextChunk;
 
@@ -168,8 +170,9 @@ RCMP::FRAME *VP6_CODEC_INTERNAL::GetFrame(unsigned int GoalFrame) {
         {
             int i;
 
-            i = MaxFrames + 1;
-            if (i > 0) {
+            i = MaxFrames;
+            if (i + 1 > 0) {
+                i++;
                 do {
                     this->CreateFrame(this->m_Height, this->m_Width);
                 } while (--i != 0);
@@ -180,24 +183,21 @@ RCMP::FRAME *VP6_CODEC_INTERNAL::GetFrame(unsigned int GoalFrame) {
         VP6_SetPbParam(this->m_pPB_INST, 0, 0);
         this->ReleaseChunk(NextChunk);
         this->GetNextChunk(&NextChunk);
-    }
-
-    {
+    } else {
         int frameslate;
 
         frameslate = GoalFrame - this->m_CurrentFrameNumber;
         if (frameslate > 0x10) {
             int CurChunkType;
 
+            RCMP_global_VP6_skipK_frameNo = this->m_CurrentFrameNumber;
+            RCMP_global_VP6_skipK++;
             do {
-                RCMP_global_VP6_skipK_frameNo = this->m_CurrentFrameNumber;
-                RCMP_global_VP6_skipK++;
                 this->ReleaseChunk(NextChunk);
                 this->GetNextChunk(&NextChunk);
                 CurChunkType = GetChunkType(NextChunk);
             } while (CurChunkType != 0x4D56304B);
-        }
-        if (frameslate > 0) {
+        } else if (frameslate > 0) {
             int CurChunkType;
 
             if (NextChunk != 0) {
