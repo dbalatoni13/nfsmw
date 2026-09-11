@@ -12,6 +12,9 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
+#include "Speed\Indep\Src\Camera\ICE\ICEAnimScene.hpp"
+#include "Speed\Indep\Src\Interfaces\SimActivities\INIS.h"
+#include "Speed\Indep\Src\Camera\ICE\ICEMath.hpp"
 
 class ICEGroup {
   private:
@@ -20,6 +23,31 @@ class ICEGroup {
     int Context;                       // offset 0x4, size 0x4
     int NumTracks;                     // offset 0x8, size 0x4
     bTList<struct ICETrack> TrackList; // offset 0xC, size 0x8
+  public:
+    inline unsigned int GetHandle() {
+        return Handle;
+    }
+    int GetNumTracks() const {
+        return NumTracks;
+    }
+    inline ICETrack *GetTrack(int n) {
+        // struct ICETrack *track; // r3
+
+        // Range: 0x80079B74 -> 0x80079B74
+        // inline struct ICETrack *bTList<ICETrack>::GetNode(int ordinal_number) {}
+
+        struct ICETrack *track = TrackList.GetNode(n); // r3
+
+        // Range: 0x80079B74 -> 0x80079B74
+        // inline struct ICETrack *bTList<ICETrack>::EndOfList() {
+        //     // Range: 0x80079B74 -> 0x80079B74
+        //     inline struct bNode *bList::EndOfList() {}
+        // }
+        if (track == TrackList.EndOfList()) {
+            return nullptr;
+        }
+        return track;
+    }
 };
 
 // total size: 0x19F0
@@ -32,6 +60,24 @@ class ICETrack : public bTNode<ICETrack> {
     int8 Allocated;   // offset 0x16, size 0x1
     char Name[14];    // offset 0x17, size 0xE
     ICEData Keys[50]; // offset 0x28, size 0x19C8
+  public:
+    // inline struct ICEData *ICETrack::GetKey(int n) {
+    //                          // Range: 0x8007D854 -> 0x8007D868
+    //                          inline int UMath::Clamp(int a, int min, int max) {
+    //                              // Range: 0x8007D854 -> 0x8007D868
+    //                              inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
+    //                                  // Range: 0x8007D854 -> 0x8007D854
+    //                                  inline int bMax(int a, int b) {}
+
+    //                                 // Range: 0x8007D854 -> 0x8007D868
+    //                                 inline int bMin(int a, int b) {}
+    //                             }
+    //                         }
+    //                     }
+
+    inline int GetNumKeys() {
+        return NumKeys - 1;
+    }
 };
 
 // total size: 0xC
@@ -60,7 +106,20 @@ class ICEShakeTrack : public bTNode<ICEShakeTrack> {
 // total size: 0x80
 class ICEManager {
   public:
-    float GetAnimElevationFixup(ICE::Vector3 *);
+    float GetAnimElevationFixup(ICE::Vector3 *position);
+
+    void FixAnimElevation(ICE::Vector3 *position);
+
+    void SetGenericCameraToPlay(char const *group_name, char const *track_name);
+
+    ICEGroup *GetNisCameraGroup(uint32 scene_hash);
+
+    float GetTimerSeconds();
+
+    bool RefreshCameraSplines();
+
+    int ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Matrix4 *scene_origin);
+
     ICEManager();
 
     void Init();
@@ -71,13 +130,16 @@ class ICEManager {
 
     int GetNumSceneCameraTrack(uint32 scene_hash);
 
-    float GetTimerSeconds() {
-        return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
-    }
+    void Update();
 
     bool IsEditorOn() {
         // TODO maybe negated?
         return nState >= 1;
+    }
+
+    bool IsEditorOff() {
+        // TODO maybe negated?
+        return nState < 1;
     }
 
   private:

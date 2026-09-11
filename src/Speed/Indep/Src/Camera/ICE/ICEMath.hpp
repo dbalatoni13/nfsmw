@@ -2,6 +2,7 @@
 #define CAMERA_ICE_ICEMATH_H
 
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed\Indep\Libs\Support\Utility\UTypes.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -44,6 +45,10 @@ struct Matrix4 {
     struct Vector4 v2; // offset 0x20, size 0x10
     struct Vector4 v3; // offset 0x30, size 0x10
 };
+
+inline void MulMatrix(UMath::Vector3 *dst, const UMath::Matrix4 *a, const UMath::Vector3 *b) {
+    bMulMatrix(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bMatrix4 *>(a), reinterpret_cast<const bVector3 *>(b));
+}
 
 inline void MulVector(Vector3 *dst, const Matrix4 *m, const Vector3 *v) {
     eMulVector(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bMatrix4 *>(m), reinterpret_cast<const bVector3 *>(v));
