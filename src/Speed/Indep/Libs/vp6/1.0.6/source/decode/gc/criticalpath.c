@@ -170,13 +170,13 @@ CODING_MODE VP6_DecodeBlockMode(struct PB_INSTANCE *pbi) {
     }
 }
 
-// NON_MATCHING: lastmode still has a different DWARF register home.
 CODING_MODE VP6_DecodeMode(struct PB_INSTANCE *pbi, CODING_MODE lastmode,
                            unsigned int type) {
     CODING_MODE mode;
 
-    mode = lastmode;
-    if (!VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->probModeSame[type][lastmode])) {
+    if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->probModeSame[type][lastmode])) {
+        mode = lastmode;
+    } else {
         unsigned char *Stats;
         Stats = pbi->probMode[type][lastmode];
         if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[0])) {
@@ -187,10 +187,9 @@ CODING_MODE VP6_DecodeMode(struct PB_INSTANCE *pbi, CODING_MODE lastmode,
                     mode = VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[7]) + 5;
                 }
             } else {
+                mode = 1;
                 if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, Stats[5])) {
                     mode = 7;
-                } else {
-                    mode = 1;
                 }
             }
         } else {
