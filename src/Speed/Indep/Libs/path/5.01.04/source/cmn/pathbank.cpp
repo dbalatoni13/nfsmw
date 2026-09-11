@@ -113,6 +113,7 @@ int PATHI_subbankready(PATHTRACK *track, int subbanknum) {
     return 0;
 }
 
+// NON_MATCHING: exact DWARF; file-operation initialization scheduling still differs in ASM.
 int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
     if (subbanknum < 0 || subbanknum >= track->trackimp->GetNumSubBanks()) {
         return PATHERR_INV_PARAM;
@@ -120,15 +121,14 @@ int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
     if (track->loadingsubbank >= 0) {
         return PATHERR_PENDING;
     }
-    if (track->trackimp->GetSubBankPtr(subbanknum) != 0) {
+    PATHSUBBANKSTATUS *subbank = track->trackimp->GetSubBankPtr(subbanknum);
+    if (subbank != nullptr) {
         return PATHERR_ALREADYLOADED;
     }
 
-    PATHSUBBANKSTATUS *subbank;
-
     subbank = track->trackimp->GetAvailSubBankPtr();
 
-    if (subbank == 0) {
+    if (subbank == nullptr) {
         return PATHERR_TOOMANY;
     }
 
