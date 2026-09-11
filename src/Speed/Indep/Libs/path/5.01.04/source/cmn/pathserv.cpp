@@ -38,24 +38,16 @@ int PATHI_switchvoice(unsigned int voiceflags) {
     int hasproject;
 
     p = 0;
-    while (1) {
-        {
-            int projectflag;
-            projectflag = 0;
-            if ((voiceflags & PATH_ALL_PROJECTS) == 0) {
-                projectflag = 0x01000000 << p;
-            }
-            hasproject = PATHI_switchproject(p, voiceflags | projectflag);
-        }
-        if (hasproject != 0) {
-            break;
-        }
-        p++;
-        if (p > PATH_MAX_PROJECTS - 1) {
-            return 0;
+    hasproject = (voiceflags & PATH_ALL_PROJECTS) != 0;
+    for (; p < PATH_MAX_PROJECTS; p++) {
+        int projectflag;
+
+        projectflag = hasproject ? 0 : (0x01000000 << p);
+        if (PATHI_switchproject(p, voiceflags | projectflag) != 0) {
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 void PATHI_sortprojects() {

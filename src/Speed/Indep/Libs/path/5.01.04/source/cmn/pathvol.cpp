@@ -44,8 +44,8 @@ int PATH_volume(int tracks, signed char scale) {
 void PATHI_volume(PATHTRACK *track, signed char volume) {
     track->volume = volume;
     track->trackimp->SetVolume(volume * track->volscale / 100);
+    track->volumefade.fadenum = track->volumefade.fadeto = track->volumefade.fadefrom = -1;
     track->volumefade.fadestart = 0;
-    track->volumefade.fadeto = track->volumefade.fadefrom = track->volumefade.fadenum = -1;
 }
 
 void PATHI_fade(PATHTRACK *track, int fadeto, int fadetime, int fadenum) {
