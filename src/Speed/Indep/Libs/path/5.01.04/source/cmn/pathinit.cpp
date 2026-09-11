@@ -294,6 +294,8 @@ Path::IPathTrack *PATH_gettrackimp(int trackhandle) {
     return track->trackimp;
 }
 
+// NON_MATCHING: retail next-track bounds and fallback are restored;
+// ASM and normalized DWARF still differ in inline address lifetimes.
 int PATHI_bytesperms(int trackID) {
     PATHFINDSAMPLE *sample;
     PATHFINDSAMPLE *endsample;
@@ -308,17 +310,17 @@ int PATHI_bytesperms(int trackID) {
         return 0;
     }
     sample = Path::pfstate->psampleoffsets + trackinfo->startingsample;
-    {
+    trackID++;
+    if (trackID < Path::pfstate->pmap->numtracks) {
         PATHTRACKINFO *nexttrackinfo;
 
-        nexttrackinfo = PATHI_gettrackinfo(trackID + 1);
-        if (nexttrackinfo != 0) {
+        nexttrackinfo = PATHI_gettrackinfo(trackID);
+        if (nexttrackinfo != nullptr) {
             endsample = Path::pfstate->psampleoffsets + nexttrackinfo->startingsample;
         }
-        else {
-            endsample = reinterpret_cast<PATHFINDSAMPLE *>(
-                reinterpret_cast<char *>(Path::pfstate->pmap) + Path::pfstate->pmap->mapfilelen);
-        }
+    } else {
+        endsample = reinterpret_cast<PATHFINDSAMPLE *>(
+            reinterpret_cast<char *>(Path::pfstate->pmap) + Path::pfstate->pmap->mapfilelen);
     }
     if (sample < endsample - 1) {
         int length;
