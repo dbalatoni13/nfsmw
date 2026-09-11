@@ -1,5 +1,7 @@
 #include "pathi.h"
 
+// NON_MATCHING: sampleindex owns the retail zero-based sample index;
+// shared lookup/address lifetimes still differ in ASM and normalized DWARF.
 unsigned int PATHI_sampleoffset(int node) {
     unsigned int offset;
     int sampleindex;
@@ -10,9 +12,9 @@ unsigned int PATHI_sampleoffset(int node) {
         return 0;
     }
     nodeinfo = PATHI_getnode(node);
-    sampleindex = nodeinfo->index;
-    if (sampleindex > 0) {
-        offset = Path::pfstate->psampleoffsets[sampleindex - 1].offset;
+    if (nodeinfo->index > 0) {
+        sampleindex = nodeinfo->index - 1;
+        offset = Path::pfstate->psampleoffsets[sampleindex].offset;
     }
     return offset;
 }
