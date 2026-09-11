@@ -777,7 +777,8 @@ static int iSPCH_ChooseSamples(SentencePickInfo *sentenceInfo, VoxSentence *sent
     }
         numParms = bank->parmFlags & 0x7F;
         sampleSize = numParms + 2;
-        sampleData = reinterpret_cast<unsigned char *>(bank) + 0xE;
+        sampleData = reinterpret_cast<unsigned char *>(bank + 1);
+        sampleData += 2;
         i = 0;
         if (numMatches < numSamples) {
             do {
@@ -808,7 +809,9 @@ static int iSPCH_ChooseSamples(SentencePickInfo *sentenceInfo, VoxSentence *sent
                 numMatches = 1;
             }
             if (postMatchParms != 0) {
-                iSPCH_PostMatchParmValue(sentence, phrase, reinterpret_cast<unsigned char *>(&bank[1]) + secondChoice * sampleSize + 2);
+                sampleData = reinterpret_cast<unsigned char *>(bank + 1);
+                sampleData += secondChoice * sampleSize;
+                iSPCH_PostMatchParmValue(sentence, phrase, sampleData + 2);
             }
         }
 abort:
