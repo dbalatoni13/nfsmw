@@ -1355,6 +1355,7 @@ abort:
     return numPhrases;
 }
 
+// NON_MATCHING: normalized DWARF is exact; one indexed-load operand order differs.
 int iSPCH_ChooseSingleSentence(int choice) {
     unsigned int *parms;
     int validSentence;
@@ -1362,8 +1363,8 @@ int iSPCH_ChooseSingleSentence(int choice) {
     int retry;
 
     validSentence = 0;
-    parms = gVoxEvents.events[choice].memParms;
-    if (parms != 0) {
+    if (gVoxEvents.events[choice].memParms != 0) {
+        parms = gVoxEvents.events[choice].memParms;
         validSentence = iSPCH_ChooseSentence(parms);
         if (validSentence == 0 && gCallbacks.reparm != 0) {
             count = 0;
