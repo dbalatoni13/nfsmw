@@ -182,22 +182,18 @@ static void iSPCH_GetSentenceRuleSettings(VoxEvent *event, int sentenceNum, unsi
 
     *ioSettings = 0;
     *ioFlags = 0;
-    bytesPerRule = (VoxEvent_GetNumRules(event) + 7) >> 3;
-    settingsAddr = iSPCH_GetSentenceRulesAddr(event) + sentenceNum * bytesPerRule;
+    bytesPerRule = (VoxEvent_GetNumRules(event) + 7) / 8;
     settingsSize = bytesPerRule * event->numSentences;
+    settingsAddr = iSPCH_GetSentenceRulesAddr(event);
+    settingsAddr += sentenceNum * bytesPerRule;
     flagsAddr = settingsAddr + settingsSize;
     if (bytesPerRule > 4) {
         goto abort;
     }
-    i = 0;
-    if (bytesPerRule == 0) {
-        goto abort;
-    }
-    do {
+    for (i = 0; i < bytesPerRule; i++) {
         *ioSettings += settingsAddr[i] << ((3 - i) * 8);
         *ioFlags += flagsAddr[i] << ((3 - i) * 8);
-        i++;
-    } while (i < bytesPerRule);
+    }
 abort:
     ;
 }
