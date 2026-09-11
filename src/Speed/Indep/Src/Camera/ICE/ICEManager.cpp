@@ -122,11 +122,84 @@ bool ICEManager::RefreshCameraSplines() {
     return b_refresh;
 }
 
+// Range: 0x8007D69C -> 0x8007D76C
+static void ICEGetPlayerCarTransform(struct ICE::Matrix4 *mCarToWorld /* r30 */) {
+    // // Local variables
+    // struct IPlayer *iplayer; // r11
+
+    // // Range: 0x8007D6AC -> 0x8007D6AC
+    // inline void Identity(struct UMath::Matrix4 * m) {
+    //     // Range: 0x8007D6AC -> 0x8007D6AC
+    //     inline void bIdentity(struct bMatrix4 * a) {}
+    // }
+
+    ICE::Identity(mCarToWorld);
+
+    IPlayer *iplayer = IPlayer::First(PLAYER_LOCAL);
+
+    // IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
+
+    // /* anonymous block */ {
+    //     // Range: 0x8007D6C4 -> 0x8007D758
+    if (iplayer != nullptr) {
+        IRigidBody *body = iplayer->GetSimable()->GetRigidBody();
+
+        //     struct IRigidBody *player_rigid_body; // r31
+        //     /* anonymous block */ {
+        //         // Range: 0x8007D6FC -> 0x8007D758
+        if (body != nullptr) {
+
+            //         struct UMath::Matrix4 mat; // r1+0x8
+            UMath::Matrix4 mat;
+            //         // Range: 0x8007D6FC -> 0x8007D6FC
+            //         inline void eSwizzleWorldMatrix(const struct bMatrix4 &inMat, struct bMatrix4 &outMat) {}
+            //         // Range: 0x8007D6FC -> 0x8007D758
+
+            eSwizzleWorldMatrix(*reinterpret_cast<const bMatrix4 *>(mCarToWorld), *reinterpret_cast<bMatrix4 *>(&mat));
+
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(body->GetPosition()), reinterpret_cast<bVector3 &>(mCarToWorld->v3));
+
+            //         inline void eSwizzleWorldVector(const struct bVector3 &inVec, struct bVector3 &outVec) {
+            //             // Range: 0x8007D6FC -> 0x8007D758
+            //             inline struct bVector3 &bConvertFromBond(struct bVector3 & dest, const struct bVector3 &v) {
+            //                 // Local variables
+            //                 float x; // f12
+            //                 float y; // f0
+            //                 float z; // f13
+            //             }
+            //         }
+        }
+        //     }
+    }
+    // }
+}
+
 int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Matrix4 *scene_origin) {
     // Local variables
     // struct UMath::Matrix4 mCarToWorld; // r1+0x8
     struct UMath::Matrix4 mCarToWorld; // r1+0x8
-    int bestTrack;                     // r19
+
+    mCarToWorld.v0.x = 0.0f;
+    mCarToWorld.v1.x = 0.0f;
+    mCarToWorld.v2.x = 0.0f;
+    mCarToWorld.v3.x = 0.0f;
+
+    mCarToWorld.v0.y = 0.0f;
+    mCarToWorld.v1.y = 0.0f;
+    mCarToWorld.v2.y = 0.0f;
+    mCarToWorld.v3.y = 0.0f;
+
+    mCarToWorld.v0.z = 0.0f;
+    mCarToWorld.v1.z = 0.0f;
+    mCarToWorld.v2.z = 0.0f;
+    mCarToWorld.v3.z = 0.0f;
+
+    mCarToWorld.v0.w = 0.0f;
+    mCarToWorld.v1.w = 0.0f;
+    mCarToWorld.v2.w = 0.0f;
+    mCarToWorld.v3.w = 0.0f;
+
+    int bestTrack; // r19
     // int bestTrack = (pNisCameras) | (track->Allocated << 16) | (track->Name[0] << 24);
 
     // /* anonymous block */ {
@@ -191,6 +264,13 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Ma
                         //                             }
                         //                         }
                         //                     }
+                        struct ICEData *key = track->GetKey(0);
+                        int n;                         // r29
+                        struct UMath::Vector3 v_eye;   // r1+0x48
+                        struct UMath::Vector3 v_look;  // r1+0x58
+                        struct UMath::Vector3 vCamDir; // r1+0x68
+                        struct UMath::Vector3 *pCarDir;
+                        float dot;
 
                         //                     // Range: 0x8007D88C -> 0x8007D88C
                         //                     inline Vector3::Vector3() {}

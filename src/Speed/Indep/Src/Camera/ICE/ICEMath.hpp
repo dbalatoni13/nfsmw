@@ -54,6 +54,14 @@ inline void MulVector(Vector3 *dst, const Matrix4 *m, const Vector3 *v) {
     eMulVector(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bMatrix4 *>(m), reinterpret_cast<const bVector3 *>(v));
 }
 
+inline void Identity(struct UMath::Matrix4 *m) {
+    bIdentity(reinterpret_cast<bMatrix4 *>(m));
+}
+
+inline void Identity(struct ICE::Matrix4 *m) {
+    bIdentity(reinterpret_cast<bMatrix4 *>(m));
+}
+
 }; // namespace ICE
 
 #endif

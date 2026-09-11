@@ -15,6 +15,9 @@
 #include "Speed\Indep\Src\Camera\ICE\ICEAnimScene.hpp"
 #include "Speed\Indep\Src\Interfaces\SimActivities\INIS.h"
 #include "Speed\Indep\Src\Camera\ICE\ICEMath.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed\Indep\Src\Interfaces\Simables\IRigidBody.h"
+#include "Speed\Indep\Src\Physics\Behaviors\RigidBody.h"
 
 class ICEGroup {
   private:
@@ -74,7 +77,12 @@ class ICETrack : public bTNode<ICETrack> {
     //                             }
     //                         }
     //                     }
+    inline struct ICEData *GetKey(int n) {
+        int safeIndex = UMath::Clamp(n, 0, this->NumKeys - 1);
 
+        // Возвращаем указатель на нужный элемент массива Keys
+        return &this->Keys[safeIndex];
+    }
     inline int GetNumKeys() {
         return NumKeys - 1;
     }
