@@ -15,13 +15,13 @@ float twkVisualTreatmentTargetHeat = -1.0f;
 float twkVisualTreatmentRadialBlur = -1.0f;
 float twkVisualTreatmentPulseBrightness = -1.0f;
 
-// UNSOLVED
 float GetValueFromSpline(float value, bMatrix4 *curve) {
     float tm1 = 1.0f - value;
     float tm13 = tm1 * tm1 * tm1;
     float t3 = value * value * value;
 
-    return tm13 * curve->v0.y + value * (tm1 * 3.0f) * tm1 * curve->v1.y + value * (value * 3.0f) * tm1 * curve->v2.y + t3 * curve->v3.y;
+    return tm13 * curve->v0.y + 3.0f * value * tm1 * tm1 * curve->v1.y +
+           3.0f * value * value * tm1 * curve->v2.y + t3 * curve->v3.y;
 }
 
 void SetMiddleGrayValue(float val) {}
@@ -75,9 +75,9 @@ class VisualLookEffect {
         return this->StartTime != 0.0f;
     }
 
-    // UNSOLVED float scheduling
     float UpdateActive(float heatMeter) {
-        float secondsElapsed;
+        float secondsElapsed = 0.0f;
+
         if (this->UseWorldTime) {
             secondsElapsed = WorldTimer.GetSeconds() - this->StartTime;
         } else {
@@ -176,7 +176,6 @@ class VisualLookEffectTarget {
     float Target;                                // offset 0xC, size 0x4
 };
 
-// UNSOLVED float assignment order
 IVisualTreatment::IVisualTreatment()
     : MiddayVisualLook(0xEEC2271A, 0, nullptr),                                                                                            //
       SunsetVisualLook(0xCEDA4E4F, 0, nullptr),                                                                                            //
@@ -188,20 +187,17 @@ IVisualTreatment::IVisualTreatment()
       CameraFlash(new ("VisualLookEffect", 0) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x30656612, 0, nullptr))),                //
       PursuitBreaker(new ("VisualLookEffectTarget", 0) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x90D06C71, 0, nullptr))), //
       NosRadialBlur(new ("VisualLookEffectTarget", 0) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x6B40EB80, 0, nullptr))) {
-    this->State = HEAT_LOOK;
-    this->HeatMeter = 0.0f;
     this->PulseBrightness = 1.0f;
+    this->RadialBlur = 0.0f;
+    this->NosRadialBlurAmount = 0.0f;
+    this->PursuitBreakerBlend = 0.0f;
+
     this->CurrentTarget = -1.0f;
     this->DesaturationTarget = -1.0f;
+
+    this->State = HEAT_LOOK;
+    this->HeatMeter = 0.0f;
     this->IsBeingPursued = -1;
-
-    this->NosRadialBlur->Current = 0.0f;
-    this->NosRadialBlur->StartWorldTime = 0.0f;
-    this->NosRadialBlur->Target = 0.0f;
-
-    this->RadialBlur = 0.0f;
-    this->PursuitBreakerBlend = 0.0f;
-    this->NosRadialBlurAmount = 0.0f;
 }
 
 IVisualTreatment::~IVisualTreatment() {
@@ -213,16 +209,15 @@ IVisualTreatment::~IVisualTreatment() {
     delete this->PursuitBreaker;
 }
 
-// UNSOLVED assignment order
 void IVisualTreatment::Reset() {
-    this->State = HEAT_LOOK;
-    this->CurrentTarget = -1.0f;
-    this->IsBeingPursued = -1;
     this->PulseBrightness = 1.0f;
-    this->DesaturationTarget = -1.0f;
     this->RadialBlur = 0.0f;
     this->NosRadialBlurAmount = 0.0f;
     this->PursuitBreakerBlend = 0.0f;
+    this->CurrentTarget = -1.0f;
+    this->DesaturationTarget = -1.0f;
+    this->State = HEAT_LOOK;
+    this->IsBeingPursued = -1;
 
     this->PursuitBreaker->Reset();
     this->UvesPulse->Reset();
@@ -272,7 +267,7 @@ inline void AddBlend(bVector4 *result, bVector4 *v, float scale) {
     result->w += scale * v->w;
 }
 
-// UNSOLVED missing AddBlend call causing issues
+
 void IVisualTreatment::BlendVisualLookAttribute(bMatrix4 &result, float defaultUves, float uves,
                                                 const UMath::Matrix4 &(Attrib::Gen::visuallook::*funcPtr)() const) {
     bMemSet(&result, 0, sizeof(bMatrix4));
@@ -281,12 +276,18 @@ void IVisualTreatment::BlendVisualLookAttribute(bMatrix4 &result, float defaultU
         if (defaultUves != 0.0f) {
             AddBlend(&result, (bMatrix4 *)&(this->MiddayVisualLook.*funcPtr)(), defaultUves);
         }
-    } else if (defaultUves != 0.0f) {
-        AddBlend(&result, (bMatrix4 *)&(this->SunsetVisualLook.*funcPtr)(), defaultUves);
-    }
 
-    if (uves != 0.0f) {
-        AddBlend(&result, (bMatrix4 *)&(this->UvesVisualLook.*funcPtr)(), uves);
+        if (uves != 0.0f) {
+            AddBlend(&result, (bMatrix4 *)&(this->UvesVisualLook.*funcPtr)(), uves);
+        }
+    } else {
+        if (defaultUves != 0.0f) {
+            AddBlend(&result, (bMatrix4 *)&(this->SunsetVisualLook.*funcPtr)(), defaultUves);
+        }
+
+        if (uves != 0.0f) {
+            AddBlend(&result, (bMatrix4 *)&(this->UvesVisualLook.*funcPtr)(), uves);
+        }
     }
 }
 
@@ -422,7 +423,6 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     }
 }
 
-// UNSOLVED, just scheduling
 void IVisualTreatment::Update(eView *view) {
     IGameState *gamestate = UTL::Collections::Singleton<IGameState>::Get();
     bool in_pursuit_breaker = false;
@@ -433,7 +433,7 @@ void IVisualTreatment::Update(eView *view) {
 
     IPerpetrator *iperp = nullptr;
     IEngine *iengine = nullptr;
-    const IPlayer::List &playerList = IPlayer::GetList(PLAYER_ALL);
+    const IPlayer::List &playerList = IPlayer::GetList(PLAYER_LOCAL);
 
     for (IPlayer::List::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter) {
         IPlayer *ip = *iter;
@@ -480,6 +480,7 @@ void IVisualTreatment::Update(eView *view) {
         return;
     }
 
-    bool nos = iengine->IsNOSEngaged();
-    this->SetNosEngaged(nos);
+    bool nos;
+
+    this->SetNosEngaged(iengine->IsNOSEngaged());
 }

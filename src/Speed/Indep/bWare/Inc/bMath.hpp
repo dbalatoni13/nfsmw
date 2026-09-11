@@ -1173,7 +1173,7 @@ struct bQuaternion {
         this->w = _w;
     }
 
-    bQuaternion(const bMatrix4 &m);
+    bQuaternion(const bMatrix4 &tm);
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 
@@ -1191,8 +1191,8 @@ struct bQuaternion {
 
 void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m);
 
-inline bQuaternion::bQuaternion(const bMatrix4 &m) {
-    bMatrixToQuaternion(*this, m);
+inline bQuaternion::bQuaternion(const bMatrix4 &tm) {
+    bMatrixToQuaternion(*this, tm);
 }
 
 inline void bMemZero(void *dest, unsigned int size) {

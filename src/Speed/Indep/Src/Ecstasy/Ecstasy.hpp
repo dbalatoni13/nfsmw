@@ -485,17 +485,17 @@ inline void *eFrameMalloc(unsigned int size) {
     }
 }
 
-static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
+inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
     uint32 size = num_matrices * sizeof(bMatrix4);
-    uint8 *address = CurrentBufferPos; // TODO dwarf regalloc
-    if (address + size < CurrentBufferEnd) {
+    uint8 *address = CurrentBufferPos;
+    if (CurrentBufferPos + size < CurrentBufferEnd) {
         CurrentBufferPos += size;
     } else {
         FrameMallocFailed = 1;
         FrameMallocFailAmount += size;
         return nullptr;
     }
-    return reinterpret_cast<bMatrix4 *>(address);
+    return reinterpret_cast<bMatrix4 *>(CurrentBufferPos - size);
 }
 
 extern bool WaitForFrameBufferSwapDisabled;

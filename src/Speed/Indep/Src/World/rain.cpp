@@ -119,18 +119,17 @@ void SetRainBase() {
 #endif
 }
 
-// UNSOLVED
 Rain::Rain(eView *view, RainType StartType) {
-    this->CloudIntensity = twkCloudsMinAmount;
     this->RoadDampness = 0.0f;
     this->intensity = 0.0f;
+    this->CloudIntensity = twkCloudsMinAmount;
     this->percentPrecip[RAIN] = 0.0f;
     this->percentPrecip[INACTIVE] = 0.0f;
     this->percentPrecip[StartType] = 1.0f;
-    this->NumRainPoints = -1;
-    this->MyView = view;
     this->NoRain = 0;
     this->NoRainAhead = 0;
+    this->NumRainPoints = -1;
+    this->MyView = view;
     this->PRECIPpoly[0].UVs[0][0] = 0.0f;
     this->PRECIPpoly[0].UVs[0][1] = 1.0f;
     this->PRECIPpoly[0].UVs[0][2] = 0.1f;
@@ -374,12 +373,14 @@ void CreateWindRotMatrix(eView *view, bMatrix4 *windrot, int offset, bMatrix4 *l
         bNormalize(&windAxis, view->Precipitation->GetWind());
     }
 
-    local2world.v1.x *= -1.0f;
-    local2world.v0.y *= -1.0f;
     local2world.v3.x = 0.0f;
     local2world.v3.y = 0.0f;
     local2world.v3.z = 0.0f;
     local2world.v3.w = 1.0f;
+
+    local2world.v1.x *= -1.0f;
+    local2world.v0.y *= -1.0f;
+
     eMulVector(&windAxis, &local2world, &windAxis);
     eCreateAxisRotationMatrix(windrot, windAxis, bDegToAng(sway));
     eRotateZ(windrot, windrot, bDegToAng(sway));

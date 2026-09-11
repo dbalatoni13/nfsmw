@@ -219,8 +219,8 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         while (dest < dest_end) {
             for (int i = 0; i < 4; i++) {
                 if (*dest == swatch_lookup_colours[i]) {
+                    swatch_offset_cache[i][swatch_offset_count[i]] = dest - dest_image_data;
                     swatch_offset_count[i] = swatch_offset_count[i] + 1;
-                    swatch_offset_cache[i][swatch_offset_count[i] - 1] = dest - dest_image_data;
                     break;
                 }
             };
@@ -396,8 +396,8 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             for (i = 0; i < 4; i++) {
                 if (static_cast<unsigned int>(*dest) == static_cast<unsigned int>(swatch_indices[i])) {
                     *dest = static_cast<unsigned char>(i + 1);
+                    swatch_offset_cache[i][swatch_offset_count[i]] = dest - dest_image_data;
                     swatch_offset_count[i] = swatch_offset_count[i] + 1;
-                    swatch_offset_cache[i][swatch_offset_count[i] - 1] = dest - dest_image_data;
                     break;
                 }
             }
@@ -407,8 +407,8 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             }
         }
 
-        swatch_offset_init = 1;
         dest = dest_image_data;
+        swatch_offset_init = 1;
     } else {
         bMemSet(dest_image_data, 0, dest_width * dest_height);
     }
@@ -430,8 +430,8 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             uint32 src_mask;
 
             if (info->m_LayerHash != 0) {
-                src_mask = static_cast<uint8>(reinterpret_cast<unsigned short *>(info->m_LayerMaskPaletteData)[*mask_src[i] * 2]);
                 src_pixel = info->m_LayerImagePaletteData[*image_src[i]];
+                src_mask = reinterpret_cast<unsigned short *>(info->m_LayerMaskPaletteData)[*mask_src[i] * 2] & 0xFF;
 
                 if (info->m_RemapPalette != 0 && src_mask != 0) {
                     src_pixel = RemapColour(src_pixel, info->m_RemapColours);
@@ -783,55 +783,55 @@ int CompositeSkin(RideInfo *ride_info) {
             continue;
         }
         unsigned int mask_hash;
-        if (UsePrecompositeVinyls == 0 && ride_info->SkinType != 2) {
-            mask_hash = bStringHash("_MASK", info->m_LayerHash);
-            info->m_LayerMaskTexture = GetTextureInfo(mask_hash, FALSE, FALSE);
-            if (info->m_LayerMaskTexture == nullptr) {
-                info->m_LayerHash = 0;
-                continue;
-            }
-            info->m_LayerMaskData = static_cast<unsigned char *>(info->m_LayerMaskTexture->LockImage(TEXLOCK_READ));
-            if (do_32bit_composite == 0) {
-                info->m_LayerMaskPaletteData = static_cast<unsigned int *>(info->m_LayerMaskTexture->LockPalette(TEXLOCK_READ));
-            }
+        if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
+            DumpPreComp(info, dest_texture);
+            return 1;
+        }
 
-            if (info->m_LayerMaskData == nullptr) {
-                info->m_LayerHash = 0;
-                continue;
-            }
-            total_layer_colours = cur_layer + 1;
+        mask_hash = bStringHash("_MASK", info->m_LayerHash);
+        info->m_LayerMaskTexture = GetTextureInfo(mask_hash, FALSE, FALSE);
+        if (info->m_LayerMaskTexture == nullptr) {
+            info->m_LayerHash = 0;
+            continue;
+        }
+        info->m_LayerMaskData = static_cast<unsigned char *>(info->m_LayerMaskTexture->LockImage(TEXLOCK_READ));
+        if (do_32bit_composite == 0) {
+            info->m_LayerMaskPaletteData = static_cast<unsigned int *>(info->m_LayerMaskTexture->LockPalette(TEXLOCK_READ));
+        }
 
-            if (i == first_vinyl_layer) {
-                CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0);
+        if (info->m_LayerMaskData == nullptr) {
+            info->m_LayerHash = 0;
+            continue;
+        }
+        total_layer_colours = cur_layer + 1;
 
-                if (car_part != nullptr && car_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
-                    info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
-                    if (info->m_RemapPalette != 0) {
-                        int layer_id = CARSLOTID_VINYL_COLOUR0_0;
+        if (i == first_vinyl_layer) {
+            CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0);
 
-                        for (int j = 0; j < 4; j++) {
-                            CarPart *colour_part = ride_info->GetPart(layer_id + j);
+            if (car_part != nullptr && car_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
+                info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
+                if (info->m_RemapPalette != 0) {
+                    int layer_id = CARSLOTID_VINYL_COLOUR0_0;
 
-                            if (colour_part != nullptr) {
-                                int red = colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-                                int green = colour_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
-                                int blue = colour_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
-                                int gloss = colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
+                    for (int j = 0; j < 4; j++) {
+                        CarPart *colour_part = ride_info->GetPart(layer_id + j);
 
-                                info->m_RemapColours[j] = (gloss << 24) | (blue << 16) | (green << 8) | red;
-                            } else {
-                                info->m_RemapColours[j] = 0xFFu << (j << 3);
-                            }
+                        if (colour_part != nullptr) {
+                            int red = colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                            int green = colour_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                            int blue = colour_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                            int gloss = colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
+
+                            info->m_RemapColours[j] = (gloss << 24) | (blue << 16) | (green << 8) | red;
+                        } else {
+                            info->m_RemapColours[j] = 0xFFu << (j << 3);
                         }
                     }
                 }
             }
-
-            cur_layer = total_layer_colours;
-        } else {
-            DumpPreComp(info, dest_texture);
-            return 1;
         }
+
+        cur_layer++;
     }
 
     eWaitUntilRenderingDone();
@@ -846,6 +846,8 @@ int CompositeSkin(RideInfo *ride_info) {
 
     int success = 1;
     if (IsInSkinCompositeCache(&composite_params) == 0) {
+        extern int CompositeSkin32(SkinCompositeParams *composite_params);
+
         UpdateSkinCompositeCache(&composite_params);
         if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
             success = CompositeSkin(&composite_params);

@@ -494,7 +494,6 @@ void SuspensionTrailer::DoSimpleAero(State &state) {
     this->mRB->ResolveForce(drag_vector);
 }
 
-// UNSOLVED, float math
 void SuspensionTrailer::DoWheelForces(State &state) {
     const float dT = state.time;
 
@@ -555,13 +554,13 @@ void SuspensionTrailer::DoWheelForces(State &state) {
         float max_compression = travel_specs[axle];
 
         if (wheel.GetCompression() == 0.0f) {
-            float delta = newCompression - max_compression;
-            maxDelta = UMath::Max(maxDelta, delta);
+            maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
         }
 
         newCompression = UMath::Max(newCompression, 0.0f);
         if (newCompression > max_compression) {
-            maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
+            float delta = newCompression - max_compression;
+            maxDelta = UMath::Max(maxDelta, delta);
             newCompression = max_compression;
         }
 
@@ -574,12 +573,11 @@ void SuspensionTrailer::DoWheelForces(State &state) {
             float spring = springForce * (newCompression * progression[axle] + 1.0f);
             float damp = rise * shock_specs[axle];
 
-            if (damp > this->mSuspensionInfo->SHOCK_BLOWOUT() * 9.81f * mass) {
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
-            springForce = damp + spring + sway_stiffness[i];
-            springForce = UMath::Max(springForce, 0.0f);
+            springForce = UMath::Max(damp + spring + sway_stiffness[i], 0.0f);
 
             UVector3 verticalForce = UVector3(vUp) * springForce;
             UVector3 driveForce;

@@ -574,9 +574,9 @@ inline float Limit(const float a, const float l) {
 void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z);
 
 #ifndef EA_BUILD_A124
-// TODO inline
+// TODO this doesn't show up in the dwarf as an inline yet
 // they moved this since outside the namespace after the alpha
-void OrthoInverse(UMath::Matrix4 &m);
+inline void OrthoInverse(UMath::Matrix4 &m);
 #endif
 
 struct UQuat : public UMath::Vector4 {
