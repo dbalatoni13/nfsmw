@@ -1,23 +1,9 @@
 #include "rcmp_codec_internal.h"
+#include "../../../../../realcore/6.21.00/include/common/realcore/impl/std/getm.inl"
 
 struct STREAMCHUNKHDR {
     unsigned int type;
 };
-
-static inline unsigned int getm(const void *src, int bytes) {
-    return *static_cast<const unsigned int *>(src);
-}
-
-static inline unsigned int geti(const void *src, int bytes) {
-    if (bytes == 2) {
-        return (static_cast<const unsigned char *>(src)[1] << 8) |
-               static_cast<const unsigned char *>(src)[0];
-    }
-    return (static_cast<const unsigned char *>(src)[0] << 24) |
-           (static_cast<const unsigned char *>(src)[1] << 16) |
-           (static_cast<const unsigned char *>(src)[2] << 8) |
-           static_cast<const unsigned char *>(src)[3];
-}
 
 static int GetChunkType(RCMP::CHUNK *Chunk) {
     if (Chunk != 0) {
@@ -95,6 +81,7 @@ void MAD_CODEC_INTERNAL::ReleaseChunk(RCMP::CHUNK *NextChunk) {
     }
 }
 
+// NON_MATCHING: loop/address ownership and MaxFrames DWARF location still differ.
 MAD_FRAME *MAD_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
     MAD_FRAME *CurFrame;
     STREAMCHUNKHDR *chunk;
@@ -133,15 +120,11 @@ MAD_FRAME *MAD_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
         this->m_Width = geti(reinterpret_cast<unsigned char *>(chunk) + 0x10, 2);
         this->m_Height = geti(reinterpret_cast<unsigned char *>(chunk) + 0x12, 2);
         MaxFrames = this->m_Decoder->GetCodecIData()->m_MaxFramesOutstanding;
-        {
-            int i;
-
+        if (MaxFrames + 1 > 0) {
             i = MaxFrames + 1;
-            if (i > 0) {
-                do {
-                    this->CreateFrame(this->m_Height, this->m_Width);
-                } while (--i != 0);
-            }
+            do {
+                this->CreateFrame(this->m_Height, this->m_Width);
+            } while (--i != 0);
         }
         this->m_FirstTime = 0;
     }
@@ -179,18 +162,18 @@ MAD_FRAME *MAD_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
         }
     }
 
-    if (GetChunkType(NextChunk) != 0x4D41446D) {
-        if (GetChunkType(NextChunk) != 0x4D41446B) {
-            return CurFrame;
+    if (GetChunkType(NextChunk) == 0x4D41446D) {
+        if (this->m_RefFrame != 0) {
+            this->ReleaseFrame(this->m_RefFrame);
         }
+        this->m_RefFrame = CurFrame;
+    } else if (GetChunkType(NextChunk) == 0x4D41446B) {
+        this->m_RefFrame = CurFrame;
     }
-    if (this->m_RefFrame != 0) {
-        this->ReleaseFrame(this->m_RefFrame);
-    }
-    this->m_RefFrame = CurFrame;
     return CurFrame;
 }
 
+// NON_MATCHING: normalized DWARF is exact; the retail loop guard retains another branch.
 RCMP::FRAME *MAD_CODEC_INTERNAL::GetFrame(unsigned int GoalFrame) {
     RCMP::CHUNK *NextChunk;
 
@@ -213,27 +196,25 @@ RCMP::FRAME *MAD_CODEC_INTERNAL::GetFrame(unsigned int GoalFrame) {
             i = frameslate;
             if (i > 0) {
                 do {
-                if (GetChunkType(NextChunk) == 0x4D414465) {
-                    this->ReleaseChunk(NextChunk);
-                    this->GetNextChunk(&NextChunk);
-                }
+                    if (GetChunkType(NextChunk) == 0x4D414465) {
+                        this->ReleaseChunk(NextChunk);
+                        this->GetNextChunk(&NextChunk);
+                    }
                 } while (--i != 0);
             }
         }
     }
 
-    {
+    if (NextChunk != 0) {
         MAD_FRAME *CurFrame;
 
-        if (NextChunk != 0) {
-            CurFrame = this->DecodeChunk(NextChunk);
-            this->ReleaseChunk(NextChunk);
-            return CurFrame;
-        }
-        if (this->m_RefFrame != 0) {
-            this->ReleaseFrame(this->m_RefFrame);
-            this->m_RefFrame = CurFrame;
-        }
+        CurFrame = this->DecodeChunk(NextChunk);
+        this->ReleaseChunk(NextChunk);
+        return CurFrame;
+    }
+    if (this->m_RefFrame != 0) {
+        this->ReleaseFrame(this->m_RefFrame);
+        this->m_RefFrame = 0;
     }
     return 0;
 }
