@@ -81,7 +81,7 @@ void MAD_CODEC_INTERNAL::ReleaseChunk(RCMP::CHUNK *NextChunk) {
     }
 }
 
-// NON_MATCHING: loop/address ownership and MaxFrames DWARF location still differ.
+// NON_MATCHING: normalized DWARF is exact; byte-reader and allocation scheduling still differ.
 MAD_FRAME *MAD_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
     MAD_FRAME *CurFrame;
     STREAMCHUNKHDR *chunk;
@@ -120,8 +120,9 @@ MAD_FRAME *MAD_CODEC_INTERNAL::DecodeChunk(RCMP::CHUNK *NextChunk) {
         this->m_Width = geti(reinterpret_cast<unsigned char *>(chunk) + 0x10, 2);
         this->m_Height = geti(reinterpret_cast<unsigned char *>(chunk) + 0x12, 2);
         MaxFrames = this->m_Decoder->GetCodecIData()->m_MaxFramesOutstanding;
-        if (MaxFrames + 1 > 0) {
-            i = MaxFrames + 1;
+        i = MaxFrames;
+        if (i + 1 > 0) {
+            i++;
             do {
                 this->CreateFrame(this->m_Height, this->m_Width);
             } while (--i != 0);
