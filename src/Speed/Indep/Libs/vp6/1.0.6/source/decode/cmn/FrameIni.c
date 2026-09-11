@@ -142,25 +142,24 @@ void VP6_DeleteFrameInfo(struct PB_INSTANCE *pbi) {
 }
 
 int VP6_AllocateFrameInfo(struct PB_INSTANCE *pbi, unsigned int FrameSize) {
-    unsigned int size = FrameSize + 0x20;
 
     VP6_DeleteFrameInfo(pbi);
 
-    pbi->ThisFrameReconAlloc = (unsigned char *)duck_malloc(pbi->Configuration.YStride + size, 0);
+    pbi->ThisFrameReconAlloc = (unsigned char *)duck_malloc(32 + pbi->Configuration.YStride + FrameSize, 0);
     if (pbi->ThisFrameReconAlloc == 0) {
         VP6_DeleteFrameInfo(pbi);
         return 0;
     }
     pbi->ThisFrameRecon = (unsigned char *)(((unsigned int)pbi->ThisFrameReconAlloc + 0x1f) & ~0x1f);
 
-    pbi->GoldenFrameAlloc = (unsigned char *)duck_malloc(pbi->Configuration.YStride + size, 0);
+    pbi->GoldenFrameAlloc = (unsigned char *)duck_malloc(32 + pbi->Configuration.YStride + FrameSize, 0);
     if (pbi->GoldenFrameAlloc == 0) {
         VP6_DeleteFrameInfo(pbi);
         return 0;
     }
     pbi->GoldenFrame = (unsigned char *)(((unsigned int)pbi->GoldenFrameAlloc + 0x1f) & ~0x1f);
 
-    pbi->LastFrameReconAlloc = (unsigned char *)duck_malloc(pbi->Configuration.YStride + size, 0);
+    pbi->LastFrameReconAlloc = (unsigned char *)duck_malloc(32 + pbi->Configuration.YStride + FrameSize, 0);
     if (pbi->LastFrameReconAlloc == 0) {
         VP6_DeleteFrameInfo(pbi);
         return 0;
