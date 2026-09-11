@@ -41,18 +41,18 @@ int PATHI_beatinfo(PATHTRACK *track, PATHBEATINFO *beatinfo) {
 }
 
 int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) {
-    float scalar = static_cast<float>(beatinfo->beats) / static_cast<float>(note);
-    float fevery = static_cast<float>(every);
-    float foffset = static_cast<float>(offset);
+    float scalar = static_cast<float>(beatinfo->notes) / static_cast<float>(note);
+    float fevery = scalar * static_cast<float>(every);
+    float foffset = scalar * static_cast<float>(offset);
     int timeinbar = beatinfo->barduration - beatinfo->timetonextbar;
-    int firstsynchtime = static_cast<int>(scalar * foffset * static_cast<float>(beatinfo->beatduration));
+    int firstsynchtime = static_cast<int>(foffset * static_cast<float>(beatinfo->beatduration));
     int nextsynchtime = firstsynchtime;
     if (nextsynchtime < timeinbar) {
         do {
             if (nextsynchtime >= static_cast<int>(beatinfo->barduration)) {
                 break;
             }
-            nextsynchtime += static_cast<int>(scalar * fevery * static_cast<float>(beatinfo->beatduration));
+            nextsynchtime += static_cast<int>(fevery * static_cast<float>(beatinfo->beatduration));
         } while (nextsynchtime <= timeinbar);
     }
     if (nextsynchtime > static_cast<int>(beatinfo->barduration)) {
