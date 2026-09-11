@@ -332,19 +332,19 @@ int Path::IPathTrack::RemoveSubBank(int) {
 }
 
 Path::IPathTrack::IPathTrack() {
-    this->mVolume = 0x7f;
-    this->mMaxSubBanks = 0;
-    this->mUpdateStatus = 1;
-    this->mStatus.timeremaining = -1;
     this->mHandle = 0;
     this->mStatusCode = 0;
     this->mFXSendLevel = 0;
     this->mDryLevel = 0x7f;
+    this->mVolume = 0x7f;
     this->mMaxRequests = 1;
     this->mActiveRequests = 0;
-    this->mTrackInfo = 0;
-    this->mPlayOpts = 0;
-    this->mSubBanks = 0;
+    this->mTrackInfo = nullptr;
+    this->mPlayOpts = nullptr;
+    this->mSubBanks = nullptr;
+    this->mMaxSubBanks = 0;
+    this->mUpdateStatus = 1;
+    this->mStatus.timeremaining = -1;
 }
 
 Path::IPathTrack::~IPathTrack() {}
