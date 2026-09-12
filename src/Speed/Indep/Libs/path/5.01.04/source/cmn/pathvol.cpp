@@ -1,5 +1,6 @@
 #include "pathi.h"
 
+// NON_MATCHING: global-state address hoisting still changes ASM and result's DWARF home.
 int PATH_volume(int tracks, signed char scale) {
     int result;
 
@@ -26,7 +27,7 @@ int PATH_volume(int tracks, signed char scale) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track = Path::pfstate->track[t];
 
-                    if (track != 0 && ((static_cast<unsigned int>(tracks) >> t) & 1) == 1) {
+                    if (track != 0 && (((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0) {
                         track->volscale = scale;
                         if (track->volumefade.fadeto < 0) {
                             track->trackimp->SetVolume(track->volume * scale / 100);
