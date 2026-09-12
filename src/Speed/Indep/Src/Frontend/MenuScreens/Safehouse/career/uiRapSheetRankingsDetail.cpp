@@ -93,147 +93,174 @@ void uiRapSheetRankingsDetail::NotificationMessage(u32 msg, FEObject *pobj, u32 
 }
 
 void uiRapSheetRankingsDetail::Setup() {
-    ClearData();
+    this->ClearData();
+
     uint32 category_str_hash;
     UserProfile &prof = *FEDatabase->GetUserProfile(0);
-    Attrib::Key key;
-    player_rank = prof.GetHighScores()->CalcPursuitRank(rank_type, career_view);
-    switch (rank_type) {
+
+    this->player_rank = prof.GetHighScores()->CalcPursuitRank(this->rank_type, this->career_view);
+
+    Attrib::Key type_key;
+    switch (this->rank_type) {
         case PD_PURUSIT_LENGTH:
-            if (career_view) {
-                key = Attrib::StringToKey("pursuit_length_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("pursuit_length");
             } else {
-                key = Attrib::StringToKey("pursuit_length");
+                type_key = Attrib::StringToKey("pursuit_length_in_pursuit");
             }
-            category_str_hash = 0xD70811D1;
+            category_str_hash = 0xd70811d1;
             break;
+
         case PD_COPS_INVOLVED:
-            if (career_view) {
-                key = Attrib::StringToKey("cops_involved_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("cops_involved");
             } else {
-                key = Attrib::StringToKey("cops_involved");
+                type_key = Attrib::StringToKey("cops_involved_in_pursuit");
             }
-            category_str_hash = 0xC6113FCF;
+            category_str_hash = 0xc6113fcf;
             break;
+
         case PD_COPS_DAMAGED:
-            if (career_view) {
-                key = Attrib::StringToKey("cops_damaged_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("cops_damaged");
             } else {
-                key = Attrib::StringToKey("cops_damaged");
+                type_key = Attrib::StringToKey("cops_damaged_in_pursuit");
             }
-            category_str_hash = 0x2A1815D9;
+            category_str_hash = 0x2a1815d9;
             break;
+
         case PD_COPS_DESTROYED:
-            if (career_view) {
-                key = Attrib::StringToKey("cops_destroyed_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("cops_destroyed");
             } else {
-                key = Attrib::StringToKey("cops_destroyed");
+                type_key = Attrib::StringToKey("cops_destroyed_in_pursuit");
             }
-            category_str_hash = 0x189EAF7B;
+            category_str_hash = 0x189eaf7b;
             break;
+
         case PD_SPIKESTRIPS_DODGED:
-            if (career_view) {
-                key = Attrib::StringToKey("tire_spikes_dodged_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("tire_spikes_dodged");
             } else {
-                key = Attrib::StringToKey("tire_spikes_dodged");
+                type_key = Attrib::StringToKey("tire_spikes_dodged_in_pursuit");
             }
-            category_str_hash = 0xDCD6B9BA;
+            category_str_hash = 0xdcd6b9ba;
             break;
+
         case PD_ROADBLOCKS_DODGED:
-            if (career_view) {
-                key = Attrib::StringToKey("roadblocks_dodged_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("roadblocks_dodged");
             } else {
-                key = Attrib::StringToKey("roadblocks_dodged");
+                type_key = Attrib::StringToKey("roadblocks_dodged_in_pursuit");
             }
-            category_str_hash = 0x9EF589BE;
+            category_str_hash = 0x9ef589be;
             break;
+
         case PD_HELICOPTERS_INVOLVED:
-            if (career_view) {
-                key = Attrib::StringToKey("helis_involved_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("helis_involved");
             } else {
-                key = Attrib::StringToKey("helis_involved");
+                type_key = Attrib::StringToKey("helis_involved_in_pursuit");
             }
-            category_str_hash = 0x39A1413C;
-            break;
-        case PD_COST_TO_STATE:
-            if (career_view) {
-                key = Attrib::StringToKey("cost_to_state_in_pursuit");
-            } else {
-                key = Attrib::StringToKey("cost_to_state");
-            }
-            category_str_hash = 0xB3F963F8;
+            category_str_hash = 0x39a1413c;
             break;
         case PD_NUM_INFRACTIONS:
-            if (career_view) {
-                key = Attrib::StringToKey("total_infractions_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("total_infractions");
             } else {
-                key = Attrib::StringToKey("total_infractions");
+                type_key = Attrib::StringToKey("total_infractions_in_pursuit");
             }
-            category_str_hash = 0xE34B2E6F;
+            category_str_hash = 0xb3f963f8;
             break;
+
+        case PD_COST_TO_STATE:
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("cost_to_state");
+            } else {
+                type_key = Attrib::StringToKey("cost_to_state_in_pursuit");
+            }
+            category_str_hash = 0xe34b2e6f;
+            break;
+
         case PD_BOUNTY:
-            if (career_view) {
-                key = Attrib::StringToKey("bounty_in_pursuit");
+            if (this->career_view) {
+                type_key = Attrib::StringToKey("bounty");
             } else {
-                key = Attrib::StringToKey("bounty");
+                type_key = Attrib::StringToKey("bounty_in_pursuit");
             }
-            category_str_hash = 0x48B4B99C;
+            category_str_hash = 0x48b4b99c;
             break;
+
         default:
-            key = 0;
+            type_key = 0;
             category_str_hash = 0;
             break;
     }
-    // UNSOLVED
-    Attrib::Gen::frontend rapsheet(key, 0, nullptr);
+
+    Attrib::Gen::frontend rapsheet(type_key, 0, nullptr);
+
     if (rapsheet.IsValid()) {
         if (rapsheet.Num_RapSheetRanks() == 15) {
-            int last;
+            int last = rapsheet.Num_RapSheetRanks();
             int rival_offset = 0;
             bool is_time;
-            int player_rank_index = player_rank - 1;
-            int num_rankings_to_show = rapsheet.Num_RapSheetRanks();
-            if (player_rank == 0x10) {
-                num_rankings_to_show = 0x10;
+            int player_rank_index = this->player_rank - 1;
+            int num_rankings_to_show = 15;
+
+            if (this->player_rank == 16) {
+                num_rankings_to_show = 16;
             }
+
             for (int i = 0; i < num_rankings_to_show; i++) {
                 if (i == player_rank_index) {
-                    uint32 car_hash = 0;
+                    uint32 car_name_hash = 0;
+                    int tmp_player_value;
                     float player_value;
-                    if (career_view) {
-                        player_value = prof.GetHighScores()->GetCareerPursuitScore(rank_type);
-                    } else {
-                        car_hash = GetFECarNameHashFromFEKey(prof.GetHighScores()->GetBestPursuitScore(rank_type).CarFEKey);
-                        player_value = prof.GetHighScores()->GetBestPursuitScore(rank_type).Value;
-                    }
-                    player_value = rank_type == PD_COST_TO_STATE ? player_value * 0.00025f : player_value;
 
-                    AddDatum(new ("RapSheetRankingsDatum", 0) RapSheetRankingsDatum(player_rank, 1, car_hash, player_value));
+                    if (this->career_view) {
+                        tmp_player_value = prof.GetHighScores()->GetCareerPursuitScore(this->rank_type);
+                    } else {
+                        car_name_hash = GetFECarNameHashFromFEKey(prof.GetHighScores()->GetBestPursuitScore(this->rank_type).CarFEKey);
+                        tmp_player_value = prof.GetHighScores()->GetBestPursuitScore(this->rank_type).Value;
+                    }
+
+                    is_time = this->rank_type == PD_PURUSIT_LENGTH;
+                    if (is_time) {
+                        player_value = Timer(tmp_player_value).GetSeconds();
+                    } else {
+                        player_value = tmp_player_value;
+                    }
+
+                    this->AddDatum(new ("RapSheetRankingsDatum", 0) RapSheetRankingsDatum(this->player_rank, 1, car_name_hash, player_value));
+
                     rival_offset--;
                 } else {
                     uint32 aka_name = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", rapsheet.NameId(i + rival_offset));
                     uint32 car_name;
-                    if (career_view) {
+
+                    if (this->career_view) {
                         car_name = 0;
                     } else {
                         car_name = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", rapsheet.NameId(i + rival_offset));
                     }
-                    AddDatum(new ("RapSheetRankingsDatum", 0)
-                                 RapSheetRankingsDatum(i + 1, aka_name, car_name, rapsheet.RapSheetRanks(i + rival_offset)));
+
+                    this->AddDatum(new ("RapSheetRankingsDatum", 0)
+                                       RapSheetRankingsDatum(i + 1, aka_name, car_name, rapsheet.RapSheetRanks(i + rival_offset)));
                 }
             }
 
-            SetInitialPosition(0);
-            int dist_off_screen = player_rank - GetHeight() + 4;
+            this->SetInitialPosition(0);
+
+            int dist_off_screen = this->player_rank - this->GetHeight() + 4;
             for (; dist_off_screen > 0; dist_off_screen--) {
-                ScrollDown();
+                this->ScrollDown();
             }
         }
     }
-    FEngSetLanguageHash(GetPackageName(), 0x8224E17C, category_str_hash);
-    UpdateHighlight();
-    ArrayScroller *scroller = this;
-    scroller->RefreshHeader();
+
+    FEngSetLanguageHash(this->GetPackageName(), 0x8224e17c, category_str_hash);
+    this->UpdateHighlight();
+    this->RefreshHeader();
 }
 
 void uiRapSheetRankingsDetail::RefreshHeader() {
