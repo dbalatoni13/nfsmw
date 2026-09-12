@@ -389,6 +389,7 @@ decided:
     return choice;
 }
 
+// NON_MATCHING: loop-invariant hoisting and several DWARF register homes still differ.
 static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int inChannel) {
     int i;
     unsigned int timeNow, timeSince;
@@ -412,14 +413,14 @@ static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int
         if (gVoxEvents.events[i].pending != 0) {
             if (gVoxEvents.events[i].channel == inChannel) {
                 expired = 0;
-                event = gVoxEvents.events[i].event;
                 priorityFiltered = 0;
                 followValid = 1;
+                event = gVoxEvents.events[i].event;
                 if (followData != 0) {
                     followValid = iSPCH_EventInFollowGroup(event->ID, followData);
                 }
                 timeSince = timeNow - gVoxEvents.events[i].entryTime;
-                if (event->expiryTime != 0 && event->expiryTime < timeSince) {
+                if (event->expiryTime != 0 && timeSince > event->expiryTime) {
                     expired = 1;
                 }
                 if (gFilterSetting[inChannel] == 1 && VoxEvent_GetFilterPriorityFlag(event) != 0) {
@@ -429,13 +430,13 @@ static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int
                 if (expired) {
                     iSPCH_ClearEvent(i);
                 } else if (followValid != 0 && priorityFiltered == 0) {
-                    if (highestPriority < event->priority) {
+                    if (event->priority > highestPriority) {
                         choice = i;
                         choiceTimeSince = timeSince;
                         highestPriority = event->priority;
                         choiceSubTicks = gVoxEvents.events[i].subTicks;
                     } else if (event->priority == highestPriority) {
-                        if (timeSince < choiceTimeSince || (timeSince == choiceTimeSince && choiceSubTicks < gVoxEvents.events[i].subTicks)) {
+                        if (timeSince < choiceTimeSince || (timeSince == choiceTimeSince && gVoxEvents.events[i].subTicks > choiceSubTicks)) {
                             choice = i;
                             choiceTimeSince = timeSince;
                             choiceSubTicks = gVoxEvents.events[i].subTicks;
