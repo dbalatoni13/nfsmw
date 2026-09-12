@@ -190,6 +190,7 @@ static void iSPCH_PostMatchParmValue(VoxSentence *sentence, VoxPhrase *phrase, u
     } while (i < numFilters);
 }
 
+// NON_MATCHING: normalized DWARF is exact; bit-shift mask and constant hoisting still differ.
 static int iSPCH_MatchSample(VoxSentence *sentence, VoxPhrase *phrase, unsigned int *parms, unsigned char *sampleParms) {
     int i;
     int numRules;
@@ -212,43 +213,43 @@ static int iSPCH_MatchSample(VoxSentence *sentence, VoxPhrase *phrase, unsigned 
         if (static_cast<unsigned int>(sampleParmValue) > 0x1F) {
             goto abort;
         }
-        sampleParmBitFlags = 1 << (sampleParmValue & 0x3F);
+        sampleParmBitFlags = 1u << (sampleParmValue & 0x3F);
         eventParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->eventParmIndex;
         if ((sampleParmBitFlags & iSPCH_GetPhraseParmInfo(phrase, i)->matchValues) != 0) {
-            if (eventParmIndex != 0 && eventParmIndex != 0xFE) {
-                if (eventParmIndex == 0xFF) {
-                    int matchParmIndex;
+            if (eventParmIndex == 0 || eventParmIndex == 0xFE) {
+                match = 1;
+            } else if (eventParmIndex == 0xFF) {
+                int matchParmIndex;
 
-                    matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->matchParmIndex;
-                    if ((matchParmIndex & 0x80) != 0) {
-                        int *matchParmIO;
+                matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->matchParmIndex;
+                if ((matchParmIndex & 0x80) != 0) {
+                    int *matchParmIO;
 
-                        matchParmIndex &= 0x7F;
-                        matchParmIO = VoxSentence_GetMatchParmIO(sentence);
-                        matchValue = matchParmIO[matchParmIndex];
-                        if ((sampleParmBitFlags & matchValue) == 0) {
-                            goto abort;
-                        }
-                    } else {
-                        EventSpec eventSpec;
-                        unsigned char *globalMatchParmArray;
-
-                        eventSpec = *reinterpret_cast<EventSpec *>(parms);
-                        if (iSPCH_GetGlobalMatchParmsArray(&eventSpec, &globalMatchParmArray) == 0 ||
-                            sampleParmValue != globalMatchParmArray[matchParmIndex]) {
-                            goto abort;
-                        }
+                    matchParmIndex &= 0x7F;
+                    matchParmIO = VoxSentence_GetMatchParmIO(sentence);
+                    matchValue = matchParmIO[matchParmIndex];
+                    if ((sampleParmBitFlags & matchValue) != 0) {
+                        match = 1;
                     }
                 } else {
-                    unsigned int inParm;
+                    EventSpec eventSpec;
+                    unsigned char *globalMatchParmArray;
 
-                    inParm = parms[eventParmIndex];
-                    if ((sampleParmBitFlags & inParm) == 0) {
-                        goto abort;
+                    eventSpec = *reinterpret_cast<EventSpec *>(parms);
+                    if (iSPCH_GetGlobalMatchParmsArray(&eventSpec, &globalMatchParmArray) != 0) {
+                        if (sampleParmValue == globalMatchParmArray[matchParmIndex]) {
+                            match = 1;
+                        }
                     }
                 }
+            } else {
+                unsigned int inParm;
+
+                inParm = parms[eventParmIndex];
+                if ((sampleParmBitFlags & inParm) != 0) {
+                    match = 1;
+                }
             }
-            match = 1;
         }
         if (match == 0) {
             goto abort;
