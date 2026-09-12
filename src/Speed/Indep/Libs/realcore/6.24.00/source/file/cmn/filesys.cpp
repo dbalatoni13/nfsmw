@@ -648,15 +648,13 @@ struct OpenOperation : public FILEOPERATION {
 
     virtual long long Complete() override {
         gFileSysOpts.allocator->Free(this->data, 0);
-        if (this->IsCancelled() == true) {
-            if (this->filehandle != reinterpret_cast<FILESYSHANDLE *>(-1)) {
-                iCloseFileSysHandle(this->filehandle);
-            }
-            return 0;
+        if (this->IsCancelled() == true &&
+            this->filehandle != reinterpret_cast<FILESYSHANDLE *>(-1)) {
+            iCloseFileSysHandle(this->filehandle);
+        } else if (this->filehandle != reinterpret_cast<FILESYSHANDLE *>(-1)) {
+            return reinterpret_cast<int>(this->filehandle);
         }
-        return this->filehandle == reinterpret_cast<FILESYSHANDLE *>(-1)
-                   ? 0
-                   : reinterpret_cast<int>(this->filehandle);
+        return 0;
     }
 };
 
