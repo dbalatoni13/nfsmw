@@ -193,16 +193,14 @@ unsigned int bGetTicker() {
 #endif
 }
 
-// UNSOLVED
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-    unsigned int ticks;
     if (start_ticks < end_ticks) {
-        ticks = end_ticks - start_ticks;
+        start_ticks = end_ticks - start_ticks;
     } else {
-        ticks = end_ticks - start_ticks;
+        start_ticks = end_ticks - start_ticks;
     }
 #ifdef EA_PLATFORM_GAMECUBE
-    return OSTicksToMicroseconds(ticks) * 0.001f;
+    return OSTicksToMicroseconds(start_ticks) * 0.001f;
 #else
     return 0;
 #endif

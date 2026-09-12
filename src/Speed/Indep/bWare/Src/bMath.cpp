@@ -323,19 +323,21 @@ bAngle bATan(float x, float y) {
 
     bAngle a;
     if (x > y) {
-        float r = ((y / x) * 65536.0f);
-        int index = static_cast<int>(r);
-        bAngle *table = &bFastATanTable[index >> 8];
-        a = table[0] + (((table[1] - table[0]) * (index & 0xFF)) >> 8);
-    } else if (y > x) {
-        float r = ((y / r) * 65536.0f);
-        int index = static_cast<int>(r);
-        bAngle *table = &bFastATanTable[index >> 8];
-        a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (index & 0xFF)) >> 8));
-    } else if (y == 0.0f) {
-        a = 0;
+        float r = y;
+        int i = static_cast<int>((r / x) * 65536.0f);
+        const bAngle *table = &bFastATanTable[i >> 8];
+        a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
     } else {
-        a = bDegToAng(45.0f);
+        if (y > x) {
+            float r = y;
+            int i = static_cast<int>((x / r) * 65536.0f);
+            const bAngle *table = &bFastATanTable[i >> 8];
+            a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
+        } else if (y == 0.0f) {
+            a = 0;
+        } else {
+            a = bDegToAng(45.0f);
+        }
     }
 
     if (quad == 0)

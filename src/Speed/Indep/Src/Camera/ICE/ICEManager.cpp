@@ -38,3 +38,6 @@ ICEManager::ICEManager() {
     this->nMarkerIndex = -1;
     this->bSmoothExit = false;
 }
+
+// TODO move this?
+struct ICEManager TheICEManager; // size: 0x80

@@ -33,7 +33,7 @@ class GRacerInfo {
         return mGameCharacter;
     }
     bool GetIsHuman() const {
-        return !mGameCharacter;
+        return mGameCharacter == nullptr;
     };
     const char *GetName() const {
         return mName;
@@ -395,7 +395,9 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     int GetLapsLed(int racerIndex);
 
-    bool GetRaceRouteError() {}
+    bool GetRaceRouteError() {
+        return this->bRaceRouteError;
+    }
 
     float GetRaceLength() {
         return fRaceLength;
@@ -467,15 +469,15 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     }
 
     float GetBinBaseHeat() const {
-        return mRaceBin->GetBaseOpenWorldHeat();
+        return (mRaceBin != nullptr) ? mRaceBin->GetBaseOpenWorldHeat() : 0.0f;
     }
 
     float GetBinMaxHeat() const {
-        return mRaceBin->GetMaxOpenWorldHeat();
+        return (mRaceBin != nullptr) ? mRaceBin->GetMaxOpenWorldHeat() : 10.0f;
     }
 
     float GetBinHeatScale() const {
-        return mRaceBin->GetScaleOpenWorldHeat();
+        return (mRaceBin != nullptr) ? mRaceBin->GetScaleOpenWorldHeat() : 1.0f;
     }
 
     void SkipToEndOfRaceForRacer(ISimable *thisPlayer, int index, float time);

@@ -87,10 +87,12 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     }
 
     void Clear() {
-        for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
-            if (mTable[i].IsValid()) {
-                delete mTable[i].Get();
-                mNumEntries--;
+        if (Unk2) {
+            for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
+                if (mTable[i].IsValid()) {
+                    delete mTable[i].Get();
+                    mNumEntries--;
+                }
             }
         }
         if (mFixedAlloc == 0) {

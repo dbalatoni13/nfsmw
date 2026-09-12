@@ -133,7 +133,7 @@ class ICEManager {
     bool bUseRealTime;              // offset 0x7C, size 0x1
 };
 
-ICEManager TheICEManager; // size: 0x80, Decl: 93
+extern ICEManager TheICEManager; // size: 0x80, Decl: 93
 
 void ICECompleteEventTags();
 

@@ -935,6 +935,26 @@ inline bVector4 &bVector4::operator*=(float scale) {
     return *this;
 }
 
+inline bVector4 bVector4::operator-(const bVector4 &v) {
+    bVector4 *pv = const_cast<bVector4 *>(&v);
+    float x1 = this->x;
+    float y1 = this->y;
+    float z1 = this->z;
+    float w1 = this->w;
+
+    float x2 = pv->x;
+    float y2 = pv->y;
+    float z2 = pv->z;
+    float w2 = pv->w;
+
+    float _x = x1 - x2;
+    float _y = y1 - y2;
+    float _z = z1 - z2;
+    float _w = w1 - w2;
+
+    return bVector4(_x, _y, _z, _w);
+}
+
 inline bVector4 bVector4::operator-(const bVector4 &v) const {
     bVector4 *pv = const_cast<bVector4 *>(&v);
     float x1 = this->x;

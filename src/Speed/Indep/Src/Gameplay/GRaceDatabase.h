@@ -475,8 +475,6 @@ class GRaceDatabase {
     static GRaceDatabase *mObj;
 };
 
-const char GRaceDatabase::sDDayRaces[5][8] = {"16.1.0", "16.2.2", "16.2.3", "16.1.1", "16.2.1"};
-
 bool GetIsCollectorsEdition();
 
 #endif
