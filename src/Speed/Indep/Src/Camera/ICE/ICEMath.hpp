@@ -62,6 +62,26 @@ inline void Identity(struct ICE::Matrix4 *m) {
     bIdentity(reinterpret_cast<bMatrix4 *>(m));
 }
 
+inline int Clamp(int a, int min, int max) {
+    return bClamp(a, min, max);
+}
+
+inline void Add(struct UMath::Vector3 *dst, const struct UMath::Vector3 *v1, const struct UMath::Vector3 *v2) {
+    bAdd(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bVector3 *>(v1), reinterpret_cast<const bVector3 *>(v2));
+}
+
+inline void Normalize(struct UMath::Vector3 *dst, const struct UMath::Vector3 *src) {
+    bNormalize(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bVector3 *>(src));
+}
+
+inline float Dot(const struct UMath::Vector3 *v1, const struct UMath::Vector3 *v2) {
+    return bDot(reinterpret_cast<const bVector3 *>(v1), reinterpret_cast<const bVector3 *>(v2));
+}
+
+inline void Sub(struct UMath::Vector3 *dst, const struct UMath::Vector3 *v1, const struct UMath::Vector3 *v2) {
+    bSub(reinterpret_cast<bVector3 *>(dst), reinterpret_cast<const bVector3 *>(v1), reinterpret_cast<const bVector3 *>(v2));
+}
+
 }; // namespace ICE
 
 #endif

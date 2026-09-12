@@ -9,7 +9,10 @@
 
 // total size: 0x84
 struct ICEData {
+  public:
     void GetEye(int i, ICE::Vector3 *p);
+
+    void GetLook(int i, struct ICE::Vector3 *p);
 
     unsigned char nType;              // offset 0x0, size 0x1
     unsigned char bSmooth;            // offset 0x1, size 0x1

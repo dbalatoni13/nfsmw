@@ -16,8 +16,10 @@
 #include "Speed\Indep\Src\Interfaces\SimActivities\INIS.h"
 #include "Speed\Indep\Src\Camera\ICE\ICEMath.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
-#include "Speed\Indep\Src\Interfaces\Simables\IRigidBody.h"
+// #include "Speed\Indep\Src\Interfaces\Simables\IRigidBody.h"
 #include "Speed\Indep\Src\Physics\Behaviors\RigidBody.h"
+
+bool bMirrorICEData = false; // move?
 
 class ICEGroup {
   private:
@@ -34,18 +36,7 @@ class ICEGroup {
         return NumTracks;
     }
     inline ICETrack *GetTrack(int n) {
-        // struct ICETrack *track; // r3
-
-        // Range: 0x80079B74 -> 0x80079B74
-        // inline struct ICETrack *bTList<ICETrack>::GetNode(int ordinal_number) {}
-
-        struct ICETrack *track = TrackList.GetNode(n); // r3
-
-        // Range: 0x80079B74 -> 0x80079B74
-        // inline struct ICETrack *bTList<ICETrack>::EndOfList() {
-        //     // Range: 0x80079B74 -> 0x80079B74
-        //     inline struct bNode *bList::EndOfList() {}
-        // }
+        struct ICETrack *track = TrackList.GetNode(n);
         if (track == TrackList.EndOfList()) {
             return nullptr;
         }
@@ -77,11 +68,8 @@ class ICETrack : public bTNode<ICETrack> {
     //                             }
     //                         }
     //                     }
-    inline struct ICEData *GetKey(int n) {
-        int safeIndex = UMath::Clamp(n, 0, this->NumKeys - 1);
-
-        // Возвращаем указатель на нужный элемент массива Keys
-        return &this->Keys[safeIndex];
+    inline ICEData *GetKey(int n) {
+        return &this->Keys[ICE::Clamp(n, 0, this->NumKeys - 1)];
     }
     inline int GetNumKeys() {
         return NumKeys - 1;
