@@ -32,6 +32,9 @@ class AudioSettings;
 
 class cSTICH_PlayBack;
 
+// TODO where do these go?
+////////////
+
 enum eSFXOBJ_COLLISON_TYPES {
     eSFXOBJ_COLLISION = 0,
     eSFXOBJ_SCRAPES = 1,
@@ -394,10 +397,8 @@ typedef eMISC_SOUNDS reflection_typedef_eMISC_SOUNDS;
 
 // typedef eGameFlowSndState reflection_typedef_eGameFlowSndState;
 
-// TODO where does this go?
-extern Sound::SongInfoList Songs;
+////////////
 
-// File: speed/indep/src/eaxsound/EAXSOund.hpp
 // total size: 0xBC
 // Decl: 131
 class EAXSound : public AudioMemBase {

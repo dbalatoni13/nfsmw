@@ -30,6 +30,6 @@ int bSNPrintf(char *buf, int max_len, const char *format, ...);
 int bVSPrintf(char *destString, const char *fmt, va_list argList);
 int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList);
 
-void bPrintfSetLocaleInfo(char decimal_char /* r3 */, char group_char /* r4 */, char group_len /* r5 */);
+void bPrintfSetLocaleInfo(char decimal_char, char group_char, char group_len);
 
 #endif

@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-#include "Speed/Indep/Src/AI/gps.h"
 #include "Speed/Indep/Src/FEng/FEMath.h"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
@@ -479,6 +478,8 @@ void Minimap::UpdatePlayer2Element() {
         UpdateElementArt(&target_pos, &target_dir, mPlayerCarIndicator2, false);
     }
 }
+
+bool GPS_IsEngaged();
 
 void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
     bVector2 pos2D;

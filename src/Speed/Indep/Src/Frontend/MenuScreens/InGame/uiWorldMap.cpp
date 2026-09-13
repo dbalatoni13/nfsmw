@@ -1,8 +1,9 @@
 #include "uiWorldMap.hpp"
 
-#include "Speed/Indep/Src/AI/gps.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -16,6 +17,7 @@
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Generated/LanguageHashes.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
@@ -185,6 +187,10 @@ WorldMap::~WorldMap() {
         hud->RefreshMiniMapItems();
     }
 }
+
+void GPS_Disengage();
+bool GPS_Engage(const UMath::Vector3 &target, float maxDeviation);
+bool GPS_IsEngaged();
 
 // UNSOLVED
 void WorldMap::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {

@@ -27,6 +27,7 @@
 #define bPrintf (1) ? ((void)0) : bNullPrintf
 #define bMilestonePutString bReleasePutString
 #define bMilestonePrintf bReleasePrintf
+#define bAssert(exp) bAssertFailMsg(exp) // : 427
 #define bAssertMsg(exp, msg)
 #define bAssertMsg1(exp, msg, arg1)
 #define bAssertMsg2(exp, msg, arg1, arg2)
@@ -216,7 +217,7 @@ inline void bPlatEndianSwap(uint16 *value) {
 
 inline void bPlatEndianSwap(uint8 *value) {
 #ifdef NATIVE_ENDIAN_BIG
-    // bEndianSwap32(value);
+        // bEndianSwap32(value);
 #endif
 }
 
@@ -287,7 +288,5 @@ inline int bMemoryGetAlignmentOffset(int allocation_params) {
 }
 
 void bAssertFailMsg(char *fmt, const char *filename, int line_number, ...);
-
-#define bAssert(exp) bAssertFailMsg(exp) // : 427
 
 #endif

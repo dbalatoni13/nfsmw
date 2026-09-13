@@ -2,9 +2,6 @@
 #define GAMEPLAY_GMILESTONE_H
 
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
 
 struct MilestoneTypeInfo {
     unsigned int mTypeKey; // offset 0x0, size 0x4

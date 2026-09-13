@@ -218,7 +218,7 @@ int bDisableInterrupts() {
 void bRestoreInterrupts(int previous_state) {}
 
 void bMutex::Create() {
-    reinterpret_cast<RealSystem::Mutex *>(this)->Create();
+    MUTEX_create(reinterpret_cast<MUTEX *>(this));
 }
 
 void bMutex::Destroy() {

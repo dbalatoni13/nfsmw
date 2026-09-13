@@ -137,6 +137,6 @@ class TrackLoader {
 extern RegionLoader TheRegionLoader;
 extern TrackLoader TheTrackLoader;
 
-void GameFlowLoadGarageScreen(void (*callback)(int) /* r29 */, int param /* r28 */);
+void GameFlowLoadGarageScreen(ASYNCFILE_CALLBACK callback, int intptr_t);
 
 #endif

@@ -1,9 +1,9 @@
 #ifndef AEMS_DEF_HPP
-#define AEMS_DEF_HPP
+#define AEMS_DEF_HPP // Decl: 27
 
-#define EAXFECOMMONPLAYSTRUCTS //: 32
+#define EAXFECOMMONPLAYSTRUCTS // Decl: 32
 
-// Decl: speed/indep/src/Frontend/../EAXSound/AemsDef.hpp:33
+// Decl: 33
 enum eMenuSoundTriggers {
     UISND_NONE = -1,
     UISND_COMMON_UP = 0,

@@ -11,7 +11,6 @@
 
 class ISteeringWheel;
 
-// File: speed/indep/src/interfaces/simentities/IPlayer.h
 // Decl: 11
 enum ePlayerHudType {
     PHT_NONE = 0,
