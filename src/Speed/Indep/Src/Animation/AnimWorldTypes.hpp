@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+// TODO this file shouldn't get included in zWorld
+
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"

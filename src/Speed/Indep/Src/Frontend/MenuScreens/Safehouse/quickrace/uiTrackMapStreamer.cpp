@@ -128,7 +128,7 @@ void UITrackMapStreamer::SetMapLoaded(uint32 texture) {
         eUnloadStreamingTexture(texture);
         MapHash = hash;
         FEngSetInvisible(TrackMap);
-        eLoadStreamingTexture(MapHash, MapLoadCallback, reinterpret_cast<uint32>(MapHash), MemPoolNum);
+        eLoadStreamingTexture(MapHash, MapLoadCallback, MapHash, MemPoolNum);
     } else {
         bLoadingMap = false;
         FEngSetTextureHash(TrackMap, hash);

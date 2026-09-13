@@ -8,6 +8,8 @@
 #include "bSlotPool.hpp"
 #include "bTypes.hpp"
 
+#include <cstring>
+
 // TODO move these to the correct place
 // #define PLAT_NEXT_GEN
 
@@ -183,37 +185,37 @@ void bCloseSharedStringPool();
 
 // TODO EA_SYSTEM_BIG_ENDIAN
 inline void bPlatEndianSwap(uint64 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap64(value);
 #endif
 }
 
 inline void bPlatEndianSwap(int32 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }
 
 inline void bPlatEndianSwap(uint32 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }
 
 inline void bPlatEndianSwap(int16 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap16(value);
 #endif
 }
 
 inline void bPlatEndianSwap(uint16 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap16(value);
 #endif
 }
 
 inline void bPlatEndianSwap(uint8 *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     // bEndianSwap32(value);
 #endif
 }
@@ -221,7 +223,7 @@ inline void bPlatEndianSwap(uint8 *value) {
 inline void bPlatEndianSwap(int8 *value) {}
 
 inline void bPlatEndianSwap(float *value) {
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }

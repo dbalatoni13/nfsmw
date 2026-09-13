@@ -3,8 +3,12 @@
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
-#elif EA_PLATFORM_PLAYSTATION2
+#elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/Src/Ecstasy/eSolidPlat.hpp"
+#elif defined(EA_PLATFORM_XENON)
+#include "Speed/Xenon/Src/Ecstasy/eSolidPlat.hpp"
+#elif defined(EA_PLATFORM_WIN32)
+#include "Speed/PC/Src/Ecstasy/eSolidPlat.hpp"
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
@@ -254,6 +258,7 @@ class eViewPlatInterface {
 };
 
 // total size: 0x4
+// Decl: 804
 class eSolidPlatInterface {
     eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 

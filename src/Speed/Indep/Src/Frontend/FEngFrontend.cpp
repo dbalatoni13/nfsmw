@@ -92,7 +92,7 @@ uint32 FEngHashString(const char *fmt, ...) {
     char print_buffer[256];
     unsigned int hash;
     bVSPrintf(print_buffer, fmt, argList);
-    va_end(args);
+    va_end(argList);
     hash = bStringHash(print_buffer);
     return hash;
 }

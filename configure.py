@@ -184,7 +184,9 @@ else:
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 
-compilers_path = Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
+compilers_path = (
+    Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
+)
 
 if config.platform == Platform.GC_WII:
     config.asflags = [
@@ -670,6 +672,10 @@ def MatchingFor(*versions):
     return config.version in versions
 
 
+def RenameSectionsFor(versions: tuple[str], renames: tuple[tuple[str]]):
+    return renames if config.version in versions else ()
+
+
 if config.platform != Platform.PS2:
     config.warn_missing_config = True
 
@@ -717,17 +723,23 @@ config.libs = [
             Object(
                 NonMatching,
                 "Speed/Indep/SourceLists/zOnline.cpp",
-                section_renames=(
-                    (".text", ".over"),
-                    (".rela.text", ".rela.over"),
+                section_renames=RenameSectionsFor(
+                    ("GOWE69", "SLES-53558-A124"),
+                    (
+                        (".text", ".over"),
+                        (".rela.text", ".rela.over"),
+                    ),
                 ),
             ),
             Object(
                 NonMatching,
                 "Speed/Indep/SourceLists/zFeOverlay.cpp",
-                section_renames=(
-                    (".text", ".over"),
-                    (".rela.text", ".rela.over"),
+                section_renames=RenameSectionsFor(
+                    ("GOWE69", "SLES-53558-A124", "SLUS-21351"),
+                    (
+                        (".text", ".over"),
+                        (".rela.text", ".rela.over"),
+                    ),
                 ),
             ),
         ],

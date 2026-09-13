@@ -15,6 +15,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
+#include <cfloat>
 
 // TODO: import from Movie_GC.cpp
 extern void GCDrawMovie();
@@ -429,7 +430,7 @@ void cFEngRender::RenderString(FEString *string, FERenderObject *cached, FEPacka
 
         float fMaxWidth = static_cast<float>(string->MaxWidth);
         if (fMaxWidth == 0.0f) {
-            fMaxWidth = 3.4028235e+38f;
+            fMaxWidth = FLT_MAX;
         }
 
         float LineWidth = font->GetLineWidth(characters, 0, 0, false);

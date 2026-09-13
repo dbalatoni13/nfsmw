@@ -1,3 +1,8 @@
+// TODO remove
+#ifdef _MSC_VER
+#pragma warning(disable : 4716)
+#endif
+
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.cpp"
