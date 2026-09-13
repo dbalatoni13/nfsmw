@@ -35,13 +35,9 @@ class ICEGroup {
     int GetNumTracks() const {
         return NumTracks;
     }
-    inline ICETrack *GetTrack(int n) {
-        struct ICETrack *track = TrackList.GetNode(n);
-        if (track == TrackList.EndOfList()) {
-            return nullptr;
-        }
-        return track;
-    }
+    ICETrack *GetTrack(int n);
+
+    ICETrack *GetTrack(char);
 };
 
 // total size: 0x19F0
@@ -55,26 +51,23 @@ class ICETrack : public bTNode<ICETrack> {
     char Name[14];    // offset 0x17, size 0xE
     ICEData Keys[50]; // offset 0x28, size 0x19C8
   public:
-    // inline struct ICEData *ICETrack::GetKey(int n) {
-    //                          // Range: 0x8007D854 -> 0x8007D868
-    //                          inline int UMath::Clamp(int a, int min, int max) {
-    //                              // Range: 0x8007D854 -> 0x8007D868
-    //                              inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
-    //                                  // Range: 0x8007D854 -> 0x8007D854
-    //                                  inline int bMax(int a, int b) {}
-
-    //                                 // Range: 0x8007D854 -> 0x8007D868
-    //                                 inline int bMin(int a, int b) {}
-    //                             }
-    //                         }
-    //                     }
     inline ICEData *GetKey(int n) {
         return &this->Keys[ICE::Clamp(n, 0, this->NumKeys - 1)];
     }
     inline int GetNumKeys() {
         return NumKeys - 1;
     }
+    int GetKeyNumber(float f_param);
 };
+int ICETrack::GetKeyNumber(float f_param) {
+    int n = 0;
+    for (int i = 0; i < NumKeys; ++i) {
+        if (Keys[i].fParameter <= f_param) {
+            n = i;
+        }
+    }
+    return n;
+}
 
 // total size: 0xC
 class ICEShakeGroup {
@@ -121,6 +114,8 @@ class ICEManager {
     void Init();
 
     void Resolve();
+
+    int GetCameraIndex(float f_param, struct ICETrack *track);
 
     ICEData *GetCameraData(uint32 scene_hash, int camTrack);
 

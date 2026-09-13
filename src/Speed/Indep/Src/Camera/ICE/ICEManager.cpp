@@ -3,6 +3,14 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
+ICETrack *ICEGroup::GetTrack(int n) {
+    struct ICETrack *track = TrackList.GetNode(n);
+    if (track == TrackList.EndOfList()) {
+        return nullptr;
+    }
+    return track;
+}
+
 // move this
 ICEScene *FindAnimScene() {
     INIS *nis = INIS::Get();
@@ -242,6 +250,8 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Ma
     // struct UMath::Matrix4 mCarToWorld; // r1+0x8
     struct UMath::Matrix4 mCarToWorld; // r1+0x8
 
+    int bestTrack = 0; // r19
+
     mCarToWorld.v0.x = 0.0f;
     mCarToWorld.v1.x = 0.0f;
     mCarToWorld.v2.x = 0.0f;
@@ -264,23 +274,7 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Ma
 
     ICEGetPlayerCarTransform(reinterpret_cast<ICE::Matrix4 *>(&mCarToWorld));
 
-    int bestTrack = 0; // r19
-    // int bestTrack = (pNisCameras) | (track->Allocated << 16) | (track->Name[0] << 24);
-
-    // /* anonymous block */ {
-    //     // Range: 0x8007D784 -> 0x8007DA6C
-    //     int i; // r21
     for (int i = 0; i < nNisCameras; i++) {
-
-        //     // Range: 0x8007D804 -> 0x8007D804
-        //     inline unsigned int ICEGroup::GetHandle() {}
-        //     /* anonymous block */ {
-        // if (pNisCameras[i].GetHandle() == scene_hash) {
-
-        //         // Range: 0x8007D81C -> 0x8007DA5C
-        //         struct ICEGroup *group;
-        //         int numTracks; // r25
-        //         float bestDot; // f30
 
         struct ICEGroup *group = this->GetNisCameraGroup(scene_hash);
 
@@ -288,180 +282,62 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Ma
             continue;
         }
 
-        //         // Range: 0x8007D81C -> 0x8007D81C
-        //         inline int ICEGroup::GetNumTracks() {}
         int numTracks = group->GetNumTracks(); // r25
         float bestDot;                         // f30 // mb 0.0f or -1.0f
 
-        //         /* anonymous block */ {
-        //             // Range: 0x8007D828 -> 0x8007DA5C
-        //             int k; // r26
         for (int k = 0; k < numTracks; k++) {
 
-            //             /* anonymous block */ {
-            //                 // Range: 0x8007D83C -> 0x8007DA50
-            //                 struct ICETrack *track; // r3
+            ICETrack *track = group->GetTrack(k);
 
-            for (int k = 0; k < numTracks; k++) {
-                ICETrack *track = group->GetTrack(k);
-                //                 // Range: 0x8007D83C -> 0x8007D83C
-                //                 inline int ICETrack::GetNumKeys() {}
+            if (track->GetNumKeys() > 0) {
+                struct ICEData *key = track->GetKey(0);
+                int n; // r29
 
-                // if (track->GetNumKeys() < 2)
-                //     return bestTrack;
-                if (track->GetNumKeys() > 0) {
+                struct UMath::Vector3 v_eye; // r1+0x48
+                key->GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
 
-                    //                 /* anonymous block */ {
-                    //                     // Range: 0x8007D854 -> 0x8007DA50
-                    //                     struct ICEData *key;
-                    //                     int n;                         // r29
-                    //                     struct UMath::Vector3 v_eye;   // r1+0x48
-                    //                     struct UMath::Vector3 v_look;  // r1+0x58
-                    //                     struct UMath::Vector3 vCamDir; // r1+0x68
-                    //                     struct UMath::Vector3 *pCarDir;
-                    //                     float dot;
+                switch (key->nSpaceEye) {
+                    case 0:
+                        ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_eye), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
+                                       reinterpret_cast<const ICE::Vector3 *>(&v_eye));
 
-                    //                     // Range: 0x8007D854 -> 0x8007D878
-                    //                     inline struct ICEData *ICETrack::GetKey(int n) {
-                    //                         // Range: 0x8007D854 -> 0x8007D868
-                    //                         inline int UMath::Clamp(int a, int min, int max) {
-                    //                             // Range: 0x8007D854 -> 0x8007D868
-                    //                             inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
-                    //                                 // Range: 0x8007D854 -> 0x8007D854
-                    //                                 inline int bMax(int a, int b) {}
+                    case 2:
+                        ICE::Add(&v_eye, &v_eye, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v3));
 
-                    //                                 // Range: 0x8007D854 -> 0x8007D868
-                    //                                 inline int bMin(int a, int b) {}
-                    //                             }
-                    //                         }
-                    //                     }
-                    struct ICEData *key = track->GetKey(0);
-                    int n; // r29
-
-                    //                     // Range: 0x8007D88C -> 0x8007D88C
-                    //                     inline Vector3::Vector3() {}
-                    struct UMath::Vector3 v_eye; // r1+0x48
-                    key->GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
-
-                    switch (key->nSpaceEye) {
-                        case 0:
-                            //                     // Range: 0x8007D8E4 -> 0x8007D8E4
-                            //                     inline void MulVector(struct UMath::Vector3 * dst, const struct UMath::Matrix4 *m, const struct
-                            //                     UMath::Vector3 *v)
-                            //                     {}
-                            ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_eye), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
-                                           reinterpret_cast<const ICE::Vector3 *>(&v_eye));
-
-                            //                     // Range: 0x8007D8F8 -> 0x8007D8F8
-                            //                     inline void UMath::Add(struct UMath::Vector3 * dst, const struct UMath::Vector3 *v1, const struct
-                            //                     UMath::Vector3 *v2) {
-                            //                         // Range: 0x8007D8F8 -> 0x8007D8F8
-                            //                         inline struct bVector3 *bAdd(struct bVector3 * dest, const struct bVector3 *v1, const struct
-                            //                         bVector3 *v2)
-                            //                         {
-                            //                             // Local variables
-                            //                             float x1; // f0
-                            //                             float y1; // f13
-                            //                             float z1; // f12
-                            //                             float x2; // f11
-                            //                             float y2; // f10
-                            //                             float z2; // f9
-                            //                             // Range: 0x8007D8F8 -> 0x8007D8F8
-                            //                             inline struct bVector3 *bFill(struct bVector3 * dest, float x, float y, float z) {}
-                            //                         }
-                            //                     }
-                        case 2:
-                            ICE::Add(&v_eye, &v_eye, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v3));
-                            //                     // Range: 0x8007D92C -> 0x8007D93C
-                            //                     inline void MulVector(struct UMath::Vector3 * dst, const struct UMath::Matrix4 *m, const struct
-                            //                     UMath::Vector3 *v)
-                            //                     {}
-                        case 3:
-                            ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_eye), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
-                                           reinterpret_cast<const ICE::Vector3 *>(&v_eye));
-                            //                     // Range: 0x8007D93C -> 0x8007D93C
-                            //                     inline Vector3::Vector3() {}
-                    }
-                    struct UMath::Vector3 v_look; // r1+0x58
-                    switch (key->nSpaceLook) {
-                        case 0:
-                            //                     // Range: 0x8007D98C -> 0x8007D98C
-                            //                     inline void MulVector(struct UMath::Vector3 * dst, const struct UMath::Matrix4 *m, const struct
-                            //                     UMath::Vector3 *v)
-                            //                     {}
-                            ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_look), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
-                                           reinterpret_cast<const ICE::Vector3 *>(&v_look));
-                        //                     // Range: 0x8007D9A0 -> 0x8007D9A0
-                        //                     inline void UMath::Add(struct UMath::Vector3 * dst, const struct UMath::Vector3 *v1, const struct
-                        //                     UMath::Vector3 *v2) {
-                        //                         // Range: 0x8007D9A0 -> 0x8007D9A0
-                        //                         inline struct bVector3 *bAdd(struct bVector3 * dest, const struct bVector3 *v1, const struct
-                        //                         bVector3 *v2)
-                        //                         {
-                        //                             // Local variables
-                        //                             float x1; // f0
-                        //                             float y1; // f13
-                        //                             float z1; // f12
-                        //                             float x2; // f11
-                        //                             float y2; // f10
-                        //                             float z2; // f9
-                        //                             // Range: 0x8007D9A0 -> 0x8007D9A0
-                        //                             inline struct bVector3 *bFill(struct bVector3 * dest, float x, float y, float z) {}
-                        //                         }
-                        //                     }
-                        case 2:
-                            ICE::Add(&v_look, &v_look, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v3));
-                        //                     // Range: 0x8007D9D4 -> 0x8007D9E4
-                        //                     inline void MulVector(struct UMath::Vector3 * dst, const struct UMath::Matrix4 *m, const struct
-                        //                     UMath::Vector3 *v)
-                        //                     {}
-                        case 3:
-                            ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_look), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
-                                           reinterpret_cast<const ICE::Vector3 *>(&v_look));
-                    }
-                    //                     // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                     inline Vector3::Vector3() {}
-                    struct UMath::Vector3 vCamDir; // r1+0x68
-
-                    //                     // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                     inline void UMath::Sub(struct UMath::Vector3 * dst, const struct UMath::Vector3 *v1, const struct
-                    //                     UMath::Vector3 *v2) {
-                    //                         // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                         inline struct bVector3 *bSub(struct bVector3 * dest, const struct bVector3 *v1, const struct
-                    //                         bVector3 *v2)
-                    //                         {
-                    //                             // Local variables
-                    //                             float x1; // f12
-                    //                             float y1; // f13
-                    //                             float z1;
-                    //                             float x2; // f0
-                    //                             float y2; // f11
-                    //                             float z2;
-                    //                             // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                             inline struct bVector3 *bFill(struct bVector3 * dest, float x, float y, float z) {}
-                    //                         }
-                    //                     }
-                    ICE::Sub(&vCamDir, &v_eye, &v_look);
-                    //                     // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                     inline void Normalize(struct UMath::Vector3 * dst, const struct UMath::Vector3 *src) {}
-                    ICE::Normalize(&vCamDir, &vCamDir);
-                    // float dot;
-                    //                      // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                      inline float UMath::Dot(const struct UMath::Vector3 *v1, const struct UMath::Vector3 *v2) {
-                    //                          // Range: 0x8007D9E4 -> 0x8007D9E4
-                    //                          inline float bDot(const struct bVector3 *v1, const struct bVector3 *v2) {}
-                    //                      }
-                    float dot = ICE::Dot(&vCamDir, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v0));
-                    //                 }
-                    // struct UMath::Vector3 *pCarDir;
+                    case 3:
+                        ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_eye), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
+                                       reinterpret_cast<const ICE::Vector3 *>(&v_eye));
                 }
-                //             }
+                struct UMath::Vector3 v_look; // r1+0x58
+                switch (key->nSpaceLook) {
+                    case 0:
+
+                        ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_look), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
+                                       reinterpret_cast<const ICE::Vector3 *>(&v_look));
+
+                    case 2:
+                        ICE::Add(&v_look, &v_look, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v3));
+
+                    case 3:
+                        ICE::MulVector(reinterpret_cast<ICE::Vector3 *>(&v_look), reinterpret_cast<const ICE::Matrix4 *>(&mCarToWorld),
+                                       reinterpret_cast<const ICE::Vector3 *>(&v_look));
+                }
+
+                UMath::Vector3 vCamDir; // r1+0x68
+
+                ICE::Sub(&vCamDir, &v_eye, &v_look);
+                // vCamDir.pad = 0.0f;
+                vCamDir.z = 0.0f;
+                ICE::Normalize(&vCamDir, &vCamDir);
+
+                float dot = ICE::Dot(&vCamDir, reinterpret_cast<const UMath::Vector3 *>(&mCarToWorld.v0));
+
+                if (dot > bestDot) {
+                    bestDot = dot;
+                    bestTrack = k;
+                }
             }
-            //         }
         }
-        //     }
-        //}
-        // }
     }
 }
 
@@ -489,6 +365,12 @@ int ICEManager::GetNumSceneCameraTrack(uint32 scene_hash) {
     if (group != nullptr)
         return group->GetNumTracks();
 
+    return 0;
+}
+
+int ICEManager::GetCameraIndex(float f_param, struct ICETrack *track) {
+    if (track)
+        return track->GetKeyNumber(f_param);
     return 0;
 }
 
