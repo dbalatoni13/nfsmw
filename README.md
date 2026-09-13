@@ -55,7 +55,7 @@ When running under WSL, [objdiff](#diffing) is unable to get filesystem notifica
 
 - VSCode
   - Ensure the VSCode extension [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) is installed
-  - When propmpted to "Reopen folder to develop in a container" select "Reopen in Contianer" or Run `Dev Containers: Reopen in Container`
+  - When prompted to "Reopen folder to develop in a container" select "Reopen in Contianer" or Run `Dev Containers: Reopen in Container`
 
 - Zed
   - When asked "Would you like to re-open it in a container?" select "Yes, Open in Container" or run `projects: open dev container`
