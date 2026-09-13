@@ -1109,7 +1109,6 @@ void HandleTrackStreamerLoadingBar() {
     } else {
         if (TheTrackStreamer.CheckLoadingBar() == 0) {
             TrackStreamerLoadingBarUp = false;
-            // TODO magic
             new EFadeScreenOff(FEHASH_HIDE);
             FEManager::RequestUnPauseSimulation("TrackStreamerLoadingBar");
         }
