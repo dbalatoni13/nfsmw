@@ -55,7 +55,16 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     int32 RequestedSize; // offset 0x10, size 0x4
 };
 
-// total size: 0x60
+class FancyStompDetector : public bTNode<FancyStompDetector> {
+  public:
+    ~FancyStompDetector() {
+        delete static_cast<char *>(Memory);
+    }
+
+    void *Memory;
+};
+
+// total size: 0x64
 class MemoryPool {
   public:
     void Init(void *memory, int memory_size, const char *debug_name);
@@ -75,7 +84,7 @@ class MemoryPool {
     int GetAllocations(void **allocations, int max_allocations);
     void SetFancyStompDetector(void *mem, int mem_size, const char *name);
     bool CheckFancyStompDetector(const void *mem, int mem_size);
-    void TraceNewPool();
+    __declspec(noinline) void TraceNewPool();
     void TraceDeletePool();
     void TraceFreeMemory(void *p, int size);
     void TraceRemoveMemory(void *p, int size);
@@ -122,18 +131,19 @@ class MemoryPool {
     const char *pDebugName;                        // offset 0x0, size 0x4
     bTList<FreeBlock> FreeBlockList;               // offset 0x4, size 0x8
     bTList<AllocationHeader> AllocationHeaderList; // offset 0xC, size 0x8
-    intptr_t InitialAddress;                       // offset 0x14, size 0x4
-    int InitialSize;                               // offset 0x18, size 0x4
-    int NumAllocations;                            // offset 0x1C, size 0x4
-    int TotalNumAllocations;                       // offset 0x20, size 0x4
-    int PoolSize;                                  // offset 0x24, size 0x4
-    int AmountAllocated;                           // offset 0x28, size 0x4
-    int MostAmountAllocated;                       // offset 0x2C, size 0x4
-    int AmountFree;                                // offset 0x30, size 0x4
-    int LeastAmountFree;                           // offset 0x34, size 0x4
-    bool DebugFillEnabled;                         // offset 0x38, size 0x1
-    bool DebugTracingEnabled;                      // offset 0x3C, size 0x1
-    bMutex Mutex;                                  // offset 0x40, size 0x20
+    bTList<FancyStompDetector> FancyStompDetectorList; // offset 0x14, size 0x8
+    intptr_t InitialAddress;                       // offset 0x1C, size 0x4
+    int InitialSize;                               // offset 0x20, size 0x4
+    int NumAllocations;                            // offset 0x24, size 0x4
+    int TotalNumAllocations;                       // offset 0x28, size 0x4
+    int PoolSize;                                  // offset 0x2C, size 0x4
+    int AmountAllocated;                           // offset 0x30, size 0x4
+    int MostAmountAllocated;                       // offset 0x34, size 0x4
+    int AmountFree;                                // offset 0x38, size 0x4
+    int LeastAmountFree;                           // offset 0x3C, size 0x4
+    bool DebugFillEnabled;                         // offset 0x40, size 0x1
+    bool DebugTracingEnabled;                      // offset 0x41, size 0x1
+    bMutex Mutex;                                  // offset 0x44, size 0x20
 };
 
 int bMemoryAutomaticVerifyPoolIntegrity = 0; // size: 0x4, address: 0x80416418
@@ -169,6 +179,7 @@ int GetAlignmentAdjustBottom(intptr_t address, int alignment, int alignment_offs
 void MemoryPool::Init(void *memory, int memory_size, const char *debug_name) {
     this->FreeBlockList.InitList();
     this->AllocationHeaderList.InitList();
+    this->FancyStompDetectorList.InitList();
     this->InitialAddress = reinterpret_cast<uintptr_t>(memory);
     this->InitialSize = memory_size;
     this->NumAllocations = 0;
@@ -193,7 +204,9 @@ void MemoryPool::Close() {
         this->PrintAllocationsByAddress(0, 0x7fffffff);
         bBreak();
     }
-    this->TraceDeletePool();
+    while (!this->FancyStompDetectorList.IsEmpty()) {
+        delete this->FancyStompDetectorList.RemoveHead();
+    }
     this->Mutex.Destroy();
 }
 
@@ -455,7 +468,7 @@ asd:
 const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
 int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
 int MemoryInitialized = 0;              // size: 0x4, address: 0x80416458
-char MemoryPoolMem[16][96];             // size: 0x600, address: 0x8045A20D
+char MemoryPoolMem[16][100];            // size: 0x640, address: 0x90DFF0
 MemoryPool *MemoryPools[16];            // size: 0x40, address: 0x8045A810
 MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
 bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
@@ -644,9 +657,11 @@ void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_na
     info->OverflowPoolNumber = -1;
     MemoryPools[pool_num] = reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num]);
     reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num])->Init(mem, mem_size, debug_name);
+#ifdef EA_PLATFORM_GAMECUBE
     if (pool_num == 0) {
         MemoryPoolZeroSize = mem_size;
     }
+#endif
 }
 
 void bCloseMemoryPool(int pool_num) {
@@ -768,7 +783,10 @@ void bMemoryInit() {
         MemoryInitialized = TRUE;
     }
 #else
-    // TODO
+    if (!MemoryInitialized) {
+        bInitMemoryPool(0, nullptr, 0, "Main Pool");
+        MemoryInitialized = true;
+    }
 #endif
 }
 
@@ -951,11 +969,11 @@ int bCountFreeMemory(int pool) {
 }
 
 int bGetPoolSize(int pool) {
-    if (MemoryPools[pool] != nullptr) {
-        return MemoryPools[pool]->GetPoolSize();
+    int result = reinterpret_cast<intptr_t>(MemoryPools[pool]);
+    if (result == 0) {
+        return result;
     }
-
-    return 0;
+    return reinterpret_cast<MemoryPool *>(result)->GetPoolSize();
 }
 
 int bLargestMalloc(int allocation_params) {

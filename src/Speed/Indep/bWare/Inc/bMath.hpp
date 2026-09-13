@@ -1109,6 +1109,10 @@ inline bVector3 &bConvertToBond(bVector3 &dest, const bVector3 &v) {
 
 // total size: 0x40
 struct bMatrix4 {
+    enum Initialization {
+        NO_INITIALIZATION
+    };
+
     bVector4 v0; // offset 0x0, size 0x10
     bVector4 v1; // offset 0x10, size 0x10
     bVector4 v2; // offset 0x20, size 0x10
@@ -1134,6 +1138,8 @@ struct bMatrix4 {
         v3.z = 0.0f;
         v3.w = 1.0f;
     }
+
+    bMatrix4(Initialization) {}
 
     bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);

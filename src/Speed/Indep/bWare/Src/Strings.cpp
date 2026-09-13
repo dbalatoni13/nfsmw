@@ -42,13 +42,15 @@ int bStrLen(const char *s) {
 }
 
 char *bStrCpy(char *to, const char *from) {
-    int n = 0;
-    to[0] = from[0];
-    while (to[n] != '\0') {
-        n++;
-        to[n] = from[n];
+    char *result = to;
+    *to = *from;
+    if (*to != '\0') {
+        do {
+            ++to;
+            *to = from[to - result];
+        } while (*to != '\0');
     }
-    return to;
+    return result;
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
@@ -415,15 +417,15 @@ uint16 *bStrNCpy(uint16 *to, const uint16 *from, int m) {
 
 uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
     int n = 0;
-    if (m-- != 0) {
-        to[0] = from[0];
-        while (to[n] != '\0') {
-            n++;
-            if (m-- == 0) {
+    if (m != 0) {
+        do {
+            to[n] = from[n];
+            --m;
+            if (to[n] == '\0') {
                 return to;
             }
-            to[n] = from[n];
-        }
+            ++n;
+        } while (m != 0);
     }
     return to;
 }

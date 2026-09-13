@@ -122,15 +122,30 @@ unsigned int bRandom(int range, unsigned int *seed) {
 }
 
 float bRandom(float range, unsigned int *seed) {
-    return range * 4.656613e-10f * bRandom(0x7fffffff, seed);
+    unsigned int result = *seed;
+    unsigned int next = result ^ 0x1d872b41;
+    unsigned int temp = next ^ (next >> 5);
+    *seed = temp ^ (next ^ (temp << 0x1b));
+    return static_cast<float>(result % 0x7fffffff) * range * 4.656613e-10f;
 }
 
 unsigned int bRandom(int range) {
-    return bRandom(range, &bDefaultSeed);
+    if (range == 0) {
+        return 0;
+    }
+    unsigned int result = bDefaultSeed;
+    unsigned int next = result ^ 0x1d872b41;
+    unsigned int temp = next ^ (next >> 5);
+    bDefaultSeed = temp ^ (next ^ (temp << 0x1b));
+    return result % range;
 }
 
 float bRandom(float range) {
-    return bRandom(range, &bDefaultSeed);
+    unsigned int result = bDefaultSeed;
+    unsigned int next = result ^ 0x1d872b41;
+    unsigned int temp = next ^ (next >> 5);
+    bDefaultSeed = temp ^ (next ^ (temp << 0x1b));
+    return static_cast<float>(result % 0x7fffffff) * range * 4.656613e-10f;
 }
 
 float bFMod(float a, float b) {

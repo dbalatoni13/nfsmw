@@ -214,38 +214,23 @@ void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *
     float x_max = point->x + extra_width;
     float y_max = point->y + extra_width;
 
-    if (x_min < bbox_min->x) {
-        bbox_min->x = x_min;
-    }
-    if (y_min < bbox_min->y) {
-        bbox_min->y = y_min;
-    }
-    if (x_max > bbox_max->x) {
-        bbox_max->x = x_max;
-    }
-    if (y_max > bbox_max->y) {
-        bbox_max->y = y_max;
-    }
+    float min_x = bMin(bbox_min->x, x_min);
+    float min_y = bMin(bbox_min->y, y_min);
+    float max_x = bMax(bbox_max->x, x_max);
+    float max_y = bMax(bbox_max->y, y_max);
+
+    bFill(bbox_min, min_x, min_y);
+    bFill(bbox_max, max_x, max_y);
 }
 
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
-    float x_min = bbox2_min->x;
-    float y_min = bbox2_min->y;
-    float x_max = bbox2_max->x;
-    float y_max = bbox2_max->y;
+    float min_x = bMin(bbox_min->x, bbox2_min->x);
+    float min_y = bMin(bbox_min->y, bbox2_min->y);
+    float max_x = bMax(bbox_max->x, bbox2_max->x);
+    float max_y = bMax(bbox_max->y, bbox2_max->y);
 
-    if (x_min < bbox_min->x) {
-        bbox_min->x = x_min;
-    }
-    if (y_min < bbox_min->y) {
-        bbox_min->y = y_min;
-    }
-    if (x_max > bbox_max->x) {
-        bbox_max->x = x_max;
-    }
-    if (y_max > bbox_max->y) {
-        bbox_max->y = y_max;
-    }
+    bFill(bbox_min, min_x, min_y);
+    bFill(bbox_max, max_x, max_y);
 }
 
 int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width) {
@@ -323,16 +308,24 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     float y = point->y;
     float z = point->z;
 
-    float min_x = bMin(x, bbox_min->x);
-    float min_y = bMin(y, bbox_min->y);
-    float min_z = bMin(z, bbox_min->z);
-
-    float max_x = bMax(x, bbox_max->x);
-    float max_y = bMax(y, bbox_max->y);
-    float max_z = bMax(z, bbox_max->z);
-
-    bFill(bbox_min, min_x, min_y, min_z);
-    bFill(bbox_max, max_x, max_y, max_z);
+    if (x < bbox_min->x) {
+        bbox_min->x = x;
+    }
+    if (y < bbox_min->y) {
+        bbox_min->y = y;
+    }
+    if (z < bbox_min->z) {
+        bbox_min->z = z;
+    }
+    if (x > bbox_max->x) {
+        bbox_max->x = x;
+    }
+    if (y > bbox_max->y) {
+        bbox_max->y = y;
+    }
+    if (z > bbox_max->z) {
+        bbox_max->z = z;
+    }
 }
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width) {

@@ -3,6 +3,10 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+#ifdef EA_PLATFORM_WIN32
+extern "C" __declspec(dllimport) bMatrix4 *__stdcall D3DXMatrixTranspose(bMatrix4 *dest, const bMatrix4 *src);
+#endif
+
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
     float a = src->v0.x;
     float b = src->v0.y;
@@ -117,12 +121,11 @@ void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
 }
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
-    bMatrix4 U;
-    bMatrix4 iU;
-    bMatrix4 Mf;
-    bMatrix4 iMf;
-    bMatrix4 K;
-    bMatrix4 Nf;
+    __declspec(align(16)) bMatrix4 U(bMatrix4::NO_INITIALIZATION);
+    bMatrix4 iU(bMatrix4::NO_INITIALIZATION);
+    bMatrix4 Mf(bMatrix4::NO_INITIALIZATION);
+    bMatrix4 iMf(bMatrix4::NO_INITIALIZATION);
+    bMatrix4 Nf(bMatrix4::NO_INITIALIZATION);
 
     Mf.v0.x = 2.0f;
     Mf.v0.y = -2.0f;
@@ -176,8 +179,8 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     U.v3.w = 1.0f;
 
     fInvertMatrix(&iU, &U);
-    eMulMatrix(&K, &iMf, &iU);
-    eMulMatrix(&Nf, &Mf, &K);
+    eMulMatrix(&U, &iMf, &iU);
+    eMulMatrix(&Nf, &Mf, &U);
     eMulMatrix(b, &Nf, p);
 }
 
@@ -206,10 +209,9 @@ void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 #ifdef EA_PLATFORM_GAMECUBE
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
+#elif defined(EA_PLATFORM_WIN32)
+    D3DXMatrixTranspose(dest, m);
 #else
-    // The retail PC path delegates to D3DXMatrixTranspose.  The operation
-    // itself is a plain 4x4 transpose; use a temporary so the in-place calls
-    // made by QuickSpline remain well-defined without the D3DX runtime.
     float transposed[4][4];
     for (int row = 0; row < 4; ++row) {
         for (int column = 0; column < 4; ++column) {
