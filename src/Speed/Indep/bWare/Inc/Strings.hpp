@@ -55,7 +55,9 @@ class bSharedStringPool {
         return &StringTable[index];
     }
 
-    const char *GetString(int index) {}
+    const char *GetString(int index) {
+        return this->GetSharedString(index)->String;
+    }
 
   private:
     bSharedString *GetStringTableStart() {

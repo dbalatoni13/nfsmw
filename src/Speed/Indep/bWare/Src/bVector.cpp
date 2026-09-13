@@ -13,8 +13,14 @@ float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     return bSqrt(x * x + y * y + z * z);
 }
 
-// STRIPPED
-float bDistBetween(const bVector4 *v1, const bVector4 *v2) {}
+float bDistBetween(const bVector4 *v1, const bVector4 *v2) {
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    float z = v1->z - v2->z;
+    float w = v1->w - v2->w;
+
+    return bSqrt(x * x + y * y + z * z + w * w);
+}
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
     float len = bLength(v);
@@ -31,7 +37,6 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
     return dest;
 }
 
-// STRIPPED
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
     float len = bLength(v) / length;
 
@@ -141,11 +146,28 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
     return bAbs(v1->y - v2->y) <= epsilon;
 }
 
-// STRIPPED
-int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {}
+int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {
+    if (bAbs(v1->x - v2->x) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    return bAbs(v1->z - v2->z) <= epsilon;
+}
 
-// STRIPPED
-int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {}
+int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {
+    if (bAbs(v1->x - v2->x) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->z - v2->z) > epsilon) {
+        return 0;
+    }
+    return bAbs(v1->w - v2->w) <= epsilon;
+}
 
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float x = v1->y * v2->z - v1->z * v2->y;
@@ -165,8 +187,15 @@ void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max) {
     bbox_max->y = -FLT_MAX;
 }
 
-// STRIPPED
-void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {}
+void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {
+    float x = point->x;
+    float y = point->y;
+
+    bbox_min->x = x;
+    bbox_min->y = y;
+    bbox_max->x = x;
+    bbox_max->y = y;
+}
 
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {
     float min_x = bMin(bbox_min->x, point->x);
@@ -179,11 +208,45 @@ void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *
     bFill(bbox_max, max_x, max_y);
 }
 
-// STRIPPED
-void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {}
+void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {
+    float x_min = point->x - extra_width;
+    float y_min = point->y - extra_width;
+    float x_max = point->x + extra_width;
+    float y_max = point->y + extra_width;
 
-// STRIPPED
-void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {}
+    if (x_min < bbox_min->x) {
+        bbox_min->x = x_min;
+    }
+    if (y_min < bbox_min->y) {
+        bbox_min->y = y_min;
+    }
+    if (x_max > bbox_max->x) {
+        bbox_max->x = x_max;
+    }
+    if (y_max > bbox_max->y) {
+        bbox_max->y = y_max;
+    }
+}
+
+void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
+    float x_min = bbox2_min->x;
+    float y_min = bbox2_min->y;
+    float x_max = bbox2_max->x;
+    float y_max = bbox2_max->y;
+
+    if (x_min < bbox_min->x) {
+        bbox_min->x = x_min;
+    }
+    if (y_min < bbox_min->y) {
+        bbox_min->y = y_min;
+    }
+    if (x_max > bbox_max->x) {
+        bbox_max->x = x_max;
+    }
+    if (y_max > bbox_max->y) {
+        bbox_max->y = y_max;
+    }
+}
 
 int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width) {
     if ((point->x < bbox_min->x - extra_width) || (point->x > bbox_max->x + extra_width) || (point->y < bbox_min->y - extra_width) ||
@@ -193,8 +256,12 @@ int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, con
     return true;
 }
 
-// STRIPPED
-int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {}
+int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
+    if ((bbox2_min->x < bbox_min->x) || (bbox2_max->x > bbox_max->x) || (bbox2_min->y < bbox_min->y) || (bbox2_max->y > bbox_max->y)) {
+        return false;
+    }
+    return true;
+}
 
 int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
     if ((bbox2_min->x < bbox_max->x) && (bbox2_max->x > bbox_min->x) && (bbox2_min->y < bbox_max->y) && (bbox2_max->y > bbox_min->y)) {
@@ -203,8 +270,29 @@ int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, 
     return false;
 }
 
-// STRIPPED
-float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {}
+float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {
+    float x = point->x;
+    float y = point->y;
+    float distance = bbox_min->x - x;
+    float axis_distance = bbox_min->y - y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = x - bbox_max->x;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = y - bbox_max->y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+    return distance;
+}
 
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
     bbox_min->x = FLT_MAX;
@@ -230,8 +318,22 @@ void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVecto
     bbox_max->z = z;
 }
 
-// STRIPPED
-void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {}
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {
+    float x = point->x;
+    float y = point->y;
+    float z = point->z;
+
+    float min_x = bMin(x, bbox_min->x);
+    float min_y = bMin(y, bbox_min->y);
+    float min_z = bMin(z, bbox_min->z);
+
+    float max_x = bMax(x, bbox_max->x);
+    float max_y = bMax(y, bbox_max->y);
+    float max_z = bMax(z, bbox_max->z);
+
+    bFill(bbox_min, min_x, min_y, min_z);
+    bFill(bbox_max, max_x, max_y, max_z);
+}
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width) {
     float x_min = point->x - extra_width;
@@ -301,16 +403,61 @@ int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, con
     return true;
 }
 
-// STRIPPED
-int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {}
+int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
+    if ((bbox2_min->x < bbox_min->x) || (bbox2_max->x > bbox_max->x) || (bbox2_min->y < bbox_min->y) || (bbox2_max->y > bbox_max->y) ||
+        (bbox2_min->z < bbox_min->z) || (bbox2_max->z > bbox_max->z)) {
+        return false;
+    }
+    return true;
+}
 
-// STRIPPED
-int bBoundingBoxOverlapping(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {}
+int bBoundingBoxOverlapping(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
+    if ((bbox2_min->x < bbox_max->x) && (bbox2_max->x > bbox_min->x) && (bbox2_min->y < bbox_max->y) && (bbox2_max->y > bbox_min->y) &&
+        (bbox2_min->z < bbox_max->z) && (bbox2_max->z > bbox_min->z)) {
+        return true;
+    }
+    return false;
+}
 
-// STRIPPED
-float bBoundingBoxDistOutside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point) {}
+float bBoundingBoxDistOutside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point) {
+    float x = point->x;
+    float y = point->y;
+    float z = point->z;
+    float distance = bbox_min->x - x;
+    float axis_distance = bbox_min->y - y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
 
-// UNSOLVED, ProStreet scratch: https://decomp.me/scratch/VE8bd
+    axis_distance = bbox_min->z - z;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = x - bbox_max->x;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = y - bbox_max->y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = z - bbox_max->z;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+    return distance;
+}
+
+// Semantic reconstruction from the existing cross-title implementation;
+// the PC target remains compiler-near but is not byte-identical.
 float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2) {
     bVector2 p = *point - *line_p1;
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
@@ -332,8 +479,14 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     return distance;
 }
 
-// STRIPPED
-float bGetPolyArea(const bVector2 *points, int num_points) {}
+float bGetPolyArea(const bVector2 *points, int num_points) {
+    float area = 0.0f;
+    for (int i = 0; i < num_points; i++) {
+        int j = (i + 1) % num_points;
+        area += points[i].x * points[j].y - points[i].y * points[j].x;
+    }
+    return area * 0.5f;
+}
 
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
     float x = point->x;

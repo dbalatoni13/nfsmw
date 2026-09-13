@@ -30,14 +30,20 @@ SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->InitFromFile(filename);
 }
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error) {}
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error) {
+    this->ErrorFunction = enable_fatal_error ? SpeedScript::DefaultErrorFunction : nullptr;
+    this->Init(script_name, text_buffer, bStrLen(text_buffer));
+}
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char *)) {}
+SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char *)) {
+    this->ErrorFunction = error_function;
+    this->InitFromFile(filename);
+}
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {}
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {
+    this->ErrorFunction = error_function;
+    this->Init(script_name, text_buffer, bStrLen(text_buffer));
+}
 
 void SpeedScript::InitFromFile(const char *filename) {
     int file_size = 0;
@@ -255,11 +261,19 @@ char *SpeedScript::GetNextCommand(const char *command) {
     return nullptr;
 }
 
-// STRIPPED
-char *SpeedScript::PeekNextCommand() {}
+char *SpeedScript::PeekNextCommand() {
+    const int saved_position = this->NextEntryNum;
+    char *command = this->GetNextCommand();
+    this->NextEntryNum = saved_position;
+    return command;
+}
 
-// STRIPPED
-char *SpeedScript::GetCommandArgument(const char *command) {}
+char *SpeedScript::GetCommandArgument(const char *command) {
+    if (this->GetNextCommand(command) == nullptr) {
+        return nullptr;
+    }
+    return this->GetNextArgument();
+}
 
 // TODO fake match, isArg doesn't exist
 bool SpeedScript::IsAnotherArgument() {
@@ -281,8 +295,12 @@ char *SpeedScript::GetNextArgument() {
     return nullptr;
 }
 
-// STRIPPED
-char *SpeedScript::PeekNextArgument() {}
+char *SpeedScript::PeekNextArgument() {
+    const int saved_position = this->NextEntryNum;
+    char *argument = this->GetNextArgument();
+    this->NextEntryNum = saved_position;
+    return argument;
+}
 
 char *SpeedScript::GetNextArgumentString() {
     char *arg = this->GetNextArgument();
@@ -316,7 +334,6 @@ short SpeedScript::GetNextArgumentShort() {
     return a;
 }
 
-// STRIPPED
 char SpeedScript::GetNextArgumentChar() {
     int a = this->GetNextArgumentInt();
     if (a < -128 || a > 255) {
@@ -331,7 +348,6 @@ float SpeedScript::GetNextArgumentFloat() {
     return value;
 }
 
-// STRIPPED
 bVector2 SpeedScript::GetNextArgumentVector2() {
     float x = this->GetNextArgumentFloat();
     float y = this->GetNextArgumentFloat();
@@ -345,7 +361,6 @@ bVector3 SpeedScript::GetNextArgumentVector3() {
     return bVector3(x, y, z);
 }
 
-// STRIPPED
 bVector4 SpeedScript::GetNextArgumentVector4() {
     float x = this->GetNextArgumentFloat();
     float y = this->GetNextArgumentFloat();

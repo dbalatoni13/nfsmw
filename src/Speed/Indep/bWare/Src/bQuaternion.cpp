@@ -67,14 +67,52 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
     }
 }
 
-// STRIPPED
-bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {
+    float x = q->x;
+    float y = q->y;
+    float z = q->z;
+    float w = q->w;
+    qdest->x = -x;
+    qdest->y = -y;
+    qdest->z = -z;
+    qdest->w = w;
+    return qdest;
+}
 
-// STRIPPED
-float bLength(bQuaternion *q) {}
+float bLength(bQuaternion *q) {
+    return bSqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+}
 
-// STRIPPED
-bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {
+    float len = bLength(const_cast<bQuaternion *>(q));
+    if (len != 0.0f) {
+        float inv_len = 1.0f / len;
+        qdest->x = q->x * inv_len;
+        qdest->y = q->y * inv_len;
+        qdest->z = q->z * inv_len;
+        qdest->w = q->w * inv_len;
+    } else {
+        qdest->x = 0.0f;
+        qdest->y = 0.0f;
+        qdest->z = 0.0f;
+        qdest->w = 1.0f;
+    }
+    return qdest;
+}
 
-// STRIPPED
-bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {}
+bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {
+    float x1 = q1->x;
+    float y1 = q1->y;
+    float z1 = q1->z;
+    float w1 = q1->w;
+    float x2 = q2->x;
+    float y2 = q2->y;
+    float z2 = q2->z;
+    float w2 = q2->w;
+
+    qdest->x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
+    qdest->y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
+    qdest->z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+    qdest->w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+    return qdest;
+}

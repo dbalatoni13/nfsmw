@@ -2,6 +2,10 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "types.h"
 
+#ifdef EA_PLATFORM_WIN32
+extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
+#endif
+
 SlotPoolManager TheSlotPoolManager;
 
 SlotPool *bNewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
@@ -240,8 +244,43 @@ void SlotPool::CleanupExpandedSlotPools() {
     }
 }
 
-// STRIPPED
-void SlotPool::VerifyPoolIntegrity() {}
+void SlotPool::VerifyPoolIntegrity() {
+    SlotPoolEntry *slot = FreeSlots;
+    if (!slot) {
+        return;
+    }
+
+    do {
+        if ((reinterpret_cast<uintptr_t>(slot) & 3) == 0) {
+            volatile int slot_is_valid = !IsBadReadPtr(slot, 1);
+            if (slot_is_valid) {
+                const int slot_size = SlotSize;
+                int base_slot_num = 0;
+                SlotPool *slot_pool = this;
+                while (slot_pool) {
+                    int slot_num = (reinterpret_cast<uintptr_t>(slot) - reinterpret_cast<uintptr_t>(slot_pool) - 0x30) / slot_size;
+                    if ((slot_num >= 0) && (slot_num < slot_pool->NumSlots)) {
+                        if (base_slot_num + slot_num == -1) {
+                            goto invalid;
+                        }
+                        break;
+                    }
+
+                    base_slot_num += slot_pool->NumSlots;
+                    slot_pool = slot_pool->NextSlotPool;
+                }
+                if (slot_pool) {
+                    slot = slot->Next;
+                    continue;
+                }
+            }
+        }
+
+    invalid:
+        __debugbreak();
+        slot = slot->Next;
+    } while (slot);
+}
 
 void *SlotPool::Malloc() {
     if (!FreeSlots && (Flags & SLOTPOOL_FLAG_OVERFLOW_IF_FULL)) {
@@ -343,8 +382,20 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     return first_slot;
 }
 
-// STRIPPED
-void SlotPool::Free(void *first_slot, void *last_slot) {}
+void SlotPool::Free(void *first_slot, void *last_slot) {
+    SlotPoolEntry *first = static_cast<SlotPoolEntry *>(first_slot);
+    SlotPoolEntry *last = static_cast<SlotPoolEntry *>(last_slot);
+    int num_slots = 0;
+
+    last->Next = nullptr;
+    for (SlotPoolEntry *slot = first; slot; slot = slot->Next) {
+        ++num_slots;
+    }
+
+    NumAllocatedSlots -= num_slots;
+    last->Next = FreeSlots;
+    FreeSlots = first;
+}
 
 SlotPoolManager::SlotPoolManager() {
     Initialized = true;

@@ -106,7 +106,9 @@ class MemoryPool {
         return PoolSize;
     }
 
-    bool IsEmpty() {}
+    bool IsEmpty() {
+        return this->PoolSize == 0;
+    }
 
     void AddAllocationHeader(AllocationHeader *allocation_header) {
         this->AllocationHeaderList.AddTail(allocation_header);
@@ -460,8 +462,16 @@ bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
 unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
 int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
-// STRIPPED
-int MemoryPool::CountAllocations(const char *debug_text) {}
+int MemoryPool::CountAllocations(const char *debug_text) {
+    int count = 0;
+    for (AllocationHeader *header = this->AllocationHeaderList.GetHead();
+         header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+        if (bStrCmp(header->GetDebugText(), debug_text) == 0) {
+            count++;
+        }
+    }
+    return count;
+}
 
 int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
     return static_cast<int>(a->GetBottomAddress() <= b->GetBottomAddress());
@@ -526,8 +536,15 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     }
 }
 
-// STRIPPED
-AllocationHeader *MemoryPool::FindAllocation(int allocation_num) {}
+AllocationHeader *MemoryPool::FindAllocation(int allocation_num) {
+    for (AllocationHeader *header = this->AllocationHeaderList.GetHead();
+         header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+        if (header->GetAllocationNumber() == allocation_num) {
+            return header;
+        }
+    }
+    return nullptr;
+}
 
 int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAddress);
@@ -905,7 +922,6 @@ int bGetMallocPool(void *ptr) {
     return 0;
 }
 
-// STRIPPED
 int bGetMallocNumber(void *ptr) {
     if (ptr != nullptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
@@ -934,7 +950,6 @@ int bCountFreeMemory(int pool) {
     return MemoryPools[pool]->GetAmountFree();
 }
 
-// STRIPPED
 int bGetPoolSize(int pool) {
     if (MemoryPools[pool] != nullptr) {
         return MemoryPools[pool]->GetPoolSize();
@@ -974,7 +989,6 @@ void bVerifyPoolIntegrity(int pool) {
     }
 }
 
-// STRIPPED
 const char *bGetMemoryPoolName(int pool_num) {
     if (MemoryPools[pool_num] != nullptr) {
         return MemoryPools[pool_num]->GetName();
@@ -1007,8 +1021,12 @@ int bGetMemoryPoolNum(const char *memory_pool_name) {
     return -1;
 }
 
-// STRIPPED
-int bMemoryCountAllocations(const char *debug_text, int pool_num) {}
+int bMemoryCountAllocations(const char *debug_text, int pool_num) {
+    if (MemoryPools[pool_num] != nullptr) {
+        return MemoryPools[pool_num]->CountAllocations(debug_text);
+    }
+    return 0;
+}
 
 int bMemoryGetAllocationNumber() {
     return bMemoryAllocationNumber;
@@ -1024,8 +1042,15 @@ void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_
     }
 }
 
-// STRIPPED
-void *bMemoryFindAllocation(int pool_num, int allocation_num) {}
+void *bMemoryFindAllocation(int pool_num, int allocation_num) {
+    if (MemoryPools[pool_num] != nullptr) {
+        AllocationHeader *header = MemoryPools[pool_num]->FindAllocation(allocation_num);
+        if (header != nullptr) {
+            return header->GetAllocAddress();
+        }
+    }
+    return nullptr;
+}
 
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations) {
     if (MemoryPools[pool_num] != nullptr) {
@@ -1071,8 +1096,13 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     return bMalloc(size, name, 0, allocation_params);
 }
 
-// STRIPPED
-void *bMemoryAllocator::Alloc(size_t size) {}
+void *bMemoryAllocator::Alloc(size_t size) {
+#ifdef MILESTONE_OPT
+    return bMalloc(static_cast<int>(size), "bMemoryAllocator", 0, this->PoolNumber);
+#else
+    return bMalloc(static_cast<int>(size), this->PoolNumber);
+#endif
+}
 
 void bMemoryAllocator::Free(void *pBlock, size_t size) {
     bFree(pBlock);

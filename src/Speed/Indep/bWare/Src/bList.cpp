@@ -29,16 +29,57 @@ int bList::TraversebList(bNode *match_node) {
     return n;
 }
 
-// TODO
-void bList::AddTail(bList *list) {}
+void bList::AddTail(bList *list) {
+    if (!list || list == this || list->IsEmpty()) {
+        return;
+    }
 
-// TODO
-void bList::AddHead(bList *list) {}
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    bNode *old_tail = this->GetTail();
 
-// STRIPPED
-bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {}
+    old_tail->Next = first;
+    first->Prev = old_tail;
+    last->Next = &this->HeadNode;
+    this->HeadNode.Prev = last;
 
-// UNSOLVED, it matches in ProStreet..
+    list->InitList();
+}
+
+void bList::AddHead(bList *list) {
+    if (!list || list == this || list->IsEmpty()) {
+        return;
+    }
+
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    bNode *old_head = this->GetHead();
+
+    this->HeadNode.Next = first;
+    first->Prev = &this->HeadNode;
+    last->Next = old_head;
+    old_head->Prev = last;
+
+    list->InitList();
+}
+
+bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {
+    if (!node) {
+        return nullptr;
+    }
+
+    bNode *insert_point = this->GetHead();
+    while (insert_point != this->EndOfList()) {
+        if (check_flip(node, insert_point) <= 0) {
+            return node->AddBefore(insert_point);
+        }
+        insert_point = insert_point->GetNext();
+    }
+    return this->AddTail(node);
+}
+
+// Bottom-up list sort recovered from the PC target; the comparator stays
+// caller-defined so ordering remains identical to the original API.
 void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
     bNode *next_node = node->GetNext();

@@ -51,9 +51,9 @@ int bReleasePrintf(const char *fmt, ...) {
     va_list argList;
     if (EnableReleasePrintf) {
         va_start(argList, fmt);
-        // TODO returning this causes issues??
-        bVPrintf(fmt, argList);
+        int result = bVPrintf(fmt, argList);
         va_end(argList);
+        return result;
     } else {
         return 0;
     }
@@ -69,8 +69,15 @@ int bVPrintf(const char *fmt, va_list argList) {
     return _bOutput(&output_info, fmt, argList);
 }
 
-// STRIPPED
-int bVPrintf(char terminal_channel, char *fmt, char *argList) {}
+int bVPrintf(char terminal_channel, char *fmt, char *argList) {
+    bOutputInfo output_info;
+
+    output_info.DestString = nullptr;
+    output_info.DestStringLen = 0;
+    output_info.StdOut = true;
+    output_info.TerminalChannel = static_cast<signed char>(terminal_channel);
+    return _bOutput(&output_info, fmt, reinterpret_cast<va_list>(argList));
+}
 
 int bSPrintf(char *destString, const char *fmt, ...) {
     va_list argList;

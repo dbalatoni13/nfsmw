@@ -53,15 +53,15 @@ char *bStrCpy(char *to, const char *from) {
 
 char *bStrNCpy(char *to, const char *from, int m) {
     int n = 0;
-    if (m-- != 0) {
-        to[0] = from[0];
-        while (to[n] != '\0') {
-            n++;
-            if (m-- == 0) {
+    if (m != 0) {
+        do {
+            to[n] = from[n];
+            --m;
+            if (to[n] == '\0') {
                 return to;
             }
-            to[n] = from[n];
-        }
+            ++n;
+        } while (m != 0);
     }
     return to;
 }
@@ -102,7 +102,6 @@ int bStrCmp(const char *s1, const char *s2) {
     return c1 - c2;
 }
 
-// UNSOLVED
 int bStrNCmp(const char *s1, const char *s2, int n) {
     if (s1 == nullptr) {
         if (s2 != nullptr) {
@@ -166,7 +165,6 @@ int bStrICmp(const char *s1, const char *s2) {
     return c1 - c2;
 }
 
-// UNSOLVED
 int bStrNICmp(const char *s1, const char *s2, int n) {
     if (s1 == nullptr) {
         if (s2 != nullptr) {
@@ -233,8 +231,20 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
     return to;
 }
 
-// STRIPPED
-char *bStrChr(const char *s1, int c) {}
+char *bStrChr(const char *s1, int c) {
+    if (s1 == nullptr) {
+        return nullptr;
+    }
+
+    // Retail stops at the terminator without treating '\0' as a match.
+    while (*s1 != '\0') {
+        if (static_cast<int>(static_cast<signed char>(*s1)) == c) {
+            return const_cast<char *>(s1);
+        }
+        s1++;
+    }
+    return nullptr;
+}
 
 char *bToUpper(char *s) {
     if (*s != '\0') {
@@ -418,11 +428,46 @@ uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
     return to;
 }
 
-// STRIPPED
-int bStrCmp(uint16 *s1, uint16 *s2) {}
+int bStrCmp(uint16 *s1, uint16 *s2) {
+    uint16 c1;
+    uint16 c2;
 
-// STRIPPED
-int bStrNCmp(uint16 *s1, uint16 *s2, int n) {}
+    do {
+        c1 = *s1++;
+        c2 = *s2++;
+    } while ((c1 != 0) && (c2 != 0) && (c1 == c2));
+
+    // Retail zero-extends both code units before subtracting them.
+    return static_cast<int>(c1) - static_cast<int>(c2);
+}
+
+int bStrNCmp(uint16 *s1, uint16 *s2, int n) {
+    while (n-- != 0) {
+        if (*s1 == 0) {
+            break;
+        }
+        if (*s2 == 0) {
+            break;
+        }
+        if (*s1++ != *s2++) {
+            break;
+        }
+    }
+
+    // This deliberately mirrors the retail routine: an early mismatch is
+    // reported as +/-1 unless it also terminates both strings, in which case
+    // the last UTF-16 code units are subtracted as unsigned values.
+    if (n >= 0) {
+        if (*s1 == 0) {
+            if (*s2 == 0) {
+                return static_cast<int>(s1[-1]) - static_cast<int>(s2[-1]);
+            }
+            return -1;
+        }
+        return 1;
+    }
+    return 0;
+}
 
 char *bStrStr(const char *s1, const char *s2) {
     int len = bStrLen(s2);
@@ -450,8 +495,20 @@ char *bStrIStr(const char *s1, const char *s2) {
     return nullptr;
 }
 
-// STRIPPED
-uint16 *bStrCat(uint16 *to, uint16 *s1, uint16 *s2) {}
+uint16 *bStrCat(uint16 *to, uint16 *s1, uint16 *s2) {
+    int n = 0;
+
+    while (*s1 != 0) {
+        to[n++] = *s1++;
+    }
+
+    while (*s2 != 0) {
+        to[n++] = *s2++;
+    }
+
+    to[n] = 0;
+    return to;
+}
 
 int bMatchNameWithWildcard(const char *wild, const char *string) {
     const char *cp = nullptr;
@@ -510,7 +567,6 @@ void bSharedStringPool::Init(int size) {
     this->LargestFreeString = string;
 }
 
-// STRIPPED
 void bSharedStringPool::Close() {
     if (StringTable) {
         bFree(StringTable);
@@ -678,8 +734,9 @@ void bInitSharedStringPool(int size) {
     gSharedStringPool.Init(size);
 }
 
-// STRIPPED
-void bCloseSharedStringPool() {}
+void bCloseSharedStringPool() {
+    gSharedStringPool.Close();
+}
 
 const char *bAllocateSharedString(const char *s) {
     return gSharedStringPool.Allocate(s);
@@ -689,11 +746,14 @@ void bFreeSharedString(const char *s) {
     gSharedStringPool.Free(s);
 }
 
-// STRIPPED
-void bDumpSharedStrings() {}
+void bDumpSharedStrings() {
+    gSharedStringPool.Dump();
+}
 
-// STRIPPED
-short bGetSharedStringIndex(const char *s) {}
+short bGetSharedStringIndex(const char *s) {
+    return gSharedStringPool.GetIndex(s);
+}
 
-// STRIPPED
-const char *bGetSharedString(int index) {}
+const char *bGetSharedString(int index) {
+    return gSharedStringPool.GetString(index);
+}

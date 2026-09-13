@@ -4,10 +4,42 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
-    eInvertMatrix(dest, const_cast<bMatrix4 *>(src));
+    float a = src->v0.x;
+    float b = src->v0.y;
+    float c = src->v0.z;
+    float g = src->v1.x;
+    float f = src->v1.y;
+    float d = src->v1.z;
+    float i = src->v2.x;
+    float h = src->v2.y;
+    float e = src->v2.z;
+    float j = src->v3.x;
+    float k = src->v3.y;
+    float l = src->v3.z;
+
+    float scale = 1.0f / (a * (f * e - d * h) - b * (g * e - d * i) + c * (g * h - f * i));
+
+    dest->v0.x = scale * (f * e - d * h);
+    dest->v0.y = scale * (c * h - b * e);
+    dest->v0.z = scale * (b * d - c * f);
+    dest->v0.w = 0.0f;
+    dest->v1.x = scale * (d * i - g * e);
+    dest->v1.y = scale * (a * e - c * i);
+    dest->v1.z = scale * (c * g - a * d);
+    dest->v1.w = 0.0f;
+    dest->v2.x = scale * (g * h - f * i);
+    dest->v2.y = scale * (b * i - a * h);
+    dest->v2.z = scale * (a * f - b * g);
+    dest->v2.w = 0.0f;
+    dest->v3.x = -(dest->v0.x * j + dest->v1.x * k + dest->v2.x * l);
+    dest->v3.y = -(dest->v0.y * j + dest->v1.y * k + dest->v2.y * l);
+    dest->v3.z = -(dest->v0.z * j + dest->v1.z * k + dest->v2.z * l);
+    dest->v3.w = 1.0f;
 }
 
-// UNSOLVED
+// Semantic reconstruction of the scalar four-by-four determinant. The
+// target uses a different term grouping, so this remains compiler-near rather
+// than byte-identical.
 float fDeterminant(bMatrix4 *m) {
     float value =
         m->v0.x * m->v1.y * m->v2.z * m->v3.w +
@@ -175,7 +207,20 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 #ifdef EA_PLATFORM_GAMECUBE
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
 #else
-// TODO
+    // The retail PC path delegates to D3DXMatrixTranspose.  The operation
+    // itself is a plain 4x4 transpose; use a temporary so the in-place calls
+    // made by QuickSpline remain well-defined without the D3DX runtime.
+    float transposed[4][4];
+    for (int row = 0; row < 4; ++row) {
+        for (int column = 0; column < 4; ++column) {
+            transposed[row][column] = (*m)[column][row];
+        }
+    }
+    for (int row = 0; row < 4; ++row) {
+        for (int column = 0; column < 4; ++column) {
+            (*dest)[row][column] = transposed[row][column];
+        }
+    }
 #endif
     return dest;
 }

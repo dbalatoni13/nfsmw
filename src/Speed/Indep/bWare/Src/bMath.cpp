@@ -54,8 +54,18 @@ void bPlatEndianSwap(bMatrix4 *value) {
     bPlatEndianSwap(&value->v3);
 }
 
-// STRIPPED
-bFix bInverse(bFix a) {}
+bFix bInverse(bFix a) {
+    if (a == 0) {
+        return 0x7fffffff;
+    }
+
+    // The original fixed-point helper computes the reciprocal in Q16.15
+    // form, then doubles it to compensate for the half-range constant used
+    // by bDiv.  Keep the intermediate wide so the signed edge cases retain
+    // the target's two's-complement result when narrowed back to bFix.
+    int64 quotient = static_cast<int64>(0x7fffffff) / a;
+    return static_cast<bFix>(static_cast<int32>(quotient * 2));
+}
 
 bFix bDiv(bFix a, bFix b) {
     if (b == 0) {
@@ -72,8 +82,28 @@ bFix bDiv(bFix a, bFix b) {
     }
 }
 
-// STRIPPED
-uint32 bSqrt32(uint32 a) {}
+uint32 bSqrt32(uint32 a) {
+    // Restoring integer square root.  The target walks 16 two-bit groups,
+    // producing floor(sqrt(a)) without floating-point state or rounding.
+    uint32 result = 0;
+    uint32 bit = 1u << 30;
+
+    while (bit > a) {
+        bit >>= 2;
+    }
+
+    while (bit != 0) {
+        if (a >= result + bit) {
+            a -= result + bit;
+            result = (result >> 1) + bit;
+        } else {
+            result >>= 1;
+        }
+        bit >>= 2;
+    }
+
+    return result;
+}
 
 void bSetRandomSeed(unsigned int value, unsigned int *seed) {
     *seed = value;
@@ -103,7 +133,6 @@ float bRandom(float range) {
     return bRandom(range, &bDefaultSeed);
 }
 
-// UNSOLVED
 float bFMod(float a, float b) {
     float d = bAbs(b);
     float c = a / d;
@@ -238,6 +267,44 @@ static unsigned short bFastATanTable[] = {
     7856, 7877, 7899, 7920, 7942, 7963, 7984, 8005, 8026, 8047, 8068, 8089, 8110, 8131, 8151, 8172, 8192, 8192,
 };
 
+// Retail SPEED.EXE stores this 0x402-byte Q15 sine table immediately after
+// bASinTable. bFixSin doubles the samples to return the engine's Q16 value.
+static const int16 bSinTable[513] = {
+    0, 402, 804, 1206, 1607, 2009, 2410, 2811, 3211, 3611, 4011, 4409, 4807, 5205, 5601, 5997,
+    6392, 6786, 7179, 7571, 7961, 8351, 8739, 9126, 9511, 9895, 10278, 10659, 11038, 11416, 11792, 12166,
+    12539, 12909, 13278, 13645, 14009, 14372, 14732, 15090, 15446, 15799, 16150, 16499, 16845, 17189, 17530, 17868,
+    18204, 18537, 18867, 19194, 19519, 19840, 20159, 20474, 20787, 21096, 21402, 21705, 22005, 22301, 22594, 22883,
+    23169, 23452, 23731, 24007, 24278, 24547, 24811, 25072, 25329, 25582, 25831, 26077, 26318, 26556, 26790, 27019,
+    27245, 27466, 27683, 27896, 28105, 28310, 28510, 28706, 28898, 29085, 29268, 29447, 29621, 29791, 29956, 30117,
+    30273, 30424, 30571, 30714, 30852, 30985, 31113, 31237, 31356, 31471, 31580, 31685, 31785, 31880, 31971, 32057,
+    32138, 32214, 32285, 32351, 32413, 32469, 32521, 32568, 32610, 32647, 32679, 32706, 32728, 32745, 32758, 32765,
+    32767, 32765, 32758, 32745, 32728, 32706, 32679, 32647, 32610, 32568, 32521, 32470, 32413, 32352, 32285, 32214,
+    32138, 32057, 31972, 31881, 31786, 31686, 31581, 31471, 31357, 31238, 31114, 30986, 30853, 30715, 30572, 30425,
+    30274, 30118, 29957, 29792, 29622, 29448, 29270, 29087, 28899, 28708, 28512, 28311, 28107, 27898, 27685, 27468,
+    27246, 27021, 26791, 26558, 26320, 26079, 25833, 25584, 25331, 25074, 24813, 24549, 24280, 24009, 23733, 23454,
+    23172, 22886, 22596, 22303, 22007, 21707, 21404, 21098, 20789, 20477, 20161, 19843, 19521, 19197, 18870, 18539,
+    18206, 17871, 17532, 17191, 16848, 16502, 16153, 15802, 15448, 15093, 14735, 14374, 14012, 13647, 13281, 12912,
+    12542, 12169, 11795, 11419, 11041, 10662, 10281, 9898, 9514, 9129, 8742, 8354, 7964, 7574, 7182, 6789,
+    6395, 6000, 5604, 5208, 4810, 4412, 4014, 3614, 3214, 2814, 2413, 2012, 1610, 1209, 807, 405,
+    3, -399, -801, -1203, -1605, -2006, -2407, -2808, -3209, -3609, -4008, -4407, -4805, -5202, -5599, -5995,
+    -6390, -6783, -7176, -7568, -7959, -8348, -8736, -9123, -9509, -9893, -10276, -10657, -11036, -11414, -11790, -12164,
+    -12537, -12907, -13276, -13642, -14007, -14369, -14730, -15088, -15444, -15797, -16148, -16497, -16843, -17187, -17528, -17866,
+    -18202, -18535, -18865, -19192, -19517, -19838, -20157, -20473, -20785, -21094, -21400, -21703, -22003, -22299, -22592, -22882,
+    -23168, -23450, -23729, -24005, -24277, -24545, -24810, -25071, -25328, -25581, -25830, -26076, -26317, -26555, -26788, -27018,
+    -27243, -27465, -27682, -27895, -28104, -28309, -28509, -28705, -28897, -29084, -29267, -29446, -29620, -29790, -29955, -30116,
+    -30272, -30424, -30571, -30713, -30851, -30984, -31113, -31237, -31356, -31470, -31580, -31685, -31785, -31880, -31971, -32057,
+    -32138, -32214, -32285, -32351, -32413, -32469, -32521, -32568, -32610, -32647, -32679, -32706, -32728, -32746, -32758, -32765,
+    -32768, -32766, -32758, -32746, -32729, -32707, -32680, -32648, -32611, -32569, -32522, -32471, -32414, -32353, -32286, -32215,
+    -32139, -32058, -31973, -31882, -31787, -31687, -31582, -31473, -31358, -31239, -31116, -30987, -30854, -30716, -30574, -30427,
+    -30276, -30119, -29959, -29794, -29624, -29450, -29271, -29088, -28901, -28709, -28514, -28313, -28109, -27900, -27687, -27470,
+    -27248, -27023, -26794, -26560, -26323, -26081, -25836, -25586, -25333, -25076, -24816, -24551, -24283, -24011, -23736, -23457,
+    -23174, -22888, -22599, -22306, -22010, -21710, -21407, -21101, -20792, -20480, -20164, -19846, -19524, -19200, -18873, -18542,
+    -18210, -17874, -17535, -17194, -16851, -16505, -16156, -15805, -15452, -15096, -14738, -14378, -14015, -13651, -13284, -12916,
+    -12545, -12173, -11798, -11422, -11045, -10665, -10284, -9902, -9518, -9132, -8745, -8357, -7968, -7577, -7185, -6792,
+    -6398, -6004, -5608, -5211, -4814, -4416, -4017, -3618, -3218, -2817, -2417, -2015, -1614, -1212, -810, -408,
+    0,
+};
+
 unsigned short bFixATanTableLow[129] = {
     0,      0x145,  0x28B,  0x3CE,  0x511,  0x650,  0x78D,  0x8C6,  0x9FB,  0xB2B,  0xC57,  0xD7D,  0xE9E,  0xFB8,  0x10CD, 0x11DC, 0x12E4,
     0x13E5, 0x14E0, 0x15D4, 0x16C2, 0x17A9, 0x188A, 0x1964, 0x1A37, 0x1B05, 0x1BCC, 0x1C8E, 0x1D49, 0x1DFF, 0x1EAF, 0x1F5A, 0x1FFF, 0x20A0,
@@ -302,11 +369,48 @@ bAngle bASin(float x) {
     }
 }
 
-// STRIPPED
-bAngle bOldATan(float x, float y) {}
+// The legacy atan path uses the same 257-entry table as bATan, but selects a
+// single 1/256 interval instead of interpolating between adjacent entries.
+bAngle bOldATan(float x, float y) {
+    int quad = 0;
+    if (x < 0.0f) {
+        quad = 1;
+        x = -x;
+    }
+    if (y < 0.0f) {
+        quad ^= 3;
+        y = -y;
+    }
 
-// STRIPPED
-bAngle bFastATan(float x, float y) {}
+    bAngle a;
+    if (x > y) {
+        const int index = static_cast<int>((y / x) * 256.0f);
+        a = bFastATanTable[index];
+    } else if (y > x) {
+        const int index = static_cast<int>((x / y) * 256.0f);
+        a = bDegToAng(90.0f) - bFastATanTable[index];
+    } else if (y == 0.0f) {
+        a = 0;
+    } else {
+        a = bDegToAng(45.0f);
+    }
+
+    if (quad == 0) {
+        return a;
+    } else if (quad == 3) {
+        return -a;
+    } else if (quad == 1) {
+        return bDegToAng(180.0f) - a;
+    }
+    return bDegToAng(180.0f) + a;
+}
+
+// The retail PC build's public atan entry point is the interpolating fast
+// path. Keep the legacy name as a source-level alias for callers that still
+// reference it in platform-neutral code.
+bAngle bFastATan(float x, float y) {
+    return bATan(x, y);
+}
 
 // Credit: Brawltendo
 bAngle bATan(float x, float y) {
@@ -350,11 +454,18 @@ bAngle bATan(float x, float y) {
         return bDegToAng(180.0f) + a;
 }
 
-// STRIPPED
-bFix bFixSin(bAngle angle) {}
+bFix bFixSin(bAngle angle) {
+    const unsigned int index = angle >> 7;
+    const int32 lower = static_cast<int32>(bSinTable[index]) << 1;
+    const int32 upper = static_cast<int32>(bSinTable[index + 1]) << 1;
+    const int32 fraction = static_cast<int32>(angle & 0x7f) << 9;
+    return lower + static_cast<int32>((static_cast<int64>(upper - lower) * fraction) >> 16);
+}
 
-// STRIPPED
-void bFixSinCos(bFix *result_sin, bFix *result_cos, bAngle angle) {}
+void bFixSinCos(bFix *result_sin, bFix *result_cos, bAngle angle) {
+    *result_sin = bFixSin(angle);
+    *result_cos = bFixSin(static_cast<bAngle>(angle + 0x4000));
+}
 
 bAngle bFixATan(bFix x) {
     int quad = 0;
@@ -435,8 +546,13 @@ bAngle bFixATan(bFix x, bFix y) {
     return static_cast<bAngle>(a);
 }
 
-// STRIPPED
-bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {}
+bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {
+    float x = cartesian->x;
+    float y = cartesian->y;
+    dest->a = bATan(x, y);
+    dest->r = bSqrt(y * y + x * x);
+    return dest;
+}
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
     float v1x = m.v1.y;

@@ -22,25 +22,56 @@ struct bFunkPacketHeader {
     int16 ReturnCode;           // offset 0x18, size 0x2
     int16 MaxReturnSize;        // offset 0x1A, size 0x2
 
-    int GetType() {}
+    int GetType() {
+        return this->Type;
+    }
 
-    int GetTotalSize() {}
+    int GetTotalSize() {
+        return this->TotalSize;
+    }
 
-    int GetDataSize() {}
+    int GetDataSize() {
+        return static_cast<int>(this->TotalSize) - static_cast<int>(sizeof(bFunkPacketHeader));
+    }
 
-    uint8 *GetData() {}
+    uint8 *GetData() {
+        return reinterpret_cast<uint8 *>(this + 1);
+    }
 
-    uint8 *GetData(int pos) {}
+    uint8 *GetData(int pos) {
+        return this->GetData() + pos;
+    }
 
-    void SetDataSize(int size) {}
+    void SetDataSize(int size) {
+        this->TotalSize = static_cast<uint16>(sizeof(bFunkPacketHeader) + size);
+    }
 
-    void SetTotalSize(int size) {}
+    void SetTotalSize(int size) {
+        this->TotalSize = static_cast<uint16>(size);
+    }
 
-    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code) {}
+    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code) {
+        this->TotalSize = sizeof(bFunkPacketHeader);
+        this->Type = sync_packet->Type;
+        this->FunctionNum = sync_packet->FunctionNum;
+        this->DestServer = sync_packet->SourceServer;
+        this->SourceServer = sync_packet->DestServer;
+        this->PacketID = sync_packet->PacketID;
+        this->Checksum = 0;
+        this->ReturnBufferAddress = sync_packet->ReturnBufferAddress;
+        this->ReturnCodeAddress = sync_packet->ReturnCodeAddress;
+        this->ReturnCode = static_cast<int16>(return_code);
+        this->MaxReturnSize = sync_packet->MaxReturnSize;
+    }
 
-    void SetChecksumParameters(int packet_id, uint16 checksum) {}
+    void SetChecksumParameters(int packet_id, uint16 checksum) {
+        this->PacketID = static_cast<uint16>(packet_id);
+        this->Checksum = checksum;
+    }
 
-    uint16 CalculateChecksum() {}
+    uint16 CalculateChecksum() {
+        return bFunkPacketHeader::CalculateChecksum(this->GetData(), this->GetDataSize());
+    }
 
     static uint16 CalculateChecksum(const void *data, int data_size);
 };
