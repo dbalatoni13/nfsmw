@@ -164,6 +164,13 @@ typedef Vector4 Quaternion;
 
 } // namespace UMath
 
+// TODO where should this go
+typedef UMath::Quaternion RQUAT;
+typedef unsigned char u_char;
+typedef short unsigned int u_short;
+typedef unsigned int u_int;
+typedef long unsigned int u_long;
+
 // TODO move?
 inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
     bConvertToBond(reinterpret_cast<bVector3 &>(dest), v);

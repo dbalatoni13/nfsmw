@@ -511,16 +511,18 @@ void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
 // UNSOLVED, scheduling
 // TODO dwarf
 void CarLoader::SetMemoryPoolSize(int size) {
+    bool success;
+
     if (this->MemoryPoolSize != size) {
         if (this->MemoryPoolSize != 0) {
-            for (int i = 0; i < this->NumSpongeAllocations; i++) {
-                bFree(this->SpongeAllocations[i]);
+            for (int n = 0; n < this->NumSpongeAllocations; n++) {
+                bFree(this->SpongeAllocations[n]);
             }
 
             this->NumSpongeAllocations = 0;
             this->UnloadUnallocatedRideInfos(0);
 
-            if (this->LoadedRideInfoList.GetHead() != this->LoadedRideInfoList.EndOfList()) {
+            if (!this->LoadedRideInfoList.IsEmpty()) {
                 return;
             }
 
@@ -542,6 +544,10 @@ void CarLoader::SetMemoryPoolSize(int size) {
             bSetMemoryPoolDebugFill(CarLoaderMemoryPoolNumber, false);
             bSetMemoryPoolTopDirection(CarLoaderMemoryPoolNumber, true);
             this->NumSpongeAllocations = 0;
+
+            for (int n = 0; n < this->NumSpongeAllocations; n++) {
+                this->SpongeAllocations[n] = bMalloc(0, "CarLoaderSponge", 0, CarLoaderMemoryPoolNumber);
+            }
         }
     }
 }
@@ -1098,18 +1104,18 @@ void CarLoader::LoadedSkinCallback(LoadedSkin *loaded_skin) {
     this->LoadingDoneCallback();
 }
 
-// UNSOLVED
 void CarLoader::CompositeSkin(LoadedSkin *loaded_skin) {
     if (loaded_skin->pRideInfo->IsUsingCompositeSkin() != 0) {
         if (this->LoadingMode == MODE_IN_GAME) {
             int required_size = CarInfo_GetMaxCompositingBufferSize();
 
             if (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
-                do {
-                    if (!this->RemoveSomethingFromCarMemoryPool(false)) {
+                while (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
+                    bool force_unload = false;
+                    if (!this->RemoveSomethingFromCarMemoryPool(force_unload)) {
                         break;
                     }
-                } while (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber));
+                }
 
                 this->DefragmentPool();
             }
@@ -1921,12 +1927,12 @@ int CarLoader::DefragmentPool() {
 
     int ticks = bGetTicker();
     void *allocation_table[1152];
-    int allocation_num = 0;
     int num_allocations = bMemoryGetAllocations(CarLoaderMemoryPoolNumber, allocation_table, NUM_ELEMENTS(allocation_table));
-
+    
     bMemSet(&DefragmentParams, 0, sizeof(DefragmentParams));
     DefragmentParams.LargestAllocationSize = 0;
-
+    
+    int allocation_num = 0;
     while (allocation_num < num_allocations) {
         void *allocation = allocation_table[allocation_num];
 
@@ -1943,7 +1949,7 @@ int CarLoader::DefragmentPool() {
     eWaitUntilRenderingDone();
     gDefragFixer.Init();
 
-    void *first_hole = bMalloc(128, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+    void *first_hole = bMalloc(128, "CarLoaderDefrag but with a really long debug name!!", 0, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
     int num_hole_filling_allocations = 0;
 
     bFree(first_hole);
@@ -1959,11 +1965,13 @@ int CarLoader::DefragmentPool() {
         int movement = 0;
 
         if (reinterpret_cast<intptr_t>(allocation) > reinterpret_cast<intptr_t>(first_hole)) {
+            extern int ChunkMovementOffset;
+
             DefragmentParams.pAllocation = allocation;
             bStrNCpy(DefragmentParams.AllocationName, bGetMallocName(allocation), 0x3F);
 
             while (true) {
-                void *hole = bMalloc(1, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+                void *hole = bMalloc(1, DefragmentParams.AllocationName, 0, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
 
                 if (reinterpret_cast<intptr_t>(hole) < reinterpret_cast<intptr_t>(first_hole) - 128) {
                     hole_filling_allocations[num_hole_filling_allocations] = hole;

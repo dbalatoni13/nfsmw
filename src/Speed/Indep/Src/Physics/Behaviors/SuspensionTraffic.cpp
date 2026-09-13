@@ -520,9 +520,8 @@ void SuspensionTraffic::DoDriveForces(State &state) {
     }
 }
 
-static const float TrafficRollAdjust = 0.0f; // TODO value and use
+static const float TrafficRollAdjust = 0.5f;
 
-// UNSOLVED, float math
 void SuspensionTraffic::DoWheelForces(State &state) {
     const float dT = state.time;
     UVector3 steerR;
@@ -613,16 +612,15 @@ void SuspensionTraffic::DoWheelForces(State &state) {
             const float diff = newCompression - wheel.GetCompression();
             const float rise = diff / dT;
             float spring = newCompression * spring_specs[axle];
-            float damp = rise * shock_specs[axle];
 
             springForce = spring * (newCompression * progression[axle] + 1.0f);
+            float damp = rise * shock_specs[axle];
 
             if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
-            springForce = damp + springForce;
-            springForce += sway_stiffness[i];
+            springForce = damp + springForce + sway_stiffness[i];
             springForce = UMath::Max(springForce, 0.0f);
 
             UVector3 verticalForce = vUp * springForce;
@@ -634,7 +632,7 @@ void SuspensionTraffic::DoWheelForces(State &state) {
             UMath::Cross(c, forwardNormal, c);
 
             float d2 = UMath::Dot(c, groundNormal);
-            float load = UMath::Max(d2 * 4.0f - 3.0f, 0.0f) * springForce;
+            float load = UMath::Max(d2 * 4.0f - 3.0f, 0.3f) * springForce;
 
             const UMath::Vector3 &pointVelocity = wheel.GetVelocity();
             UVector3 vNorm(pointVelocity);
@@ -691,7 +689,7 @@ void SuspensionTraffic::DoWheelForces(State &state) {
             UMath::Vector3 torque;
             UMath::Vector3 r;
             UMath::Sub(p, cg, r);
-            r.y *= 0.5f;
+            r.y *= TrafficRollAdjust;
 
             UMath::Cross(r, force, torque);
             this->mRB->Resolve(force, torque);

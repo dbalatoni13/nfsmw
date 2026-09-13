@@ -214,7 +214,6 @@ void ReplaceSkyTextures(SKY_LAYER layer) {
 
 int deblayer[5] = {1, 1, 1, 1, 1};
 
-// UNSOLVED
 void StuffSkyLayer(eView *view, SKY_LAYER layer) {
     if (!deblayer[layer]) {
         return;
@@ -243,13 +242,13 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
         ScaleFactor = 1.1f;
     } else if (layer != SKY_LAYER_CLOUDS) {
         if (layer == SKY_LAYER_OVERCAST) {
-            MoveMent = 1;
             ScaleFactor = 0.8f;
+            MoveMent = 1;
         } else if (layer == SKY_LAYER_REFLECTION) {
             ScaleFactor = RefSkyScale;
-            MoveMent = 1;
             SkydomeLocalWorld->v2.z = -1.0f;
             heightAdjust = SKY_REFLECTION_HEIGHT_ADJUST;
+            MoveMent = 1;
         }
     }
 
@@ -270,10 +269,10 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
 
     if (view_id >= EVIEW_FIRST_PLAYER && view_id <= EVIEW_LAST_PLAYER) {
         if (DrawSky) {
-            SkydomeLocalWorld->v3.z = CamPosWORLD.z + heightAdjust;
             SkydomeLocalWorld->v0.x *= MainSkyScale * ScaleFactor;
-            SkydomeLocalWorld->v2.z *= MainSkyScale * ScaleFactor;
             SkydomeLocalWorld->v1.y *= MainSkyScale * ScaleFactor;
+            SkydomeLocalWorld->v2.z *= MainSkyScale * ScaleFactor;
+            SkydomeLocalWorld->v3.z += heightAdjust;
 
             if (MoveMent) {
                 bMatrix4 LocalRot;
@@ -290,10 +289,10 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
             view->Render(&SkydomeModel, SkydomeLocalWorld, nullptr, 0x20000, nullptr);
         }
     } else {
-        SkydomeLocalWorld->v3.z = CamPosWORLD.z + heightAdjust;
         SkydomeLocalWorld->v0.x *= ScaleFactor;
         SkydomeLocalWorld->v1.y *= ScaleFactor;
         SkydomeLocalWorld->v2.z *= ScaleFactor;
+        SkydomeLocalWorld->v3.z += heightAdjust;
 
         view->Render(&SkydomeModel, SkydomeLocalWorld, nullptr, 0x20000, nullptr);
     }
@@ -322,10 +321,11 @@ void StuffSpecular(eView *view) {
 
     GetSunPos(view, &SunPos.x, &SunPos.y, &SunPos.z);
     SunPos.z = 0.0f;
-    SkydomeLocalWorld->v0.x *= 0.035f;
-    SkydomeLocalWorld->v1.y *= 0.035f;
-    SkydomeLocalWorld->v2.z *= -0.035f;
-    SkydomeLocalWorld->v3.z += 50.0f;
+    SkydomeLocalWorld->v2.z = -1.0f;
+    SkydomeLocalWorld->v0.x *= RefSkyScale;
+    SkydomeLocalWorld->v1.y *= RefSkyScale;
+    SkydomeLocalWorld->v2.z *= RefSkyScale;
+    SkydomeLocalWorld->v3.z += SKY_ENVMAP_HEIGHT_ADJUST;
 
     {
         bVector3 MySunDir = SunPos - CamPosWORLD;
@@ -349,11 +349,12 @@ void StuffSpecular(eView *view) {
         eIdentity(SkydomeLocalWorld2);
         SkydomeLocalWorld2->v3.x = CamPosWORLD.x;
         SkydomeLocalWorld2->v3.y = CamPosWORLD.y;
-        SkydomeLocalWorld2->v3.z = -50.0f + CamPosWORLD.z;
+        SkydomeLocalWorld2->v3.z = CamPosWORLD.z;
 
-        SkydomeLocalWorld2->v0.x *= 0.035f;
-        SkydomeLocalWorld2->v1.y *= 0.035f;
-        SkydomeLocalWorld2->v2.z *= 0.035f;
+        SkydomeLocalWorld2->v0.x *= RefSkyScale;
+        SkydomeLocalWorld2->v1.y *= RefSkyScale;
+        SkydomeLocalWorld2->v2.z *= RefSkyScale;
+        SkydomeLocalWorld2->v3.z += -50.0f;
         eMulMatrix(SkydomeLocalWorld2, &LocalRot, SkydomeLocalWorld2);
         view->Render(&SkySpecularModel, SkydomeLocalWorld2, nullptr, 0, nullptr);
     }

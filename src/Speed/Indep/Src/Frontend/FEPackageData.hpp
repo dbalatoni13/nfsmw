@@ -1,66 +1,121 @@
-#ifndef FRONTEND_FEPACKAGEDATA_H
-#define FRONTEND_FEPACKAGEDATA_H
+#ifndef FEPACKAGEDATA_H
+#define FEPACKAGEDATA_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/FEngRender.hpp"
+
+struct ScreenFactoryDatum;
 
 // total size: 0x38
+// Decl: 12
 class FEPackageData : public bTNode<FEPackageData> {
   public:
-    // static int IsInScreenConstructor() {}
+    FEPackageData(bChunk *chunk);
+    virtual ~FEPackageData();
 
-    // bChunk *GetChunk() {}
+    uint32 GetNameHash();
 
-    // struct FEPackage *GetPackage() {}
+    void *GetDataChunk();
 
-    // bool IsCompressedChunk() {}
+    bChunk *GetChunk() { // Decl: 20
+        return MyChunk;
+    }
+    FEPackage *GetPackage() { // Decl: 21
+        return pPackage;
+    }
+    bool IsCompressedChunk() { // Decl: 22
+        return MyChunk->GetID() == BCHUNK_FENG_COMPRESSED_PACKAGE;
+    }
 
-    // bool IsActive() {}
+    void Activate(FEPackage *pkg, int arg);
 
-    // void SetPermanent(int flag) {}
+    void NotificationMessage(u32 Message, FEObject *pObject, u32 Param1, u32 Param2);
 
-    // int GetPermanent() {}
+    void NotifySoundMessage(u32 msg, FEObject *obj, u32 control_mask, u32 pkg_ptr);
 
-    // void SetArgument(int pArg) {}
+    void UnActivate();
 
-    // int GetArgument() {}
+    bool IsActive() { // Decl: 28
+        return pPackage != nullptr;
+    }
 
-    // bool GetVisibility() {}
+    void Close();
 
-    // void SetVisibility(bool visible) {}
+    void SetPermanent(int flag) { // Decl: 31
+        IsPermanent = flag;
+    }
 
-    // int GetLastKnownControlMask() {}
+    int GetPermanent() { // Decl: 32
+        return IsPermanent;
+    }
 
-    // bool WasSetupForHotchunk() {}
+    void SetArgument(int pArg) { // Decl: 34
+        mArg = pArg;
+    }
+    int GetArgument() { // Decl: 35
+        return mArg;
+    }
 
-    // void SetupForHotchunk() {}
+    bool GetVisibility() { // Decl: 37
+        return IsVisible;
+    }
+    void SetVisibility(bool visible) { // Decl: 38
+        IsVisible = visible;
+    }
 
-    // void ClearHotchunk() {}
+    int GetLastKnownControlMask() { // Decl: 43
+        return LastKnownControlMask;
+    }
+    int LastKnownControlMask;    // offset 0x8, size 0x4, Decl: 44
+    int bWasSetupForHotchunk;    // offset 0xC, size 0x4, Decl: 45
+    bool WasSetupForHotchunk() { // Decl: 46
+        return bWasSetupForHotchunk;
+    }
+    void SetupForHotchunk() { // Decl: 47
+        bWasSetupForHotchunk = true;
+    }
+    void ClearHotchunk() { // Decl: 48
+        bWasSetupForHotchunk = false;
+    }
 
-    // struct MenuScreen *GetScreen() {}
+    MenuScreen *GetScreen() { // Decl: 50
+        return pScreen;
+    }
 
-    // struct FEPackageRenderInfo *GetRenderInfo() {}
+    FEPackageRenderInfo *GetRenderInfo() {
+        return &RenderInfo;
+    }
+
+    static int IsInScreenConstructor() { // Decl: 52
+        return mInScreenConstructor > 0;
+    }
 
   private:
-    // Static members
-    static int mInScreenConstructor; // size: 0x4, address: 0x8041CB60
+    void *DataChunk;                // offset 0x10, size 0x4, Decl: 55
+    bChunk *MyChunk;                // offset 0x14, size 0x4, Decl: 56
+    MenuScreen *pScreen;            // offset 0x18, size 0x4, Decl: 57
+    FEPackage *pPackage;            // offset 0x1C, size 0x4, Decl: 58
+    int16 IsPermanent;              // offset 0x20, size 0x2, Decl: 59
+    int16 IsVisible;                // offset 0x22, size 0x2, Decl: 60
+    ScreenFactoryDatum *CreateData; // offset 0x24, size 0x4, Decl: 61
+    FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
+    int mArg;                       // offset 0x30, size 0x4, Decl: 62
 
-    int LastKnownControlMask;              // offset 0x8, size 0x4
-    int bWasSetupForHotchunk;              // offset 0xC, size 0x4
-    void *DataChunk;                       // offset 0x10, size 0x4
-    bChunk *MyChunk;                       // offset 0x14, size 0x4
-    struct MenuScreen *pScreen;            // offset 0x18, size 0x4
-    struct FEPackage *pPackage;            // offset 0x1C, size 0x4
-    int16 IsPermanent;                     // offset 0x20, size 0x2
-    int16 IsVisible;                       // offset 0x22, size 0x2
-    struct ScreenFactoryDatum *CreateData; // offset 0x24, size 0x4
-    // TODO
-    // struct FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
-    int mArg; // offset 0x30, size 0x4
+    static int mInScreenConstructor; // size: 0x4, address: 0x8041CB60, Decl: 730
 };
+
+#define gMainMenuName "FeMainMenu.fng" // :70
+
+uint8 FEngGetLastButton(const char *pkg_name);
+
+void SetLoadingScreenPackageName(const char *name);
+
+const char *GetLoadingScreenPackageName();
+
+void FEngSetLastButton(const char *pkg_name, uint8 button_hash);
+void FEngSetCreateCallback(const char *abstract_pkg_name, MenuScreenCreateFunction function);
 
 #endif

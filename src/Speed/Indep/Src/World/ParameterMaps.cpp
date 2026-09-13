@@ -184,7 +184,6 @@ int ParameterMapLayer::GetParameterSetIndexFromMapData(float x, float y) {
     return 0;
 }
 
-// UNSOLVED regswap
 int ParameterMapLayer::GetParameterSetIndexFromQuadData8(float x, float y) {
     float left = this->Header->QuadLeft;
     float top = this->Header->QuadTop;
@@ -212,24 +211,23 @@ int ParameterMapLayer::GetParameterSetIndexFromQuadData8(float x, float y) {
                 current_index = this->QuadData8[current_index].GetChild0();
             } else {
                 right = centre_x;
-                current_index = this->QuadData8[current_index].GetChild1();
                 top = centre_y;
+                current_index = this->QuadData8[current_index].GetChild1();
             }
         } else {
             if (y < centre_y) {
                 left = centre_x;
-                current_index = this->QuadData8[current_index].GetChild2();
                 bottom = centre_y;
+                current_index = this->QuadData8[current_index].GetChild2();
             } else {
-                left = centre_x; // TODO regswap if this is not commented out
-                current_index = this->QuadData8[current_index].GetChild3();
+                left = centre_x;
                 top = centre_y;
+                current_index = this->QuadData8[current_index].GetChild3();
             }
         }
     }
 }
 
-// UNSOLVED regswap
 int ParameterMapLayer::GetParameterSetIndexFromQuadData16(float x, float y) {
     float left = this->Header->QuadLeft;
     float top = this->Header->QuadTop;
@@ -256,18 +254,18 @@ int ParameterMapLayer::GetParameterSetIndexFromQuadData16(float x, float y) {
                 current_index = this->QuadData16[current_index].GetChild0();
             } else {
                 right = centre_x;
-                current_index = this->QuadData16[current_index].GetChild1();
                 top = centre_y;
+                current_index = this->QuadData16[current_index].GetChild1();
             }
         } else {
             if (y < centre_y) {
                 left = centre_x;
-                current_index = this->QuadData16[current_index].GetChild2();
                 bottom = centre_y;
+                current_index = this->QuadData16[current_index].GetChild2();
             } else {
                 left = centre_x;
-                current_index = this->QuadData16[current_index].GetChild3();
                 top = centre_y;
+                current_index = this->QuadData16[current_index].GetChild3();
             }
         }
     }

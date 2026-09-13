@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/AI/AISpawnManager.h"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h" // for IReputation's handle, maybe it's in another zAI file?
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Math/SimRandom.h"

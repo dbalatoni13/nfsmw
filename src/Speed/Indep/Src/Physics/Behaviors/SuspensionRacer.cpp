@@ -1927,7 +1927,9 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
                 damp = 0.0f;
             }
 
-            float springForce = UMath::Max(damp + spring + sway_stiffness[i], 0.0f);
+            float springForce = damp + spring + sway_stiffness[i];
+
+            springForce = UMath::Max(springForce, 0.0f);
 
             UVector3 verticalForce(vUp * springForce);
 
@@ -1949,7 +1951,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
 
             UMath::Vector3 force;
             UMath::UnitCross(lateralNormal, groundNormal, driveForce);
-            UMath::Scale(driveForce, wheel.GetLongitudeForce(), driveForce);
+            UMath::Scale(driveForce, wheel.GetLongitudeForce());
             UMath::Add(lateralForce, driveForce, force);
             UMath::Add(force, verticalForce, force);
 
@@ -2000,7 +2002,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
     }
 
     if (maxDelta > 0.0f) {
-        for (int i = 0; i < this->GetNumWheels(); ++i) {
+        for (unsigned int i = 0; i < this->GetNumWheels(); ++i) {
             Wheel &wheel = this->GetWheel(i);
             wheel.SetY(wheel.GetPosition().y + maxDelta);
         }

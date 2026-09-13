@@ -12,7 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
-#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"

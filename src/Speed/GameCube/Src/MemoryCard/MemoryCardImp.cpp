@@ -2,37 +2,6 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 
 namespace RealmcIface {
-enum CardStatus {
-    STATUS_OK = 0,
-    STATUS_NO_CARD = 1,
-    STATUS_CARD_CHANGED = 2,
-    STATUS_CARD_UNFORMATTED = 3,
-    STATUS_CARD_DAMAGED = 4,
-    STATUS_WRONG_DEVICE = 5,
-    STATUS_CARD_FULL = 6,
-    STATUS_ACCESS_DENIED = 7,
-    STATUS_INSUFFICIENT_SPACE = 8,
-    STATUS_FILE_NOT_FOUND = 9,
-    STATUS_ENTRY_NOT_FOUND = 10,
-    STATUS_ENTRY_ALREADY_EXISTS = 11,
-    STATUS_FILE_NOT_OPENED = 12,
-    STATUS_FILE_CORRUPTED = 13,
-    STATUS_DIRECTORY_NOT_FOUND = 14,
-    STATUS_DIRECTORY_NOT_EMPTY = 15,
-    STATUS_TOO_MANY_OPENED_FILES = 16,
-    STATUS_CANNOTMOUNT = 17,
-    STATUS_FILE_DELETED = 18,
-    STATUS_RANGE_ERROR = 19,
-    STATUS_CARD_REMOVED = 20,
-    STATUS_INACCESSIBLE_CARD = 21,
-    STATUS_EXIT_TO_CARD_MANAGER = 22,
-    STATUS_FAILED = 23,
-    STATUS_UNKNOWN = -1,
-};
-
-struct BootupCheckResults;
-struct GCIconDataInfo;
-struct GCBannerDataInfo;
 
 struct Ps2SaveInfo {
     const char *mIconSysData;
@@ -74,10 +43,6 @@ struct SaveInfo {
     const unsigned short *mContentName;
 };
 
-struct SaveReq {
-    unsigned int mNumSaves;
-    SaveInfo *mSaveInfo;
-};
 } // namespace RealmcIface
 
 struct MemoryCardImp {

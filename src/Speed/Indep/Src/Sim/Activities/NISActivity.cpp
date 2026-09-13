@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Animation/AnimScene.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"

@@ -63,7 +63,7 @@ Behavior *RigidBody::Construct(const BehaviorParams &params) {
 
 RigidBody::Volatile::Volatile() {}
 
-// UNSOLVED but functionally matching
+
 RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant)
     : mVerts(nullptr),                          //
       mNumVertices(count),                      //
@@ -74,8 +74,8 @@ RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, u
         this->mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
         this->mVerts =
-            reinterpret_cast<UMath::Vector4 *>(gFastMem.Alloc(static_cast<unsigned short>(count) * sizeof(*this->mVerts), "RigidBody::Mesh::Verts"));
-        bMemCpy(this->mVerts, verts, static_cast<unsigned short>(count) * sizeof(*this->mVerts));
+            reinterpret_cast<UMath::Vector4 *>(gFastMem.Alloc(this->mNumVertices * sizeof(*this->mVerts), "RigidBody::Mesh::Verts"));
+        bMemCpy(this->mVerts, verts, this->mNumVertices * sizeof(*this->mVerts));
         this->mFlags |= Mesh::FREEABLE;
     }
 }
@@ -786,7 +786,7 @@ bool RigidBody::CanCollideWithGround() const {
 static const unsigned int Tweak_MaxGroundCollisionResults = 16;
 static const unsigned int BOX_CORNERS = 8;
 
-// UNSOLVED, y_vel and tolerance math twice
+
 void RigidBody::DoInstanceCollision2d(const float dT) {
     Volatile &data = *this->mData;
     data.leversInContact = 0;
@@ -837,12 +837,15 @@ void RigidBody::DoInstanceCollision2d(const float dT) {
 
             UMath::Add(world_arm, data.position, world_point);
 
-            float y_vel = (world_arm.x - world_cog.x) * data.angularVel.z + data.linearVel.y;
-            y_vel = data.angularVel.x * (world_arm.z - world_cog.z) - y_vel;
+            float y_vel = data.angularVel.z * (world_arm.x - world_cog.x) + data.linearVel.y;
 
-            float tolerance = speedXZ * dT + depth;
-            tolerance += UMath::Max(y_vel * dT, 0.0f);
-            tolerance = UMath::Clamp(ceiling - world_point.y, 0.25f, tolerance);
+            float tolerance = speedXZ * dT +
+                              UMath::Max((data.angularVel.x * (world_arm.z - world_cog.z) -
+                                          (data.angularVel.z * (world_arm.x - world_cog.x) + data.linearVel.y)) *
+                                             dT,
+                                         0.0f) +
+                              depth;
+            tolerance = UMath::Clamp(tolerance, 0.25f, ceiling - world_point.y);
 
             world_pos.SetTolerance(tolerance);
             world_pos.Update(world_point, world_normal, true, this->mWCollider, true);
@@ -884,11 +887,14 @@ void RigidBody::DoInstanceCollision2d(const float dT) {
             UMath::Add(world_arm, data.position, world_point);
 
             float y_vel = data.angularVel.z * (world_arm.x - world_cog.x) + data.linearVel.y;
-            y_vel = data.angularVel.x * (world_arm.z - world_cog.z) - y_vel;
 
-            float tolerance = speedXZ * dT + depth;
-            tolerance += UMath::Max(y_vel * dT, 0.0f);
-            tolerance = UMath::Clamp(ceiling - world_point.y, 0.25f, tolerance);
+            float tolerance = speedXZ * dT +
+                              UMath::Max((data.angularVel.x * (world_arm.z - world_cog.z) -
+                                          (data.angularVel.z * (world_arm.x - world_cog.x) + data.linearVel.y)) *
+                                             dT,
+                                         0.0f) +
+                              depth;
+            tolerance = UMath::Clamp(tolerance, 0.25f, ceiling - world_point.y);
 
             world_pos.SetTolerance(tolerance);
             world_pos.Update(world_point, world_normal, true, this->mWCollider, true);
