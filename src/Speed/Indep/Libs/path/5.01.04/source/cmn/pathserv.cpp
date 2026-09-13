@@ -50,6 +50,7 @@ int PATHI_switchvoice(unsigned int voiceflags) {
     return 0;
 }
 
+// NON_MATCHING: normalized DWARF is exact; indexed global-load operand order still differs.
 void PATHI_sortprojects() {
     int p1;
     int p2;
@@ -57,8 +58,8 @@ void PATHI_sortprojects() {
 
     p1 = 0;
     do {
-        p2 = p1 + 1;
         if (Path::pfstates[p1] != 0) {
+            p2 = p1 + 1;
             while (p2 < PATH_MAX_PROJECTS) {
                 if (Path::pfstates[p2] != 0 &&
                     Path::pfstates[p1]->idflags > Path::pfstates[p2]->idflags) {
