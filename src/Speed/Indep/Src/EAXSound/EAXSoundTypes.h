@@ -136,4 +136,6 @@ class SongInfoList : public std::vector<stSongInfo *> {};
 
 }; // namespace Sound
 
+extern Sound::SongInfoList Songs;
+
 #endif
