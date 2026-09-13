@@ -1,10 +1,7 @@
 #ifndef MISC_CONFIG_H
 #define MISC_CONFIG_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 // TODO this file was made up. What should we use instead? Maybe Speed.hpp?
@@ -24,12 +21,21 @@ extern int SkipFETrackNumber;
 extern int SkipFENumPlayerCars;
 extern int SkipFENumAICars;
 extern int SkipFENumLaps;
-extern int SkipFERaceType;
+extern RaceTypes SkipFERaceType;
+extern int SkipFEPoint2Point;
 extern int SkipFEMaxCops;
 extern int SkipFEHelicopter;
+extern int SkipFEPovType1;
 extern int SkipFETrafficDensity;
 extern float SkipFETrafficOncoming;
-extern int SkipFEDifficulty;
+extern eOpponentStrength SkipFEDifficulty;
+extern int SkipFEDamageEnabled;
+extern bVector3 *SkipFEOverrideStartPosition;
+extern eLanguages SkipFELanguage;
+extern int SkipFEPrintPerformances;
+extern int SkipNISs;
+extern int SkipFEControllerConfig1;
+extern int SkipFEControllerConfig2;
 extern int SkipMovies;
 extern int UnlockAllThings;
 extern int EmergencySaveMemory;
@@ -40,9 +46,13 @@ extern int SkipCareerIntro;
 extern int SkipDDayRaces;
 extern int UnlockAllThings;
 extern int MikeMannBuild;
+extern bool IsCollectorsEdition;
+extern bool CarGuysCamera;
 extern eTrackDirection SkipFETrackDirection;
 extern int TimeOfDaySwapEnable;
 extern bVector3 *SkipFEOverrideStartPosition;
+extern int OnlineEnabled;
+extern bool gVerboseTesterOutput;
 
 void InitConfig();
 void LoadConfigItems();

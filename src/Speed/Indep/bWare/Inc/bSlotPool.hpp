@@ -65,7 +65,9 @@ class SlotPool : public bTNode<SlotPool> {
         return Flags;
     };
 
-    bool IsInPool(void *p);
+    bool IsInPool(void *p) {
+        return GetSlotNumber(p) >= 0;
+    }
 
     const char *GetName();
 

@@ -1212,7 +1212,6 @@ NFSMixMap *NFSMixMap::GetSecondaryMap() {}
 
 float F_DT_FRAME_LOCK = 0.0333667f; // size: 0x4, address: 0x80418A28, Decl: 2611
 
-// UNSOLVED
 void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
     this->m_msDeltaTime = dt * 1000.0f;
     this->m_fDeltaTimeRatio[1] = this->m_fDeltaTimeRatio[0];
@@ -1242,8 +1241,7 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
         int scale;
 
         {
-            int Q15Val = 0x7FFF - pmxdp->pudata->pstCurveData->Q15Output;
-            Q15Val = (Q15Val * pmxdp->psdata->nRatio) >> 15;
+            int Q15Val = ((0x7FFF - pmxdp->pudata->pstCurveData->Q15Output) * pmxdp->psdata->nRatio) >> 15;
             nout = 0x7FFF - Q15Val;
         }
 
@@ -1647,7 +1645,6 @@ void NFSMixMap::UpdateATREvent(stEvtMixCtlProc *pProc) {
     return;
 }
 
-// UNSOLVED
 void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
     float ftstage_0 = static_cast<float>(pProc->pData_S->pMapParms->nParam_00 & 0xFFF) * 16.66667f;
     eMIXTABLEID ncurvestage_0 = static_cast<eMIXTABLEID>((pProc->pData_S->pMapParms->nParam_00 >> 12) & 0xF);
@@ -1660,13 +1657,9 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
         nSwing |= 0xFFFF0000;
     }
 
-    float nratio = pProc->pData_U->msTimeElapsed;
-
-    if (nratio < ftstage_0) {
-        nratio = (nratio * 32767.0f) / ftstage_0;
-
+    if (pProc->pData_U->msTimeElapsed < ftstage_0) {
         {
-            int ndt = static_cast<int>(nratio);
+            int ndt = static_cast<int>((pProc->pData_U->msTimeElapsed * 32767.0f) / ftstage_0);
 
             if (nSwing < 0) {
                 pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
@@ -1674,14 +1667,10 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
                 pProc->pData_U->qoutput = 0x7FFF - NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
             }
         }
-    } else if ((nratio - ftstage_0) > ftstage_1) {
-        nratio = nratio - (ftstage_0 + ftstage_1);
-
-        if (nratio < ftstage_2) {
-            nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
-
+    } else if ((pProc->pData_U->msTimeElapsed - ftstage_0) > ftstage_1) {
+        if ((pProc->pData_U->msTimeElapsed - (ftstage_0 + ftstage_1)) < ftstage_2) {
             {
-                int ndt = static_cast<int>(nratio);
+                int ndt = static_cast<int>(32767.0f - (((pProc->pData_U->msTimeElapsed - (ftstage_0 + ftstage_1)) * 32767.0f) / ftstage_2));
 
                 if (nSwing < 0) {
                     pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
@@ -1697,7 +1686,9 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
         pProc->pData_U->qoutput = 0;
     }
 
-    pProc->pData_U->output = static_cast<int>(((32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f) * static_cast<float>(nSwing));
+    float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+
+    pProc->pData_U->output = static_cast<int>(nratio * static_cast<float>(nSwing));
 }
 
 void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
@@ -1711,18 +1702,16 @@ void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
         nSwing |= 0xFFFF0000;
     }
 
-    float nratio = pProc->pData_U->msTimeElapsed;
-
-    if (nratio < ftstage_0) {
-        int ndt = static_cast<int>((nratio * 32767.0f) / ftstage_0);
+    if (pProc->pData_U->msTimeElapsed < ftstage_0) {
+        int ndt = static_cast<int>((pProc->pData_U->msTimeElapsed * 32767.0f) / ftstage_0);
 
         if (nSwing < 0) {
             pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
         } else {
             pProc->pData_U->qoutput = 0x7FFF - NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
         }
-    } else if ((nratio - ftstage_0) < ftstage_2) {
-        int ndt = static_cast<int>(32767.0f - (((nratio - ftstage_0) * 32767.0f) / ftstage_2));
+    } else if ((pProc->pData_U->msTimeElapsed - ftstage_0) < ftstage_2) {
+        int ndt = static_cast<int>(32767.0f - (((pProc->pData_U->msTimeElapsed - ftstage_0) * 32767.0f) / ftstage_2));
 
         if (nSwing < 0) {
             pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
@@ -1734,7 +1723,8 @@ void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
         pProc->pData_U->qoutput = 0x7FFF;
     }
 
-    nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+    float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+
     pProc->pData_U->output = static_cast<int>(nratio * static_cast<float>(nSwing));
 }
 

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void eInitFEEnvMapPlat();
+void eRemoveFEEnvMapPlat();
 
 #endif

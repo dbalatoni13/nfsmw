@@ -4,14 +4,10 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp"
+#include "snd/sndo.h"
 
 #define NUMBER_REVERB_ALLOCS 4         // Decl: 15
 #define LARGEST_REVERB_SIZE 128 * 1024 // Decl: 16
-
-// TODO remove
-namespace Snd {
-struct GlobalFxProcessor;
-};
 
 // total size: 0x2C
 // Decl: 23

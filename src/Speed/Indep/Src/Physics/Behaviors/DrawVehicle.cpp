@@ -150,7 +150,6 @@ HCAUSE DrawVehicle::GetCausality() const {
     return this->mCausality;
 }
 
-// UNSOLVED regswap
 IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const {
     const IAttachable::List *attachements = this->GetAttachments();
     if (attachements != nullptr) {
@@ -159,7 +158,7 @@ IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const
             IModel *model;
             if (ia->QueryInterface(&model) && UTL::COM::ComparePtr(model->GetParentModel(), static_cast<const IModel *>(this))) {
                 if (!enumerator->OnModel(model)) {
-                    return enumerator;
+                    break;
                 }
             }
         }

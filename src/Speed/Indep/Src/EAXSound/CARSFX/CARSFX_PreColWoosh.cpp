@@ -4,12 +4,11 @@
 
 DEFINE_CREATABLE(0x20120, CARSFX_PreColWoosh, SndBase);
 
-// UNSOLVED, stack issues (because the second UCRC32 reuses sp8), but functionally equivalent
-CARSFX_PreColWoosh::CARSFX_PreColWoosh() {
-    this->mMsgBarrier = Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrier,
-                                                                                                          UCrc32("FRONT_BARRIER"), 0);
-    this->mMsgBarrierHit = Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrierHit,
-                                                                                                             UCrc32("FRONT_BARRIER_HIT"), 0);
+CARSFX_PreColWoosh::CARSFX_PreColWoosh()
+    : mMsgBarrier(Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrier,
+                                                                                                    UCrc32("FRONT_BARRIER"), 0)),
+      mMsgBarrierHit(Hermes::Handler::Create<MAudioReflection, CARSFX_PreColWoosh, CARSFX_PreColWoosh>(this, &CARSFX_PreColWoosh::MsgBarrierHit,
+                                                                                                       UCrc32("FRONT_BARRIER_HIT"), 0)) {
     this->m_pWoosh = nullptr;
     this->mResetTime = 0.0f;
     this->mDurationActive = 0.0f;

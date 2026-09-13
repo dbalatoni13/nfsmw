@@ -1,9 +1,5 @@
-#ifndef BWARE_BWARE_H
-#define BWARE_BWARE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BWARE_HPP
+#define BWARE_HPP
 
 #include "Strings.hpp"
 #include "bMath.hpp"
@@ -14,6 +10,7 @@
 
 #include <cstring>
 
+// TODO move these to the correct place
 // #define PLAT_NEXT_GEN
 
 #if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_XENON)
@@ -30,7 +27,7 @@
 #define bPrintf (1) ? ((void)0) : bNullPrintf
 #define bMilestonePutString bReleasePutString
 #define bMilestonePrintf bReleasePrintf
-#define bAssert(exp)
+#define bAssert(exp) bAssertFailMsg(exp) // : 427
 #define bAssertMsg(exp, msg)
 #define bAssertMsg1(exp, msg, arg1)
 #define bAssertMsg2(exp, msg, arg1, arg2)
@@ -106,6 +103,10 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 void *bMalloc(int size, int allocation_params);
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+
+inline void *bMalloc(int size, int allocation_params) {
+    return bMalloc(size, nullptr, 0, allocation_params);
+}
 #else
 
 inline void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
@@ -176,6 +177,9 @@ void bPlatEndianSwap(bVector2 *value);
 void bPlatEndianSwap(bVector3 *value);
 void bPlatEndianSwap(bVector4 *value);
 void bPlatEndianSwap(bMatrix4 *value);
+inline void bEndianSwap(short *value) {
+    bEndianSwap16(value);
+}
 
 void bInitSharedStringPool(int size);
 void bCloseSharedStringPool();
@@ -211,7 +215,11 @@ inline void bPlatEndianSwap(uint16 *value) {
 #endif
 }
 
-inline void bPlatEndianSwap(uint8 *value) {}
+inline void bPlatEndianSwap(uint8 *value) {
+#ifdef NATIVE_ENDIAN_BIG
+        // bEndianSwap32(value);
+#endif
+}
 
 inline void bPlatEndianSwap(int8 *value) {}
 
@@ -278,5 +286,7 @@ inline int bMemoryGetTopBit(int allocation_params) {
 inline int bMemoryGetAlignmentOffset(int allocation_params) {
     return (allocation_params >> 17) & 0x1ffc;
 }
+
+void bAssertFailMsg(char *fmt, const char *filename, int line_number, ...);
 
 #endif

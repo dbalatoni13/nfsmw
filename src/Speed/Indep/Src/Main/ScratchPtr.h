@@ -37,18 +37,17 @@ template <typename T> class ScratchPtr {
     static T mRAMBuffer[T::MaxInstances];
 };
 
-// UNSOLVED
 template <typename T> T **ScratchPtr<T>::_Alloc() {
-    for (int i = 0; i < sizeof(mPointer) / sizeof(T *); ++i) {
+    for (unsigned int i = 0; i < sizeof(mPointer) / sizeof(T *); ++i) {
         if (mPointer[i] == nullptr) {
             T *spbuffer;
+
             if (mWorkSpace == nullptr) {
-                spbuffer = &mRAMBuffer[i];
+                mPointer[i] = &mRAMBuffer[i];
             } else {
-                spbuffer = &reinterpret_cast<T *>(mWorkSpace)[i];
+                mPointer[i] = &reinterpret_cast<T *>(mWorkSpace)[i];
             }
-            // TODO
-            mPointer[i] = spbuffer;
+
             return &mPointer[i];
         }
     }

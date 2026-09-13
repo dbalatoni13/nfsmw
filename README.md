@@ -49,6 +49,20 @@ When running under WSL, [objdiff](#diffing) is unable to get filesystem notifica
 
 [wibo](https://github.com/decompals/wibo), a minimal 32-bit Windows binary wrapper, will be automatically downloaded and used.
 
+## Dev Container
+
+- Install [docker](https://www.docker.com/get-started/)
+
+- VSCode
+  - Ensure the VSCode extension [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) is installed
+  - When prompted to "Reopen folder to develop in a container" select "Reopen in Contianer" or Run `Dev Containers: Reopen in Container`
+
+- Zed
+  - When asked "Would you like to re-open it in a container?" select "Yes, Open in Container" or run `projects: open dev container`
+
+Dependencies and extensions will be included automatically  
+Run objdiff by running `objdiff -p .` in the editor's terminal
+
 # Building
 
 - Clone the repository:

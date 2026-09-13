@@ -1978,6 +1978,8 @@ zEcstasy.o:gap_07_80472174_bss
 zFe.o:lbl_803DF568
 zFe.o:lbl_8041B998
 zFe.o:lbl_8041BBCC
+zFe.o:lbl_803E0636
+zFe.o:lbl_803E1F8C
 zFe.o:gap_06_8041B5DC_data
 zFe.o:gap_06_8041B5FC_data
 zFe.o:gap_06_8041B63C_data
