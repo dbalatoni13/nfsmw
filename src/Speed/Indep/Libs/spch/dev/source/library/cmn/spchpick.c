@@ -1239,6 +1239,7 @@ abort:
 }
 
 // NON_MATCHING: normalized DWARF is exact; loop-invariant address generation still differs.
+// NON_MATCHING: request field order follows retail source lines; global and callback scheduling still differ.
 static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, EventSpec *eventSpec) {
     VOXBANKHDR *bank;
     SPCHType_SampleRequestData sampleRequestData;
@@ -1308,8 +1309,8 @@ static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, Even
                     sampleRequestData.sampleOffset = dataOffset;
                     sampleRequestData.numBytes = sampleBytes;
                     sampleRequestData.eventSpec = *eventSpec;
-                    sampleRequestData.channel = channel;
                     sampleRequestData.datID = datID;
+                    sampleRequestData.channel = channel;
                     sampleRequestData.subID = bank->subID;
                     if (i == 0) {
                         sampleRequestData.interruptFlag = VoxEvent_GetInterruptFlag(event);
