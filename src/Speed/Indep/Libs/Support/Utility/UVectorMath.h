@@ -394,7 +394,7 @@ inline float VU0_fabs(const float a) {
         return -a;
     }
     return a;
-        // return a < 0.0f ? -a : a;
+    // return a < 0.0f ? -a : a;
 #endif
 }
 

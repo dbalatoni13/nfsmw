@@ -360,12 +360,12 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         *reinterpret_cast<uint32 *>(&shadow_poly.Colours[3][0]) = 0x80808080;
         shadow_poly.UVs[0][0] = 0.0f;
         shadow_poly.UVs[0][1] = 0.0f;
-        shadow_poly.UVs[0][2] = 1.0f;
-        shadow_poly.UVs[0][3] = 0.0f;
         shadow_poly.UVs[1][0] = 1.0f;
-        shadow_poly.UVs[1][1] = 1.0f;
-        shadow_poly.UVs[1][2] = 0.0f;
-        shadow_poly.UVs[1][3] = 1.0f;
+        shadow_poly.UVs[1][1] = 0.0f;
+        shadow_poly.UVs[2][0] = 1.0f;
+        shadow_poly.UVs[2][1] = 1.0f;
+        shadow_poly.UVs[3][0] = 0.0f;
+        shadow_poly.UVs[3][1] = 1.0f;
         view->Render(&shadow_poly, CharacterShadowTexture, eGetIdentityMatrix(), 0, 0.0f);
     }
 }

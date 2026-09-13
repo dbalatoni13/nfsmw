@@ -104,6 +104,7 @@ float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float spee
 float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
 eInductionType InductionType(const Attrib::Gen::pvehicle &pvehicle);
 eInductionType InductionType(const Attrib::Gen::induction &induction);
+eInductionType InductionType(const Attrib::Gen::pvehicle &pvehicle);
 bool HasNos(const Attrib::Gen::pvehicle &pvehicle);
 bool HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle);
 float NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings);
@@ -131,12 +132,14 @@ Mps Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen
                 GearID gear, const Tunings *tunings);
 bool HasPerformanceRatings(const Attrib::Gen::pvehicle &pvehicle);
 bool EstimatePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
+bool EstimatePerformance(Performance &perf);
 bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool GetStockPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool GetMaximumPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehicle, float &top_speed, float *table, int num_entries);
 void FindPerformanceCandidates(const Performance &minimum_perf, const Performance &maximum_perf, UTL::Std::list<unsigned int, _type_list> &candidates);
 
+extern Performance PerformanceWeights[7];
 
 } // namespace Info
 } // namespace Physics

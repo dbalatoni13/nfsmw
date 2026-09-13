@@ -8,23 +8,24 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 
 static const float Pursuit_AIUpdateRate = 0.125f; // Decl: 26
 static const float Pursuit_AIStagger = 0.125f;    // Decl: 27
 float AIVehiclePursuit::mStagger = 0.0f;          // Decl: 28
 
 AIVehiclePursuit::AIVehiclePursuit(const BehaviorParams &bp)
-    : AIVehiclePid(bp, Pursuit_AIUpdateRate, mStagger, Sim::TASK_FRAME_FIXED), //
-      IPursuitAI(bp.fowner),                                                   //
-      mInPursuit(false),                                                       //
-      mBreaker(false),                                                         //
-      mChicken(false),                                                         //
-      mDamagedByPerp(false),                                                   //
-      mSirenState(Sound::SIREN_OFF),                                           //
-      mSirenInit(false),                                                       //
-      mInFormation(false),                                                     //
-      mInPosition(false),                                                      //
-      mWithinEngagementRadius(false),                                          //
+    : AIVehiclePid(bp, 0.125f, mStagger, Sim::TASK_FRAME_FIXED), //
+      IPursuitAI(bp.fowner),                                     //
+      mInPursuit(false),                                         //
+      mBreaker(false),                                           //
+      mChicken(false),                                           //
+      mDamagedByPerp(false),                                     //
+      mSirenState(Sound::SIREN_OFF),                             //
+      mSirenInit(false),                                         //
+      mInFormation(false),                                       //
+      mInPosition(false),                                        //
+      mWithinEngagementRadius(false),                            //
       mPursuitOffset(UMath::Vector3::kZero) {
     mStagger += Pursuit_AIStagger;
     if (mStagger >= 1.0f) {

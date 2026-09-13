@@ -1,6 +1,8 @@
 #ifndef PHYSICS_TUNINGS_H
 #define PHYSICS_TUNINGS_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
 namespace Physics {
 
 // total size: 0x1C
@@ -24,7 +26,9 @@ struct Tunings {
 
     static float UpperLimit(Path path);
 
-    void Default();
+    void Default() {
+        bMemSet(this, 0, sizeof(*this));
+    }
 
     float Value[7]; // offset 0x0, size 0x1C
 };

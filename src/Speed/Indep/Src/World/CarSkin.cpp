@@ -655,8 +655,6 @@ unsigned int GetSpinnerTextureMaskHash(RideInfo *ride_info) {
     return bStringHash("_MASK", spinner_hash);
 }
 
-uint32 GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type);
-
 uint32 GetVinylLayerHash(RideInfo *ride_info, int layer) {
     CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + layer);
 

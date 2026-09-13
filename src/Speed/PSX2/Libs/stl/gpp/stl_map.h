@@ -38,6 +38,19 @@ __STL_BEGIN_NAMESPACE
 #pragma set woff 1375
 #endif
 
+#ifdef CLANGD_DAMNIT
+template <class _Key, class _Tp, class _Compare, class _Alloc>
+class map;
+
+template <class _Key, class _Tp, class _Compare, class _Alloc>
+inline bool operator==(const map<_Key, _Tp, _Compare, _Alloc>&,
+                       const map<_Key, _Tp, _Compare, _Alloc>&);
+
+template <class _Key, class _Tp, class _Compare, class _Alloc>
+inline bool operator<(const map<_Key, _Tp, _Compare, _Alloc>&,
+                      const map<_Key, _Tp, _Compare, _Alloc>&);
+#endif
+
 #ifndef __STL_LIMITED_DEFAULT_TEMPLATES
 template <class _Key, class _Tp, class _Compare = less<_Key>,
           class _Alloc = __STL_DEFAULT_ALLOCATOR(_Tp) >

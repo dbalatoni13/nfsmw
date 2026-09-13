@@ -130,14 +130,16 @@ Rain::Rain(eView *view, RainType StartType) {
     this->NoRainAhead = 0;
     this->NumRainPoints = -1;
     this->MyView = view;
+
     this->PRECIPpoly[0].UVs[0][0] = 0.0f;
     this->PRECIPpoly[0].UVs[0][1] = 1.0f;
-    this->PRECIPpoly[0].UVs[0][2] = 0.1f;
-    this->PRECIPpoly[0].UVs[0][3] = 1.0f;
+
     this->PRECIPpoly[0].UVs[1][0] = 0.1f;
-    this->PRECIPpoly[0].UVs[1][1] = 0.0f;
-    this->PRECIPpoly[0].UVs[1][2] = 0.0f;
-    this->PRECIPpoly[0].UVs[1][3] = 0.0f;
+    this->PRECIPpoly[0].UVs[1][1] = 1.0f;
+    this->PRECIPpoly[0].UVs[2][0] = 0.1f;
+    this->PRECIPpoly[0].UVs[2][1] = 0.0f;
+    this->PRECIPpoly[0].UVs[3][0] = 0.0f;
+    this->PRECIPpoly[0].UVs[3][1] = 0.0f;
 
     unsigned char r = 128;
     unsigned char g = 128;
@@ -166,12 +168,13 @@ Rain::Rain(eView *view, RainType StartType) {
 
     this->PRECIPpoly[1].UVs[0][0] = 0.0f;
     this->PRECIPpoly[1].UVs[0][1] = 1.0f;
-    this->PRECIPpoly[1].UVs[0][2] = 0.1f;
-    this->PRECIPpoly[1].UVs[0][3] = 1.0f;
     this->PRECIPpoly[1].UVs[1][0] = 0.1f;
-    this->PRECIPpoly[1].UVs[1][1] = 0.0f;
-    this->PRECIPpoly[1].UVs[1][2] = 0.0f;
-    this->PRECIPpoly[1].UVs[1][3] = 0.0f;
+    this->PRECIPpoly[1].UVs[1][1] = 1.0f;
+
+    this->PRECIPpoly[1].UVs[2][0] = 0.1f;
+    this->PRECIPpoly[1].UVs[2][1] = 0.0f;
+    this->PRECIPpoly[1].UVs[3][0] = 0.0f;
+    this->PRECIPpoly[1].UVs[3][1] = 0.0f;
 
     unsigned char r1 = 100;
     unsigned char g1 = 100;

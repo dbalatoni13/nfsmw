@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "types.h"
 
 namespace Physics {
 
@@ -55,6 +56,7 @@ bool SetLevel(Attrib::Gen::pvehicle &vehicle, Type type, int level);
 void Clear(Attrib::Gen::pvehicle &vehicle);
 bool MatchPerformance(Attrib::Gen::pvehicle &vehicle, const Physics::Info::Performance &matched_performance);
 void Flush();
+float GetHeat(Attrib::Gen::pvehicle pvehicle, Type type, int level);
 
 }; // namespace Upgrades
 
