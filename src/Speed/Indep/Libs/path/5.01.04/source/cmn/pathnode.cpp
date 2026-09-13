@@ -64,6 +64,7 @@ int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) 
 }
 
 // NON_MATCHING: ASM and normalized DWARF still differ.
+// NON_MATCHING: beat-remainder ownership is restored; timing and global-address scheduling still differ.
 int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEATINFO &masterinfo,
                           unsigned int &waitms) {
     if (static_cast<short>(entryinfo.partID) < 0 || node < 0) {
@@ -88,7 +89,8 @@ int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEA
     case 1:
         overbeatsdone++;
         waitms = static_cast<int>(overbeatsdone * beatlen) - elapsedtime;
-        nodebeat = (overbeatsdone % nodeinfo->beats) + 1;
+        overbeatsdone %= nodeinfo->beats;
+        nodebeat = overbeatsdone + 1;
         break;
     case 2:
         waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
