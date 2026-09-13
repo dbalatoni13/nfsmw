@@ -244,14 +244,14 @@ int PATH_destroy(int trackhandle) {
     return numdestroyed;
 }
 
+// NON_MATCHING: normalized DWARF is exact; name-copy and global-address scheduling still differ.
 int PATH_setnamedvalue(int projects, char *name, int value) {
-    int result;
+    int result = PATHERR_INV_PARAM;
     char str[16];
 
     if (name == 0) {
         return PATHERR_INV_PARAM;
     }
-    result = PATHERR_INV_PARAM;
     {
         int c;
 
