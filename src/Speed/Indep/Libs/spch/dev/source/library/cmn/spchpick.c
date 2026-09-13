@@ -366,15 +366,13 @@ static int iSPCH_CheckFrequency(VoxSentence *sentence) {
 }
 
 inline unsigned short iSPCH_MakeValidParmsMask(VoxEvent *event, unsigned int *parms) {
-    unsigned short testMask;
-    unsigned short validParmsMask;
+    unsigned short testMask = 1;
+    unsigned short validParmsMask = 0;
     unsigned int parmTypesMask;
     int i;
     unsigned int parmValue;
 
-    testMask = 1;
     parmTypesMask = VoxEvent_GetParmTypesMask(event);
-    validParmsMask = 0;
     i = 0;
     do {
         parmValue = parms[i + 1];
@@ -387,6 +385,7 @@ inline unsigned short iSPCH_MakeValidParmsMask(VoxEvent *event, unsigned int *pa
     return validParmsMask;
 }
 
+// NON_MATCHING: mask initialization recovers local ownership; caller and inline address lifetimes still differ.
 int iSPCH_ChooseSentence(unsigned int *parms) {
     char sentenceOrder[100];
     SentencePickInfo pickInfo;
