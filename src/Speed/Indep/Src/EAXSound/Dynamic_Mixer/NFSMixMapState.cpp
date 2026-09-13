@@ -343,7 +343,7 @@ void NFSMixMapState::CreateEvtMixCtls() {
 
         this->m_MixStateParams.pEvtMixCtlProc = this->m_pNFSMixMap->GetNextEvtMixCtlProc(false);
 
-        for (int n = 0; n < this->m_pEvtMixCtlHdr->NumEvents; n++) {
+        for (int n = 0; n < this->m_pEvtMixCtlHdr->NumEvents;) {
             stEvtMixCtlProc *pEVP;
             stEvtMixCtlSharedData *pEVS;
             stEvtMixCtlUniqueData *pEVU;
@@ -480,18 +480,18 @@ void NFSMixMapState::Create3DMixCtls() {
 void NFSMixMapState::InitializeSubChannels() {
     for (int n = 0; n < this->m_SubMixChannelsAdded; n++) {
         stSubMixChProc *psbmxchproc = this->m_MixStateParams.pSubMixChProcs + n;
-        int numfixedinputs = 0;
         int *pinputs = &psbmxchproc->pMixChData_S->pMapParams[1].MIXCHID;
         int numinputs = (static_cast<unsigned int>(psbmxchproc->pMixChData_S->pMapParams->MIXCHID) >> 16) & 0xFF;
+        int numfixedinputs = 0;
         int j = numfixedinputs;
 
         for (; j < numinputs; j++) {
             int chid = *pinputs++;
-            int nstate = (chid >> 16) & 0xFF;
 
-            if (nstate == this->m_StateIndex) {
+            if (((chid >> 16) & 0xFF) == this->m_StateIndex) {
                 numfixedinputs++;
             } else {
+                int nstate = (chid >> 16) & 0xFF;
                 int numdups = this->m_pNFSMixMap->m_StateRefCount[nstate];
                 numfixedinputs += numdups;
             }
@@ -514,10 +514,9 @@ void NFSMixMapState::InitializeSubChannels() {
                 *pstore++ = newid | (this->m_ObjectIndex << 11);
             } else {
                 int nstate = ncnt;
+                int numdups = this->m_pNFSMixMap->m_StateRefCount[nstate];
                 int usethisid = chid & 0xFFFF07FF;
                 j--;
-
-                int numdups = this->m_pNFSMixMap->m_StateRefCount[nstate];
 
                 for (int nd = 0; nd < numdups; nd++) {
                     *pstore++ = usethisid | (nd << 11);
@@ -557,11 +556,12 @@ void NFSMixMapState::InitializeMasterChannels() {
                 num3DCtlConnections++;
             } else {
                 int nstate = (chid >> 16) & 0xFF;
+                int numdups;
 
                 if (nstate == this->m_StateIndex) {
                     numfixedinputs++;
                 } else {
-                    int numdups = this->m_pNFSMixMap->m_StateRefCount[nstate];
+                    numdups = this->m_pNFSMixMap->m_StateRefCount[nstate];
                     numfixedinputs += numdups;
                 }
             }
@@ -618,8 +618,7 @@ void NFSMixMapState::InitializeMasterChannels() {
             }
         }
 
-        pPresetTable += nTotalPresets;
-        pPresetTable++;
+        pPresetTable = pPresetTable + nTotalPresets + 1;
         n = nchanneltype;
     }
 }

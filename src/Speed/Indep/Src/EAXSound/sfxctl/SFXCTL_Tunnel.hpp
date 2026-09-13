@@ -71,10 +71,13 @@ class SFXCTL_Tunnel : public SFXCTL {
     cInterpLine ReflRamp; // offset 0x7C, size 0x1C, Decl: 111
     void UpdateReflectionParams(float t);
     void EndTunnelVerb();
-    bool IsReadyForSwitch() {} // Decl: 114
-    bool bFadingOut;           // offset 0x98, size 0x1, Decl: 115
-    bool bFadingIn;            // offset 0x9C, size 0x1, Decl: 116
-    bool bIsReadyForSwitch;    // offset 0xA0, size 0x1, Decl: 117
+    // Decl: 114
+    bool IsReadyForSwitch() {
+        return this->bIsReadyForSwitch;
+    }
+    bool bFadingOut;        // offset 0x98, size 0x1, Decl: 115
+    bool bFadingIn;         // offset 0x9C, size 0x1, Decl: 116
+    bool bIsReadyForSwitch; // offset 0xA0, size 0x1, Decl: 117
 
     bool m_IsLeadCar; // offset 0xA4, size 0x1, Decl: 119
 

@@ -6,7 +6,6 @@ DEFINE_CREATABLE(0x20060, CARSFX_SparkChatter, SndBase);
 
 int SparkChatVol = 32000; // size: 0x4, address: 0xFFFFFFFF, Decl: 27
 
-// UNSOLVED
 CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {
     this->m_pSparkChatterControl = nullptr;
     this->m_pSparkChatterOutput = nullptr;
@@ -14,8 +13,8 @@ CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {
 
     this->SparkChatOutputClients.m_pThis = this;
     this->SparkChatOutputClients.CreateClient.pClientData = &this->SparkChatOutputClients;
-    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.UpdateClient.pClientData = &this->SparkChatOutputClients;
+    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.CreateClient.pClientFunc = &CARSFX_SparkChatter::SparkChatCreateCallBack;
     this->SparkChatOutputClients.DestroyClient.pClientFunc = &CARSFX_SparkChatter::SparkChatDestroyCallBack;
     this->m_pSweetnersData = nullptr;

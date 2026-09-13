@@ -194,4 +194,6 @@ class SFXObj_PFEATrax : public SFXObj_Pathfinder {
     Hermes::HHANDLER mMsgSwapInteractive;      // offset 0x198, size 0x4
 };
 
+void InitializeEATrax(bool breset);
+
 #endif

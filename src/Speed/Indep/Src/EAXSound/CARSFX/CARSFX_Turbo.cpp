@@ -150,7 +150,6 @@ void CARSFX_Turbo::UpdateParams(float t) {
     }
 }
 
-// UNSOLVED
 void CARSFX_Turbo::ProcessUpdate() {
     if (this->m_pTurboBlowoffControl != nullptr) {
         int nDMixOut;
@@ -163,7 +162,9 @@ void CARSFX_Turbo::ProcessUpdate() {
             Az = this->GetDMixOutput(0, DMX_AZIM);
         }
 
-        int TmpBlowoffVol = static_cast<int>(static_cast<float>((this->BlowoffVol * nDMixOut) >> 15) * this->m_BlowoffRampDown.GetValue());
+        int TmpBlowoffVol = (this->BlowoffVol * nDMixOut) >> 15;
+
+        TmpBlowoffVol = static_cast<int>(static_cast<float>(TmpBlowoffVol) * this->m_BlowoffRampDown.GetValue());
         this->m_pTurboBlowoffControl->SetAzimuth(Az);
         this->m_pTurboBlowoffControl->SetVolume(TmpBlowoffVol);
         this->m_pTurboBlowoffControl->CommitMemberData();

@@ -66,7 +66,6 @@ void SFXObj_Reverb::SetupSFX(CSTATE_Base *_StateBase) {
     }
 }
 
-// TODO
 void SFXObj_Reverb::InitSFX() {
     SndBase::InitSFX();
 
@@ -84,18 +83,18 @@ void SFXObj_Reverb::InitSFX() {
     this->Enable();
     if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
         if (this->m_pFXEditModule[0] != nullptr) {
-            // this->m_pFXEditModule[0]->Release();
+            this->m_pFXEditModule[0]->Release();
             this->m_pFXEditModule[0] = nullptr;
         }
-        // Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
-        // m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[3]);
+        Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
+        m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[3]);
     } else {
         if (this->m_pFXEditModule[0] != nullptr) {
-            // m_pFXEditModule[0]->Release();
+            m_pFXEditModule[0]->Release();
             this->m_pFXEditModule[0] = nullptr;
         }
-        // Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
-        // this->m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[8]);
+        Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
+        this->m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[8]);
         m_pTunnelCtl->SetCurrentReverbType(RVRB_HILLS, 0);
     }
 }
@@ -108,25 +107,23 @@ void SFXObj_Reverb::UpdateParams(float t) {
     }
 }
 
-// TODO
 void SFXObj_Reverb::ProcessUpdate() {
     if (IsEnabled() && m_pTunnelCtl->m_IsLeadCar && g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW &&
-        m_pTunnelCtl->bIsReadyForSwitch && (m_pFXEditModule[0] != nullptr)) {
-        // SNDSYS_service();
-        // m_pFXEditModule[0]->Reset();
-        // m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[m_pTunnelCtl->m_ReverbType]);
+        m_pTunnelCtl->IsReadyForSwitch() && (m_pFXEditModule[0] != nullptr)) {
+        SNDSYS_service();
+        m_pFXEditModule[0]->Reset();
+        m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[m_pTunnelCtl->m_ReverbType]);
     }
 }
 
-// TODO
 void SFXObj_Reverb::Destroy() {
     if (this->m_pFXEditModule[0] != nullptr) {
-        // this->m_pFXEditModule[0]->Release();
+        this->m_pFXEditModule[0]->Release();
         this->m_pFXEditModule[0] = nullptr;
     }
 
     if (this->m_pFXEditModule[1] != nullptr) {
-        // m_pFXEditModule[1]->Release();
+        m_pFXEditModule[1]->Release();
         this->m_pFXEditModule[1] = nullptr;
     }
 

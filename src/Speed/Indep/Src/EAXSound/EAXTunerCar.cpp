@@ -72,7 +72,10 @@ void DebugPrintColumn(int x, int y, char *label, unsigned int label_color, float
 
 // UNSOLVED
 int EAXTunerCar::UpdateRotation() {
+    this->m_Rotation = 0;
+
     this->m_Rotation = bClamp(this->m_Rotation, 0, 1024);
+
     return this->m_Rotation;
 }
 

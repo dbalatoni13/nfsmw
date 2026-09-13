@@ -27,59 +27,59 @@ class GInfractionManager {
 
     static void Shutdown();
 
-    void PursuitStarted();
-
-    void ReportInfraction(InfractionType infraction);
-
-    unsigned int GetNumInfractions();
-
-    bool DidInfractionOccur(InfractionType infraction);
-
     static GInfractionManager &Get() {
         return *mObj;
     }
 
-    // static bool Exists() {}
+    static bool Exists() {}
 
-    // void ClearInfractions() {}
+    void ClearInfractions() {}
+
+    void PursuitStarted();
 
     void ReportResistingArrest() {
         this->ReportInfraction(kInfraction_Resist);
     }
 
-    // void ReportSpeeding(bool speeding) {}
+    void ReportSpeeding(bool speeding) {}
 
-    // void ReportRecklessDriving(bool reckless) {}
+    void ReportRecklessDriving(bool reckless) {}
 
-    // void ReportRacing(bool racing) {}
+    void ReportRacing(bool racing) {}
 
     void ReportAssaultingPoliceOfficer() {
-        ReportInfraction(kInfraction_Assault);
+        this->ReportInfraction(kInfraction_Assault);
     }
 
     void ReportHitAndRun() {
-        ReportInfraction(kInfraction_HitAndRun);
+        this->ReportInfraction(kInfraction_HitAndRun);
     }
 
     void ReportDamageToProperty() {
-        ReportInfraction(kInfraction_Damage);
+        this->ReportInfraction(kInfraction_Damage);
     }
 
     void ReportDrivingOffRoadWay() {
         ReportInfraction(kInfraction_OffRoad);
     }
 
-    // float GetRecklessSpeedThreshold() {}
+    float GetRecklessSpeedThreshold() {}
 
-    // float GetSpeedLimit() {}
+    float GetSpeedLimit() {}
 
-    // float GetRacingSpeedLimit() {}
+    float GetRacingSpeedLimit() {}
 
     unsigned int GetInfractions() {
         return mInfractions;
     }
 
+    bool DidInfractionOccur(InfractionType infraction);
+
+    unsigned int GetNumInfractions();
+
   private:
+    void ReportInfraction(InfractionType infraction);
+
     static GInfractionManager *mObj; // size: 0x4
 
     unsigned int mInfractions;    // offset 0x0, size 0x4

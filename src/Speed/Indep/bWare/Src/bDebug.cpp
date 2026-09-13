@@ -193,7 +193,6 @@ unsigned int bGetTicker() {
 #endif
 }
 
-// UNSOLVED
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
     if (start_ticks < end_ticks) {
         start_ticks = end_ticks - start_ticks;

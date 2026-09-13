@@ -20,8 +20,9 @@ enum eDRIVE_BY_TYPE {
     MAX_DRIVE_BY_TYPES = 13,
 };
 
-// total size: 0x10
+typedef eDRIVE_BY_TYPE reflection_typedef_eDRIVE_BY_TYPE;
 
+// total size: 0x10
 struct CollisionStream {
     Attrib::RefSpec StreamMoment;    // offset 0x0, size 0xC
     EA::Reflection::UInt8 Threshold; // offset 0xC, size 0x1

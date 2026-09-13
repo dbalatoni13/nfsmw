@@ -39,6 +39,4 @@ inline void MUTEX_unlock(MUTEX *m) {
     reinterpret_cast<RealSystem::Mutex *>(m)->Unlock();
 }
 
-inline int CPU_getcycle() {}
-
 #endif

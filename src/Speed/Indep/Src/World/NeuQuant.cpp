@@ -263,36 +263,18 @@ static int contest(int b, int g, int r, int aa) {
     return bestbiaspos;
 }
 
-// UNSOLVED regswapsd
 static void altersingle(int alpha, int i, int b, int g, int r, int aa) {
     int *n = &network[i][0];
 
-    b = alpha * (*n - b);
-    if (b < 0) {
-        b += 0x3ff;
-    }
-    *n -= b >> 10;
-
-    g = alpha * (*++n - g);
-    if (g < 0) {
-        g += 0x3ff;
-    }
-    *n -= g >> 10;
-
-    r = alpha * (*++n - r);
-    if (r < 0) {
-        r += 0x3ff;
-    }
-    *n -= r >> 10;
-
-    aa = alpha * (*++n - aa);
-    if (aa < 0) {
-        aa += 0x3ff;
-    }
-    *n -= aa >> 10;
+    *n -= (alpha * (*n - b)) / 1024;
+    ++n;
+    *n -= (alpha * (*n - g)) / 1024;
+    ++n;
+    *n -= (alpha * (*n - r)) / 1024;
+    ++n;
+    *n -= (alpha * (*n - aa)) / 1024;
 }
 
-// UNSOLVED regswaps
 static void alterneigh(int rad, int i, int b, int g, int r, int aa) {
     int j;
     int k;
@@ -322,64 +304,33 @@ static void alterneigh(int rad, int i, int b, int g, int r, int aa) {
         if (j < hi) {
             p = &network[j][0];
 
-            rad = a * (*p - b);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
+            *p -= (a * (*p - b)) / 262144;
+            ++p;
+            *p -= (a * (*p - g)) / 262144;
+            ++p;
+            *p -= (a * (*p - r)) / 262144;
+            ++p;
+            *p -= (a * (*p - aa)) / 262144;
 
-            rad = a * (*++p - g);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
-
-            rad = a * (*++p - r);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
-
-            rad = a * (*++p - aa);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
             j++;
-            *p -= rad >> 18;
         }
 
         if (k > lo) {
             p = &network[k][0];
 
-            rad = a * (*p - b);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
+            *p -= (a * (*p - b)) / 262144;
+            ++p;
+            *p -= (a * (*p - g)) / 262144;
+            ++p;
+            *p -= (a * (*p - r)) / 262144;
+            ++p;
+            *p -= (a * (*p - aa)) / 262144;
 
-            rad = a * (*++p - g);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
-
-            rad = a * (*++p - r);
-            if (rad < 0) {
-                rad += 0x3FFFF;
-            }
-            *p -= rad >> 18;
-
-            a *= *++p - aa;
-            if (a < 0) {
-                a += 0x3FFFF;
-            }
             k--;
-            *p -= a >> 18;
         }
     }
 }
 
-// UNSOLVED regswaps
 void learn() {
     int i;
     int j;
@@ -415,8 +366,8 @@ void learn() {
         rad = 0;
     }
 
-    for (j = 0; j < rad; j++) {
-        radpower[j] = (((rad * rad - j * j) * 256) / (rad * rad)) << 10;
+    for (i = 0; i < rad; i++) {
+        radpower[i] = (((rad * rad - i * i) * 256) / (rad * rad)) << 10;
     }
 
     if (lengthcount != lengthcount / 499 * 499) {

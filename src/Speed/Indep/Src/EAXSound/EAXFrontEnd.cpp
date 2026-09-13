@@ -105,7 +105,7 @@ int EAXFrontEnd::Play(void *peventst) {
     if (peventst != nullptr) {
         PlayFrontEndSampleSt *pst = static_cast<PlayFrontEndSampleSt *>(peventst);
         int Vol = pst->volume;
-        int nvol = this->m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL);
+        int nvol = this->m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
         Vol = (Vol * nvol) >> 15;
 
         g_pEAXSound->SetCsisName(this->m_pSFXOBJ_FEHUD);

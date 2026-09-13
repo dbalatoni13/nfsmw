@@ -53,9 +53,8 @@ int SFXObj_WorldObject::GetController(int Index) {
     return -1;
 }
 
-// UNSOLVED
 void SFXObj_WorldObject::AttachController(SFXCTL *psfxctl) {
-    if ((psfxctl->GetObjectIndex() & 0xFFF0) == 0) {
+    if (psfxctl->GetObjectIndex() == 0) {
         m_p3DObjPos = static_cast<SFXCTL_3DObjPos *>(psfxctl);
     }
 }

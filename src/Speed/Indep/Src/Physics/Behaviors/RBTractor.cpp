@@ -269,8 +269,7 @@ RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params)
         UMath::Vector3 dir = this->GetForwardVector();
         UMath::Vector3 pos = this->GetPosition();
 
-        // TODO wrong assignment order inside the constructor?
-        VehicleParams params(this, DRIVER_NONE, spec, dir, pos, 4, nullptr, nullptr);
+        VehicleParams params(this, DRIVER_NONE, spec, dir, pos, 0, nullptr, nullptr);
         ISimable *isim = ISimable::CreateInstance(UCrc32("PVehicle"), params);
 
         if (isim != nullptr) {
