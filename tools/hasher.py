@@ -16,11 +16,6 @@ from StringHash32 import StringHash32
 
 HEADER_PREFIX = """#ifndef HEADER_NAME_H
 #define HEADER_NAME_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 """
 
 include_pattern = re.compile(r'\s*#\s*include "([^"]+)"')

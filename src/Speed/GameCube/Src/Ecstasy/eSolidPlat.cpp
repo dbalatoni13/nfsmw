@@ -1,4 +1,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+
+bTList<eSolid> SolidList; // size: 0x8, address: 0x8045ED18, Decl: 23
 
 // UNSOLVED
 int eLoadSolidListPlatChunks(bChunk *chunk) {

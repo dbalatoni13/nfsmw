@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
 namespace CameraAI {
@@ -14,6 +15,7 @@ void Reset();
 void MaybeDoTotaledCam(IPlayer *iplayer);
 void MaybeDoPursuitCam(IVehicle *ivehicle);
 
+void StartCinematicSlowdown(EVIEW_ID viewID, float seconds);
 }; // namespace CameraAI
 
 #endif

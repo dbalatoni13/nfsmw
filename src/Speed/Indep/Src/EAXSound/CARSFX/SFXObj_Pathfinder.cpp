@@ -207,9 +207,6 @@ void SFXObj_PFEATrax::SwapInteractiveProjects() {
     this->m_Flags |= 0x18; // TODO magic
 }
 
-// TODO move
-extern Sound::SongInfoList Songs;
-
 void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
     if ((this->m_Flags & 0x800) == 0) {
         if (this->m_ActiveProject != PF_LICENSED_MUSIC) {

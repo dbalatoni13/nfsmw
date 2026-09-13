@@ -76,6 +76,7 @@ void EasterEggs::ActivateEasterEgg(int egg) {
             SkipDDayRaces = 1;
             SkipCareerIntro = 1;
         } else if (EasterEggsTable[egg].type == EASTER_EGG_DISABLE_MIKE_MANN_BUILD) {
+            extern int MikeMannBuild;
             MikeMannBuild = 0;
         } else if (EasterEggsTable[egg].type == EASTER_EGG_BURGER_KING) {
             // TODO magic

@@ -861,7 +861,7 @@ void bInitFileSystem() {
     if (!bFileSlotPool) {
         MUTEX_create(&bFileMutex);
         unsigned int slot_size = 64;
-        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile", 0);
+        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile System", 0);
     }
 }
 

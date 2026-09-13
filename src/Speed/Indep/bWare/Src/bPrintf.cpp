@@ -745,8 +745,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     }
 
                     case 'v': {
-                        char tempBuffer[64];
-                        int vectType;
 
                         if (precision < 0) {
                             if (width == 0) {
@@ -755,7 +753,8 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             }
                         }
 
-                        memset(tempBuffer, 0, 64);
+                        char tempBuffer[64] = {};
+                        int vectType;
 
                         {
                             char c = *fmt;

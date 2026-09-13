@@ -27,9 +27,9 @@ class StringKey {
           mString(src.mString) {}
 
     const StringKey &operator=(const StringKey &rhs) {
-        mString = rhs.mString;
-        mHash64 = rhs.mHash64;
-        mHash32 = rhs.mHash32;
+        this->mString = rhs.mString;
+        this->mHash64 = rhs.mHash64;
+        this->mHash32 = rhs.mHash32;
         return *this;
     }
 
@@ -48,6 +48,16 @@ class StringKey {
     bool IsEmpty() const {
         if (this->mString != nullptr) {
             return this->mString[0] == 0;
+        }
+        return true;
+    }
+
+    bool IsNotEmpty() const {
+        if (this->mString == nullptr) {
+            return false;
+        }
+        if (this->mString[0] == '\0') {
+            return false;
         }
         return true;
     }
@@ -122,7 +132,7 @@ typedef UMath::Vector4 Vector4;
 // typedef Vector4 Quaternion;
 typedef UMath::Matrix4 Matrix;
 
-typedef int PathEventEnum; // Decl: speed/indep/src/misc/attribuserinclude.h:196
+typedef int PathEventEnum; // Decl: 196
 
 //         #define:237  USER_ATTRIB_GROWTABLE(currententries,overrun) NONDEBUG_USER_ATTRIB_GROWTABLE(currententries, overrun)
 

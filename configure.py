@@ -184,7 +184,9 @@ else:
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 
-compilers_path = Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
+compilers_path = (
+    Path(config.compilers_path) if config.compilers_path else Path("build/compilers")
+)
 
 if config.platform == Platform.GC_WII:
     config.asflags = [
@@ -578,6 +580,19 @@ elif config.platform == Platform.PS2:
 
     config.extra_clang_flags = [
         "-std=gnu++98",
+        "-DCLANGD_DAMNIT",
+        "-D__HONOR_STD",
+        "-D__STL_MEMBER_TEMPLATE_KEYWORD",
+        "-U_MIPS_SIM",
+        "-U __mips",
+        "-D__mips=3",
+        "-D__mips_eabi",
+        "-DR5900",
+        "-D_R5900",
+        "-D__mips_single_float",
+        "-D__builtin_next_arg(x)=((void *)0)",
+        "-D__builtin_args_info(x)=1",
+        "-msoft-float",
     ]
 elif config.platform == Platform.WIN32:
     config.linker_version = "Win32/7.1"
@@ -657,6 +672,10 @@ def MatchingFor(*versions):
     return config.version in versions
 
 
+def RenameSectionsFor(versions: tuple[str], renames: tuple[tuple[str]]):
+    return renames if config.version in versions else ()
+
+
 if config.platform != Platform.PS2:
     config.warn_missing_config = True
 
@@ -701,8 +720,28 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zTrack.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zOnline.cpp",
+                section_renames=RenameSectionsFor(
+                    ("GOWE69", "SLES-53558-A124"),
+                    (
+                        (".text", ".over"),
+                        (".rela.text", ".rela.over"),
+                    ),
+                ),
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zFeOverlay.cpp",
+                section_renames=RenameSectionsFor(
+                    ("GOWE69", "SLES-53558-A124", "SLUS-21351"),
+                    (
+                        (".text", ".over"),
+                        (".rela.text", ".rela.over"),
+                    ),
+                ),
+            ),
         ],
     },
     {

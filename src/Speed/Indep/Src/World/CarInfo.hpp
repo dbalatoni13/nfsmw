@@ -17,8 +17,10 @@
 #define CURRENT_CARPART_PACK_VERSION 6
 #define CARSLOTID_TO_MODEL_INDEX(id) (id - CARSLOTID_MODEL_FIRST)
 #define CARSLOTID_TO_VINYL_LAYER_INDEX(id) (id - CARSLOTID_VINYL_LAYER_FIRST)
+#define CARSLOTID_TO_VINYL_COLOUR_INDEX(id) (id - CARSLOTID_VINYL_COLOUR_FIRST)
 #define CARSLOTID_FROM_MODEL_INDEX(index) (index + CARSLOTID_MODEL_FIRST)
 #define CARSLOTID_FROM_VINYL_LAYER_INDEX(index) (index + CARSLOTID_VINYL_LAYER_FIRST)
+#define CARSLOTID_FROM_VINYL_COLOUR_INDEX(index) (index + CARSLOTID_VINYL_COLOUR_FIRST)
 #define MAX_CUSTOM_PAINT_PARTS (2)
 #define MAX_VINYL_COLORS 4
 #define MAX_VINYL_LAYERS 20
@@ -491,7 +493,9 @@ class RideInfo {
         this->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     }
 
-    RideInfo(CarType type, int skin_number, int has_dash, int can_be_vertex_damaged) {}
+    RideInfo(CarType type, int skin_number, int has_dash, int can_be_vertex_damaged) {
+        Init(type, static_cast<CarRenderUsage>(skin_number), has_dash, can_be_vertex_damaged);
+    }
 
     CARPART_LOD GetMinLodLevel() const {
         return this->mMinLodLevel;
@@ -770,15 +774,21 @@ CarTypeInfo *GetCarTypeInfoFromHash(uint32 car_type_hash);
 char *GetCarTypeName(CarType car_type);
 
 extern CarPartDatabase CarPartDB;
+extern int32 CarTypeInfoArrayUpdated; // TODO declared in FEPkg_GarageMain.cpp before it's used?
 
 inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
     return &CarTypeInfoArray[car_type];
+}
+
+inline CarTypeInfo *GetCarTypeInfo(uint32 car_type_hash) {
+    return GetCarTypeInfoFromHash(car_type_hash);
 }
 
 bool CarInfo_IsSkinned(CarType type);
 unsigned int CarInfo_GetResourceCost(CarType type, bool is_player, bool split_screen);
 void GetUsedCarTextureInfo(UsedCarTextureInfo *info, RideInfo *ride_info, int front_end_only);
 int UsedCarTextureAddToTable(uint32 *used_textures, int num_used_textures, int max_textures, uint32 texture_name_hash);
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 
 // TODO these are in CarPartNames, but parts don't have a separate header
 int GetNumCarSlotIDNames();

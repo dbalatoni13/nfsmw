@@ -1,16 +1,11 @@
-#ifndef INPUT_ACTION_REF_H
-#define INPUT_ACTION_REF_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef ACTIONREF_H
+#define ACTIONREF_H
 
 #include "ActionData.h"
-#include "types.h"
 
 // total size: 0x4
 class ActionRef {
-public:
+  public:
     ActionRef(ActionData *p);
 
     int ID() const {
