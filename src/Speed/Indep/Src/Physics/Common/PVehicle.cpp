@@ -980,7 +980,9 @@ PVehicle::~PVehicle() {
     AITarget::UnRegister(static_cast<ISimable *>(this));
     IAttributeable::UnRegister(this);
     if (mCustomization != nullptr) {
-        delete static_cast<FECustomizationRecord *>(mCustomization);
+        // NOTE: retail inlines the USE_FASTALLOC operator delete here; the
+        // FECustomizationRecord stubs in VehicleDB.hpp compile `delete` away.
+        gFastMem.Free(mCustomization, sizeof(FECustomizationRecord), NULL);
         mCustomization = nullptr;
     }
     ReleaseBehaviors();
