@@ -48,28 +48,18 @@ unsigned int iSPCH_EACrandom() {
     seedX[1] = ax;
     ax = ax + seedX[0] + c;
     seedX[0] = ax;
-    seedX[5]++;
-    if (seedX[5] != 0) {
-        return ax;
+    if (++seedX[5] == 0) {
+        if (++seedX[4] == 0) {
+            if (++seedX[3] == 0) {
+                if (++seedX[2] == 0) {
+                    if (++seedX[1] == 0) {
+                        ax = ++seedX[0];
+                    }
+                }
+            }
+        }
     }
-    seedX[4]++;
-    if (seedX[4] != 0) {
-        return ax;
-    }
-    seedX[3]++;
-    if (seedX[3] != 0) {
-        return ax;
-    }
-    seedX[2]++;
-    if (seedX[2] != 0) {
-        return ax;
-    }
-    seedX[1]++;
-    if (seedX[1] != 0) {
-        return ax;
-    }
-    seedX[0] = ax + 1;
-    return seedX[0];
+    return ax;
 }
 
 static void iSPCH_EACseedrandom(unsigned int seed) {

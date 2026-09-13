@@ -7,8 +7,6 @@ unsigned int seedPATH[6] = {
     0x6FDF3B64,
 };
 
-// NON_MATCHING: normalized DWARF is exact; the final overflow return
-// still lacks the retail result-register copy.
 unsigned int PATHI_random() {
     unsigned int ax;
     unsigned int c;
@@ -29,27 +27,17 @@ unsigned int PATHI_random() {
     c = ax < seedPATH[1];
     seedPATH[1] = ax;
     ax = ax + seedPATH[0] + c;
-    seedPATH[5]++;
     seedPATH[0] = ax;
-    if (seedPATH[5] != 0) {
-        return ax;
+    if (++seedPATH[5] == 0) {
+        if (++seedPATH[4] == 0) {
+            if (++seedPATH[3] == 0) {
+                if (++seedPATH[2] == 0) {
+                    if (++seedPATH[1] == 0) {
+                        ax = ++seedPATH[0];
+                    }
+                }
+            }
+        }
     }
-    seedPATH[4]++;
-    if (seedPATH[4] != 0) {
-        return ax;
-    }
-    seedPATH[3]++;
-    if (seedPATH[3] != 0) {
-        return ax;
-    }
-    seedPATH[2]++;
-    if (seedPATH[2] != 0) {
-        return ax;
-    }
-    seedPATH[1]++;
-    if (seedPATH[1] != 0) {
-        return ax;
-    }
-    seedPATH[0]++;
-    return seedPATH[0];
+    return ax;
 }
