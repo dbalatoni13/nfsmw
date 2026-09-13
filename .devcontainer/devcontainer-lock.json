@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/ninja-asdf:2": {
+      "version": "2.0.16",
+      "resolved": "ghcr.io/devcontainers-extra/features/ninja-asdf@sha256:679ad4a4410c3851ef3cfec684b976a89198b9367401f3912911a34c31b8d49b",
+      "integrity": "sha256:679ad4a4410c3851ef3cfec684b976a89198b9367401f3912911a34c31b8d49b"
+    }
+  }
+}
