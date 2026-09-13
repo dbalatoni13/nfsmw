@@ -249,13 +249,14 @@ void PATHI_seteventfilter(PATHEVENT *in_event, int onOff) {
     event->beingFiltered = onOff;
 }
 
+// NON_MATCHING: staged event address restores index ownership; global-address scheduling and event's DWARF home still differ.
 void PATHI_clearalleventfilters() {
     int i;
     PATHEVENT *event;
 
     for (i = 0; i < Path::pfstate->pmap->numevents; i++) {
-        event = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(Path::pfstate->pmap) +
-                                              Path::pfstate->peventoffsets[i] * 4);
+        event = reinterpret_cast<PATHEVENT *>(Path::pfstate->pmap);
+        event = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(event) + Path::pfstate->peventoffsets[i] * 4);
         if (event != 0) {
             event->beingFiltered = 0;
         }
