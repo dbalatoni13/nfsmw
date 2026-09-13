@@ -17,7 +17,6 @@ enum eFEMultiImageTexNum {
     FEMI_NUM_TEXTURES = 3,
 };
 
-// File: speed/indep/src/feng/FEMultiImage.h
 // total size: 0x90
 // Decl: 42
 class FEMultiImageData : public FEImageData {

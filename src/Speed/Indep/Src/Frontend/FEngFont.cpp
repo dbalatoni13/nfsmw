@@ -8,7 +8,6 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 
-// File: speed/indep/src/frontend/FEngFont.cpp
 // total size: 0xC
 // Decl: 309
 struct ExtraFontData {

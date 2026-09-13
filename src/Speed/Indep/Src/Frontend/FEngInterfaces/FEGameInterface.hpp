@@ -3,7 +3,6 @@
 
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 
-// File: speed/indep/src/frontend/fenginterfaces/FEGameInterface.hpp
 // total size: 0xC
 // Decl: 20
 class cFEngGameInterface : public FEGameInterface {

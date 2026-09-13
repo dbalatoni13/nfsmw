@@ -5,7 +5,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
-// File: speed/indep/src/frontend/hud/FeHeatMeter.hpp
 // total size: 0x50
 // Decl: 9
 struct HeatMeter : public HudElement, public IHeatMeter {

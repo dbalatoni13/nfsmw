@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
-// File: speed/indep/src/frontend/hud/FeRaceOverMessage.hpp
 // total size: 0x38
 // Decl: 8
 class RaceOverMessage : public HudElement, public IRaceOverMessage {

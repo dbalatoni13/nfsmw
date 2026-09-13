@@ -3,7 +3,6 @@
 
 #include "types.h"
 
-// File: speed/indep/src/feng/FEJoyPad.h
 // total size: 0x88
 // Decl: 78
 class FEJoyPad {

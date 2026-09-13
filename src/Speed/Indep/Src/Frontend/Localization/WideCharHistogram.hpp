@@ -18,7 +18,6 @@ class WideCharHistogram {
     uint16 EntryTable[MAX_WIDE_CHAR_HISTOGRAM_ENTRIES];
 };
 
-// File: speed/indep/src/frontend/localization/WideCharHistogram.hpp
 // total size: 0x41808
 // Decl: 42
 class WideCharHistogramBuilder : public WideCharHistogram {

@@ -7,7 +7,6 @@
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
-// File: speed/indep/src/frontend/hud/FeTachometer.hpp
 // total size: 0x70
 // Decl: 13
 class Tachometer : public HudElement, public ITachometer {

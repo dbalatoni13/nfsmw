@@ -131,7 +131,6 @@ bool FEPackage::ForAllObjects(FEObjectCallback &Callback) {
     return true;
 }
 
-// File: speed/indep/src/feng/FEPackage.cpp
 // total size: 0xC
 // Decl: 211
 class FEFindByHash : public FEObjectCallback {

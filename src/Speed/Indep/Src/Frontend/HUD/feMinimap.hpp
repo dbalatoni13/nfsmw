@@ -9,7 +9,6 @@
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 
-// File: speed/indep/src/frontend/hud/FeMinimap.hpp
 // total size: 0x1C
 // Decl: 25
 class MiniMapItem : public bTNode<MiniMapItem> {

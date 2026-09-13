@@ -7,7 +7,6 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/hud/FeCountdown.hpp
 // Decl: 13
 enum eRaceCountdownNumber {
     RACE_COUNTDOWN_NUMBER_NONE = -1,

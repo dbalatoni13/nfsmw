@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/common/FEAnyMovieScreen.hpp
 // total size: 0x58
 // Decl: 15
 class FEAnyMovieScreen : public MenuScreen {

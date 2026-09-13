@@ -23,7 +23,6 @@ static const u32 FEngLibVersion = 78339; // size: 0x4, Decl: 67
 #define FEMIN(a, b) ((a) < (b) ? (a) : (b))                    // :77
 #define FECLAMP(a) ((a) < 0 ? 0 : ((a) > 255 ? 255 : (u8)(a))) // :78
 
-// File: speed/indep/src/feng/FETypes.h
 // total size: 0x10
 // Decl: 85
 class FEColor {

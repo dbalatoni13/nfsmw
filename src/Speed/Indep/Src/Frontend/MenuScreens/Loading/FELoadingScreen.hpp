@@ -3,7 +3,6 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/loading/FELoadingScreen.hpp
 // total size: 0x2C
 // Decl: 15
 class LoadingScreen : public MenuScreen {

@@ -24,7 +24,6 @@
 #define FECarPartIndex uint16                // :48
 #define FECarPartRecordIndex uint16          // :49
 
-// File: speed/indep/src/database/VehicleDB.hpp
 // total size: 0x198
 // Decl: 102
 class FECustomizationRecord {

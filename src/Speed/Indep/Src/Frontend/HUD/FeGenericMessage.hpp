@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
-// File: speed/indep/src/frontend/hud/FeGenericMessage.hpp
 // total size: 0x90
 // Decl: 36
 class GenericMessage : public HudElement, public IGenericMessage {

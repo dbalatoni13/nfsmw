@@ -16,7 +16,6 @@
 #define FEMSG_INIT_STARTED 0x1265ece9    // :13
 #define TEXT_OPTION_LENGTH 64            // : 45
 
-// File: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp
 // total size: 0x5C
 // Decl: 131
 class IconOption : public bTNode<IconOption> {

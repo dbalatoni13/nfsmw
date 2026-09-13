@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
-// File: speed/indep/src/frontend/hud/FeHudResourceManager.hpp
 // total size: 0xC
 // Decl: 10
 class HudResourceManager {

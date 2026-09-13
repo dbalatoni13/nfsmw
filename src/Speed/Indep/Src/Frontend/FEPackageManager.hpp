@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 
-// File: speed/indep/src/frontend/FEPackageManager.hpp
 // total size: 0xC
 // Decl: 11
 class FEPackageManager {

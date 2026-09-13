@@ -5,7 +5,6 @@
 #include "FETypes.h"
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 
-// File: speed/indep/src/feng/FEListBox.h
 static const u32 INVALID_RESOURCE_HANDLE = 0xFFFFFFFF;   // size: 0x4, Decl: 26
 static const u16 INVALID_RESOURCE_HANDLE_SHORT = 0xFFFF; // size: 0x2, Decl: 27
 static const u32 INVALID_LIST_ENTRY = 0xFFFFFFFF;        // size: 0x4, Decl: 28
@@ -28,7 +27,6 @@ static const u32 FENG_HASH_SCROLLDOWN = 0xE10814A6;  // size: 0x4, Decl: 58
 #define FENG_MESSAGE_SCROLLUP "Scroll Up"       // :52
 #define FENG_MESSAGE_SCROLLDOWN "Scroll Down"   // :53
 
-// File: speed/indep/src/feng/FEListBox.h
 // total size: 0xC
 // Decl: 62
 struct ListBoxResource {

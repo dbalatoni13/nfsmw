@@ -4,7 +4,6 @@
 #include "FEImage.h"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 
-// File: speed/indep/src/feng/FEAnimImage.h
 // total size: 0x58
 // Decl: 25
 class FEAnimImageData : public FEImageData {

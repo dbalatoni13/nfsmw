@@ -217,7 +217,6 @@ struct IGameInterface {
                                               char *&bodyData) = 0;
 };
 
-// File: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp
 // Decl: 22
 enum MemoryCardJoyLoggableEvents {
     MJ_None = 0,

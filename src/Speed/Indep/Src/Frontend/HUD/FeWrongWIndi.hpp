@@ -5,7 +5,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/hud/FeWrongWIndi.hpp
 // total size: 0x40
 // Decl: 16
 class WrongWIndi : public HudElement, public IWrongWay {

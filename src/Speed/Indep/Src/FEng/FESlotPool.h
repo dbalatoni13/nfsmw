@@ -6,7 +6,6 @@
 
 static const u16 FEngSlotsPerBlock = 32; // size: 0x2, Decl: 22
 
-// File: speed/indep/src/feng/FESlotPool.h
 // total size: 0x18
 // Decl: 28
 class FESlotNode : public FEMinNode {

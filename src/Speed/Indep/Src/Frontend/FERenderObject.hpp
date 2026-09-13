@@ -21,7 +21,6 @@ class FERenderEPoly : public bTNode<FERenderEPoly> {
     TextureInfo *pTextureMask; // offset 0xA0, size 0x4
 };
 
-// File: speed/indep/src/frontend/ferenderobject.hpp
 // total size: 0x64
 // Decl: 111
 class FERenderObject : public bTNode<FERenderObject> {

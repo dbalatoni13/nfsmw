@@ -13,7 +13,6 @@
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-// File: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp
 // total size: 0x8
 // Decl: 141
 struct ShapeMemoryAllocator : public EA::Allocator::IAllocator {

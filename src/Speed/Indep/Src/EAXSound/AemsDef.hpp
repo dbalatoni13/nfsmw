@@ -115,7 +115,6 @@ enum eMenuSoundTriggers {
 
 typedef eMenuSoundTriggers reflection_typedef_eMenuSoundTriggers;
 
-// File: speed/indep/src/eaxsound/AemsDef.hpp
 // total size: 0x14
 // Decl: 279
 typedef struct PlayCommonSampleSt {

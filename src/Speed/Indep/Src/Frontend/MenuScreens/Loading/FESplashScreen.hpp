@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/loading/FESplashScreen.hpp
 // total size: 0x38
 // Decl: 14
 class SplashScreen : public MenuScreen {

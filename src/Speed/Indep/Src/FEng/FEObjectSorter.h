@@ -5,7 +5,6 @@
 #include "FEObject.h"
 #include "FEngStandard.h"
 
-// File: speed/indep/src/feng/FEObjectSorter.h
 // total size: 0x8
 // Decl: 24
 struct SFERadixKey {

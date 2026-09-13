@@ -640,7 +640,6 @@ struct AV_PLAYER {
 
 } // namespace RCMP
 
-// File: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp
 // total size: 0x158
 // Decl: 87
 class MoviePlayer {

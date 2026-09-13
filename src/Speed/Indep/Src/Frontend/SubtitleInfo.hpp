@@ -3,7 +3,6 @@
 
 #include "types.h"
 
-// File: speed/indep/src/frontend/SubtitleInfo.hpp
 // total size: 0x8
 // Decl: 5
 struct SubtitleInfo {

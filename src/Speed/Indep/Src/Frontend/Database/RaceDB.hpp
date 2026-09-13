@@ -25,7 +25,6 @@ enum eExitRacePlaces {
     EXIT_RACE_FROM_POSTRACE = 1,
 };
 
-// File: speed/indep/src/database/RaceDB.hpp
 // total size: 0x24
 // Decl: 61
 class RaceSettings {

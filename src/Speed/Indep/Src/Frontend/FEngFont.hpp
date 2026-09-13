@@ -6,7 +6,6 @@
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 
-// File: speed/indep/src/frontend/FEngFont.hpp
 // total size: 0x30
 // Decl: 22
 class FEngFont : public bTNode<FEngFont> {

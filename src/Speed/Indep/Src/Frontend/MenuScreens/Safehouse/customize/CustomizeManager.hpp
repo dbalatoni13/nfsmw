@@ -14,7 +14,6 @@ enum ePerformanceRatingType {
     PRT_ACCELERATION = 2,
 };
 
-// File: speed/indep/src/frontend/menuscreens/customize/CustomizeManager.hpp
 // total size: 0x1C4
 // Decl: 218
 class CarCustomizeManager {

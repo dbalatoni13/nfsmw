@@ -8,7 +8,6 @@
 
 static char FEPrintf_Buffer[1024];
 
-// File: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp
 // total size: 0x8
 // Decl: 24
 class FEngSetGroupLanguageHash : public FEObjectCallback {

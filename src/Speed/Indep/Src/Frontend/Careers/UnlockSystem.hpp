@@ -20,7 +20,6 @@ struct UnlockDatum {
     int8 pad2;                 // offset 0x7, size 0x1
 };
 
-// File: speed/indep/src/database/datalogic/UnlockSystem.hpp
 // Decl: 35
 enum eUnlockFilters {
     UNLOCK_QUICK_RACE = 1,

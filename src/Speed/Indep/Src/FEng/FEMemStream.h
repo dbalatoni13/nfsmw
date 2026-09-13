@@ -3,7 +3,6 @@
 
 #include <types.h>
 
-// File: speed/indep/src/feng/FEMemStream.h
 // total size: 0xC
 // Decl: 17
 class FEMemStream {

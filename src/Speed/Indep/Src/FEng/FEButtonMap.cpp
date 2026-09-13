@@ -105,7 +105,6 @@ void FEButtonMap::ComputeButtonLocation(FEObject *pButton, FEGameInterface *pInt
     }
 }
 
-// File: speed/indep/src/feng/FEButtonMap.cpp
 // total size: 0x8
 // Decl: 161
 class FEButtonCounter : public FEObjectCallback {

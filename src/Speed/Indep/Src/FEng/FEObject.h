@@ -15,7 +15,6 @@ class FEObjectDestructorCallback {
     virtual void OnDestroy(FEObject *pObject) = 0;
 };
 
-// File: speed/indep/src/feng/FEObject.h
 // Decl: 48
 enum FEObjType {
     FE_None = 0,

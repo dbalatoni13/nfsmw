@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include <types.h>
 
-// File: speed/indep/src/feng/FEWideString.cpp
 // total size: 0x8
 // Decl: 48
 struct ColorSpecialSequence {
@@ -39,7 +38,6 @@ static const i16 ADDCOLOR_CODE = -15360;  // size: 0x2, Decl: 85
 
 #define ESCAPE_CHARACTER '\\' // :87
 
-// File: speed/indep/src/feng/FEWideString.h
 // total size: 0x8
 // Decl: 94
 class FEWideString {

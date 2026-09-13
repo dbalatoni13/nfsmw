@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/hud/FeTimeExtension.hpp
 // total size: 0x48
 // Decl: 11
 class TimeExtension : public HudElement, public ITimeExtension {

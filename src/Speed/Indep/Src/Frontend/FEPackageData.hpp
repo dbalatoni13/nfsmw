@@ -9,7 +9,6 @@
 
 struct ScreenFactoryDatum;
 
-// File: speed/indep/src/frontend/FEPackageData.hpp
 // total size: 0x38
 // Decl: 12
 class FEPackageData : public bTNode<FEPackageData> {

@@ -97,7 +97,6 @@ enum ePerformancePkgLevels {
     PPL_LEVEL_JUNKMAN = 7,
 };
 
-// File: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp
 // Decl: 82
 enum eCustomizeEntryPoint {
     CEP_GAMEPLAY = 0,

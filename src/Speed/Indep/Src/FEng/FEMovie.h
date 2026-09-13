@@ -3,7 +3,6 @@
 
 #include "FEObject.h"
 
-// File: speed/indep/src/feng/FEMovie.h
 // total size: 0x60
 // Decl: 26
 class FEMovie : public FEObject {

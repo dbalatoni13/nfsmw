@@ -4,7 +4,6 @@
 #include <types.h>
 #include "Speed/Indep/Src/FEng/FEObject.h"
 
-// File: speed/indep/src/feng/FEMsgTargetList.h
 // total size: 0x10
 // Decl: 13
 class FEMsgTargetList {

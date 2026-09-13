@@ -21,7 +21,6 @@ struct LeaderBoardRacerData {
     bool mIsKoed;                 // offset 0x7C, size 0x1
 };
 
-// File: speed/indep/src/frontend/hud/FeLeaderBoard.hpp
 // total size: 0x290
 // Decl: 8
 class LeaderBoard : public HudElement, public ILeaderBoard {

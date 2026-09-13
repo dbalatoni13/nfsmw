@@ -3,7 +3,6 @@
 
 #include "FEObject.h"
 
-// File: speed/indep/src/feng/feimage.h
 // total size: 0x54
 // Decl: 33
 class FEImageData : public FEObjData {

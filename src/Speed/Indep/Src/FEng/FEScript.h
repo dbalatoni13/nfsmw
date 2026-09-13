@@ -7,7 +7,6 @@
 #include "Speed/Indep/Src/FEng/FEMath.h"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
 
-// File: speed/indep/src/feng/FEScript.h
 // Decl: 30
 enum FEKeyTrack_Indices {
     FETrack_Color = 0,

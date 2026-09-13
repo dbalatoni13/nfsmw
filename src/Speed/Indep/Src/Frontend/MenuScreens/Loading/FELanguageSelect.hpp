@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/loading/FELanguageSelect.hpp
 // total size: 0x170
 // Decl: 14
 class LanguageSelectScreen : public IconScrollerMenu {

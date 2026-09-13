@@ -8,7 +8,6 @@
 
 struct FETypeSize;
 
-// File: speed/indep/src/feng/FEPackageReader.h
 // total size: 0x4
 // Decl: 31
 class FETag {

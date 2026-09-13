@@ -4,7 +4,6 @@
 #include "FEList.h"
 #include "FEngStandard.h"
 
-// File: speed/indep/src/feng/ObjectPool.h
 // total size: 0x2020
 // Decl: 20
 template <class T, int N> class FEPoolNode : public FEMinNode {

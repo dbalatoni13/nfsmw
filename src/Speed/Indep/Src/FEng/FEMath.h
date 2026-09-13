@@ -8,7 +8,6 @@ class FEMatrix4;
 
 typedef float f32;
 
-// File: speed/indep/src/feng/FEMath.h
 // total size: 0x10
 // Decl: 48
 class FEQuaternion {

@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/loading/FELoadingControllerScreen.hpp
 // total size: 0x38
 // Decl: 15
 

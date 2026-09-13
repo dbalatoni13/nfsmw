@@ -11,7 +11,6 @@ static const u32 FEMouse_Left = 1;   // size: 0x4, Decl: 20
 static const u32 FEMouse_Right = 2;  // size: 0x4, Decl: 21
 static const u32 FEMouse_Middle = 4; // size: 0x4, Decl: 22
 
-// File: speed/indep/src/feng/FEMouse.h
 // total size: 0x8
 // Decl: 26
 struct FEMouseInfo {

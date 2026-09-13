@@ -7,7 +7,6 @@
 #define NESTED_FECHUNK 0x80000000 // :12
 #define DATA_FECHUNK 0x00000000   // :13
 
-// File: speed/indep/src/feng/FEChunk.h
 // total size: 0x8
 // Decl: 28
 class FEChunk {

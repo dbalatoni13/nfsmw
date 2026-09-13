@@ -3,7 +3,6 @@
 
 #include "FEList.h"
 
-// File: speed/indep/src/feng/FERefList.h
 // total size: 0x10
 // Decl: 15
 class FERefList {

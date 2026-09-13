@@ -30,7 +30,6 @@ class FELabelCallback {
     virtual void OnLabelChanged(FEString *text) = 0;
 };
 
-// File: speed/indep/src/feng/FEString.h
 // total size: 0x78
 // Decl: 59
 class FEString : public FEObject {

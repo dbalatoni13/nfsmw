@@ -15,7 +15,6 @@
 
 class FEngine;
 
-// File: speed/indep/src/feng/FEPackage.h
 // total size: 0x4
 // Decl: 44
 class PackageInitStateCB : public FEObjectCallback {

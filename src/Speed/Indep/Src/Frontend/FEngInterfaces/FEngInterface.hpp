@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEngine.h"
 
-// File: speed/indep/src/frontend/fenginterfaces/FEngInterface.hpp
 // total size: 0x8
 // Decl: 20
 class cFEng {

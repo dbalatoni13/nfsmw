@@ -7,7 +7,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
-// File: speed/indep/src/frontend/menuscreens/common/Slider.hpp
 // total size: 0x3C
 // Decl: 74
 class cSlider {

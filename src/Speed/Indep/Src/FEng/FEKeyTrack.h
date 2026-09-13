@@ -11,7 +11,6 @@ inline i32 FEFramesToTicks(i32 Frames) {
     return Frames * 16;
 }
 
-// File: speed/indep/src/feng/FEKeyTrack.h
 // total size: 0x14
 // Decl: 59
 typedef struct {

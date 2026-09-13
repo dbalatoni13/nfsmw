@@ -6,7 +6,6 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/hud/FeRadarDetector.hpp
 // total size: 0x68
 // Decl: 8
 class RadarDetector : public HudElement, public IRadarDetector {

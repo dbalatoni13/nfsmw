@@ -22,7 +22,6 @@ enum eMiniMapModes {
     MMM_MAX = 2,
 };
 
-// File: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp
 // total size: 0x38
 // Decl: 37
 class MapItem : public bTNode<MapItem> {

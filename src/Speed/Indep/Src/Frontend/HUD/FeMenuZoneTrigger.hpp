@@ -6,7 +6,6 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/hud/FeMenuZoneTrigger.hpp
 // total size: 0x50
 // Decl: 14
 class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {

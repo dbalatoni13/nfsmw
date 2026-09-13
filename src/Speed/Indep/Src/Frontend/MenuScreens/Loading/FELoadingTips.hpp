@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/loading/FELoadingScreenSelector.hpp
 // Decl: 15
 enum eGameTips {
     GAME_TIP_LAST_CAR_AND_2_STRIKES = 0,
@@ -96,7 +95,6 @@ struct GameTipInfo {
     eGameTipFlags Flags;   // offset 0xC
 };
 
-// File: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.hpp
 // total size: 0x3C
 // Decl: 15
 

@@ -3,7 +3,6 @@
 
 #include "FEObject.h"
 
-// File: speed/indep/src/feng/FEObjectCallback.h
 // total size: 0x4
 // Decl: 20
 class FEObjectCallback {

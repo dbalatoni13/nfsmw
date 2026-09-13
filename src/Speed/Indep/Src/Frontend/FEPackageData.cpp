@@ -83,7 +83,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 #include "types.h"
 
-// File: speed/indep/src/frontend/FEPackageData.cpp
 const char *gLoadinScreenPackageName = ""; // size: 0x4, address: 0x8041C4BC, Decl: 176
 
 // Decl: 178
@@ -386,7 +385,6 @@ static MenuScreen *CreateOptionsControllerScreen(ScreenConstructorData *sd) {
     return new ("UIOptionsController", 0) UIOptionsController(sd);
 }
 
-// File: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp
 // total size: 0xC
 // Decl: 93
 struct ScreenButtonDatum {
@@ -398,7 +396,6 @@ struct ScreenButtonDatum {
 // size: 0x258, address: 0x8041C908, Decl: 101
 static ScreenButtonDatum ScreenButtonData[50] = {};
 
-// File: speed/indep/src/frontend/FEPackageData.cpp
 // total size: 0x8
 // Decl: 437
 struct ScreenFactoryDatum {

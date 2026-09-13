@@ -35,7 +35,6 @@ enum FEPlayActions {
     AT_ActionTypeCount = 3,
 };
 
-// File: speed/indep/src/feng/FETypeNode.h
 // total size: 0x24
 // Decl: 25
 class FEFieldNode : public FENode {

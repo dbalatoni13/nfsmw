@@ -7,7 +7,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// File: speed/indep/src/frontend/menuscreens/ingame/FEPkg_MU_Keyboard.hpp
 // total size: 0x360
 // Decl: 25
 class FEKeyboard : public MenuScreen {

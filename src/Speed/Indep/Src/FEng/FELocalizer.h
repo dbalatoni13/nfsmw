@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 
-// File: speed/indep/src/feng/FELocalizer.h
 // total size: 0x1C
 // Decl: 26
 class FELocalString {

@@ -3,7 +3,6 @@
 
 #include "FEObject.h"
 
-// File: speed/indep/src/feng/FEGroup.h
 // total size: 0x6C
 // Decl: 28
 class FEGroup : public FEObject {

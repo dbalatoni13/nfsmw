@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/SubtitleInfo.hpp"
 
-// File: speed/indep/src/frontend/Subtitle.hpp
 // total size: 0x24
 // Decl: 15
 class SubTitler {

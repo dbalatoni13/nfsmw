@@ -24,7 +24,6 @@
 #include "FEWideString.h"
 #include "Speed/Indep/Src/FEng/FEngine.h"
 
-// File: speed/indep/src/feng/FEPackageReader.cpp
 // total size: 0x8
 // Decl: 36
 struct FETypeSize {

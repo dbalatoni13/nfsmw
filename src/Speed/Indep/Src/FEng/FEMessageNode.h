@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 
-// File: speed/indep/src/feng/FEMessageNode.h
 // total size: 0x20
 // Decl: 21
 class FEMessageNode : public FEMinNode {

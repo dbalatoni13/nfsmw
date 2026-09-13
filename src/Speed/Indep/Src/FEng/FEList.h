@@ -6,7 +6,6 @@
 
 #define LIST_MAGIC 0xABadCafe // :32
 
-// File: speed/indep/src/feng/FEList.h
 // total size: 0xC
 // Decl: 53
 class FEMinNode {

@@ -34,7 +34,6 @@ void FEMsgTargetList::AppendTarget(FEObject *pObject) {
     pTargets[Count++] = pObject;
 }
 
-// File: speed/indep/src/feng/FEMsgTargetList.cpp
 // total size: 0x14
 // Decl: 79
 class FECountMsgs : public FEObjectCallback {

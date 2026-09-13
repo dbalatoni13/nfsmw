@@ -12,7 +12,6 @@
 
 #include <types.h>
 
-// File: speed/indep/src/frontend/StateManagers/FECarSelectStateManager.hpp
 // total size: 0x1C
 // Decl: 15
 class QRCarSelectBustedManager {

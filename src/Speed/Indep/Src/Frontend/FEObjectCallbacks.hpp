@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 
-// File: speed/indep/src/frontend/FEObjectCallbacks.hpp
 // total size: 0x8
 // Decl: 8
 class FEngMovieStarter : public FEObjectCallback {

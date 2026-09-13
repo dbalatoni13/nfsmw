@@ -4,7 +4,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
-// File: speed/indep/src/frontend/hud/FeNitrousGauge.hpp
 // total size: 0x40
 // Decl: 12
 class NitrousGauge : public HudElement, public INos {

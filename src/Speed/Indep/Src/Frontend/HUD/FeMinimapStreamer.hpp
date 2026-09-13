@@ -22,7 +22,6 @@ class UncompressedMiniMap {
     }
 };
 
-// File: speed/indep/src/frontend/hud/FeMinimapStreamer.hpp
 // total size: 0x1B4
 // Decl: 33
 class ChoppedMiniMapManager {

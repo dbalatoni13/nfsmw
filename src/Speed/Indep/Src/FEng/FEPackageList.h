@@ -6,7 +6,6 @@
 #include "FEPackage.h"
 #include "FEList.h"
 
-// File: speed/indep/src/feng/FEPackageList.h
 // total size: 0x10
 // Decl: 22
 class FEPackageList {

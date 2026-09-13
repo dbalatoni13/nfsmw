@@ -4,7 +4,6 @@
 #include "FEList.h"
 #include "Speed/Indep/Src/FEng/ObjectPool.h"
 
-// File: speed/indep/src/feng/FEMessageResponse.h
 // total size: 0xC
 // Decl: 91
 class FEResponse {

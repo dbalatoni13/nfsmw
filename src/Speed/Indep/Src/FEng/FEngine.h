@@ -45,7 +45,6 @@ struct FEPackageButtonRec {
     u32 ButtonGUID;  // offset 0x4, size 0x4
 };
 
-// File: speed/indep/src/feng/FEngine.h
 // total size: 0x20
 // Decl: 84
 class FEPackageCommand : public FENode {

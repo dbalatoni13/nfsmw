@@ -3,7 +3,6 @@
 
 #include "Speed/Indep/Src/FEng/FETypes.h"
 
-// File: speed/indep/src/feng/FELibraryRef.h
 // total size: 0xC
 // Decl: 24
 class FELibraryRef {

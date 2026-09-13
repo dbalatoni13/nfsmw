@@ -9,7 +9,6 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Frontend/HUD/FeOnlineHudSupport.hpp"
 
-// File: speed/indep/src/frontend/hud/FEPkg_Hud.hpp
 // total size: 0x348
 // Decl: 14
 class FEngHud : public UTL::COM::Object, public IHud {

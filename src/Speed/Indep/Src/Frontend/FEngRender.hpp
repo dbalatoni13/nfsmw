@@ -22,7 +22,6 @@ struct FEClipInfo {
     FEClipInfo() {}
 };
 
-// File: speed/indep/src/frontend/FEngRender.hpp
 // total size: 0xA0
 // Decl: 40
 struct RenderContext {

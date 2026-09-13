@@ -1,7 +1,6 @@
 #ifndef JOYSTICK_HPP
 #define JOYSTICK_HPP
 
-// File: speed/indep/src/misc/Joystick.hpp
 // Decl: 18
 enum JoystickPort {
     JOYSTICK_PORT_NONE = -1,

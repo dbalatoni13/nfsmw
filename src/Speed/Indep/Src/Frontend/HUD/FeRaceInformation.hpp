@@ -6,7 +6,6 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 
-// File: speed/indep/src/frontend/hud/FeRaceInformation.hpp
 // total size: 0x78
 // Decl: 8
 class RaceInformation : public HudElement, public IRaceInformation {

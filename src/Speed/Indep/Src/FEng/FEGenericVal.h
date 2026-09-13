@@ -4,7 +4,6 @@
 #include "FETypes.h"
 #include "Speed/Indep/Src/FEng/FEMath.h"
 
-// File: speed/indep/src/feng/FEGenericVal.h
 // total size: 0x10
 // Decl: 74
 class FEGenericVal {

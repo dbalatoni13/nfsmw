@@ -3,7 +3,6 @@
 
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
-// File: speed/indep/src/frontend/FeManager.hpp
 // Decl: 25
 enum eGarageType {
     GARAGETYPE_NONE = 0,

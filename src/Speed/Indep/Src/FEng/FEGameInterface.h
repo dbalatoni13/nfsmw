@@ -15,7 +15,6 @@ enum FEResourceRequestFlags {
     FR_ShapeResource = 0x40000000,
 };
 
-// File: speed/indep/src/feng/FEGameInterface.h
 // total size: 0x18
 // Decl: 34
 typedef struct {
