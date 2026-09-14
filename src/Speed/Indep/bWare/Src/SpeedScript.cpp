@@ -276,14 +276,12 @@ char *SpeedScript::GetCommandArgument(const char *command) {
     return this->GetNextArgument();
 }
 
-// TODO fake match, isArg doesn't exist
 bool SpeedScript::IsAnotherArgument() {
     SpeedScriptEntry *entry = this->GetNextEntry();
-    bool isArg = false;
-    if (entry) {
-        isArg = !entry->IsCommand;
+    if (entry != nullptr && !entry->IsCommand) {
+        return 1;
     }
-    return isArg;
+    return 0;
 }
 
 char *SpeedScript::GetNextArgument() {
