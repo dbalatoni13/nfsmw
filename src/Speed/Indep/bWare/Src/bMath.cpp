@@ -537,7 +537,7 @@ bAngle bFixATan(bFix x, bFix y) {
 
     switch (quad) {
         case 1:
-            a = -0x8000 - a;
+            a = 0x8000 - a;
             break;
         case 0:
             break;
