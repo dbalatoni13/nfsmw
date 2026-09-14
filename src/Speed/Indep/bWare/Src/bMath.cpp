@@ -461,10 +461,11 @@ bAngle bATan(float x, float y) {
 
 bFix bFixSin(bAngle angle) {
     const unsigned int index = angle >> 7;
-    const int32 lower = static_cast<int32>(bSinTable[index]) << 1;
-    const int32 upper = static_cast<int32>(bSinTable[index + 1]) << 1;
+    const int16 *table = &bSinTable[index];
+    const int32 lower = static_cast<int32>(table[0]) << 1;
+    const int32 upper = static_cast<int32>(table[1]) << 1;
     const int32 fraction = static_cast<int32>(angle & 0x7f) << 9;
-    return lower + static_cast<int32>((static_cast<int64>(upper - lower) * fraction) >> 16);
+    return lower + (((upper - lower) * fraction) >> 16);
 }
 
 void bFixSinCos(bFix *result_sin, bFix *result_cos, bAngle angle) {
