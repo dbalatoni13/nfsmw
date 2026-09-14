@@ -4,17 +4,22 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
-#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
 struct BehaviorParams {
-    const Sim::Param &fparams; // offset 0x0, size 0x4
-    PhysicsObject *fowner;     // offset 0x4, size 0x4
-    const UCrc32 &fSig;        // offset 0x8, size 0x4
-    const UCrc32 &fMechanic;   // offset 0xC, size 0x4
+    BehaviorParams(const Sim::Param &params, struct PhysicsObject *owner, const UCrc32 &mechanic, const UCrc32 &signature)
+        : fparams(params), //
+          fowner(owner),   //
+          fSig(signature), //
+          fMechanic(mechanic) {}
+
+    const Sim::Param &fparams;    // offset 0x0, size 0x4
+    struct PhysicsObject *fowner; // offset 0x4, size 0x4
+    const UCrc32 &fSig;           // offset 0x8, size 0x4
+    const UCrc32 &fMechanic;      // offset 0xC, size 0x4
 };
 
 // total size: 0x4C
@@ -38,9 +43,24 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return this->mIOwner;
     }
 
+    void DoSimulate(float dT) {
+        Sim::Profile::Scope profile(this->mProfile);
+        this->OnTaskSimulate(dT);
+    }
+
+    void BehaviorChanged(const UCrc32 &mechanic) {
+        this->OnBehaviorChange(mechanic);
+    }
+
     void EnableProfile(const char *name) {
         Sim::Profile::Release(this->mProfile);
         this->mProfile = Sim::Profile::Create();
+    }
+
+    void Pause(bool pause);
+
+    static void Destroy(Behavior *b) {
+        delete b;
     }
 
     virtual void Reset() = 0;
@@ -84,9 +104,8 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
   public:
     BehaviorSpecsPtr(Behavior *behavior, int index) : AttributeStructPtr<T>(LookupKey(behavior->GetOwner(), index)) {}
 
-    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(0) {
-        // TODO
-    }
+    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(LookupKey(owner, index)) {}
+
 
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();

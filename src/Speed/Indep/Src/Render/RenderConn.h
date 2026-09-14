@@ -334,6 +334,14 @@ class Pkt_Smackable_Open : public Sim::Packet {
   public:
     DECLARE_RENDERPACKET(Pkt_Smackable_Open, SmackableRenderConn);
 
+    Pkt_Smackable_Open(bHash32 rendermesh, WUID objectworldid, const CollisionGeometry::Bounds *collisionNode, const ModelHeirarchy *heirarchy,
+                       uint32 rendernode)
+        : mModelHash(rendermesh),        //
+          mObjectWUID(objectworldid),    //
+          mCollisionNode(collisionNode), //
+          mHeirarchy(heirarchy),         //
+          mRenderNode(rendernode) {}
+
   private:
     bHash32 mModelHash;                              // offset 0x4, size 0x4
     WUID mObjectWUID;                                // offset 0x8, size 0x4
@@ -352,6 +360,18 @@ class Pkt_Smackable_Service : public Sim::Packet {
     }
 
     DECLARE_RENDERPACKET(Pkt_Smackable_Service, SmackableRenderConn);
+
+    bool IsVisible() const {
+        return this->mVisible;
+    }
+
+    float DistanceToView() const {
+        return this->mDistanceToView;
+    }
+
+    void SetChildVisibility(uint32 visibility) {
+        this->mChildVisibility = visibility;
+    }
 
   private:
     bool mVisible;           // offset 0x4, size 0x1

@@ -121,10 +121,10 @@ struct pvehicle : Instance {
         return 0x4a97ec8f;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x4a97ec8f, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);
@@ -145,10 +145,7 @@ struct pvehicle : Instance {
         operator=(rhs.GetBase());
         return *this;
     }
-    const pvehicle &operator=(const Instance &rhs) {
-        Instance::operator=(rhs);
-        return *this;
-    }
+    const pvehicle &operator=(const Instance &rhs);
     bool BEHAVIOR_MECHANIC_AUDIO(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_AUDIO() const;

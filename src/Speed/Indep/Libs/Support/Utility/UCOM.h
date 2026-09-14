@@ -177,16 +177,17 @@ template <typename T, typename U, typename V> class Factory {
     ~Factory() {}
 
     static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
-    // TODO
-    //  {
-    //     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
-    //         if (f->mSignature == sig) {
-    //             return f->mConstructor(params);
-    //         }
-    //     }
-    //     return nullptr;
-    // }
 };
+
+template <typename T, typename U, typename V>
+U *Factory<T, U, V>::CreateInstance(V sig, T params) {
+    for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
+        if (f->mSignature == sig) {
+            return f->mConstructor(params);
+        }
+    }
+    return nullptr;
+}
 
 #define IMPLEMENT_FACTORY(_Factory_) template <> _Factory_::Prototype *_Factory_::Prototype::mHead = NULL;
 

@@ -13,6 +13,12 @@ template <typename T, int N> struct BitArray {
         }
     }
 
+    BitArray(const BitArray &src) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+            Words[i] = src.Words[i];
+        }
+    }
+
     const BitArray &operator=(const BitArray &src) {
         for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = src.Words[i];
@@ -21,7 +27,7 @@ template <typename T, int N> struct BitArray {
     }
 
     bool operator!=(const BitArray &other) const {
-        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             if (Words[i] != other.Words[i]) {
                 return true;
             }
@@ -33,6 +39,15 @@ template <typename T, int N> struct BitArray {
         return (Words[index / kBitsPerWord] >> (index % kBitsPerWord)) & 1;
     }
 
+    bool Test() const {
+        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+            if (Words[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Set(unsigned int index) {
         Words[index / kBitsPerWord] |= static_cast<T>(1) << (index % kBitsPerWord);
     }
@@ -42,7 +57,7 @@ template <typename T, int N> struct BitArray {
     }
 
     void Clear() {
-        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = 0;
         }
     }

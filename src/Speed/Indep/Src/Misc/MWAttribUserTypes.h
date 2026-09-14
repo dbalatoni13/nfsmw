@@ -69,6 +69,8 @@ struct CarBodyMotion {
 
 // total size: 0x8
 struct AxlePair {
+    AxlePair() : Front(0.0f), Rear(0.0f) {}
+
     float Front; // offset 0x0, size 0x4
     float Rear;  // offset 0x4, size 0x4
 

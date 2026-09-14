@@ -575,7 +575,6 @@ class Attribute {
     unsigned int GetLength() const;
     bool SetLength(unsigned int);
     void SendChangeMsg() const;
-    // TODO
     template <typename T> const T &Get(unsigned int index) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -606,6 +605,17 @@ class Attribute {
         return false;
     }
 
+    template <typename T> bool Set(unsigned int index, const T &input) {
+        T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));
+
+        if (resultptr != nullptr) {
+            *resultptr = input;
+            return true;
+        }
+
+        return false;
+    }
+
   private:
     void *GetInternalPointer(unsigned int index) const;
 
@@ -614,6 +624,11 @@ class Attribute {
     Node *mInternal;               // offset 0x8, size 0x4
     void *mDataPointer;            // offset 0xC, size 0x4
 };
+
+template <typename T> const T &Attribute::Get(unsigned int index) const {
+    const T *resultptr = reinterpret_cast<const T *>(GetElementPointer(index));
+    return (resultptr != nullptr) ? *resultptr : *static_cast<const T *>(DefaultDataArea(sizeof(T)));
+}
 
 namespace Gen {
 class GenericAccessor;
@@ -676,6 +691,19 @@ class Instance {
     unsigned int LocalAttribCount() const;
     bool Add(Key attributeKey, unsigned int count);
     bool Remove(Key attributeKey);
+
+    template <typename T> bool AddAndSet(Key attributeKey, const T *data, unsigned int count) {
+        if (this->Add(attributeKey, count) || this->Contains(attributeKey)) {
+            Attribute newattrib = this->Get(attributeKey);
+            for (unsigned int i = 0; i < count; i++) {
+                newattrib.Set(i, data[i]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
     // TODO
     template <typename T> TAttrib<T> GetOrClone(Key attributeKey) {}
@@ -951,6 +979,14 @@ class RefSpec {
 
     Key GetCollectionKey() const {
         return mCollectionKey;
+    }
+
+    bool operator==(const RefSpec &rhs) const {
+        return mClassKey == rhs.mClassKey && mCollectionKey == rhs.mCollectionKey;
+    }
+
+    bool operator!=(const RefSpec &rhs) const {
+        return !(*this == rhs);
     }
 
   private:

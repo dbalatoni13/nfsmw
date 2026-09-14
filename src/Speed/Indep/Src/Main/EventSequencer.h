@@ -45,7 +45,7 @@ class IContext : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IContext);
 
-    virtual bool SetDynamicData(const System *system, EventDynamicData *data);
+    virtual bool SetDynamicData(const System *system, EventDynamicData *data) = 0;
 };
 
 // TODO DECLAREHANDLE in new UTL.h
