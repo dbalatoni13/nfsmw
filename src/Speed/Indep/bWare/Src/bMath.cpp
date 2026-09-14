@@ -527,7 +527,7 @@ bAngle bFixATan(bFix x, bFix y) {
         y = -y;
     }
 
-    bAngle a;
+    bFix a;
     if (x <= (y >> 14)) {
         a = 0x4000;
     } else {
