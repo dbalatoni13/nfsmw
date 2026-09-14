@@ -37,7 +37,7 @@ SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char
 
 SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {
     this->ErrorFunction = error_function;
-    this->Init(script_name, text_buffer, bStrLen(text_buffer));
+    this->Init(script_name, text_buffer, bStrLen(text_buffer) + 1);
 }
 
 void SpeedScript::InitFromFile(const char *filename) {
