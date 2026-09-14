@@ -399,8 +399,8 @@ SlotPoolManager::SlotPoolManager() {
 }
 
 SlotPoolManager::~SlotPoolManager() {
-    this->SlotPoolList.InitList();
     this->Initialized = false;
+    this->SlotPoolList.InitList();
 }
 
 SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
