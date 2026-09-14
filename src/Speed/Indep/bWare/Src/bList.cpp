@@ -64,13 +64,9 @@ void bList::AddHead(bList *list) {
 }
 
 bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {
-    if (!node) {
-        return nullptr;
-    }
-
     bNode *insert_point = this->GetHead();
     while (insert_point != this->EndOfList()) {
-        if (check_flip(node, insert_point) <= 0) {
+        if (check_flip(node, insert_point) == 0) {
             return node->AddBefore(insert_point);
         }
         insert_point = insert_point->GetNext();
