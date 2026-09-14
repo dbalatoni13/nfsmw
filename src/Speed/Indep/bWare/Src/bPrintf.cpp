@@ -918,14 +918,16 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
     if (output_info->StdOut) {
         bBufferedPutChar(ch);
-    } else {
-        if (*outLen >= output_info->DestStringLen - 1) {
-            return;
-        }
+        *outLen += 1;
+        return;
+    }
 
-        if (output_info->DestString) {
-            *output_info->DestString++ = ch;
-        }
+    if (*outLen >= output_info->DestStringLen - 1) {
+        return;
+    }
+
+    if (output_info->DestString) {
+        *output_info->DestString++ = ch;
     }
     *outLen += 1;
 }
