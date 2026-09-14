@@ -191,7 +191,7 @@ void bMulMatrix(bVector4 *dest, const bMatrix4 *m, const bVector4 *v) {
 }
 
 void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
-    eMulVector(dest, m, v);
+    eMulVector(reinterpret_cast<bVector4 *>(dest), m, reinterpret_cast<const bVector4 *>(v));
 }
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
