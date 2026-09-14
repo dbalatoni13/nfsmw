@@ -9,17 +9,12 @@
 #include <stdarg.h>
 
 bool IsWhiteSpace(char c) {
-    if (c == ' ')
-        return true;
-    else if (c == '\n')
-        return true;
-    else if (c == '\t')
-        return true;
-    else if (c == '=')
-        return true;
-    else if (c == ',')
-        return true;
-    return c == '\r';
+    if (c != ' ') {
+        if (c != '\n' && c != '\t' && c != '=' && c != ',') {
+            return c == '\r';
+        }
+    }
+    return true;
 }
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
@@ -30,14 +25,20 @@ SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->InitFromFile(filename);
 }
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error) {}
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error) {
+    this->ErrorFunction = enable_fatal_error ? SpeedScript::DefaultErrorFunction : nullptr;
+    this->Init(script_name, text_buffer, bStrLen(text_buffer));
+}
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char *)) {}
+SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char *)) {
+    this->ErrorFunction = error_function;
+    this->InitFromFile(filename);
+}
 
-// STRIPPED
-SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {}
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {
+    this->ErrorFunction = error_function;
+    this->Init(script_name, text_buffer, bStrLen(text_buffer) + 1);
+}
 
 void SpeedScript::InitFromFile(const char *filename) {
     int file_size = 0;
@@ -49,9 +50,7 @@ void SpeedScript::InitFromFile(const char *filename) {
 
 SpeedScript::~SpeedScript() {
     for (int file_num = 0; file_num < this->NumFiles; file_num++) {
-        if (this->FileTable[file_num].ArgBuf) {
-            delete[] this->FileTable[file_num].ArgBuf;
-        }
+        delete[] this->FileTable[file_num].ArgBuf;
     }
     if (this->EntryTable) {
         delete[] this->EntryTable;
@@ -88,16 +87,14 @@ void SpeedScript::ResizeEntryTable(int new_size) {
     SpeedScriptEntry *new_table = new SpeedScriptEntry[new_size];
     if (this->EntryTable) {
         bMemCpy(new_table, this->EntryTable, this->NumEntries * sizeof(SpeedScriptEntry));
-        if (this->EntryTable) {
-            delete[] this->EntryTable;
-        }
+        delete[] this->EntryTable;
     }
     this->EntryTable = new_table;
     this->MaxEntries = new_size;
 }
 
 SpeedScriptEntry *SpeedScript::AddEntry() {
-    if (this->NumEntries == this->MaxEntries) {
+    if (this->MaxEntries == this->NumEntries) {
         this->ResizeEntryTable((this->NumEntries * 4) / 3 + 1);
     }
     SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries];
@@ -121,13 +118,13 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
             return false;
         }
         if (c == '\n') {
-            currently_in_comment = false;
             (*pline_number)++;
+            currently_in_comment = false;
         }
         if (!currently_in_comment) {
             if ((c == '/') && (buffer[buffer_pos + 1] == '/')) {
                 currently_in_comment = true;
-            } else if (!IsWhiteSpace(c)) {
+            } else if (c != ' ' && c != '\n' && c != '\t' && c != '=' && c != ',' && c != '\r') {
                 break;
             }
         }
@@ -139,12 +136,13 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
 
     for (; buffer_pos < buffer_size; buffer_pos++) {
         char c = buffer[buffer_pos];
-        if ((c != '\0') && (is_in_quotes || !IsWhiteSpace(c))) {
+        if ((c != '\0') &&
+            (is_in_quotes || (c != ' ' && c != '\n' && c != '\t' && c != '=' && c != ',' && c != '\r'))) {
             if (c == '\"') {
                 if (is_in_quotes && (buffer[buffer_pos + 1] == '\"')) {
                     word[word_length] = '\"';
-                    buffer_pos++;
                     word_length++;
+                    buffer_pos++;
                 } else {
                     is_in_quotes = !is_in_quotes;
                 }
@@ -162,24 +160,29 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
 }
 
 void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
-    this->NumFiles = 1;
-    SpeedScriptFile *file = &this->FileTable[0];
+    int script_size = buffer_size;
     this->ErrorText[0] = '\0';
-    bStrCpy(file->Filename, name);
-    file->ArgBuf = new char[buffer_size + 1];
+    this->NumFiles = 1;
+    bStrCpy(this->FileTable[0].Filename, name);
+    SpeedScriptFile *file = &this->FileTable[0];
+    file->ArgBuf = new char[script_size + 1];
     this->NumEntries = 0;
     this->MaxEntries = 0;
     this->EntryTable = nullptr;
-    this->ResizeEntryTable(buffer_size / 16 + 32);
+    this->ResizeEntryTable(script_size / 16 + 32);
     this->NextEntryNum = 0;
     int buffer_pos = 0;
     int arg_buf_pos = 0;
     int line_number = 1;
-    while (this->ParseNextWord(&file->ArgBuf[arg_buf_pos], buffer, buffer_size, &buffer_pos, &line_number)) {
+    while (this->ParseNextWord(&file->ArgBuf[arg_buf_pos], buffer, script_size, &buffer_pos, &line_number)) {
         char *word = &file->ArgBuf[arg_buf_pos];
         int len = bStrLen(word);
 
-        SpeedScriptEntry *entry = this->AddEntry();
+        if (this->NumEntries == this->MaxEntries) {
+            this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
+        }
+        SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
+        bMemSet(entry, 0, sizeof(SpeedScriptEntry));
         entry->LineNumber = line_number;
         entry->ArgBufPos = arg_buf_pos;
         if (word[len - 1] == ':') {
@@ -189,7 +192,7 @@ void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
             }
         }
         arg_buf_pos += len + 1;
-        if (this->NumEntries > 1) {
+        if (this->NumEntries >= 2) {
             SpeedScriptEntry *prev_entry = &entry[-1];
             if (!entry->IsCommand && prev_entry->IsCommand) {
                 if (bStrCmp(this->GetName(prev_entry), "INCLUDESCRIPT:") == 0) {
@@ -215,7 +218,11 @@ void SpeedScript::HandleIncludeScript(const char *filename) {
         this->Error("Too many nested INCLUDESCRIPT commands at %s\n", this->GetPositionName());
     } else {
         for (int n = 0; n < script.NumEntries; n++) {
-            SpeedScriptEntry *entry = this->AddEntry();
+            if (this->NumEntries == this->MaxEntries) {
+                this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
+            }
+            SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
+            bMemSet(entry, 0, sizeof(SpeedScriptEntry));
             *entry = script.EntryTable[n];
             entry->FileNumber += this->NumFiles;
         }
@@ -255,20 +262,26 @@ char *SpeedScript::GetNextCommand(const char *command) {
     return nullptr;
 }
 
-// STRIPPED
-char *SpeedScript::PeekNextCommand() {}
+char *SpeedScript::PeekNextCommand() {
+    const int saved_position = this->NextEntryNum;
+    char *command = this->GetNextCommand();
+    this->NextEntryNum = saved_position;
+    return command;
+}
 
-// STRIPPED
-char *SpeedScript::GetCommandArgument(const char *command) {}
+char *SpeedScript::GetCommandArgument(const char *command) {
+    if (this->GetNextCommand(command) == nullptr) {
+        return nullptr;
+    }
+    return this->GetNextArgument();
+}
 
-// TODO fake match, isArg doesn't exist
 bool SpeedScript::IsAnotherArgument() {
     SpeedScriptEntry *entry = this->GetNextEntry();
-    bool isArg = false;
-    if (entry) {
-        isArg = !entry->IsCommand;
+    if (entry != nullptr && !entry->IsCommand) {
+        return 1;
     }
-    return isArg;
+    return 0;
 }
 
 char *SpeedScript::GetNextArgument() {
@@ -281,8 +294,12 @@ char *SpeedScript::GetNextArgument() {
     return nullptr;
 }
 
-// STRIPPED
-char *SpeedScript::PeekNextArgument() {}
+char *SpeedScript::PeekNextArgument() {
+    const int saved_position = this->NextEntryNum;
+    char *argument = this->GetNextArgument();
+    this->NextEntryNum = saved_position;
+    return argument;
+}
 
 char *SpeedScript::GetNextArgumentString() {
     char *arg = this->GetNextArgument();
@@ -316,7 +333,6 @@ short SpeedScript::GetNextArgumentShort() {
     return a;
 }
 
-// STRIPPED
 char SpeedScript::GetNextArgumentChar() {
     int a = this->GetNextArgumentInt();
     if (a < -128 || a > 255) {
@@ -331,7 +347,6 @@ float SpeedScript::GetNextArgumentFloat() {
     return value;
 }
 
-// STRIPPED
 bVector2 SpeedScript::GetNextArgumentVector2() {
     float x = this->GetNextArgumentFloat();
     float y = this->GetNextArgumentFloat();
@@ -345,7 +360,6 @@ bVector3 SpeedScript::GetNextArgumentVector3() {
     return bVector3(x, y, z);
 }
 
-// STRIPPED
 bVector4 SpeedScript::GetNextArgumentVector4() {
     float x = this->GetNextArgumentFloat();
     float y = this->GetNextArgumentFloat();

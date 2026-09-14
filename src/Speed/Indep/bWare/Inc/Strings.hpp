@@ -55,7 +55,9 @@ class bSharedStringPool {
         return &StringTable[index];
     }
 
-    const char *GetString(int index) {}
+    const char *GetString(int index) {
+        return this->GetSharedString(index)->String;
+    }
 
   private:
     bSharedString *GetStringTableStart() {
@@ -89,6 +91,7 @@ int bStrNICmp(const char *s1, const char *s2, int n);
 int bStrICmp(const char *s1, const char *s2);
 const char *bAllocateSharedString(const char *s);
 void bFreeSharedString(const char *s);
+const char *bGetSharedString(int index);
 uint32 bStringHashUpper(const char *text);
 uint32 bStringHash(const char *text);
 uint32 bStringHash(const char *text, int prefix_hash);

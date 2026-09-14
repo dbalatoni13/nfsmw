@@ -28,14 +28,15 @@ unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32
     unsigned char *cp = reinterpret_cast<unsigned char *>(const_cast<void *>(data));
 
     for (int i = 0; i < size; i++) {
-        int c = *cp;
-        crc = crc << 8 ^ bCrcTable[crc >> 0x18 ^ c];
+        unsigned int table_index = (crc >> 0x18 ^ *cp) & 0xff;
+        unsigned int table_value = bCrcTable[table_index];
+        crc <<= 8;
         cp++;
+        crc ^= table_value;
     }
 
     for (; size > 0; size >>= 8) {
-        int c = size & 0xff;
-        crc = crc << 8 ^ bCrcTable[crc >> 0x18 ^ c];
+        crc = crc << 8 ^ bCrcTable[(crc >> 0x18 ^ size) & 0xff];
     }
     return ~crc;
 }

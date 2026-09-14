@@ -25,6 +25,7 @@ struct bOutputInfo {
 void bReleasePutString(char terminal_channel, const char *s);
 int bReleasePrintf(const char *fmt, ...);
 int bVPrintf(const char *fmt, va_list argList);
+int bVPrintf(char terminal_channel, char *fmt, char *argList);
 int bSPrintf(char *destString, const char *fmt, ...);
 int bSNPrintf(char *buf, int max_len, const char *format, ...);
 int bVSPrintf(char *destString, const char *fmt, va_list argList);

@@ -3,11 +3,47 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+#if defined(EA_PLATFORM_WIN32)
+extern "C" bMatrix4 *__stdcall D3DXMatrixTranspose(bMatrix4 *dest, const bMatrix4 *src);
+#endif
+
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
-    eInvertMatrix(dest, const_cast<bMatrix4 *>(src));
+    float a = src->v0.x;
+    float b = src->v0.y;
+    float c = src->v0.z;
+    float g = src->v1.x;
+    float f = src->v1.y;
+    float d = src->v1.z;
+    float i = src->v2.x;
+    float h = src->v2.y;
+    float e = src->v2.z;
+    float j = src->v3.x;
+    float k = src->v3.y;
+    float l = src->v3.z;
+
+    float scale = 1.0f / (a * (f * e - d * h) - b * (g * e - d * i) + c * (g * h - f * i));
+
+    dest->v0.x = scale * (f * e - d * h);
+    dest->v0.y = scale * (c * h - b * e);
+    dest->v0.z = scale * (b * d - c * f);
+    dest->v0.w = 0.0f;
+    dest->v1.x = scale * (d * i - g * e);
+    dest->v1.y = scale * (a * e - c * i);
+    dest->v1.z = scale * (c * g - a * d);
+    dest->v1.w = 0.0f;
+    dest->v2.x = scale * (g * h - f * i);
+    dest->v2.y = scale * (b * i - a * h);
+    dest->v2.z = scale * (a * f - b * g);
+    dest->v2.w = 0.0f;
+    dest->v3.x = -(dest->v0.x * j + dest->v1.x * k + dest->v2.x * l);
+    dest->v3.y = -(dest->v0.y * j + dest->v1.y * k + dest->v2.y * l);
+    dest->v3.z = -(dest->v0.z * j + dest->v1.z * k + dest->v2.z * l);
+    dest->v3.w = 1.0f;
 }
 
-// UNSOLVED
+// Semantic reconstruction of the scalar four-by-four determinant. The
+// target uses a different term grouping, so this remains compiler-near rather
+// than byte-identical.
 float fDeterminant(bMatrix4 *m) {
     float value =
         m->v0.x * m->v1.y * m->v2.z * m->v3.w +
@@ -34,63 +70,50 @@ float fDeterminant(bMatrix4 *m) {
 void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
     float scale = 1.0f / fDeterminant(s);
 
-    d->v0.x = scale * (((((s->v1.z * s->v2.w * s->v3.y - s->v1.w * s->v2.z * s->v3.y) + s->v1.w * s->v2.y * s->v3.z) - s->v1.y * s->v2.w * s->v3.z) -
-                        s->v1.z * s->v2.y * s->v3.w) +
-                       s->v1.y * s->v2.z * s->v3.w);
-    d->v0.y = scale * ((((s->v0.w * s->v2.z * s->v3.y - s->v0.z * s->v2.w * s->v3.y) - s->v0.w * s->v2.y * s->v3.z) + s->v0.y * s->v2.w * s->v3.z +
-                        s->v0.z * s->v2.y * s->v3.w) -
-                       s->v0.y * s->v2.z * s->v3.w);
-    d->v0.z = scale * (((((s->v0.z * s->v1.w * s->v3.y - s->v0.w * s->v1.z * s->v3.y) + s->v0.w * s->v1.y * s->v3.z) - s->v0.y * s->v1.w * s->v3.z) -
-                        s->v0.z * s->v1.y * s->v3.w) +
-                       s->v0.y * s->v1.z * s->v3.w);
-    d->v0.w = scale * ((((s->v0.w * s->v1.z * s->v2.y - s->v0.z * s->v1.w * s->v2.y) - s->v0.w * s->v1.y * s->v2.z) + s->v0.y * s->v1.w * s->v2.z +
-                        s->v0.z * s->v1.y * s->v2.w) -
-                       s->v0.y * s->v1.z * s->v2.w);
-    d->v1.x = scale * ((((s->v1.w * s->v2.z * s->v3.x - s->v1.z * s->v2.w * s->v3.x) - s->v1.w * s->v2.x * s->v3.z) + s->v1.x * s->v2.w * s->v3.z +
-                        s->v1.z * s->v2.x * s->v3.w) -
-                       s->v1.x * s->v2.z * s->v3.w);
-    d->v1.y = scale * (((((s->v0.z * s->v2.w * s->v3.x - s->v0.w * s->v2.z * s->v3.x) + s->v0.w * s->v2.x * s->v3.z) - s->v0.x * s->v2.w * s->v3.z) -
-                        s->v0.z * s->v2.x * s->v3.w) +
-                       s->v0.x * s->v2.z * s->v3.w);
-    d->v1.z = scale * ((((s->v0.w * s->v1.z * s->v3.x - s->v0.z * s->v1.w * s->v3.x) - s->v0.w * s->v1.x * s->v3.z) + s->v0.x * s->v1.w * s->v3.z +
-                        s->v0.z * s->v1.x * s->v3.w) -
-                       s->v0.x * s->v1.z * s->v3.w);
-    d->v1.w = scale * (((((s->v0.z * s->v1.w * s->v2.x - s->v0.w * s->v1.z * s->v2.x) + s->v0.w * s->v1.x * s->v2.z) - s->v0.x * s->v1.w * s->v2.z) -
-                        s->v0.z * s->v1.x * s->v2.w) +
-                       s->v0.x * s->v1.z * s->v2.w);
-    d->v2.x = scale * (((((s->v1.y * s->v2.w * s->v3.x - s->v1.w * s->v2.y * s->v3.x) + s->v1.w * s->v2.x * s->v3.y) - s->v1.x * s->v2.w * s->v3.y) -
-                        s->v1.y * s->v2.x * s->v3.w) +
-                       s->v1.x * s->v2.y * s->v3.w);
-    d->v2.y = scale * ((((s->v0.w * s->v2.y * s->v3.x - s->v0.y * s->v2.w * s->v3.x) - s->v0.w * s->v2.x * s->v3.y) + s->v0.x * s->v2.w * s->v3.y +
-                        s->v0.y * s->v2.x * s->v3.w) -
-                       s->v0.x * s->v2.y * s->v3.w);
-    d->v2.z = scale * (((((s->v0.y * s->v1.w * s->v3.x - s->v0.w * s->v1.y * s->v3.x) + s->v0.w * s->v1.x * s->v3.y) - s->v0.x * s->v1.w * s->v3.y) -
-                        s->v0.y * s->v1.x * s->v3.w) +
-                       s->v0.x * s->v1.y * s->v3.w);
-    d->v2.w = scale * ((((s->v0.w * s->v1.y * s->v2.x - s->v0.y * s->v1.w * s->v2.x) - s->v0.w * s->v1.x * s->v2.y) + s->v0.x * s->v1.w * s->v2.y +
-                        s->v0.y * s->v1.x * s->v2.w) -
-                       s->v0.x * s->v1.y * s->v2.w);
-    d->v3.x = scale * ((((s->v1.z * s->v2.y * s->v3.x - s->v1.y * s->v2.z * s->v3.x) - s->v1.z * s->v2.x * s->v3.y) + s->v1.x * s->v2.z * s->v3.y +
-                        s->v1.y * s->v2.x * s->v3.z) -
-                       s->v1.x * s->v2.y * s->v3.z);
-    d->v3.y = scale * (((((s->v0.y * s->v2.z * s->v3.x - s->v0.z * s->v2.y * s->v3.x) + s->v0.z * s->v2.x * s->v3.y) - s->v0.x * s->v2.z * s->v3.y) -
-                        s->v0.y * s->v2.x * s->v3.z) +
-                       s->v0.x * s->v2.y * s->v3.z);
-    d->v3.z = scale * ((((s->v0.z * s->v1.y * s->v3.x - s->v0.y * s->v1.z * s->v3.x) - s->v0.z * s->v1.x * s->v3.y) + s->v0.x * s->v1.z * s->v3.y +
-                        s->v0.y * s->v1.x * s->v3.z) -
-                       s->v0.x * s->v1.y * s->v3.z);
-    d->v3.w = scale * (((((s->v0.y * s->v1.z * s->v2.x - s->v0.z * s->v1.y * s->v2.x) + s->v0.z * s->v1.x * s->v2.y) - s->v0.x * s->v1.z * s->v2.y) -
-                        s->v0.y * s->v1.x * s->v2.z) +
-                       s->v0.x * s->v1.y * s->v2.z);
+    d->v0.x = (s->v1.y * s->v3.w * s->v2.z +
+               (((s->v2.y * s->v3.z * s->v1.w +
+                  (s->v2.w * s->v3.y * s->v1.z - s->v3.y * s->v2.z * s->v1.w)) -
+                 s->v1.y * s->v2.w * s->v3.z) -
+                s->v2.y * s->v3.w * s->v1.z)) *
+              scale;
+    d->v0.y = scale * (((((s->v0.w * (s->v2.z * s->v3.y) - s->v0.z * (s->v3.y * s->v2.w)) - s->v0.w * (s->v3.z * s->v2.y)) + s->v0.z * (s->v3.w * s->v2.y)) + s->v0.y * (s->v3.z * s->v2.w)) - s->v2.z * (s->v3.w * s->v0.y));
+    d->v0.z = scale * (((((s->v0.z * (s->v1.w * s->v3.y) - s->v0.w * (s->v1.z * s->v3.y)) + s->v0.w * (s->v3.z * s->v1.y)) - s->v1.w * (s->v0.y * s->v3.z)) - s->v0.z * (s->v3.w * s->v1.y)) + s->v1.z * (s->v3.w * s->v0.y));
+    d->v0.w = scale * (((((s->v0.w * (s->v1.z * s->v2.y) - s->v0.z * (s->v1.w * s->v2.y)) - s->v0.w * (s->v2.z * s->v1.y)) + s->v0.z * (s->v2.w * s->v1.y)) + s->v1.w * (s->v2.z * s->v0.y)) - s->v1.z * (s->v0.y * s->v2.w));
+    d->v1.x = scale * (((((s->v1.w * (s->v2.z * s->v3.x) - s->v1.z * (s->v2.w * s->v3.x)) - s->v1.w * (s->v3.z * s->v2.x)) + s->v3.z * (s->v2.w * s->v1.x)) + s->v1.z * (s->v3.w * s->v2.x)) - s->v2.z * (s->v3.w * s->v1.x));
+    d->v1.y = scale * (((((s->v0.z * (s->v2.w * s->v3.x) - s->v0.w * (s->v2.z * s->v3.x)) + s->v0.w * (s->v3.z * s->v2.x)) - s->v0.x * (s->v3.z * s->v2.w)) - s->v0.z * (s->v3.w * s->v2.x)) + s->v2.z * (s->v3.w * s->v0.x));
+    d->v1.z = scale * (((((s->v0.w * (s->v1.z * s->v3.x) - s->v0.z * (s->v1.w * s->v3.x)) - s->v0.w * (s->v3.z * s->v1.x)) + s->v0.z * (s->v3.w * s->v1.x)) + s->v1.w * (s->v0.x * s->v3.z)) - s->v1.z * (s->v3.w * s->v0.x));
+    d->v1.w = scale * (((((s->v0.z * (s->v1.w * s->v2.x) - s->v0.w * (s->v1.z * s->v2.x)) + s->v0.w * (s->v2.z * s->v1.x)) - s->v1.w * (s->v2.z * s->v0.x)) - s->v0.z * (s->v2.w * s->v1.x)) + s->v1.z * (s->v0.x * s->v2.w));
+    d->v2.x = scale * (((((s->v2.w * (s->v3.x * s->v1.y) - s->v1.w * (s->v2.y * s->v3.x)) + s->v1.w * (s->v3.y * s->v2.x)) - s->v3.y * (s->v2.w * s->v1.x)) - s->v3.w * (s->v2.x * s->v1.y)) + s->v3.w * (s->v2.y * s->v1.x));
+    d->v2.y = scale * (((((s->v0.w * (s->v2.y * s->v3.x) - s->v0.y * (s->v2.w * s->v3.x)) - s->v0.w * (s->v3.y * s->v2.x)) + s->v0.x * (s->v3.y * s->v2.w)) + s->v3.w * (s->v0.y * s->v2.x)) - s->v3.w * (s->v0.x * s->v2.y));
+    d->v2.z = scale * (((((s->v1.w * (s->v0.y * s->v3.x) - s->v0.w * (s->v3.x * s->v1.y)) + s->v0.w * (s->v3.y * s->v1.x)) - s->v1.w * (s->v0.x * s->v3.y)) - s->v3.w * (s->v0.y * s->v1.x)) + s->v3.w * (s->v0.x * s->v1.y));
+    d->v2.w = scale * (((((s->v0.w * (s->v2.x * s->v1.y) - s->v1.w * (s->v0.y * s->v2.x)) - s->v0.w * (s->v2.y * s->v1.x)) + s->v1.w * (s->v0.x * s->v2.y)) + s->v0.y * (s->v2.w * s->v1.x)) - s->v0.x * (s->v2.w * s->v1.y));
+    d->v3.x = scale * (((((s->v1.z * (s->v2.y * s->v3.x) - s->v2.z * (s->v3.x * s->v1.y)) - s->v1.z * (s->v3.y * s->v2.x)) + s->v3.z * (s->v2.x * s->v1.y)) + s->v2.z * (s->v3.y * s->v1.x)) - s->v3.z * (s->v2.y * s->v1.x));
+    d->v3.y = scale * (((((s->v2.z * (s->v0.y * s->v3.x) - s->v0.z * (s->v2.y * s->v3.x)) + s->v0.z * (s->v3.y * s->v2.x)) - s->v2.z * (s->v0.x * s->v3.y)) - s->v0.y * (s->v3.z * s->v2.x)) + s->v0.x * (s->v3.z * s->v2.y));
+    d->v3.z = scale * (((((s->v0.z * (s->v3.x * s->v1.y) - s->v1.z * (s->v0.y * s->v3.x)) - s->v0.z * (s->v3.y * s->v1.x)) + s->v1.z * (s->v0.x * s->v3.y)) + s->v0.y * (s->v3.z * s->v1.x)) - s->v0.x * (s->v3.z * s->v1.y));
+    d->v3.w = scale * (((((s->v1.z * (s->v0.y * s->v2.x) - s->v0.z * (s->v2.x * s->v1.y)) + s->v0.z * (s->v2.y * s->v1.x)) - s->v1.z * (s->v0.x * s->v2.y)) - s->v2.z * (s->v0.y * s->v1.x)) + s->v2.z * (s->v0.x * s->v1.y));
 }
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
-    bMatrix4 U;
-    bMatrix4 iU;
-    bMatrix4 Mf;
-    bMatrix4 iMf;
-    bMatrix4 K;
-    bMatrix4 Nf;
+    // These matrices are completely populated before they are read.  The retail
+    // function reserves five aligned matrices and does not run bMatrix4's identity
+    // constructor for them.
+    struct ATTRIBUTE_ALIGN(16) RawMatrix4 {
+        bVector4 v0;
+        bVector4 v1;
+        bVector4 v2;
+        bVector4 v3;
+    };
+
+    RawMatrix4 raw_U;
+    RawMatrix4 raw_iU;
+    RawMatrix4 raw_Mf;
+    RawMatrix4 raw_iMf;
+    RawMatrix4 raw_Nf;
+    bMatrix4 &U = *reinterpret_cast<bMatrix4 *>(&raw_U);
+    bMatrix4 &iU = *reinterpret_cast<bMatrix4 *>(&raw_iU);
+    bMatrix4 &Mf = *reinterpret_cast<bMatrix4 *>(&raw_Mf);
+    bMatrix4 &iMf = *reinterpret_cast<bMatrix4 *>(&raw_iMf);
+    bMatrix4 &Nf = *reinterpret_cast<bMatrix4 *>(&raw_Nf);
 
     Mf.v0.x = 2.0f;
     Mf.v0.y = -2.0f;
@@ -144,13 +167,13 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     U.v3.w = 1.0f;
 
     fInvertMatrix(&iU, &U);
-    eMulMatrix(&K, &iMf, &iU);
-    eMulMatrix(&Nf, &Mf, &K);
+    eMulMatrix(&U, &iMf, &iU);
+    eMulMatrix(&Nf, &Mf, &U);
     eMulMatrix(b, &Nf, p);
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
-    bVector4 u;
+    ATTRIBUTE_ALIGN(16) bVector4 u;
 
     u.x = t * t * t;
     u.y = t * t;
@@ -168,14 +191,26 @@ void bMulMatrix(bVector4 *dest, const bMatrix4 *m, const bVector4 *v) {
 }
 
 void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
-    eMulVector(dest, m, v);
+    eMulVector(reinterpret_cast<bVector4 *>(dest), m, reinterpret_cast<const bVector4 *>(v));
 }
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 #ifdef EA_PLATFORM_GAMECUBE
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
+#elif defined(EA_PLATFORM_WIN32)
+    D3DXMatrixTranspose(dest, m);
 #else
-// TODO
+    float transposed[4][4];
+    for (int row = 0; row < 4; ++row) {
+        for (int column = 0; column < 4; ++column) {
+            transposed[row][column] = (*m)[column][row];
+        }
+    }
+    for (int row = 0; row < 4; ++row) {
+        for (int column = 0; column < 4; ++column) {
+            (*dest)[row][column] = transposed[row][column];
+        }
+    }
 #endif
     return dest;
 }
