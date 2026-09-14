@@ -20,6 +20,7 @@ Supported versions:
 - `EUROPEGERMILESTONE`: Oct 21, 2005 prototype (Xbox 360 PAL)
 - `SLES-53558-A124`: Sep 20, 2005 prototype (Alpha 124) (PS2 PAL)
 - `SLUS-21351`: Black Edition (PS2 USA)
+- `SPEED_EXE_1_3`: PC version 1.3
 
 # Dependencies
 
