@@ -342,15 +342,17 @@ int bFunkServerPlatform::Service() {
     int packets_processed = 0;
 
     if (!this->ProcessingPacket) {
-        bFunkPacket *packet = &this->pReceivePackets[this->NextReceivePacketNum % this->MaxReceivePackets];
+        int next_receive_packet_num = *reinterpret_cast<volatile int *>(&this->NextReceivePacketNum);
+        bFunkPacket *packet = &this->pReceivePackets[next_receive_packet_num % this->MaxReceivePackets];
         while (packet->TotalSize != 0) {
-            this->ProcessingPacket = true;
             ++this->NextReceivePacketNum;
-            this->ProcessPacket(packet);
             ++packets_processed;
-            packet->TotalSize = 0;
+            this->ProcessingPacket = true;
+            this->ProcessPacket(packet);
             this->ProcessingPacket = false;
-            packet = &this->pReceivePackets[this->NextReceivePacketNum % this->MaxReceivePackets];
+            packet->TotalSize = 0;
+            next_receive_packet_num = *reinterpret_cast<volatile int *>(&this->NextReceivePacketNum);
+            packet = &this->pReceivePackets[next_receive_packet_num % this->MaxReceivePackets];
         }
     }
 
