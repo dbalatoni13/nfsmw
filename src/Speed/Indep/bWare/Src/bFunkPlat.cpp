@@ -209,21 +209,27 @@ bFunkServer::~bFunkServer() {
 
 void bFunkServer::AddASync(int function_num, void (*function)(const void *, int)) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    this->FunctionTypes[function_num] = 0;
-    this->FunctionTable[function_num] = (void *)function;
+    if (function_num >= 0 && function_num < 128) {
+        this->FunctionTypes[function_num] = 0;
+        this->FunctionTable[function_num] = (void *)function;
+    }
 #endif
 }
 
 void bFunkServer::AddSync(int function_num, int (*function)(const void *, int, void *)) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    this->FunctionTypes[function_num] = 1;
-    this->FunctionTable[function_num] = (void *)function;
+    if (function_num >= 0 && function_num < 128) {
+        this->FunctionTypes[function_num] = 1;
+        this->FunctionTable[function_num] = (void *)function;
+    }
 #endif
 }
 
 void bFunkServer::Remove(int function_num) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    this->FunctionTable[function_num] = nullptr;
+    if (function_num >= 0 && function_num < 128) {
+        this->FunctionTable[function_num] = nullptr;
+    }
 #endif
 }
 
