@@ -292,10 +292,12 @@ bool bFunkServer::CanDeliverPacket(uint32 server_hash) {
 
 bool bFunkServer::DeliverPacket(bFunkPacket *packet) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    bFunkServer *server = this;
-    if (packet->DestServer != this->NameHash) {
-        server = bFunkFindServer(packet->DestServer);
+    if (packet->DestServer == this->NameHash) {
+        this->ProcessPacket(packet);
+        return true;
     }
+
+    bFunkServer *server = bFunkFindServer(packet->DestServer);
     if (server != nullptr) {
         server->ProcessPacket(packet);
         return true;
