@@ -111,6 +111,16 @@ block_relocations:
 - source: .data:0x8044C120
   end: .data:0x8044C320
 
+# BCHUNK_ANIM_SCENE (0x80037020) is a chunk id, not an address. It lands on the
+# last instruction of RequestGroundSupport__9AIPursuit, so the analyser turns
+# the lis/ori pair that materialises it into a relocation.
+# LoaderAnimSceneData__FP6bChunk
+- source: .text:0x8004BAB8
+  end: .text:0x8004BAC4
+# UnloaderAnimSceneData__FP6bChunk
+- source: .text:0x8004BB94
+  end: .text:0x8004BBA0
+
 add_relocations:
 - source: .text:0x80019604
   type: ha

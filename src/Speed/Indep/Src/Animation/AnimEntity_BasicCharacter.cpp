@@ -182,9 +182,7 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         if (info->mPlayFlags & 0x40) {
             mAnimCtrl->SetLoopRange(info->mLoopRangeStart, info->mLoopRangeEnd);
         }
-        CAnimCtrl *ctrl = mAnimCtrl;
-        ctrl->SetMasterDelayTime(info->mPlayDelay);
-        ctrl->SetFlags(0x80);
+        mAnimCtrl->SetMasterDelayTime(info->mPlayDelay);
         if (mAnimCtrl && mAnimCtrl->GetFlags() == 8) {
             bBreak();
         }
@@ -196,8 +194,9 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         mAnimCtrl->UpdateAnimPose(true);
         FindWorldBonePosition(1, &pelvis_position);
         float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
-        eUnSwizzleWorldVector(pelvis_position, pelvis_position);
+        bool point_valid;
         float ground_elevation;
+        eUnSwizzleWorldVector(pelvis_position, pelvis_position);
         if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
             mPreviousElevation = ground_elevation;
             mHavePreviousElevation = true;
@@ -208,7 +207,8 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
     }
 
     if (skeletal_animation && mAnimCtrl && anim_part) {
-        if (anim_part->GetNumGlobalMatrices() == 0x30) {
+        int boneCount = anim_part->GetNumGlobalMatrices();
+        if (boneCount == 0x30) {
             if (info->mSkelNameHash == bStringHash("Bip23")) {
                 mBoneMapType = 3;
             } else {
@@ -259,6 +259,7 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
         return;
     }
 
+    {
     bVector3 last_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
 
     mAnimCtrl->AdvanceAnimTime(time_step);
@@ -271,9 +272,10 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
             bVector3 pelvis_position;
             FindWorldBonePosition(1, &pelvis_position);
             float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
+            bool point_valid;
+            float ground_elevation;
             eUnSwizzleWorldVector(pelvis_position, pelvis_position);
             pelvis_position.y += 2.0f;
-            float ground_elevation;
             if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
                 if (mHavePreviousElevation) {
                     mPreviousElevation = ground_elevation * 0.5f + mPreviousElevation * 0.5f;
@@ -291,8 +293,8 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
         }
     } else {
         bMatrix4 local_matrix(*mSpaceNode->GetLocalMatrix());
-        bMatrix4 the_matrix;
         mSpaceNode->SetBlendingMatrices(nullptr);
+        bMatrix4 the_matrix;
         bIdentity(&the_matrix);
         bMulMatrix(&the_matrix, &local_matrix, &global_matrices[1]);
         mSpaceNode->SetLocalMatrix(&the_matrix);
@@ -301,12 +303,11 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
     if (time_step > 0.0001f) {
         bVector3 new_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
         bVector3 diff = new_pos - last_pos;
-        float inv_time_step = 1.0f / time_step;
-        bScale(&diff, &diff, inv_time_step);
+        bScale(&diff, &diff, 1.0f / time_step);
         mSpaceNode->SetLocalVelocity(&diff);
     }
+    }
 }
-
 // UNSOLVED
 void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (mBoneMapType == 3) {
@@ -322,7 +323,7 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
         FindWorldBonePosition(BoneMap[mBoneMapType].RightFoot, &right_foot);
 
-        bVector2 parallel = bVector2(1.0f, 1.0f);
+        bVector2 parallel = bVector2(1.0f, 0.0f);
 
         if (left_foot.x != right_foot.x || left_foot.y != right_foot.y) {
             parallel.x = left_foot.x - right_foot.x;
@@ -343,13 +344,14 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         left0.y += parallel.y + perpendicular.y;
         left1.x += parallel.x - perpendicular.x;
         left1.y += parallel.y - perpendicular.y;
-        right0.x -= parallel.x - perpendicular.x;
-        right0.y -= parallel.y - perpendicular.y;
-        right1.x -= parallel.x + perpendicular.x;
-        right1.y -= parallel.y + perpendicular.y;
+        right0.x += -parallel.x + perpendicular.x;
+        right0.y += -parallel.y + perpendicular.y;
+        right1.x += -parallel.x - perpendicular.x;
+        right1.y += -parallel.y - perpendicular.y;
 
         ePoly shadow_poly;
-        float ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
+        bMatrix4 *baseMatrix = mSpaceNode->GetWorldMatrix();
+        float ground = baseMatrix->v3.z + 0.01f;
         shadow_poly.Vertices[0] = bVector3(left1.x, left1.y, ground);
         shadow_poly.Vertices[1] = bVector3(left0.x, left0.y, ground);
         shadow_poly.Vertices[2] = bVector3(right0.x, right0.y, ground);
@@ -359,13 +361,13 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         *reinterpret_cast<uint32 *>(&shadow_poly.Colours[2][0]) = 0x80808080;
         *reinterpret_cast<uint32 *>(&shadow_poly.Colours[3][0]) = 0x80808080;
         shadow_poly.UVs[0][0] = 0.0f;
-        shadow_poly.UVs[0][1] = 0.0f;
         shadow_poly.UVs[1][0] = 1.0f;
-        shadow_poly.UVs[1][1] = 0.0f;
-        shadow_poly.UVs[2][0] = 1.0f;
-        shadow_poly.UVs[2][1] = 1.0f;
         shadow_poly.UVs[3][0] = 0.0f;
+        shadow_poly.UVs[2][0] = 1.0f;
+        shadow_poly.UVs[0][1] = 0.0f;
+        shadow_poly.UVs[1][1] = 0.0f;
         shadow_poly.UVs[3][1] = 1.0f;
+        shadow_poly.UVs[2][1] = 1.0f;
         view->Render(&shadow_poly, CharacterShadowTexture, eGetIdentityMatrix(), 0, 0.0f);
     }
 }

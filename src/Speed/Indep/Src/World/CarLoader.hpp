@@ -43,7 +43,9 @@ class CarLoader {
         return bMalloc(size, debug_name, 0, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
     };
 
-    void FreeUserMemory(void *mem);
+    void FreeUserMemory(void *mem) {
+        bFree(mem);
+    }
 
     CarLoaderHandle Load(RideInfo *ride_info);
 

@@ -24,9 +24,8 @@ void InitAnimControlScenarios(IControlScenario **arr_ptrs) {
 
 void CleanControlScenarios(IControlScenario **arr_ptrs) {
     for (int i = 0; i < eCST_NUM_TYPES; i++) {
-        IControlScenario *p = arr_ptrs[i];
-        if (p) {
-            delete p;
+        if (arr_ptrs[i]) {
+            delete arr_ptrs[i];
         }
         arr_ptrs[i] = nullptr;
     }

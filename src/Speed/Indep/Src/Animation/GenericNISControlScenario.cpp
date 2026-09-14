@@ -5,6 +5,7 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
         return;
     }
 
+    {
     GenericNISControlScenarioInfo *gcsi = static_cast<GenericNISControlScenarioInfo *>(data);
     bool set_to_pos_immediately = fabs(gcsi->len) < 0.001;
     int open;
@@ -33,12 +34,15 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
                         anim_ctrl->SetEvalTime(gcsi->pos * anim_ctrl->GetAnimLength());
                     }
                 } else {
+                    float scaling_factor;
                     anim_ctrl->SetTimeScale(1.0f);
                     anim_ctrl->ClearFlags(0x180);
-                    anim_ctrl->ApplySpeedModifier(anim_ctrl->GetAnimLength() / frame_len);
+                    scaling_factor = anim_ctrl->GetAnimLength() / frame_len;
+                    anim_ctrl->ApplySpeedModifier(scaling_factor);
                     anim_ctrl->Play();
                 }
             }
         }
+    }
     }
 }

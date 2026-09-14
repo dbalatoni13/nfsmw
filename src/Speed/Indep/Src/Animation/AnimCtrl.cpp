@@ -156,13 +156,13 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
     bool pingpong = m_flags & 0x10; // r9
     if (linear) {
         if (pingpong) {
-            ClearFlags(0x10);
+            m_flags &= ~0x10;
             pingpong = false;
         }
     } else {
         if (!pingpong) {
             linear = true;
-            SetFlags(8);
+            m_flags |= 8;
         }
     }
     bool delay_world_start = m_flags & 0x80 && this_master_delay_elapsed < this_master_delay_len && m_evalTime < end_of_anim; // r8
@@ -170,17 +170,19 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
     float new_evaltime = m_evalTime;                                                                                          // f31
 
     if (delay_world_start) {
-        float new_timestep = this_master_delay_elapsed + this_time_step;
+        this_master_delay_elapsed = this_master_delay_elapsed + this_time_step;
+        float new_timestep = this_master_delay_elapsed;
         if (new_timestep > this_master_delay_len) {
             new_evaltime += bFMod(new_timestep, this_master_delay_len);
         }
-        MasterDelayElapsed = (new_timestep / m_timeScale) / 3;
+        MasterDelayElapsed = (this_master_delay_elapsed / m_timeScale) / 3;
     } else if (delay_loop_start) {
-        float new_timestep = this_local_delay_elapsed + this_time_step;
+        this_local_delay_elapsed = this_local_delay_elapsed + this_time_step;
+        float new_timestep = this_local_delay_elapsed;
         if (new_timestep > this_local_delay_len) {
             new_evaltime += bFMod(new_timestep, this_local_delay_len);
         }
-        LocalDelayElapsed = (new_timestep / m_timeScale) / 3;
+        LocalDelayElapsed = (this_local_delay_elapsed / m_timeScale) / 3;
     } else if (linear) {
         new_evaltime += this_time_step;
         if (new_evaltime > end_of_anim) {
@@ -261,9 +263,10 @@ int CAnimCtrl::UpdateAnimPose(bool force_calc) {
     world_skel->PoseSQTToGlobal(sqtBuffer, skinningMatrices, nullptr);
 
     if (m_flags & 1) {
-        bMatrix4 *blended_matrices = reinterpret_cast<bMatrix4 *>(m_animPart.GetGlobalMatrices());
+        bMatrix4 *blended_matrices;
         EAGL4Anim::Skeleton *pSkeleton = m_animPart.GetSkeleton()->GetEAGLSkeleton();
         int number_of_bones = pSkeleton->GetNumBones();
+        blended_matrices = reinterpret_cast<bMatrix4 *>(m_animPart.GetGlobalMatrices());
 
         for (int bone_index = 0; bone_index < number_of_bones; bone_index++) {
             EAGL4Anim::BoneData *bone_data = &pSkeleton->GetBoneData(bone_index);
