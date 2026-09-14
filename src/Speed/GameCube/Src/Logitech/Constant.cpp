@@ -1,0 +1,73 @@
+#include "LGWheels.hpp"
+
+#include <string.h>
+
+extern "C" {
+int LGDownloadForceEffect(unsigned long handle, unsigned long *effectId, LGForceEffect *force);
+int LGUpdateForceEffect(unsigned long effectId, LGForceEffect *force);
+void OSReport(const char *fmt, ...);
+}
+
+static const char kDownloadConstantForceError[] = "ERROR: DownloadForce(constant force) on channel %d returned %d\n";
+static const char kDownloadConstantForceInvalidWheel[] = "ERROR: Trying to download a constant force to channel %d but wheel has not been opened.\n";
+static const char kUpdateConstantForceError[] = "ERROR: UpdateForce(constant force) on channel %d returned %d\n";
+
+Constant::Constant() : Force() {}
+
+int Constant::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+    LGForceEffect force;
+    int ret;
+
+    ret = 0;
+    if (EffectID[channel][forceNumber] != static_cast<unsigned long>(-1)) {
+        Destroy(channel, forceNumber);
+    }
+
+    if (handle != static_cast<unsigned long>(-1)) {
+        memset(&force, 0, sizeof(force));
+        force.type = 0;
+        force.duration = duration;
+        force.startDelay = startDelay;
+        force.p.constant.magnitude = magnitude;
+        force.p.constant.direction = direction;
+        force.p.constant.envelope.attackTime = attackTime;
+        force.p.constant.envelope.attackLevel = attackLevel;
+        force.p.constant.envelope.fadeTime = fadeTime;
+        force.p.constant.envelope.fadeLevel = fadeLevel;
+
+        ret = LGDownloadForceEffect(handle, &EffectID[channel][forceNumber], &force);
+        if (ret < 0) {
+            OSReport(kDownloadConstantForceError, channel, ret);
+            EffectID[channel][forceNumber] = static_cast<unsigned long>(-1);
+        }
+    } else {
+        OSReport(kDownloadConstantForceInvalidWheel, channel);
+    }
+
+    return ret;
+}
+
+int Constant::UpdateForce(long channel, long forceNumber, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+    LGForceEffect force;
+    int ret;
+
+    ret = 0;
+    memset(&force, 0, sizeof(force));
+    force.type = ret;
+    force.duration = duration;
+    force.startDelay = startDelay;
+    force.p.constant.magnitude = magnitude;
+    force.p.constant.direction = direction;
+    force.p.constant.envelope.attackTime = attackTime;
+    force.p.constant.envelope.attackLevel = attackLevel;
+    force.p.constant.envelope.fadeTime = fadeTime;
+    force.p.constant.envelope.fadeLevel = fadeLevel;
+
+    ret = LGUpdateForceEffect(EffectID[channel][forceNumber], &force);
+    if (ret < 0) {
+        OSReport(kUpdateConstantForceError, channel, ret);
+        EffectID[channel][forceNumber] = static_cast<unsigned long>(-1);
+    }
+
+    return ret;
+}

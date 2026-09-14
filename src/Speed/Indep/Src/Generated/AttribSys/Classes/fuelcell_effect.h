@@ -18,19 +18,19 @@ struct fuelcell_effect : Instance {
     USE_ATTRIB_ALLOC("fuelcell_effect");
     fuelcell_effect(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
     fuelcell_effect(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
     fuelcell_effect(const Instance &src) : Instance(src) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
     fuelcell_effect(const fuelcell_effect &src) : Instance(src) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
     fuelcell_effect(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
     ~fuelcell_effect() {}
     Instance &GetBase() {

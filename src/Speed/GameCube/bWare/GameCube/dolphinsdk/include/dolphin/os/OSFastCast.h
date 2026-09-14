@@ -37,10 +37,43 @@ static inline void OSInitFastCast(void) {
         mtspr   GQR5, r3
   }
 #else
-
+  asm volatile(
+      "li 3, 4\n\t"
+      "oris 3, 3, 4\n\t"
+      "mtspr 914, 3\n\t"
+      "li 3, 5\n\t"
+      "oris 3, 3, 5\n\t"
+      "mtspr 915, 3\n\t"
+      "li 3, 6\n\t"
+      "oris 3, 3, 6\n\t"
+      "mtspr 916, 3\n\t"
+      "li 3, 7\n\t"
+      "oris 3, 3, 7\n\t"
+      "mtspr 917, 3");
 #endif
 }
 // clang-format off
+
+static inline void OSSetGQR5(unsigned int type, unsigned int scale) {
+  unsigned int val;
+
+  val = ((scale << 8) | type) * 0x10001;
+  asm volatile("mtspr 917, %0" : : "b"(val));
+}
+
+static inline void OSSetGQR6(unsigned int type, unsigned int scale) {
+  unsigned int val;
+
+  val = ((scale << 8) | type) * 0x10001;
+  asm volatile("mtspr 918, %0" : : "b"(val));
+}
+
+static inline void OSSetGQR7(unsigned int type, unsigned int scale) {
+  unsigned int val;
+
+  val = ((scale << 8) | type) * 0x10001;
+  asm volatile("mtspr 919, %0" : : "b"(val));
+}
 
 static inline s16 __OSf32tos16(register f32 inF)
 {
