@@ -170,7 +170,7 @@ bool bIsDebuggerConnected() {
         // TODO: from sn debug.c
         // return snIsDebuggerRunning();
     }
-    return true;
+    return false;
 }
 
 static int GetCodeineString(char *string, int max_chars, int bfunk_num) {
@@ -221,7 +221,7 @@ int bIsValidPointer(void *p, int size) {
 
 // STRIPPED
 int bLaunch(const char *command_line, int dos_command) {
-    return 0;
+    return -1;
 }
 
 int bLaunchWindows(const char *command_line) {
