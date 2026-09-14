@@ -497,9 +497,8 @@ RETRY:
 }
 
 int MemoryPool::GetAmountFree() {
-    int amount_free = 0;
-
     this->Mutex.Lock();
+    int amount_free = 0;
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
         amount_free += f->Size;
     }
@@ -508,9 +507,8 @@ int MemoryPool::GetAmountFree() {
 }
 
 int MemoryPool::GetLargestFreeBlock() {
-    int largest_block = 0;
-
     this->Mutex.Lock();
+    int largest_block = 0;
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
         if (f->Size > largest_block) {
             largest_block = f->Size;
