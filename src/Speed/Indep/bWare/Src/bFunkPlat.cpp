@@ -204,7 +204,7 @@ bFunkServer::bFunkServer(const char *name) {
 }
 
 bFunkServer::~bFunkServer() {
-    reinterpret_cast<bNode *>(this)->Remove();
+    bNode::Remove();
 }
 
 void bFunkServer::AddASync(int function_num, void (*function)(const void *, int)) {
@@ -272,8 +272,8 @@ void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
 
 struct bFunkServer *bFunkFindServer(uint32 server_hash) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    for (bFunkServer *server = reinterpret_cast<bFunkServer *>(bFunkServerList.GetHead());
-         server != reinterpret_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
+    for (bFunkServer *server = static_cast<bFunkServer *>(bFunkServerList.GetHead());
+         server != static_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
         if (server->GetNameHash() == server_hash) {
             return server;
         }
@@ -374,8 +374,8 @@ bool bFunkServerPlatform::DeliverPacket(bFunkPacket *packet) {
 
 void bFunkService() {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
-    for (bFunkServer *server = reinterpret_cast<bFunkServer *>(bFunkServerList.GetHead());
-         server != reinterpret_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
+    for (bFunkServer *server = static_cast<bFunkServer *>(bFunkServerList.GetHead());
+         server != static_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
         server->Service();
     }
 #endif
