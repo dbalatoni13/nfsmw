@@ -42,10 +42,9 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
     len /= length;
 
     if (len != 0.0f) {
-        float inv_len = 1.0f / len;
-        float x = v->x;
         float y = v->y;
-        dest->x = x * inv_len;
+        float inv_len = 1.0f / len;
+        dest->x = v->x * inv_len;
         dest->y = y * inv_len;
     } else {
         dest->x = 1.0f;
