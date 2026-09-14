@@ -50,7 +50,7 @@ class WRoadNetwork : public Debugable {
     int GetRightMostTrafficEntrance(int node_number, int onto_segment);
     bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
     int GetSegmentNumTrafficLanes(const WRoadSegment &segment);
-    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count);
+    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int laneCount);
     void GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vector3 &start, UMath::Vector3 &end);
     void GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point);
     void GetPointOnSegment(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);

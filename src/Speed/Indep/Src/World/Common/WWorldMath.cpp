@@ -89,9 +89,7 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     const float &pz = pt.z;
 
     float u = (px - x1) * (x2 - x1) + (pz - z1) * (z2 - z1);
-    float x_fake = x2 - x1;
-    float z_fake = z2 - z1;
-    float div = pow2(x_fake) + pow2(z_fake);
+    float div = pow2(x2 - x1) + pow2(z2 - z1);
 
     if (1e-6f < div) {
         u = u / div;
@@ -115,9 +113,7 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     const float &pz = pt.z;
 
     float u = (px - x1) * (x2 - x1) + (pz - z1) * (z2 - z1);
-    float x_fake = x2 - x1;
-    float z_fake = z2 - z1;
-    float div = pow2(x_fake) + pow2(z_fake);
+    float div = pow2(x2 - x1) + pow2(z2 - z1);
 
     if (1e-6f < div) {
         u = u / div;
@@ -157,13 +153,10 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
     UMath::Sub(P2, P1, intersectionPt);
     UMath::ScaleAdd(intersectionPt, t, P1, intersectionPt);
 
-    // return t >= 0.0f && t <= 1.0f;
-    // TODO get rid of this var
-    bool result = false;
-    if (t < 0.0f || (result = true, t > 1.0f)) {
-        result = false;
+    if (t >= 0.0f && t <= 1.0f) {
+        return true;
     }
-    return result;
+    return false;
 }
 
 bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::Vector3 &endPt, UMath::Matrix4 &mat) {

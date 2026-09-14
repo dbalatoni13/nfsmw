@@ -3,13 +3,14 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorld.h"
+#include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-// TODO move
-extern bool Tweak_colliderDraws;
 
 UTL::Std::map<unsigned int, WCollider *, _type_map> WCollider::fWuidMap;
 UTL::Collections::Listable<WCollider, 100>::List UTL::Collections::Listable<WCollider, 100>::_mTable;
+
+// TODO move
+bool Tweak_colliderDraws = false;
 
 WCollider::WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask)
     : fRequestedPosition(UMath::Vector3::kZero),     //
@@ -189,8 +190,8 @@ void WCollider::PrepareRegion(unsigned int updateMask) {
 }
 
 bool WCollider::IsEmpty() const {
-    // TODO fObbList.empty()?
     return this->fInstanceCacheList.empty() && this->fBarrierList.empty();
+    this->fObbList.empty();
 }
 
 void WCollider::Clear() {
@@ -298,14 +299,9 @@ void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
 }
 
 float WCollisionInstance::CalcSphericalRadius() const {
-    // TODO
-    // float maxExtent = WWorldMath::wmax(fInvMatRow2Length.w, fInvPosRadius.w);
-    // maxExtent = WWorldMath::wmax(maxExtent, fHeight);
-    // return WWorldMath::wmax(maxExtent, fInvMatRow0Width.w);
-
-    float maxExtent = (this->fInvMatRow2Length.w < this->fInvPosRadius.w) ? this->fInvPosRadius.w : this->fInvMatRow2Length.w;
-    maxExtent = (this->fHeight < maxExtent) ? maxExtent : this->fHeight;
-    return (this->fInvMatRow0Width.w < maxExtent) ? maxExtent : this->fInvMatRow0Width.w;
+    float maxExtent = WWorldMath::wmax(this->fInvPosRadius.w, this->fInvMatRow2Length.w);
+    maxExtent = WWorldMath::wmax(maxExtent, this->fHeight);
+    return WWorldMath::wmax(maxExtent, this->fInvMatRow0Width.w);
 }
 
 // STRIPPED

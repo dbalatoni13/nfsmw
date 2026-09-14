@@ -25,6 +25,7 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
     pt.y += this->fYOffset;
 
     bool faceChanged = this->fFaceValid && WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&this->fFace.fPt0));
+    bool onSameFace;
 
     if (!faceChanged || !quitIfOnSameFace) {
         if (instList != nullptr) {
@@ -39,10 +40,11 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
                                                 true);
             this->FindClosestFaceInternal(internalInstList, pt);
         }
-        return true;
+        onSameFace = true;
+    } else {
+        onSameFace = !faceChanged;
     }
 
-    bool onSameFace = !faceChanged;
     return onSameFace;
 }
 

@@ -53,6 +53,7 @@ static const int selectable_lanes[8] = {
 };
 
 BIND_SIM_SUBSYSTEM(WRoadNetwork, WRoadNetwork::Init, WRoadNetwork::Shutdown);
+BIND_ACTIVITY_FACTORY(PathFinder);
 
 void WRoadNetwork::Init() {
     if (fgRoadNetwork != nullptr) {
@@ -392,12 +393,13 @@ bool WRoadNetwork::GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, i
     return laneInd >= profilePtr[0]->fMiddleZone;
 }
 
-int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count) {
+int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int laneCount) {
     WRoadNetwork &roadNetwork = Get();
     const WRoadProfile *profilePtr[2];
-    int decLaneCount = lane_count;
+    int decLaneCount;
 
     roadNetwork.GetSegmentProfiles(segment, profilePtr);
+    decLaneCount = laneCount;
     for (int i = 0; i < profilePtr[0]->fNumZones; i++) {
         if (profilePtr[0]->GetLaneType(i, false) == WRoadNav::kLaneTraffic) {
             if (decLaneCount <= 0) {
@@ -568,7 +570,7 @@ void WRoadNetwork::GetSegmentCurveStep(const UMath::Vector3 &start, const UMath:
 
     roadSpline.BuildSplineEx(start, UVector3(start) + UVector3(start_control), end, UVector3(end) + UVector3(end_control));
     roadSpline.EvaluateSpline(u, tempPos);
-    point = UMath::Vector4To3(tempPos);
+    point = reinterpret_cast<UMath::Vector3 &>(tempPos);
 }
 
 WRoadNav::WRoadNav() {
@@ -1215,7 +1217,10 @@ short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffse
 
                 const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*intersectionSegment, node);
                 const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, -1);
-                if (checkSegment && checkSegment->IsTrafficAllowed()) {
+                if (checkSegment != nullptr) {
+                    if (!checkSegment->IsTrafficAllowed())
+                        continue;
+
                     UMath::Vector3 vec;
                     bool reverse = (oppNode != &roadNetwork.fNodes[checkSegment->fNodeIndex[0]]);
                     roadNetwork.GetSegmentForwardVector(*checkSegment, vec);
@@ -1280,7 +1285,7 @@ short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffse
                     continue;
 
                 char towards; // TODO
-                // const bool respect_drive_through_barriers; // TODO
+                const bool respect_drive_through_barriers = false;
                 int new_which_node = (node->fIndex != decision_segment->fNodeIndex[1]);
                 bool new_forward = new_which_node == 1;
                 bool new_inverted = decision_segment->IsProfileInverted(new_which_node);
@@ -1750,14 +1755,9 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
         IVehicle *his_vehicle;
         avoidable_body->QueryInterface(&his_vehicle);
         const DriverClass his_class = his_vehicle ? his_vehicle->GetDriverClass() : DRIVER_NONE;
-        // const bool he_is_player;
-        // TODO const bool
-        int he_is_traffic;
-        if (!his_vehicle)
-            he_is_traffic = 0;
-        else
-            he_is_traffic = his_class == DRIVER_TRAFFIC || his_class == DRIVER_NONE;
-        // const bool he_is_airacer;
+        const bool he_is_player = his_vehicle != nullptr && his_class == DRIVER_HUMAN;
+        const bool he_is_traffic = his_vehicle != nullptr && (his_class == DRIVER_TRAFFIC || his_class == DRIVER_NONE);
+        const bool he_is_airacer = his_vehicle != nullptr && his_class == DRIVER_RACER;
 
         if (is_racer && he_is_traffic && UMath::Abs(avoidable_right.x * my_cookie.Forward.x + avoidable_right.z * my_cookie.Forward.y) > 0.707f &&
             his_vehicle && VehicleClass::TRAILER == his_vehicle->GetVehicleClass()) {
@@ -1855,14 +1855,16 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
             float avoidable_delta_offset = bCross(&avoidable_velocity, reinterpret_cast<const bVector2 *>(&cookie.Forward));
 
             if (closest_cookie < closest_avoidable && dist_ahead > (my_extent + his_extent)) {
-                this->fOccludingTrailSpeed = trailing_speed;
                 closest_avoidable = closest_cookie;
+                this->fOccludingTrailSpeed = trailing_speed;
             }
 
             UMath::Vector3 cut_to_position = point_of_impact;
-            float offset_change = avoidable_delta_offset * bClamp(approach_time, 0.0f, 1.0f);
+            approach_time = bClamp(approach_time, 0.0f, 1.0f);
+            float offset_change = avoidable_delta_offset * approach_time;
             cut_to_position.x += offset_change * 0.8f * cookie.Forward.y;
             cut_to_position.z -= offset_change * 0.8f * cookie.Forward.x;
+            float extra_width = offset_change * 0.2f;
 
             bVector2 cookie_to_avoidable(cut_to_position.x - cookie.Centre.x, cut_to_position.z - cookie.Centre.z);
             bVector2 cookie_to_me(my_position.x - cookie.Centre.x, my_position.z - cookie.Centre.z);
@@ -1871,37 +1873,32 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
             float my_d = bDot(&cookie_to_me, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float avoidable_ahead = avoidable_d - my_d;
             float close_factor = UMath::Ramp(avoidable_ahead, -6.0f, 6.0f);
-            float extra_width = offset_change * 0.2f;
             float avoidable_offset = bCross(reinterpret_cast<const bVector2 *>(&cookie.Forward), &cookie_to_avoidable);
-            float nav_cross = bCross(&nav_forward, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float right_projection = bCross(&right_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float left_projection = bCross(&left_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
-            float lateral_projection = bClamp(approach_time, 0.0f, 1.0f);
-            float new_current_offset = lateral_projection * close_factor * delta_offset * 0.2f + current_offset;
-            new_current_offset += nav_cross;
-            new_current_offset += nav_cross;
             float avoidable_half_width = bAbs(right_projection);
             avoidable_half_width = bMax(avoidable_half_width, bAbs(left_projection));
-            // this var doesn't exist
-            float adjusted_width = extra_width * close_factor + avoidable_half_width;
+            avoidable_half_width = extra_width * close_factor + avoidable_half_width;
+
+            float new_current_offset = approach_time * close_factor * (delta_offset * 0.2f) + current_offset;
+            new_current_offset += bCross(&nav_forward, reinterpret_cast<const bVector2 *>(&cookie.Forward)) * 2.0f;
             float hole_punch_safety_margin = close_factor;
             if (is_drag) {
                 hole_punch_safety_margin = close_factor * 0.8f;
             }
-            float gap_right = cookie.RightOffset - avoidable_offset - adjusted_width;
-            float gap_left = avoidable_offset - adjusted_width - cookie.LeftOffset;
+            float gap_right = cookie.RightOffset - avoidable_offset - avoidable_half_width;
+            float gap_left = avoidable_offset - avoidable_half_width - cookie.LeftOffset;
             float gap_required = hole_punch_safety_margin + this->fVehicleHalfWidth;
             bool fit_right = gap_right > gap_required;
             bool fit_left = gap_left > gap_required;
             bool pass_left = new_current_offset < avoidable_offset;
             pass_left = fit_left ^ fit_right ? fit_left : pass_left;
-            // TODO is this lateral_projection?
-            float total_width = adjusted_width + this->fVehicleHalfWidth + hole_punch_safety_margin;
-
             int i = closest_cookie;
+            float lateral_projection = avoidable_half_width + this->fVehicleHalfWidth + hole_punch_safety_margin;
+
             for (; i < num_cookies; i++) {
                 NavCookie &this_cookie = cookies[i];
-                if (!this->CookieCutter(this_cookie, cut_to_position, total_width, pass_left, cut_flags) && i == closest_cookie)
+                if (!this->CookieCutter(this_cookie, cut_to_position, lateral_projection, pass_left, cut_flags) && i == closest_cookie)
                     break;
 
                 UMath::Vector2 delta;
@@ -1925,8 +1922,8 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
 
     this->nRoadOcclusion = 0;
     this->nAvoidableOcclusion = 0;
-    this->fOccludingTrailSpeed = 0.0f;
     this->bOccludedFromBehind = false;
+    this->fOccludingTrailSpeed = 0.0f;
 
     ISimable *simable = this->pAIVehicle ? this->pAIVehicle->GetSimable() : nullptr;
     IRigidBody *car = simable ? simable->GetRigidBody() : nullptr;
@@ -1951,10 +1948,10 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
     float out_scale = 2.0f;
     float out_bounds = traffic ? 1.5f : 1.0f;
 
-    int n = this->nCookieIndex;
+    int n;
     float current_dot = 0.0f;
     float look_ahead = look_min;
-    for (; n < num_cookies; n++) {
+    for (n = this->nCookieIndex; n < num_cookies; n++) {
         const NavCookie &cookie = this->pCookieTrail->NthOldest(n);
         bVector2 cookie_to_car = car_position - bVector2(cookie.Centre.x, cookie.Centre.z);
         float dot = bDot(reinterpret_cast<const bVector2 *>(&cookie.Forward), &cookie_to_car);
@@ -1995,7 +1992,7 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
         int next_segment_number = next_cookie.SegmentNumber;
         int current_segment_number = current_cookie.SegmentNumber;
 
-        if (next_segment_number == current_segment_number) {
+        if (current_segment_number == next_segment_number) {
             this->mCurrentCookie.SegmentNumber = next_segment_number;
             this->mCurrentCookie.SegmentNodeInd = current_cookie.SegmentNodeInd;
             this->mCurrentCookie.SetSegmentParameter(
@@ -2430,8 +2427,8 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
 
     this->fValid = true;
-    this->fSegmentInd = segInd;
     this->fDeadEnd = 0;
+    this->fSegmentInd = segInd;
 
     const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
 
@@ -2540,10 +2537,10 @@ bool WRoadNav::IsWrongWay() const {
     if (!this->IsValid()) {
         return false;
     }
-    bool seg_forward = (this->fNodeInd == 1);
+    bool seg_foward = (this->fNodeInd == 1);
     const WRoadSegment *segment = this->GetSegment();
 
-    return segment->IsInRace() && (segment->RaceRouteForward() ^ seg_forward);
+    return segment->IsInRace() && (segment->RaceRouteForward() ^ seg_foward);
 }
 
 bool WRoadNav::FindClosestOnPath(const UMath::Vector3 &position, UMath::Vector3 *found_position, UMath::Vector3 *found_direction,
@@ -2784,10 +2781,10 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
 }
 
 void WRoadNav::SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset) {
-    // const bool end; // TODO
-    // const bool start;
-    this->SetBoundPos(segment, endOffset, false);
-    this->SetBoundPos(segment, startOffset, true);
+    const bool end = false;
+    const bool start = true;
+    this->SetBoundPos(segment, endOffset, end);
+    this->SetBoundPos(segment, startOffset, start);
 }
 
 void WRoadNav::ChangeLanes(float new_lane_offset, float dist) {
@@ -2948,13 +2945,13 @@ bool WRoadNav::IncLane(int direction) {
 }
 
 void WRoadNav::ChangeDragLanes(int left_right) {
-    char node_ind = this->GetNodeInd();
+    int nodeInd = this->GetNodeInd();
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(this->GetSegmentInd());
-    const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, node_ind);
+    const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, nodeInd);
 
-    bool backward = node_ind == 0;
-    bool inverted = segment->IsProfileInverted(node_ind);
+    bool backward = nodeInd == 0;
+    bool inverted = segment->IsProfileInverted(nodeInd);
     float current_offset = this->fLaneOffset;
 
     if (left_right == 0) {
@@ -2965,7 +2962,7 @@ void WRoadNav::ChangeDragLanes(int left_right) {
             temp_nav.SetRaceFilter(true);
             const UMath::Vector3 &car_position = rigid_body->GetPosition();
             temp_nav.InitAtPoint(car_position, this->GetForwardVector(), false, 1.0f);
-            if (temp_nav.fValid) {
+            if (temp_nav.IsValid()) {
                 current_offset = temp_nav.GetLaneOffset();
             }
         }
@@ -3230,7 +3227,7 @@ bool WRoadNav::CanTrafficSpawn() {
         return false;
     }
 
-    // const bool player_or_racer;
+    const bool player_or_racer = false;
     bool forward = (which_node == 1);
     bool inverted = segment->IsProfileInverted(which_node);
 
@@ -3284,7 +3281,7 @@ float WRoadNav::CookieTrailCurvature(const UMath::Vector3 &car_position, const U
                         sina = static_cast<float>(M_PI) - sina;
                     }
 
-                    float div = UMath::Max(1.0f, apex_width);
+                    apex_width = UMath::Max(1.0f, apex_width);
                     apex = sina * UMath::Sinr(UMath::Min(sina, static_cast<float>(M_PI_2)));
 
                     if (this->nAvoidableOcclusion != 0) {
@@ -3297,7 +3294,7 @@ float WRoadNav::CookieTrailCurvature(const UMath::Vector3 &car_position, const U
                         apex *= ratio * ratio;
                     }
 
-                    apex = UMath::Clamp(apex, 0.0f, static_cast<float>(M_PI)) / div;
+                    apex = UMath::Clamp(apex, 0.0f, static_cast<float>(M_PI)) / apex_width;
                 }
             }
         }
