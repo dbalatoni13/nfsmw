@@ -9,17 +9,12 @@
 #include <stdarg.h>
 
 bool IsWhiteSpace(char c) {
-    if (c == ' ')
-        return true;
-    else if (c == '\n')
-        return true;
-    else if (c == '\t')
-        return true;
-    else if (c == '=')
-        return true;
-    else if (c == ',')
-        return true;
-    return c == '\r';
+    if (c != ' ') {
+        if (c != '\n' && c != '\t' && c != '=' && c != ',') {
+            return c == '\r';
+        }
+    }
+    return true;
 }
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
@@ -55,9 +50,7 @@ void SpeedScript::InitFromFile(const char *filename) {
 
 SpeedScript::~SpeedScript() {
     for (int file_num = 0; file_num < this->NumFiles; file_num++) {
-        if (this->FileTable[file_num].ArgBuf) {
-            delete[] this->FileTable[file_num].ArgBuf;
-        }
+        delete[] this->FileTable[file_num].ArgBuf;
     }
     if (this->EntryTable) {
         delete[] this->EntryTable;
@@ -103,7 +96,7 @@ void SpeedScript::ResizeEntryTable(int new_size) {
 }
 
 SpeedScriptEntry *SpeedScript::AddEntry() {
-    if (this->NumEntries == this->MaxEntries) {
+    if (this->MaxEntries == this->NumEntries) {
         this->ResizeEntryTable((this->NumEntries * 4) / 3 + 1);
     }
     SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries];
@@ -168,24 +161,29 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
 }
 
 void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
-    this->NumFiles = 1;
-    SpeedScriptFile *file = &this->FileTable[0];
+    int script_size = buffer_size;
     this->ErrorText[0] = '\0';
-    bStrCpy(file->Filename, name);
-    file->ArgBuf = new char[buffer_size + 1];
+    this->NumFiles = 1;
+    bStrCpy(this->FileTable[0].Filename, name);
+    SpeedScriptFile *file = &this->FileTable[0];
+    file->ArgBuf = new char[script_size + 1];
     this->NumEntries = 0;
     this->MaxEntries = 0;
     this->EntryTable = nullptr;
-    this->ResizeEntryTable(buffer_size / 16 + 32);
+    this->ResizeEntryTable(script_size / 16 + 32);
     this->NextEntryNum = 0;
     int buffer_pos = 0;
     int arg_buf_pos = 0;
     int line_number = 1;
-    while (this->ParseNextWord(&file->ArgBuf[arg_buf_pos], buffer, buffer_size, &buffer_pos, &line_number)) {
+    while (this->ParseNextWord(&file->ArgBuf[arg_buf_pos], buffer, script_size, &buffer_pos, &line_number)) {
         char *word = &file->ArgBuf[arg_buf_pos];
         int len = bStrLen(word);
 
-        SpeedScriptEntry *entry = this->AddEntry();
+        if (this->NumEntries == this->MaxEntries) {
+            this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
+        }
+        SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
+        bMemSet(entry, 0, sizeof(SpeedScriptEntry));
         entry->LineNumber = line_number;
         entry->ArgBufPos = arg_buf_pos;
         if (word[len - 1] == ':') {
@@ -195,7 +193,7 @@ void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
             }
         }
         arg_buf_pos += len + 1;
-        if (this->NumEntries > 1) {
+        if (this->NumEntries >= 2) {
             SpeedScriptEntry *prev_entry = &entry[-1];
             if (!entry->IsCommand && prev_entry->IsCommand) {
                 if (bStrCmp(this->GetName(prev_entry), "INCLUDESCRIPT:") == 0) {
@@ -221,7 +219,11 @@ void SpeedScript::HandleIncludeScript(const char *filename) {
         this->Error("Too many nested INCLUDESCRIPT commands at %s\n", this->GetPositionName());
     } else {
         for (int n = 0; n < script.NumEntries; n++) {
-            SpeedScriptEntry *entry = this->AddEntry();
+            if (this->NumEntries == this->MaxEntries) {
+                this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
+            }
+            SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
+            bMemSet(entry, 0, sizeof(SpeedScriptEntry));
             *entry = script.EntryTable[n];
             entry->FileNumber += this->NumFiles;
         }

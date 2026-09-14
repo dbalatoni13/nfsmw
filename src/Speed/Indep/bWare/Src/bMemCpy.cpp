@@ -102,7 +102,7 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes) {
     const char *csrc = reinterpret_cast<const char *>(src);
     int overlap_amount = cdest - csrc;
 
-    if ((overlap_amount < 1) || (overlap_amount >= (int)numbytes)) {
+    if ((overlap_amount <= 0) || (overlap_amount >= (int)numbytes)) {
         bMemCpy(dest, src, numbytes);
     } else {
         int pos = numbytes;

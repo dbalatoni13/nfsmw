@@ -3,8 +3,8 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-#ifdef EA_PLATFORM_WIN32
-extern "C" __declspec(dllimport) bMatrix4 *__stdcall D3DXMatrixTranspose(bMatrix4 *dest, const bMatrix4 *src);
+#if defined(EA_PLATFORM_WIN32)
+extern "C" bMatrix4 *__stdcall D3DXMatrixTranspose(bMatrix4 *dest, const bMatrix4 *src);
 #endif
 
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
@@ -70,62 +70,50 @@ float fDeterminant(bMatrix4 *m) {
 void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
     float scale = 1.0f / fDeterminant(s);
 
-    d->v0.x = scale * (((((s->v1.z * s->v2.w * s->v3.y - s->v1.w * s->v2.z * s->v3.y) + s->v1.w * s->v2.y * s->v3.z) - s->v1.y * s->v2.w * s->v3.z) -
-                        s->v1.z * s->v2.y * s->v3.w) +
-                       s->v1.y * s->v2.z * s->v3.w);
-    d->v0.y = scale * ((((s->v0.w * s->v2.z * s->v3.y - s->v0.z * s->v2.w * s->v3.y) - s->v0.w * s->v2.y * s->v3.z) + s->v0.y * s->v2.w * s->v3.z +
-                        s->v0.z * s->v2.y * s->v3.w) -
-                       s->v0.y * s->v2.z * s->v3.w);
-    d->v0.z = scale * (((((s->v0.z * s->v1.w * s->v3.y - s->v0.w * s->v1.z * s->v3.y) + s->v0.w * s->v1.y * s->v3.z) - s->v0.y * s->v1.w * s->v3.z) -
-                        s->v0.z * s->v1.y * s->v3.w) +
-                       s->v0.y * s->v1.z * s->v3.w);
-    d->v0.w = scale * ((((s->v0.w * s->v1.z * s->v2.y - s->v0.z * s->v1.w * s->v2.y) - s->v0.w * s->v1.y * s->v2.z) + s->v0.y * s->v1.w * s->v2.z +
-                        s->v0.z * s->v1.y * s->v2.w) -
-                       s->v0.y * s->v1.z * s->v2.w);
-    d->v1.x = scale * ((((s->v1.w * s->v2.z * s->v3.x - s->v1.z * s->v2.w * s->v3.x) - s->v1.w * s->v2.x * s->v3.z) + s->v1.x * s->v2.w * s->v3.z +
-                        s->v1.z * s->v2.x * s->v3.w) -
-                       s->v1.x * s->v2.z * s->v3.w);
-    d->v1.y = scale * (((((s->v0.z * s->v2.w * s->v3.x - s->v0.w * s->v2.z * s->v3.x) + s->v0.w * s->v2.x * s->v3.z) - s->v0.x * s->v2.w * s->v3.z) -
-                        s->v0.z * s->v2.x * s->v3.w) +
-                       s->v0.x * s->v2.z * s->v3.w);
-    d->v1.z = scale * ((((s->v0.w * s->v1.z * s->v3.x - s->v0.z * s->v1.w * s->v3.x) - s->v0.w * s->v1.x * s->v3.z) + s->v0.x * s->v1.w * s->v3.z +
-                        s->v0.z * s->v1.x * s->v3.w) -
-                       s->v0.x * s->v1.z * s->v3.w);
-    d->v1.w = scale * (((((s->v0.z * s->v1.w * s->v2.x - s->v0.w * s->v1.z * s->v2.x) + s->v0.w * s->v1.x * s->v2.z) - s->v0.x * s->v1.w * s->v2.z) -
-                        s->v0.z * s->v1.x * s->v2.w) +
-                       s->v0.x * s->v1.z * s->v2.w);
-    d->v2.x = scale * (((((s->v1.y * s->v2.w * s->v3.x - s->v1.w * s->v2.y * s->v3.x) + s->v1.w * s->v2.x * s->v3.y) - s->v1.x * s->v2.w * s->v3.y) -
-                        s->v1.y * s->v2.x * s->v3.w) +
-                       s->v1.x * s->v2.y * s->v3.w);
-    d->v2.y = scale * ((((s->v0.w * s->v2.y * s->v3.x - s->v0.y * s->v2.w * s->v3.x) - s->v0.w * s->v2.x * s->v3.y) + s->v0.x * s->v2.w * s->v3.y +
-                        s->v0.y * s->v2.x * s->v3.w) -
-                       s->v0.x * s->v2.y * s->v3.w);
-    d->v2.z = scale * (((((s->v0.y * s->v1.w * s->v3.x - s->v0.w * s->v1.y * s->v3.x) + s->v0.w * s->v1.x * s->v3.y) - s->v0.x * s->v1.w * s->v3.y) -
-                        s->v0.y * s->v1.x * s->v3.w) +
-                       s->v0.x * s->v1.y * s->v3.w);
-    d->v2.w = scale * ((((s->v0.w * s->v1.y * s->v2.x - s->v0.y * s->v1.w * s->v2.x) - s->v0.w * s->v1.x * s->v2.y) + s->v0.x * s->v1.w * s->v2.y +
-                        s->v0.y * s->v1.x * s->v2.w) -
-                       s->v0.x * s->v1.y * s->v2.w);
-    d->v3.x = scale * ((((s->v1.z * s->v2.y * s->v3.x - s->v1.y * s->v2.z * s->v3.x) - s->v1.z * s->v2.x * s->v3.y) + s->v1.x * s->v2.z * s->v3.y +
-                        s->v1.y * s->v2.x * s->v3.z) -
-                       s->v1.x * s->v2.y * s->v3.z);
-    d->v3.y = scale * (((((s->v0.y * s->v2.z * s->v3.x - s->v0.z * s->v2.y * s->v3.x) + s->v0.z * s->v2.x * s->v3.y) - s->v0.x * s->v2.z * s->v3.y) -
-                        s->v0.y * s->v2.x * s->v3.z) +
-                       s->v0.x * s->v2.y * s->v3.z);
-    d->v3.z = scale * ((((s->v0.z * s->v1.y * s->v3.x - s->v0.y * s->v1.z * s->v3.x) - s->v0.z * s->v1.x * s->v3.y) + s->v0.x * s->v1.z * s->v3.y +
-                        s->v0.y * s->v1.x * s->v3.z) -
-                       s->v0.x * s->v1.y * s->v3.z);
-    d->v3.w = scale * (((((s->v0.y * s->v1.z * s->v2.x - s->v0.z * s->v1.y * s->v2.x) + s->v0.z * s->v1.x * s->v2.y) - s->v0.x * s->v1.z * s->v2.y) -
-                        s->v0.y * s->v1.x * s->v2.z) +
-                       s->v0.x * s->v1.y * s->v2.z);
+    d->v0.x = (s->v1.y * s->v3.w * s->v2.z +
+               (((s->v2.y * s->v3.z * s->v1.w +
+                  (s->v2.w * s->v3.y * s->v1.z - s->v3.y * s->v2.z * s->v1.w)) -
+                 s->v1.y * s->v2.w * s->v3.z) -
+                s->v2.y * s->v3.w * s->v1.z)) *
+              scale;
+    d->v0.y = scale * (((((s->v0.w * (s->v2.z * s->v3.y) - s->v0.z * (s->v3.y * s->v2.w)) - s->v0.w * (s->v3.z * s->v2.y)) + s->v0.z * (s->v3.w * s->v2.y)) + s->v0.y * (s->v3.z * s->v2.w)) - s->v2.z * (s->v3.w * s->v0.y));
+    d->v0.z = scale * (((((s->v0.z * (s->v1.w * s->v3.y) - s->v0.w * (s->v1.z * s->v3.y)) + s->v0.w * (s->v3.z * s->v1.y)) - s->v1.w * (s->v0.y * s->v3.z)) - s->v0.z * (s->v3.w * s->v1.y)) + s->v1.z * (s->v3.w * s->v0.y));
+    d->v0.w = scale * (((((s->v0.w * (s->v1.z * s->v2.y) - s->v0.z * (s->v1.w * s->v2.y)) - s->v0.w * (s->v2.z * s->v1.y)) + s->v0.z * (s->v2.w * s->v1.y)) + s->v1.w * (s->v2.z * s->v0.y)) - s->v1.z * (s->v0.y * s->v2.w));
+    d->v1.x = scale * (((((s->v1.w * (s->v2.z * s->v3.x) - s->v1.z * (s->v2.w * s->v3.x)) - s->v1.w * (s->v3.z * s->v2.x)) + s->v3.z * (s->v2.w * s->v1.x)) + s->v1.z * (s->v3.w * s->v2.x)) - s->v2.z * (s->v3.w * s->v1.x));
+    d->v1.y = scale * (((((s->v0.z * (s->v2.w * s->v3.x) - s->v0.w * (s->v2.z * s->v3.x)) + s->v0.w * (s->v3.z * s->v2.x)) - s->v0.x * (s->v3.z * s->v2.w)) - s->v0.z * (s->v3.w * s->v2.x)) + s->v2.z * (s->v3.w * s->v0.x));
+    d->v1.z = scale * (((((s->v0.w * (s->v1.z * s->v3.x) - s->v0.z * (s->v1.w * s->v3.x)) - s->v0.w * (s->v3.z * s->v1.x)) + s->v0.z * (s->v3.w * s->v1.x)) + s->v1.w * (s->v0.x * s->v3.z)) - s->v1.z * (s->v3.w * s->v0.x));
+    d->v1.w = scale * (((((s->v0.z * (s->v1.w * s->v2.x) - s->v0.w * (s->v1.z * s->v2.x)) + s->v0.w * (s->v2.z * s->v1.x)) - s->v1.w * (s->v2.z * s->v0.x)) - s->v0.z * (s->v2.w * s->v1.x)) + s->v1.z * (s->v0.x * s->v2.w));
+    d->v2.x = scale * (((((s->v2.w * (s->v3.x * s->v1.y) - s->v1.w * (s->v2.y * s->v3.x)) + s->v1.w * (s->v3.y * s->v2.x)) - s->v3.y * (s->v2.w * s->v1.x)) - s->v3.w * (s->v2.x * s->v1.y)) + s->v3.w * (s->v2.y * s->v1.x));
+    d->v2.y = scale * (((((s->v0.w * (s->v2.y * s->v3.x) - s->v0.y * (s->v2.w * s->v3.x)) - s->v0.w * (s->v3.y * s->v2.x)) + s->v0.x * (s->v3.y * s->v2.w)) + s->v3.w * (s->v0.y * s->v2.x)) - s->v3.w * (s->v0.x * s->v2.y));
+    d->v2.z = scale * (((((s->v1.w * (s->v0.y * s->v3.x) - s->v0.w * (s->v3.x * s->v1.y)) + s->v0.w * (s->v3.y * s->v1.x)) - s->v1.w * (s->v0.x * s->v3.y)) - s->v3.w * (s->v0.y * s->v1.x)) + s->v3.w * (s->v0.x * s->v1.y));
+    d->v2.w = scale * (((((s->v0.w * (s->v2.x * s->v1.y) - s->v1.w * (s->v0.y * s->v2.x)) - s->v0.w * (s->v2.y * s->v1.x)) + s->v1.w * (s->v0.x * s->v2.y)) + s->v0.y * (s->v2.w * s->v1.x)) - s->v0.x * (s->v2.w * s->v1.y));
+    d->v3.x = scale * (((((s->v1.z * (s->v2.y * s->v3.x) - s->v2.z * (s->v3.x * s->v1.y)) - s->v1.z * (s->v3.y * s->v2.x)) + s->v3.z * (s->v2.x * s->v1.y)) + s->v2.z * (s->v3.y * s->v1.x)) - s->v3.z * (s->v2.y * s->v1.x));
+    d->v3.y = scale * (((((s->v2.z * (s->v0.y * s->v3.x) - s->v0.z * (s->v2.y * s->v3.x)) + s->v0.z * (s->v3.y * s->v2.x)) - s->v2.z * (s->v0.x * s->v3.y)) - s->v0.y * (s->v3.z * s->v2.x)) + s->v0.x * (s->v3.z * s->v2.y));
+    d->v3.z = scale * (((((s->v0.z * (s->v3.x * s->v1.y) - s->v1.z * (s->v0.y * s->v3.x)) - s->v0.z * (s->v3.y * s->v1.x)) + s->v1.z * (s->v0.x * s->v3.y)) + s->v0.y * (s->v3.z * s->v1.x)) - s->v0.x * (s->v3.z * s->v1.y));
+    d->v3.w = scale * (((((s->v1.z * (s->v0.y * s->v2.x) - s->v0.z * (s->v2.x * s->v1.y)) + s->v0.z * (s->v2.y * s->v1.x)) - s->v1.z * (s->v0.x * s->v2.y)) - s->v2.z * (s->v0.y * s->v1.x)) + s->v2.z * (s->v0.x * s->v1.y));
 }
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
-    __declspec(align(16)) bMatrix4 U(bMatrix4::NO_INITIALIZATION);
-    bMatrix4 iU(bMatrix4::NO_INITIALIZATION);
-    bMatrix4 Mf(bMatrix4::NO_INITIALIZATION);
-    bMatrix4 iMf(bMatrix4::NO_INITIALIZATION);
-    bMatrix4 Nf(bMatrix4::NO_INITIALIZATION);
+    // These matrices are completely populated before they are read.  The retail
+    // function reserves five aligned matrices and does not run bMatrix4's identity
+    // constructor for them.
+    struct ATTRIBUTE_ALIGN(16) RawMatrix4 {
+        bVector4 v0;
+        bVector4 v1;
+        bVector4 v2;
+        bVector4 v3;
+    };
+
+    RawMatrix4 raw_U;
+    RawMatrix4 raw_iU;
+    RawMatrix4 raw_Mf;
+    RawMatrix4 raw_iMf;
+    RawMatrix4 raw_Nf;
+    bMatrix4 &U = *reinterpret_cast<bMatrix4 *>(&raw_U);
+    bMatrix4 &iU = *reinterpret_cast<bMatrix4 *>(&raw_iU);
+    bMatrix4 &Mf = *reinterpret_cast<bMatrix4 *>(&raw_Mf);
+    bMatrix4 &iMf = *reinterpret_cast<bMatrix4 *>(&raw_iMf);
+    bMatrix4 &Nf = *reinterpret_cast<bMatrix4 *>(&raw_Nf);
 
     Mf.v0.x = 2.0f;
     Mf.v0.y = -2.0f;
@@ -185,7 +173,7 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
-    bVector4 u;
+    ATTRIBUTE_ALIGN(16) bVector4 u;
 
     u.x = t * t * t;
     u.y = t * t;

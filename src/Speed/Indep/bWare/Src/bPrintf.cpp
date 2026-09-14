@@ -76,7 +76,11 @@ int bVPrintf(char terminal_channel, char *fmt, char *argList) {
     output_info.DestStringLen = 0;
     output_info.StdOut = true;
     output_info.TerminalChannel = static_cast<signed char>(terminal_channel);
+#ifdef EA_PLATFORM_GAMECUBE
+    return _bOutput(&output_info, fmt, *reinterpret_cast<va_list *>(argList));
+#else
     return _bOutput(&output_info, fmt, reinterpret_cast<va_list>(argList));
+#endif
 }
 
 int bSPrintf(char *destString, const char *fmt, ...) {
@@ -192,13 +196,10 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
         bBufferedTerminalChannel = static_cast<char>(output_info->TerminalChannel);
     }
 
-    ch = *fmt++;
-
-    while (ch != '\0' && outLen >= 0) {
-        int ci = ch - 0x20;
+    while ((ch = *fmt++) != '\0' && outLen >= 0) {
         int charType;
-        if (static_cast<unsigned char>(ci) <= 0x5A) {
-            charType = statetable[ci] & 0x0F;
+        if (ch >= ' ' && ch <= 'z') {
+            charType = statetable[static_cast<int>(ch) - ' '] & 0x0F;
         } else {
             charType = 0;
         }
@@ -777,12 +778,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                             if (bIsValidPointer(vect, 1)) {
                                 if (vectType == 2) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y);
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y);
                                 } else if (vectType == 3) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width,
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y, width,
                                              precision, vect->z);
                                 } else if (vectType == 4) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width,
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f,%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y, width,
                                              precision, vect->z, width, precision, vect->w);
                                 }
                             } else {
@@ -887,7 +888,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 break;
         }
 
-        ch = *fmt++;
     }
 
     if (output_info->StdOut) {

@@ -42,29 +42,29 @@ int bStrLen(const char *s) {
 }
 
 char *bStrCpy(char *to, const char *from) {
-    char *result = to;
-    *to = *from;
-    if (*to != '\0') {
-        do {
-            ++to;
-            *to = from[to - result];
-        } while (*to != '\0');
+    int n = 0;
+    to[0] = from[0];
+    while (to[n] != '\0') {
+        n++;
+        to[n] = from[n];
     }
-    return result;
+    return to;
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
-    int n = 0;
-    if (m != 0) {
-        do {
-            to[n] = from[n];
-            --m;
-            if (to[n] == '\0') {
-                return to;
-            }
-            ++n;
-        } while (m != 0);
+    if (m == 0) {
+        return to;
     }
+
+    int n = 0;
+    do {
+        to[n] = from[n];
+        --m;
+        if (to[n] == '\0') {
+            return to;
+        }
+        ++n;
+    } while (m != 0);
     return to;
 }
 
@@ -225,8 +225,8 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
     nn = 0;
     while (s2[nn] != '\0') {
         to[n] = s2[nn];
-        nn++;
         n++;
+        nn++;
     }
 
     to[n] = '\0';
@@ -402,30 +402,28 @@ uint16 *bStrCpy(uint16 *to, const char *from) {
 
 uint16 *bStrNCpy(uint16 *to, const uint16 *from, int m) {
     int n = 0;
-    if (m-- != 0) {
-        to[0] = from[0];
-        while (to[n] != '\0') {
-            n++;
-            if (m-- == 0) {
-                return to;
-            }
-            to[n] = from[n];
+    while (m != 0) {
+        uint16 c = from[n];
+        m--;
+        to[n] = c;
+        if (c == 0) {
+            break;
         }
+        n++;
     }
     return to;
 }
 
 uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
     int n = 0;
-    if (m != 0) {
-        do {
-            to[n] = from[n];
-            --m;
-            if (to[n] == '\0') {
-                return to;
-            }
-            ++n;
-        } while (m != 0);
+    while (m != 0) {
+        uint16 c = from[n];
+        m--;
+        to[n] = c;
+        if (c == 0) {
+            break;
+        }
+        n++;
     }
     return to;
 }
@@ -727,10 +725,43 @@ void bSharedStringPool::Free(const char *s) {
 }
 
 // STRIPPED
-void bSharedStringPool::Dump() {}
+void bSharedStringPool::Dump() {
+    int total_size = 0;
+    int allocated_size = 0;
+
+    for (bSharedString *string = GetStringTableStart(); string != GetStringTableEnd(); string = string->GetNext()) {
+        int size = string->Size * sizeof(bSharedString);
+        total_size += size;
+        if (string->Count != 0) {
+            allocated_size += size;
+        }
+    }
+
+    bReleasePrintf("Shared strings: %d bytes allocated of %d (%d strings)\n", allocated_size, total_size, NumStringsAllocated);
+}
 
 // STRIPPED
-void bSharedStringPool::Validate() {}
+void bSharedStringPool::Validate() {
+    int num_bytes = 0;
+    int num_strings = 0;
+    bSharedString *prev_string = GetStringTableStart();
+
+    for (bSharedString *string = GetStringTableStart(); string != GetStringTableEnd(); string = string->GetNext()) {
+        if (string != GetStringTableStart()) {
+            bAssertMsg(string->GetPrev() == prev_string, "Shared string back-link is corrupt");
+        }
+        bAssertMsg(string->Size != 0, "Shared string has zero size");
+
+        if (string->Count != 0) {
+            num_bytes += string->Size * sizeof(bSharedString);
+            num_strings++;
+        }
+        prev_string = string;
+    }
+
+    bAssertMsg(num_bytes == NumBytesAllocated, "Shared string byte count is corrupt");
+    bAssertMsg(num_strings == NumStringsAllocated, "Shared string count is corrupt");
+}
 
 void bInitSharedStringPool(int size) {
     gSharedStringPool.Init(size);

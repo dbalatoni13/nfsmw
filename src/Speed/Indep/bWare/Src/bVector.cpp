@@ -31,14 +31,15 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
         dest->x = x / len;
         dest->y = y / len;
     } else {
-        dest->y = 0.0f;
         dest->x = 1.0f;
+        dest->y = 0.0f;
     }
     return dest;
 }
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
-    float len = bLength(v) / length;
+    float len = bLength(v);
+    len /= length;
 
     if (len != 0.0f) {
         float inv_len = 1.0f / len;
@@ -47,7 +48,7 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
         dest->x = x * inv_len;
         dest->y = y * inv_len;
     } else {
-        dest->x = length;
+        dest->x = 1.0f;
         dest->y = 0.0f;
     }
     return dest;
@@ -143,7 +144,10 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
     if (bAbs(v1->x - v2->x) > epsilon) {
         return 0;
     }
-    return bAbs(v1->y - v2->y) <= epsilon;
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    return 1;
 }
 
 int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {
@@ -153,7 +157,10 @@ int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {
     if (bAbs(v1->y - v2->y) > epsilon) {
         return 0;
     }
-    return bAbs(v1->z - v2->z) <= epsilon;
+    if (bAbs(v1->z - v2->z) > epsilon) {
+        return 0;
+    }
+    return 1;
 }
 
 int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {
@@ -166,7 +173,10 @@ int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {
     if (bAbs(v1->z - v2->z) > epsilon) {
         return 0;
     }
-    return bAbs(v1->w - v2->w) <= epsilon;
+    if (bAbs(v1->w - v2->w) > epsilon) {
+        return 0;
+    }
+    return 1;
 }
 
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
@@ -209,15 +219,10 @@ void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *
 }
 
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {
-    float x_min = point->x - extra_width;
-    float y_min = point->y - extra_width;
-    float x_max = point->x + extra_width;
-    float y_max = point->y + extra_width;
-
-    float min_x = bMin(bbox_min->x, x_min);
-    float min_y = bMin(bbox_min->y, y_min);
-    float max_x = bMax(bbox_max->x, x_max);
-    float max_y = bMax(bbox_max->y, y_max);
+    float min_x = bMin(bbox_min->x, point->x - extra_width);
+    float min_y = bMin(bbox_min->y, point->y - extra_width);
+    float max_x = bMax(bbox_max->x, point->x + extra_width);
+    float max_y = bMax(bbox_max->y, point->y + extra_width);
 
     bFill(bbox_min, min_x, min_y);
     bFill(bbox_max, max_x, max_y);
@@ -242,10 +247,10 @@ int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, con
 }
 
 int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
-    if ((bbox2_min->x < bbox_min->x) || (bbox2_max->x > bbox_max->x) || (bbox2_min->y < bbox_min->y) || (bbox2_max->y > bbox_max->y)) {
-        return false;
+    if ((bbox2_min->x >= bbox_min->x) && (bbox2_max->x <= bbox_max->x) && (bbox2_min->y >= bbox_min->y) && (bbox2_max->y <= bbox_max->y)) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
@@ -359,7 +364,6 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
 }
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
-    float x_min = bbox2_min->x;
     float y_min = bbox2_min->y;
     float z_min = bbox2_min->z;
 
@@ -367,7 +371,7 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     float y_max = bbox2_max->y;
     float z_max = bbox2_max->z;
 
-    if (x_min < bbox_min->x) {
+    if (bbox2_min->x < bbox_min->x) {
         bbox_min->x = bbox2_min->x;
     }
     if (y_min < bbox_min->y) {
@@ -397,11 +401,11 @@ int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, con
 }
 
 int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
-    if ((bbox2_min->x < bbox_min->x) || (bbox2_max->x > bbox_max->x) || (bbox2_min->y < bbox_min->y) || (bbox2_max->y > bbox_max->y) ||
-        (bbox2_min->z < bbox_min->z) || (bbox2_max->z > bbox_max->z)) {
-        return false;
+    if ((bbox2_min->x >= bbox_min->x) && (bbox2_max->x <= bbox_max->x) && (bbox2_min->y >= bbox_min->y) && (bbox2_max->y <= bbox_max->y) &&
+        (bbox2_min->z >= bbox_min->z) && (bbox2_max->z <= bbox_max->z)) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 int bBoundingBoxOverlapping(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
@@ -449,8 +453,6 @@ float bBoundingBoxDistOutside(const bVector3 *bbox_min, const bVector3 *bbox_max
     return distance;
 }
 
-// Semantic reconstruction from the existing cross-title implementation;
-// the PC target remains compiler-near but is not byte-identical.
 float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2) {
     bVector2 p = *point - *line_p1;
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
@@ -489,7 +491,7 @@ bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_point
 
     for (int i = 0; i < num_points; i++) {
         if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
-            (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
+            (x < ((y - points[i].y) * (points[j].x - points[i].x)) / (points[j].y - points[i].y) + points[i].x)) {
             inside = !inside;
         }
         j = i;
@@ -505,7 +507,7 @@ bool bIsPointInPoly(const bVector2 *point, const bVector3 *points, int num_point
 
     for (int i = 0; i < num_points; i++) {
         if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
-            (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
+            (x < ((y - points[i].y) * (points[j].x - points[i].x)) / (points[j].y - points[i].y) + points[i].x)) {
             inside = !inside;
         }
         j = i;

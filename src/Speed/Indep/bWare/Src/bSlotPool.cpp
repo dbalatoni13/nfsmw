@@ -69,15 +69,15 @@ SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_
     SlotPool *slot_pool =
         reinterpret_cast<SlotPool *>(bMalloc(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), debug_name, 0, memory_pool));
     if (slot_pool) {
-        slot_pool->SlotSize = slot_size;
-        slot_pool->MemoryPool = memory_pool;
-        slot_pool->DebugName = debug_name;
         slot_pool->NumSlots = num_slots;
-        slot_pool->TotalNumSlots = num_slots;
-        slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_WARN_IF_OVERFLOW |
-                                                      SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY | SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+        slot_pool->SlotSize = slot_size;
+        slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY |
+                                                      SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
         slot_pool->FreeSlots = nullptr;
         slot_pool->NextSlotPool = nullptr;
+        slot_pool->MemoryPool = memory_pool;
+        slot_pool->DebugName = debug_name;
+        slot_pool->TotalNumSlots = num_slots;
         slot_pool->NumAllocatedSlots = 0;
         slot_pool->MostNumAllocatedSlots = 0;
         slot_pool->FlushSlotPool();
@@ -95,10 +95,10 @@ void SlotPool::FlushSlotPool() {
     SlotPool *slot_pool = this;
     while (slot_pool) {
         int slot_size = slot_pool->SlotSize;
-        int num_slots;
+        int num_slots = slot_pool->NumSlots;
         slot_pool->FreeSlots = nullptr;
-        if (slot_pool->NumSlots != 0) {
-            num_slots = slot_pool->NumSlots - 1;
+        if (num_slots != 0) {
+            --num_slots;
             SlotPoolEntry *slot = slot_pool->Slots;
             slot_pool->FreeSlots = slot;
             for (int n = 0; n < num_slots; n++) {
@@ -120,7 +120,7 @@ void SlotPool::ExpandSlotPool(int num_extra_slots) {
     }
     last_slot_pool->NextSlotPool = new_slot_pool;
 
-    SlotPoolEntry *last_slot = &new_slot_pool->Slots[(((num_extra_slots - 1) * SlotSize) / 4 * 4) / sizeof(SlotPoolEntry *)];
+    SlotPoolEntry *last_slot = &new_slot_pool->Slots[((num_extra_slots - 1) * SlotSize) / 4];
     last_slot->Next = FreeSlots;
 
     FreeSlots = new_slot_pool->FreeSlots;
@@ -245,6 +245,7 @@ void SlotPool::CleanupExpandedSlotPools() {
 }
 
 void SlotPool::VerifyPoolIntegrity() {
+#ifdef EA_PLATFORM_WIN32
     SlotPoolEntry *slot = FreeSlots;
     if (!slot) {
         return;
@@ -280,15 +281,12 @@ void SlotPool::VerifyPoolIntegrity() {
         __debugbreak();
         slot = slot->Next;
     } while (slot);
+#endif
 }
 
 void *SlotPool::Malloc() {
     if (!FreeSlots && (Flags & SLOTPOOL_FLAG_OVERFLOW_IF_FULL)) {
-        int num_extra_slots = NumSlots;
-        if (num_extra_slots < 0) {
-            num_extra_slots += 3;
-        }
-        ExpandSlotPool((num_extra_slots >> 2) + 1);
+        ExpandSlotPool((NumSlots / 4) + 1);
     }
     SlotPoolEntry *slot = static_cast<SlotPoolEntry *>(FastMalloc());
     if (slot && (Flags & SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY)) {
@@ -385,9 +383,8 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
 void SlotPool::Free(void *first_slot, void *last_slot) {
     SlotPoolEntry *first = static_cast<SlotPoolEntry *>(first_slot);
     SlotPoolEntry *last = static_cast<SlotPoolEntry *>(last_slot);
-    int num_slots = 0;
-
     last->Next = nullptr;
+    int num_slots = 0;
     for (SlotPoolEntry *slot = first; slot; slot = slot->Next) {
         ++num_slots;
     }
@@ -436,7 +433,25 @@ void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
 }
 
 // STRIPPED
-void SlotPoolManager::PrintAllSlotPools() {}
+void SlotPoolManager::PrintAllSlotPools() {
+    int total_mem_size = 0;
+    int total_mem_size_used = 0;
+
+    bReleasePrintf("\nSlot pools:\n");
+    bReleasePrintf("Name                             Size Slots  Alloc   Peak Overflow\n");
+    for (SlotPool *slot_pool = SlotPoolList.GetHead(); slot_pool != SlotPoolList.EndOfList(); slot_pool = slot_pool->GetNext()) {
+        int size = slot_pool->SlotSize;
+        int num_slots = slot_pool->CountTotalSlots();
+        int alloc = slot_pool->CountAllocatedSlots();
+        int most_alloc = slot_pool->CountMostAllocatedSlots();
+        int overflow = slot_pool->CountTotalSlots() - slot_pool->NumSlots;
+
+        total_mem_size += size * num_slots;
+        total_mem_size_used += size * alloc;
+        bReleasePrintf("%-32s %4d %5d %6d %6d %8d\n", slot_pool->GetName(), size, num_slots, alloc, most_alloc, overflow);
+    }
+    bReleasePrintf("Total: %d bytes used of %d\n", total_mem_size_used, total_mem_size);
+}
 
 void SlotPoolManager::CleanupExpandedSlotPools() {
     for (SlotPool *slot_pool = SlotPoolList.GetHead(); slot_pool != SlotPoolList.EndOfList(); slot_pool = slot_pool->GetNext()) {

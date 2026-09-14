@@ -22,15 +22,15 @@ struct bFunkPacketHeader {
     int16 ReturnCode;           // offset 0x18, size 0x2
     int16 MaxReturnSize;        // offset 0x1A, size 0x2
 
-    int GetType() {
+    int GetType() const {
         return this->Type;
     }
 
-    int GetTotalSize() {
+    int GetTotalSize() const {
         return this->TotalSize;
     }
 
-    int GetDataSize() {
+    int GetDataSize() const {
         return static_cast<int>(this->TotalSize) - static_cast<int>(sizeof(bFunkPacketHeader));
     }
 
@@ -38,7 +38,15 @@ struct bFunkPacketHeader {
         return reinterpret_cast<uint8 *>(this + 1);
     }
 
+    const uint8 *GetData() const {
+        return reinterpret_cast<const uint8 *>(this + 1);
+    }
+
     uint8 *GetData(int pos) {
+        return this->GetData() + pos;
+    }
+
+    const uint8 *GetData(int pos) const {
         return this->GetData() + pos;
     }
 
@@ -50,26 +58,14 @@ struct bFunkPacketHeader {
         this->TotalSize = static_cast<uint16>(size);
     }
 
-    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code) {
-        this->TotalSize = sizeof(bFunkPacketHeader);
-        this->Type = sync_packet->Type;
-        this->FunctionNum = sync_packet->FunctionNum;
-        this->DestServer = sync_packet->SourceServer;
-        this->SourceServer = sync_packet->DestServer;
-        this->PacketID = sync_packet->PacketID;
-        this->Checksum = 0;
-        this->ReturnBufferAddress = sync_packet->ReturnBufferAddress;
-        this->ReturnCodeAddress = sync_packet->ReturnCodeAddress;
-        this->ReturnCode = static_cast<int16>(return_code);
-        this->MaxReturnSize = sync_packet->MaxReturnSize;
-    }
+    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code);
 
     void SetChecksumParameters(int packet_id, uint16 checksum) {
         this->PacketID = static_cast<uint16>(packet_id);
         this->Checksum = checksum;
     }
 
-    uint16 CalculateChecksum() {
+    uint16 CalculateChecksum() const {
         return bFunkPacketHeader::CalculateChecksum(this->GetData(), this->GetDataSize());
     }
 
@@ -113,7 +109,9 @@ class bFunkServer : public bTNode<bFunkServer> {
     virtual ~bFunkServer();
     virtual bool CanDeliverPacket(uint32 server_hash);
     virtual bool DeliverPacket(bFunkPacket *packet);
-    virtual int Service() {}
+    virtual int Service() {
+        return 0;
+    }
 };
 
 // total size: 0x2E0

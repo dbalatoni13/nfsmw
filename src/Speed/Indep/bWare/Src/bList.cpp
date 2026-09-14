@@ -202,7 +202,7 @@ int bPListWantToClose = false;
 
 void bPListInit(int num_expected_bpnodes) {
     if (!bPNodeSlotPool) {
-        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", GetVirtualMemoryAllocParams());
+        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", 0);
         bPListWantToClose = false;
     }
 }

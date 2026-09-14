@@ -7,7 +7,7 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     float scale1;
     float scale2;
 
-    if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
+    if ((1.0f - bAbs(cos_theta)) > 0.05f) {
         unsigned short theta = bACos(bAbs(cos_theta));
         float sin_theta = bSin(theta);
         unsigned short a1 = static_cast<unsigned short>(static_cast<int>((1.0f - t) * static_cast<float>(theta)) & 0xffff);
@@ -101,18 +101,24 @@ bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {
 }
 
 bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {
-    float x1 = q1->x;
-    float y1 = q1->y;
-    float z1 = q1->z;
-    float w1 = q1->w;
-    float x2 = q2->x;
-    float y2 = q2->y;
-    float z2 = q2->z;
-    float w2 = q2->w;
-
-    qdest->x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
-    qdest->y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
-    qdest->z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
-    qdest->w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+    float w2;
+    float w1;
+    w1 = q1->w;
+    w2 = q2->w;
+    float w = w1 * w2 - (q1->x * q2->x + q1->y * q2->y + q1->z * q2->z);
+    bVector3 cross;
+    cross.x = q1->y * q2->z - q1->z * q2->y;
+    cross.y = q1->z * q2->x - q1->x * q2->z;
+    cross.z = q1->x * q2->y - q1->y * q2->x;
+    cross.x += w1 * q2->x;
+    cross.y += w1 * q2->y;
+    cross.z += w1 * q2->z;
+    cross.y += w2 * q1->y;
+    cross.z += w2 * q1->z;
+    cross.x += w2 * q1->x;
+    qdest->x = cross.x;
+    qdest->y = cross.y;
+    qdest->z = cross.z;
+    qdest->w = w;
     return qdest;
 }

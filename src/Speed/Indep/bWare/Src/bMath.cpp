@@ -1,32 +1,36 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+#if defined(EA_PLATFORM_WIN32)
+extern "C" float TWOPI;
+#endif
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 unsigned int bDefaultSeed = 0x12345678;
 
 void bEndianSwap64(void *value) {
     int64 temp = *reinterpret_cast<int64 *>(value);
-    *reinterpret_cast<uint8 *>(value) = temp;
-    *(reinterpret_cast<uint8 *>(value) + 1) = temp >> 8;
-    *(reinterpret_cast<uint8 *>(value) + 2) = temp >> 16;
-    *(reinterpret_cast<uint8 *>(value) + 3) = temp >> 24;
-    *(reinterpret_cast<uint8 *>(value) + 4) = temp >> 32;
-    *(reinterpret_cast<uint8 *>(value) + 5) = temp >> 40;
-    *(reinterpret_cast<uint8 *>(value) + 6) = temp >> 48;
-    *(reinterpret_cast<uint8 *>(value) + 7) = temp >> 56;
+    *(reinterpret_cast<uint8 *>(value) + 7) = temp;
+    *(reinterpret_cast<uint8 *>(value) + 6) = temp >> 8;
+    *(reinterpret_cast<uint8 *>(value) + 5) = temp >> 16;
+    *(reinterpret_cast<uint8 *>(value) + 4) = temp >> 24;
+    *(reinterpret_cast<uint8 *>(value) + 3) = temp >> 32;
+    *(reinterpret_cast<uint8 *>(value) + 2) = temp >> 40;
+    *(reinterpret_cast<uint8 *>(value) + 1) = temp >> 48;
+    *reinterpret_cast<uint8 *>(value) = temp >> 56;
 }
 
 void bEndianSwap32(void *value) {
     uint32 temp = *reinterpret_cast<uint32 *>(value);
-    *reinterpret_cast<uint8 *>(value) = temp;
-    *(reinterpret_cast<uint8 *>(value) + 1) = temp >> 8;
-    *(reinterpret_cast<uint8 *>(value) + 2) = temp >> 16;
-    *(reinterpret_cast<uint8 *>(value) + 3) = temp >> 24;
+    *(reinterpret_cast<uint8 *>(value) + 2) = temp >> 8;
+    *(reinterpret_cast<uint8 *>(value) + 3) = temp;
+    *(reinterpret_cast<uint8 *>(value) + 1) = temp >> 16;
+    *reinterpret_cast<uint8 *>(value) = temp >> 24;
 }
 
 void bEndianSwap16(void *value) {
     uint16 temp = *reinterpret_cast<uint16 *>(value);
-    *reinterpret_cast<uint8 *>(value) = temp;
-    *(reinterpret_cast<uint8 *>(value) + 1) = temp >> 8;
+    *(reinterpret_cast<uint8 *>(value) + 1) = temp;
+    *reinterpret_cast<uint8 *>(value) = temp >> 8;
 }
 
 void bPlatEndianSwap(bVector2 *value) {
@@ -83,26 +87,21 @@ bFix bDiv(bFix a, bFix b) {
 }
 
 uint32 bSqrt32(uint32 a) {
-    // Restoring integer square root.  The target walks 16 two-bit groups,
-    // producing floor(sqrt(a)) without floating-point state or rounding.
     uint32 result = 0;
-    uint32 bit = 1u << 30;
+    uint32 remainder = 0;
+    int count = 16;
 
-    while (bit > a) {
-        bit >>= 2;
-    }
-
-    while (bit != 0) {
-        if (a >= result + bit) {
-            a -= result + bit;
-            result = (result >> 1) + bit;
-        } else {
-            result >>= 1;
+    do {
+        remainder = (remainder << 2) + (a >> 30);
+        result += result;
+        if (result < remainder) {
+            remainder -= result + 1;
+            result += 2;
         }
-        bit >>= 2;
-    }
+        a <<= 2;
+    } while (--count != 0);
 
-    return result;
+    return result >> 1;
 }
 
 void bSetRandomSeed(unsigned int value, unsigned int *seed) {
@@ -115,37 +114,23 @@ unsigned int bRandom(int range, unsigned int *seed) {
         return 0;
     }
     unsigned int result = *seed;
-    unsigned int next = result ^ 0x1d872b41;
-    unsigned int temp = next ^ (next >> 5);
-    *seed = temp ^ (next ^ (temp << 0x1b));
-    return result - (result / range) * range;
+    unsigned int random = result % range;
+    result ^= 0x1d872b41;
+    unsigned int temp = result ^ (result >> 5);
+    *seed = temp ^ (result ^ (temp << 0x1b));
+    return random;
 }
 
 float bRandom(float range, unsigned int *seed) {
-    unsigned int result = *seed;
-    unsigned int next = result ^ 0x1d872b41;
-    unsigned int temp = next ^ (next >> 5);
-    *seed = temp ^ (next ^ (temp << 0x1b));
-    return static_cast<float>(result % 0x7fffffff) * range * 4.656613e-10f;
+    return bRandom(0x7fffffff, seed) * range * 4.656613e-10f;
 }
 
 unsigned int bRandom(int range) {
-    if (range == 0) {
-        return 0;
-    }
-    unsigned int result = bDefaultSeed;
-    unsigned int next = result ^ 0x1d872b41;
-    unsigned int temp = next ^ (next >> 5);
-    bDefaultSeed = temp ^ (next ^ (temp << 0x1b));
-    return result % range;
+    return bRandom(range, &bDefaultSeed);
 }
 
 float bRandom(float range) {
-    unsigned int result = bDefaultSeed;
-    unsigned int next = result ^ 0x1d872b41;
-    unsigned int temp = next ^ (next >> 5);
-    bDefaultSeed = temp ^ (next ^ (temp << 0x1b));
-    return static_cast<float>(result % 0x7fffffff) * range * 4.656613e-10f;
+    return bRandom(0x7fffffff, &bDefaultSeed) * range * 4.656613e-10f;
 }
 
 float bFMod(float a, float b) {
@@ -160,10 +145,10 @@ float bSin(bAngle angle) {
     const float pi = 3.1415927f;
 
     if (a >= 4.712389f) {
-        a -= 2 * pi;
+        a -= 6.2831855f;
     } else if (a >= 1.5707964f) {
-        flip_sign = -flip_sign;
         a -= pi;
+        flip_sign = -1.0f;
     }
 
     float result_sin = a;
@@ -198,7 +183,11 @@ void bSinCos(float *presult_sin, float *presult_cos, bAngle angle) {
     const float pi = 3.1415927f;
 
     if (a >= 4.712389f) {
+#if defined(EA_PLATFORM_WIN32)
+        a -= TWOPI;
+#else
         a -= 2.0f * pi;
+#endif
     } else if (a >= 1.5707964f) {
         flip_sign = -flip_sign;
         a -= pi;
@@ -373,8 +362,9 @@ bAngle bASin(float x) {
     bFix table_spacing = table_number * 16 + table_index;                        // r8
     float table_x = (table_bottom + table_index * (table_size >> 4)) / 65536.0f; // f0
     float remainder_x = x - table_x;                                             // f0
-    bAngle table_a = bASinTable[table_spacing].Angle;
-    float slope = bASinTable[table_spacing].Slope; // f11
+    table_spacing <<= 3;
+    bAngle table_a = *reinterpret_cast<bAngle *>(reinterpret_cast<char *>(bASinTable) + table_spacing);
+    float slope = *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + table_spacing + 4); // f11
     bAngle a = table_a + static_cast<int>(remainder_x * slope * 65536.0f);
 
     if (negative) {
@@ -564,7 +554,7 @@ bAngle bFixATan(bFix x, bFix y) {
 bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {
     float x = cartesian->x;
     float y = cartesian->y;
-    dest->a = bATan(x, y);
+    dest->a = bATan(cartesian->x, cartesian->y);
     dest->r = bSqrt(y * y + x * x);
     return dest;
 }

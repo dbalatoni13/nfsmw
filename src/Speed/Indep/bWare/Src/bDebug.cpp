@@ -4,63 +4,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <types.h>
-
-#ifdef EA_PLATFORM_WIN32
 #include <stdio.h>
-
-// The PC build only carries the MSVC CRT headers. Keep the small Win32 ABI
-// declarations local instead of pulling in a host SDK's incompatible headers.
-struct bWin32LargeInteger {
-    union {
-        struct {
-            unsigned long LowPart;
-            long HighPart;
-        };
-        __int64 QuadPart;
-    };
-};
-
-struct bWin32StartupInfo {
-    unsigned long cb;
-    char *reserved;
-    char *desktop;
-    char *title;
-    unsigned long x;
-    unsigned long y;
-    unsigned long x_size;
-    unsigned long y_size;
-    unsigned long x_count_chars;
-    unsigned long y_count_chars;
-    unsigned long fill_attribute;
-    unsigned long flags;
-    unsigned short show_window;
-    unsigned short reserved2;
-    unsigned char *reserved2_data;
-    void *std_input;
-    void *std_output;
-    void *std_error;
-};
-
-struct bWin32ProcessInformation {
-    void *process;
-    void *thread;
-    unsigned long process_id;
-    unsigned long thread_id;
-};
-
-extern "C" __declspec(dllimport) int __stdcall QueryPerformanceCounter(bWin32LargeInteger *counter);
-extern "C" __declspec(dllimport) int __stdcall QueryPerformanceFrequency(bWin32LargeInteger *frequency);
-extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
-extern "C" __declspec(dllimport) int __stdcall CreateProcessA(
-    const char *application_name, char *command_line, void *process_attributes, void *thread_attributes,
-    int inherit_handles, unsigned long creation_flags, void *environment, const char *current_directory,
-    bWin32StartupInfo *startup_info, bWin32ProcessInformation *process_information);
-extern "C" __declspec(dllimport) unsigned long __stdcall GetLastError();
-extern "C" __declspec(dllimport) void __stdcall OutputDebugStringA(const char *output);
-
-float __ticker_msperfreq = 0.0f;
-int __ticker_cycpertick = 0;
-#endif
 
 // for UMath constants static_init
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -69,6 +13,8 @@ int __ticker_cycpertick = 0;
 #include <dolphin.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
+#elif defined(EA_PLATFORM_WIN32)
+extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
 #endif
 
 void bFigureOutPSX2Platform();
@@ -76,6 +22,50 @@ void bFigureOutPSX2Platform();
 int EnableReleasePrintf = false;
 bool (*UserPutStringFunction)(int, const char *) = nullptr;
 bool InUserPutStringFunction = false;
+
+#ifdef EA_PLATFORM_WIN32
+struct bStartupInfo {
+    unsigned int Size;
+    char *Reserved;
+    char *Desktop;
+    char *Title;
+    unsigned int X;
+    unsigned int Y;
+    unsigned int XSize;
+    unsigned int YSize;
+    unsigned int XCountChars;
+    unsigned int YCountChars;
+    unsigned int FillAttribute;
+    unsigned int Flags;
+    unsigned short ShowWindow;
+    unsigned short Reserved2Size;
+    unsigned char *Reserved2;
+    void *StdInput;
+    void *StdOutput;
+    void *StdError;
+};
+
+struct bProcessInformation {
+    void *Process;
+    void *Thread;
+    unsigned int ProcessId;
+    unsigned int ThreadId;
+};
+
+extern "C" {
+__declspec(dllimport) int __stdcall QueryPerformanceCounter(__int64 *counter);
+__declspec(dllimport) int __stdcall QueryPerformanceFrequency(__int64 *frequency);
+__declspec(dllimport) void __stdcall OutputDebugStringA(const char *text);
+__declspec(dllimport) int __stdcall CreateProcessA(const char *application_name, char *command_line, void *process_attributes,
+                                                   void *thread_attributes, int inherit_handles, unsigned int creation_flags,
+                                                   void *environment, const char *current_directory, bStartupInfo *startup_info,
+                                                   bProcessInformation *process_info);
+__declspec(dllimport) unsigned int __stdcall GetLastError();
+}
+
+static float _ticker_msperfreq = 0.0f;
+static int _ticker_cycpertick = 0;
+#endif
 
 #ifdef EA_PLATFORM_PLAYSTATION2
 static int NextNewFileCheckerID = 1;
@@ -122,9 +112,10 @@ void bSendStringToCodeine(int terminal_channel, const char *s) {
     int num_sent = 0;
     if (len > 0) {
         char packet_buffer[128];
-        int num_to_send = len;
+        int num_to_send;
 
         while (num_sent < len) {
+            num_to_send = len - num_sent;
             if (num_to_send > 126) {
                 num_to_send = 126;
             }
@@ -133,7 +124,6 @@ void bSendStringToCodeine(int terminal_channel, const char *s) {
             num_sent += num_to_send;
             packet_buffer[num_to_send + 1] = '\0';
             bFunkCallASync("CODEINE", 6, packet_buffer, num_to_send + 2);
-            num_to_send = len - num_sent;
         }
     }
 }
@@ -176,15 +166,11 @@ int bCheckForNewFiles(float seconds) {
 }
 
 bool bIsDebuggerConnected() {
-#ifdef EA_PLATFORM_WIN32
-    return false;
-#else
     if (bIsCodeineConnected()) {
         // TODO: from sn debug.c
         // return snIsDebuggerRunning();
     }
     return true;
-#endif
 }
 
 static int GetCodeineString(char *string, int max_chars, int bfunk_num) {
@@ -204,12 +190,12 @@ int bGetComputerName(char *computer_name, int max_chars) {
 
 // STRIPPED
 int bGetHostName(char *host_name, int max_chars) {
-    return 0;
+    return GetCodeineString(host_name, max_chars, 0x60);
 }
 
 // STRIPPED
 int bGetTimeString(char *time_string, int max_chars) {
-    return 0;
+    return GetCodeineString(time_string, max_chars, 0x61);
 }
 
 void bBreak() {
@@ -218,44 +204,37 @@ void bBreak() {
 #elif defined(EA_PLATFORM_PLAYSTATION2)
     asm("break 0, 1");
 #elif defined(EA_PLATFORM_WIN32)
-    __asm { int 3 }
+    __debugbreak();
 #endif
 }
 
 int bIsValidPointer(void *p, int size) {
-#ifdef EA_PLATFORM_WIN32
-    if ((reinterpret_cast<uintptr_t>(p) & (size - 1)) != 0) {
-        return false;
+    if ((reinterpret_cast<uintptr_t>(p) & size - 1) != 0) {
+        return 0;
     }
+#ifdef EA_PLATFORM_WIN32
     return !IsBadReadPtr(p, 1);
 #else
-    return (reinterpret_cast<uintptr_t>(p) & size - 1) == 0;
+    return 1;
 #endif
 }
 
-// The PC build does not expose the DOS launcher.
+// STRIPPED
 int bLaunch(const char *command_line, int dos_command) {
-#ifdef EA_PLATFORM_WIN32
-    return -1;
-#else
     return 0;
-#endif
 }
 
-// The PC build delegates process creation to Win32.
 int bLaunchWindows(const char *command_line) {
 #ifdef EA_PLATFORM_WIN32
-    bWin32StartupInfo startup_info = {};
-    bWin32ProcessInformation process_info;
-    startup_info.cb = sizeof(startup_info);
-    if (!CreateProcessA(nullptr, const_cast<char *>(command_line), nullptr, nullptr, false, 0, nullptr, nullptr,
-                        &startup_info, &process_info)) {
-        return static_cast<int>(GetLastError());
+    bStartupInfo startup_info = {};
+    bProcessInformation process_info;
+    startup_info.Size = sizeof(startup_info);
+
+    if (!CreateProcessA(nullptr, const_cast<char *>(command_line), nullptr, nullptr, false, 0, nullptr, nullptr, &startup_info, &process_info)) {
+        return GetLastError();
     }
-    return 0;
-#else
-    return 0;
 #endif
+    return 0;
 }
 
 float bGetTickerDifference(unsigned int start_ticks) {
@@ -263,7 +242,7 @@ float bGetTickerDifference(unsigned int start_ticks) {
 }
 
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     unsigned int ticks = end_ticks - start_ticks;
     return ticks * 0x40 / 0x125;
 #else
@@ -273,15 +252,16 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 
 void bInitTicker(float min_wraparound_time) {
 #ifdef EA_PLATFORM_WIN32
-    bWin32LargeInteger frequency;
+    __int64 frequency;
     QueryPerformanceFrequency(&frequency);
-    __ticker_cycpertick = 0;
-    __ticker_msperfreq = 1000.0f / static_cast<float>(frequency.QuadPart);
-    float wraparound_time = __ticker_msperfreq * 2147483648.0f;
+
+    _ticker_cycpertick = 0;
+    _ticker_msperfreq = 1000.0f / static_cast<float>(frequency);
+    float wraparound_time = 4294967296.0f * _ticker_msperfreq;
     while (wraparound_time < min_wraparound_time) {
-        ++__ticker_cycpertick;
+        _ticker_cycpertick++;
         wraparound_time += wraparound_time;
-        __ticker_msperfreq += __ticker_msperfreq;
+        _ticker_msperfreq += _ticker_msperfreq;
     }
 #endif
 }
@@ -290,10 +270,13 @@ unsigned int bGetTicker() {
 #ifdef EA_PLATFORM_GAMECUBE
     return OSGetTick();
 #elif defined(EA_PLATFORM_WIN32)
-    bWin32LargeInteger counter;
+    __int64 counter;
     QueryPerformanceCounter(&counter);
-    const __int64 ticks = counter.QuadPart;
-    return static_cast<unsigned int>(ticks >> __ticker_cycpertick);
+    return static_cast<unsigned int>(counter >> _ticker_cycpertick);
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    unsigned int ticks;
+    asm volatile("mfc0 %0, $9" : "=r"(ticks));
+    return ticks;
 #else
     return 0;
 #endif
@@ -301,53 +284,42 @@ unsigned int bGetTicker() {
 
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 #ifdef EA_PLATFORM_GAMECUBE
-    unsigned int ticks;
-    if (start_ticks < end_ticks) {
-        ticks = end_ticks - start_ticks;
-    } else {
-        ticks = end_ticks - start_ticks;
-    }
+    unsigned int ticks = end_ticks - start_ticks;
     return OSTicksToMicroseconds(ticks) * 0.001f;
 #elif defined(EA_PLATFORM_WIN32)
-    if (__ticker_msperfreq == 0.0f) {
+    if (_ticker_msperfreq == 0.0f) {
         bInitTicker(60000.0f);
         return 0.0f;
     }
-    const int ticks = static_cast<int>(end_ticks - start_ticks);
-    float elapsed = static_cast<float>(ticks);
-    if (ticks < 0) {
-        elapsed += 4294967296.0f;
-    }
-    return elapsed * __ticker_msperfreq;
+    unsigned int ticks = end_ticks - start_ticks;
+    return static_cast<float>(ticks) * _ticker_msperfreq;
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    unsigned int ticks = end_ticks - start_ticks;
+    return static_cast<float>(ticks) * 3.3333333249174757e-6f * 1.016700029373169f;
 #else
     return 0;
 #endif
 }
 
-// Recovered from the PC ticker comparison and wraparound path.
 bool bHasTickerExpired(unsigned int start_ticks, float ms) {
-#ifdef EA_PLATFORM_WIN32
-    const unsigned int end_ticks = bGetTicker();
-    if (__ticker_msperfreq == 0.0f) {
-        bInitTicker(60000.0f);
-        return false;
-    }
-    const int ticks = static_cast<int>(end_ticks - start_ticks);
-    float elapsed = static_cast<float>(ticks);
-    if (ticks < 0) {
-        elapsed += 4294967296.0f;
-    }
-    return (elapsed * __ticker_msperfreq) > ms;
-#else
-    return false;
-#endif
+    return bGetTickerDifference(start_ticks, bGetTicker()) > ms;
 }
 
 int bDisableInterrupts() {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    return DIntr() != 0;
+#else
     return 0;
+#endif
 }
 
-void bRestoreInterrupts(int previous_state) {}
+void bRestoreInterrupts(int previous_state) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    if (previous_state) {
+        EIntr();
+    }
+#endif
+}
 
 void bMutex::Create() {
     MUTEX_create(reinterpret_cast<MUTEX *>(this));
