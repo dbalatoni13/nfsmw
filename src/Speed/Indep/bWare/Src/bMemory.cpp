@@ -1336,7 +1336,7 @@ int bMemoryAllocator::AddRef() {
 
 int bMemoryAllocator::Release() {
     this->mRefcount--;
-    if (this->mRefcount < 1) {
+    if (this->mRefcount <= 0) {
         delete this;
         return 0;
     }
