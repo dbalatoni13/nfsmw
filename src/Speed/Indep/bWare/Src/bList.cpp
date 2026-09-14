@@ -30,35 +30,35 @@ int bList::TraversebList(bNode *match_node) {
 }
 
 void bList::AddTail(bList *list) {
-    if (!list || list == this || list->IsEmpty()) {
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    if (list->IsEmpty()) {
         return;
     }
 
-    bNode *first = list->GetHead();
-    bNode *last = list->GetTail();
     bNode *old_tail = this->GetTail();
 
-    old_tail->Next = first;
-    first->Prev = old_tail;
     last->Next = &this->HeadNode;
+    first->Prev = old_tail;
+    old_tail->Next = first;
     this->HeadNode.Prev = last;
 
     list->InitList();
 }
 
 void bList::AddHead(bList *list) {
-    if (!list || list == this || list->IsEmpty()) {
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    if (list->IsEmpty()) {
         return;
     }
 
-    bNode *first = list->GetHead();
-    bNode *last = list->GetTail();
     bNode *old_head = this->GetHead();
 
-    this->HeadNode.Next = first;
     first->Prev = &this->HeadNode;
     last->Next = old_head;
     old_head->Prev = last;
+    this->HeadNode.Next = first;
 
     list->InitList();
 }
