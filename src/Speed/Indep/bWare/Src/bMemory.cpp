@@ -1175,23 +1175,29 @@ int bGetPoolSize(int pool) {
 }
 
 int bLargestMalloc(int allocation_params) {
-    if (MemoryPools[allocation_params & 0xfU] == nullptr) {
-        MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[allocation_params & 0xfU].OverrideInfo;
+    int pool_num = allocation_params & 0xfU;
+    MemoryPool *memory_pool = MemoryPools[pool_num];
+    if (memory_pool == nullptr) {
+        MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
         if (override_info != nullptr) {
             return override_info->GetLargestFreeBlock(override_info->Pool);
         } else {
             return 0;
         }
     }
-    int pool = MemoryPools[bMemoryGetPoolNum(allocation_params)]->GetLargestFreeBlock() - 0x5c;
+    if (pool_num == 0) {
+        return 0x6300000;
+    }
+    int pool = memory_pool->GetLargestFreeBlock() - 0x5c;
     int alignment = bMemoryGetAlignment(allocation_params);
     if (alignment == 0) {
         alignment = 16;
     }
-    if (alignment < 128) {
-        alignment = 128;
+    int effective_alignment = alignment;
+    if (effective_alignment < 128) {
+        effective_alignment = 128;
     }
-    int largest_malloc = pool - alignment;
+    int largest_malloc = pool - effective_alignment;
     if (largest_malloc < 0) {
         largest_malloc = 0;
     }
