@@ -87,9 +87,7 @@ void SpeedScript::ResizeEntryTable(int new_size) {
     SpeedScriptEntry *new_table = new SpeedScriptEntry[new_size];
     if (this->EntryTable) {
         bMemCpy(new_table, this->EntryTable, this->NumEntries * sizeof(SpeedScriptEntry));
-        if (this->EntryTable) {
-            delete[] this->EntryTable;
-        }
+        delete[] this->EntryTable;
     }
     this->EntryTable = new_table;
     this->MaxEntries = new_size;
