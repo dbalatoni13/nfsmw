@@ -49,14 +49,13 @@ void bBufferedPutChar(char c) {
 
 int bReleasePrintf(const char *fmt, ...) {
     va_list argList;
-    if (EnableReleasePrintf) {
-        va_start(argList, fmt);
-        int result = bVPrintf(fmt, argList);
-        va_end(argList);
-        return result;
-    } else {
+    if (!EnableReleasePrintf) {
         return 0;
     }
+    va_start(argList, fmt);
+    int result = bVPrintf(fmt, argList);
+    va_end(argList);
+    return result;
 }
 
 int bVPrintf(const char *fmt, va_list argList) {
@@ -93,8 +92,9 @@ int bSPrintf(char *destString, const char *fmt, ...) {
 int bSNPrintf(char *buf, int max_len, const char *format, ...) {
     va_list argList;
     va_start(argList, format);
-    bVSNPrintf(buf, max_len, format, argList);
+    int result = bVSNPrintf(buf, max_len, format, argList);
     va_end(argList);
+    return result;
 }
 
 int bVSPrintf(char *destString, const char *fmt, va_list argList) {
@@ -114,19 +114,16 @@ int bVSPrintf(char *destString, const char *fmt, va_list argList) {
 }
 
 int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList) {
-    bOutputInfo output_info;
-    int retVal;
-
-    if (max_len >= 1) {
-        output_info.DestString = destString;
-        output_info.DestStringLen = max_len;
-        output_info.StdOut = false;
-        output_info.TerminalChannel = 0;
-        retVal = _bOutput(&output_info, fmt, argList);
-    } else {
-        retVal = 0;
+    if (max_len <= 0) {
+        return 0;
     }
-    return retVal;
+
+    bOutputInfo output_info;
+    output_info.DestString = destString;
+    output_info.DestStringLen = max_len;
+    output_info.StdOut = false;
+    output_info.TerminalChannel = 0;
+    return _bOutput(&output_info, fmt, argList);
 }
 
 enum STATE { ST_NORMAL, ST_PERCENT, ST_FLAG, ST_WIDTH, ST_DOT, ST_PRECIS, ST_SIZE, ST_TYPE };
