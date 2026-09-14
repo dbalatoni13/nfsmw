@@ -204,7 +204,11 @@ typedef char MemoryPoolSizeMustBe0x60[(sizeof(MemoryPool) == 0x60) ? 1 : -1];
 
 int bMemoryAutomaticVerifyPoolIntegrity = 0; // size: 0x4, address: 0x80416418
 int bMemoryPrintEachAllocation = 0;
+#ifdef EA_PLATFORM_WIN32
+int EnableCleanupBorrowedMemoryBlock = 1;
+#else
 int EnableCleanupBorrowedMemoryBlock = 0;
+#endif
 int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
