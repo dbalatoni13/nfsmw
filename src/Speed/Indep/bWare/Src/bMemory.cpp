@@ -263,11 +263,10 @@ void MemoryPool::Close() {
         bBreak();
     }
 #ifdef EA_PLATFORM_WIN32
-    if (this->BorrowedMemoryBlockList.GetHead() != this->BorrowedMemoryBlockList.EndOfList()) {
-        do {
-            BorrowedMemoryBlock *block = this->BorrowedMemoryBlockList.RemoveHead();
-            delete block;
-        } while (this->BorrowedMemoryBlockList.GetHead() != this->BorrowedMemoryBlockList.EndOfList());
+    while (this->BorrowedMemoryBlockList.GetHead() != this->BorrowedMemoryBlockList.EndOfList()) {
+        BorrowedMemoryBlock *block = this->BorrowedMemoryBlockList.RemoveHead();
+        block->Cleanup();
+        ::operator delete(block);
     }
 #endif
     this->Mutex.Destroy();
