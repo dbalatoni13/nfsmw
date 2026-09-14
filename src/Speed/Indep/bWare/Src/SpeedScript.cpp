@@ -118,13 +118,13 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
             return false;
         }
         if (c == '\n') {
-            currently_in_comment = false;
             (*pline_number)++;
+            currently_in_comment = false;
         }
         if (!currently_in_comment) {
             if ((c == '/') && (buffer[buffer_pos + 1] == '/')) {
                 currently_in_comment = true;
-            } else if (!IsWhiteSpace(c)) {
+            } else if (c != ' ' && c != '\n' && c != '\t' && c != '=' && c != ',' && c != '\r') {
                 break;
             }
         }
@@ -136,12 +136,13 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
 
     for (; buffer_pos < buffer_size; buffer_pos++) {
         char c = buffer[buffer_pos];
-        if ((c != '\0') && (is_in_quotes || !IsWhiteSpace(c))) {
+        if ((c != '\0') &&
+            (is_in_quotes || (c != ' ' && c != '\n' && c != '\t' && c != '=' && c != ',' && c != '\r'))) {
             if (c == '\"') {
                 if (is_in_quotes && (buffer[buffer_pos + 1] == '\"')) {
                     word[word_length] = '\"';
-                    buffer_pos++;
                     word_length++;
+                    buffer_pos++;
                 } else {
                     is_in_quotes = !is_in_quotes;
                 }
