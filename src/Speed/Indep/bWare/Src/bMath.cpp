@@ -145,7 +145,11 @@ float bSin(bAngle angle) {
     const float pi = 3.1415927f;
 
     if (a >= 4.712389f) {
+#if defined(EA_PLATFORM_WIN32)
+        a -= TWOPI;
+#else
         a -= 6.2831855f;
+#endif
     } else if (a >= 1.5707964f) {
         a -= pi;
         flip_sign = -1.0f;
