@@ -238,7 +238,7 @@ void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
         }
     } else if (packet->GetType() == 1) {
         bFunkPacket return_packet;
-        int return_code = -4;
+        int return_code;
         void *function = this->FunctionTable[packet->FunctionNum];
 
         if (function != nullptr) {
@@ -249,6 +249,8 @@ void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
                 return_code = ((bFunkHandleSyncFunction *)function)(packet->GetData(), packet->GetDataSize(),
                                                                    return_packet.GetData());
             }
+        } else {
+            return_code = -4;
         }
 
         return_packet.InitReturnPacketHeader(packet, return_code);
