@@ -390,12 +390,14 @@ uint16 *bStrCpy(uint16 *to, const uint16 *from) {
 }
 
 uint16 *bStrCpy(uint16 *to, const char *from) {
-    int n = 0;
-
     to[0] = from[0];
-    while (to[n] != 0) {
-        n++;
-        to[n] = from[n];
+    if (to[0] != 0) {
+        uint16 *dest = to;
+        do {
+            from++;
+            dest++;
+            *dest = *from;
+        } while (*dest != 0);
     }
     return to;
 }
