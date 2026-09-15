@@ -1039,31 +1039,34 @@ static char bMemoryDebugStringNoName[8] = "NO_NAME";
 #endif
 
 void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
-    // TODO magic numbers (flags)
-    int allocation_params = 0x40;
+
 #ifdef EA_BUILD_A124
     char *name = bMemoryDebugStringNoName;
 #else
     char *name;
 #endif
+    int allocation_params = BMEMORY_TOP_BIT;
+    const EA::TagValuePair *p = &flags;
+    void *ptr;
 
-    for (const EA::TagValuePair *p = &flags; p != nullptr; p = p->mNext) {
+    while (p != nullptr) {
         switch (p->mTag) {
             case 1:
                 if (p->mValue.mPointer != nullptr) {
-                    name = static_cast<char *>(const_cast<void*>(p->mValue.mPointer));
+                    name = static_cast<char *>(const_cast<void *>(p->mValue.mPointer));
                 }
                 break;
             case 2:
-                allocation_params |= (p->mValue.mInt & 0x1ffc) << 6;
+                allocation_params |= BMEMORY_ALIGNMENT(p->mValue.mInt);
                 break;
             case 3:
-                allocation_params |= (p->mValue.mInt & 0x1ffc) << 0x11;
+                allocation_params |= BMEMORY_ALIGNMENT_OFFSET(p->mValue.mInt);
                 break;
             case 4:
-                allocation_params &= ~0x40;
+                allocation_params &= ~BMEMORY_TOP_BIT;
                 break;
         }
+        p = p->mNext;
     }
     return bMalloc(size, name, 0, allocation_params);
 }

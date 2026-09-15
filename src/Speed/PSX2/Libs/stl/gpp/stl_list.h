@@ -38,6 +38,19 @@ __STL_BEGIN_NAMESPACE
 #pragma set woff 1375
 #endif
 
+#ifdef CLANGD_DAMNIT
+template <class _Tp, class _Alloc>
+class list;
+
+template <class _Tp, class _Alloc>
+inline bool operator==(const list<_Tp, _Alloc>&,
+                       const list<_Tp, _Alloc>&);
+
+template <class _Tp, class _Alloc>
+inline bool operator<(const list<_Tp, _Alloc>&,
+                      const list<_Tp, _Alloc>&);
+#endif
+
 template <class _Tp>
 struct _List_node {
   typedef void* _Void_pointer;

@@ -1,10 +1,5 @@
-#ifndef CAMERA_ICE_ICEMANAGER_H
-#define CAMERA_ICE_ICEMANAGER_H
-
-#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef ICEMANAGER_HPP_
+#define ICEMANAGER_HPP_
 
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
@@ -68,29 +63,26 @@ int ICETrack::GetKeyNumber(float f_param) {
     }
     return n;
 }
-
-// total size: 0xC
-class ICEShakeGroup {
-  private:
-    int NumTracks;                                 // offset 0x0, size 0x4
-    struct bTList<struct ICEShakeTrack> TrackList; // offset 0x4, size 0x8
-};
-
-// total size: 0x18
-struct ICEShakeData {
-    float q[3]; // offset 0x0, size 0xC
-    float p[3]; // offset 0xC, size 0xC
-};
-
-// total size: 0xB60
-class ICEShakeTrack : public bTNode<ICEShakeTrack> {
+// total size: 0x80
+// Decl: 14
+class ICEManager {
   public:
-    ICEShakeGroup *Group;   // offset 0x8, size 0x4
-    int16 NumKeys;          // offset 0xC, size 0x2
-    int8 Allocated;         // offset 0xE, size 0x1
-    char Name[14];          // offset 0xF, size 0xE
-    ICEShakeData Keys[120]; // offset 0x20, size 0xB40
-};
+    ICEManager();  // Decl: 17
+    ~ICEManager(); // Decl: 18
+
+    bool IsEditorOn() { // Decl: 26
+        // TODO maybe negated?
+        return nState >= 1;
+    }
+    bool IsEditorOff() { // Decl: 27
+        return nState == 0;
+    }
+
+    int GetState() {
+        return nState;
+    }
+
+    float GetParameter();
 
 // total size: 0x80
 class ICEManager {
@@ -110,22 +102,63 @@ class ICEManager {
     int ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Matrix4 *scene_origin);
 
     ICEManager();
+    float GetParameterLength() {
+        return fParameterLength;
+    }
 
-    void Init();
+    void MaybeAllocate();
 
-    void Resolve();
+    void Init();                                // Decl: 36
+    void Update();                              // Decl: 37
+    void Resolve();                             // Decl: 38
+    void Render(eView *p_view);                 // Decl: 39
+    void LoadCameraSet(bChunk *set_chunk);      // Decl: 40
+    void UnloadCameraSet(bChunk *set_chunk);    // Decl: 41
+    void LoadCameraShakes(bChunk *set_chunk);   // Decl: 42
+    void UnloadCameraShakes(bChunk *set_chunk); // Decl: 43
 
     int GetCameraIndex(float f_param, struct ICETrack *track);
 
     ICEData *GetCameraData(uint32 scene_hash, int camTrack);
+    ICEData *GetCameraData(ICETrack **p_track, float *p_start, float *p_end);
 
-    int GetNumSceneCameraTrack(uint32 scene_hash);
+    void GetSlope(Vector3 *p_eye_slope, Vector3 *p_look_slope, float *p_dutch_slope, float *p_lens_slope, ICEData *p_camera, int n_key,
+                  ICETrack *p_track);
 
     void Update();
+    bool RefreshCameraSplines();
 
-    bool IsEditorOn() {
-        // TODO maybe negated?
-        return nState >= 1;
+    void FixAnimElevation(Vector3 *position);
+    void SetupAnimElevation();
+    float GetAnimElevationFixup(Vector3 *position);
+
+    void SetGenericCameraToPlay(const char *group_name, const char *track_name); // Decl: 48
+    bool IsGenericCameraPlaying() {}                                             // Decl: 49
+
+    ICEGroup *GetCurrentGroup();
+    ICETrack *GetCurrentTrack();
+    ICETrack *GetPlaybackTrack() {}
+    ICEShakeTrack *GetShakeTrack(uint32 shake_type);
+    char *GetShakeTypeName(uint32 shake_type);
+    uint32 GetRelativeShakeType(uint32 shake_type, int inc);
+
+    float GetTrackLengthByName(char *trackName);
+
+    void ChooseReplayCamera();        // Decl: 51
+    bool ChooseCameraPlaybackTrack(); // Decl: 52
+    int GetNumSceneCameraTrack(uint32 scene_hash);
+    int GetCameraIndex(float f_param, ICETrack *track);
+    void SetSmoothExit(bool smooth) {} // Decl: 53
+    bool IsSmoothExit() {}             // Decl: 54
+    // int ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, Matrix4 *scene_origin);
+    void SetUseRealTime(bool val) { // Decl: 55
+        bUseRealTime = val;
+    }
+    float IsUsingRealTime() { // Decl: 56
+        return bUseRealTime;
+    }
+    float GetTimerSeconds() { // Decl: 57
+        return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
     }
 
     bool IsEditorOff() {
@@ -134,6 +167,25 @@ class ICEManager {
     }
 
   private:
+    float GetParameter(int i, ICETrack *track);
+    float GetIntervalSize(ICEData *data, ICETrack *track);
+    float GetIntervalSize(int i);
+
+    ICEData *GetNeighbour(ICEData *data, int key, ICETrack *track);
+
+    ICETrack *ChooseGenericCamera();
+
+    ICEGroup *GetNisCameraGroup(uint32 scene_hash);              // Decl: 65
+    ICEGroup *GetFmvCameraGroup(uint32 scene_hash);              // Decl: 66
+    ICEGroup *GetReplayCameraGroup(uint32 category_hash);        // Decl: 68
+    ICEGroup *GetGenericCameraGroup(uint32 name_hash);           // Decl: 69
+    ICEGroup *AddCameraGroup(ICEContext context, uint32 handle); // Decl: 62
+    ICEGroup *GetCameraGroup(ICEContext context, uint32 handle); // Decl: 63
+
+    int GetNumGroupsWithData(ICEContext context);
+    int GetNumGroups();
+    int GetNumTracks();
+
     ICEGroup *pNisCameras;          // offset 0x0, size 0x4
     ICEGroup *pFmvCameras;          // offset 0x4, size 0x4
     ICEGroup *pReplayCameras;       // offset 0x8, size 0x4
@@ -158,14 +210,14 @@ class ICEManager {
     float fParameterStart;          // offset 0x54, size 0x4
     float fParameterLength;         // offset 0x58, size 0x4
     float fParameterLengthBackup;   // offset 0x5C, size 0x4
-    uint32 nPlayGenericGroupHash;   // offset 0x60, size 0x4
+    uint32 nPlayGenericGroupHash;   // offset 0x60, size 0x4, Decl: 83
     char nPlayGenericTrackName[14]; // offset 0x64, size 0xE
-    bool bSmoothExit;               // offset 0x74, size 0x1
+    bool bSmoothExit;               // offset 0x74, size 0x1, Decl: 85
     int nMarkerIndex;               // offset 0x78, size 0x4
     bool bUseRealTime;              // offset 0x7C, size 0x1
 };
 
-extern ICEManager TheICEManager;
+extern ICEManager TheICEManager; // size: 0x80, Decl: 93
 
 void ICECompleteEventTags();
 

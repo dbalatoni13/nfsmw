@@ -1,9 +1,8 @@
-#ifndef SUPPORT_UTILITY_UQUEUE_H
-#define SUPPORT_UTILITY_UQUEUE_H
+#ifndef __UQUEUE_H
+#define __UQUEUE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define UQUEUE_INITIAL_BATCH_SIZE 4 // :144
+#define UQUEUE_INITIAL_GROW_SIZE 4  // :145
 
 template <typename T, int U> class UCircularQueue {
     int Size;      // offset 0x0, size 0x4

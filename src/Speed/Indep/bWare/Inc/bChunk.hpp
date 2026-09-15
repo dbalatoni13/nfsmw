@@ -235,7 +235,9 @@ class bChunkLoader {
     }
 };
 
-typedef enum { kResolved = 1 } kCarpHeaderFlags;
+enum kCarpHeaderFlags {
+    kResolved = 1,
+};
 
 // total size: 0x10
 class bChunkCarpHeader {

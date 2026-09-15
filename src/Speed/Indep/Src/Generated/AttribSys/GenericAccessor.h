@@ -2,6 +2,7 @@
 #define _genericaccessor_h_
 
 #include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
 
 namespace Attrib {
 
@@ -380,6 +381,8 @@ class GenericAccessor : private Instance {
     unsigned int Num_MAX_SPEED_MPS() const {
         ATTRIB_CODEGEN_GETLENGTH(0x9bbdb702);
     }
+
+    bool MODEL(TAttrib<Attrib::StringKey> &result) const {}
 
     bool MODEL(StringKey &val, unsigned int index) const {
         ATTRIB_CODEGEN_GETVALIDATTRIB(StringKey, 0x9047c9e0, index, val);

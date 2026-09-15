@@ -2,7 +2,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 int bChunkLoaderFunctionNull(bChunk *chunk) {
-    return chunk->GetID() == 0;
+    return static_cast<int>(chunk->GetID() == 0);
 }
 
 bChunkLoader bChunkLoaderNull(0, bChunkLoaderFunctionNull, bChunkLoaderFunctionNull);
@@ -19,8 +19,9 @@ bChunkLoader::bChunkLoader(unsigned int id, int (*loader)(bChunk *), int (*unloa
 }
 
 bChunkLoader *bChunkLoader::FindLoader(unsigned int id) {
-    bChunkLoader *loader = bChunkLoader::sLoaderTable[bChunkLoader::GetHash(id)];
-    while (loader) {
+    int hash = bChunkLoader::GetHash(id);
+    bChunkLoader *loader = bChunkLoader::sLoaderTable[hash];
+    while (loader != nullptr) {
         if (loader->ID == id) {
             return loader;
         }
@@ -30,7 +31,21 @@ bChunkLoader *bChunkLoader::FindLoader(unsigned int id) {
 }
 
 // STRIPPED
-unsigned int bChunkLoader::CallLoaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error) {}
+unsigned int bChunkLoader::CallLoaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error) {
+    for (bChunk *chunk = chunks; chunk != GetLastChunk(chunk, sizeof_chunks); chunk = chunks->GetNext()) {
+        bChunkLoader *loader = FindLoader(chunk->GetID());
+        if (loader != nullptr) {
+            if (loader->GetLoaderFunction()(chunk)) {
+                continue;
+            }
+        }
+        if (abort_on_error) {
+            return chunk->GetID();
+        }
+    }
+
+    return 0;
+}
 
 // STRIPPED
 unsigned int bChunkLoader::CallUnloaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error) {}

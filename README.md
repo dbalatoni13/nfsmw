@@ -20,6 +20,31 @@ Supported versions:
 - `EUROPEGERMILESTONE`: Oct 21, 2005 prototype (Xbox 360 PAL)
 - `SLES-53558-A124`: Sep 20, 2005 prototype (Alpha 124) (PS2 PAL)
 - `SLUS-21351`: Black Edition (PS2 USA)
+- `SPEED_EXE_1_3`: PC version 1.3
+
+
+# SAY NO TO SLOP
+
+We expect that as we progress on this decompilation, vibecoders will attempt to take what we have and slop out a broken port before us. Please do not give sloppers attention. Any releases and ports will be available [here](https://github.com/RevEngin3) when they are ready. 
+
+LLMs have been used on this project. Here's why, dispite this, our project isn't slop.
+
+- LLMs are **ONLY** used as a rough pass to get code somewhere in the ballpark that we can then reference or to create tooling. All LLM code must go through extensive manual review to clean it up to the point of being usable. **No slop is allowed to be merged into main.** If we accepted slop we could have been "done" months ago. Raw LLM output is unacceptable due to the mistakes it makes, such as:
+
+  - Manually assigning registers to variables to force a fake match
+  - Accessing struct members by pointer offsets
+  - Replacing *every* string and float value with something completely random
+  - Renaming parameters and variables randomly
+  - Reimplementing the same code multiple times and using include guards to fix the compile errors
+  - Redeclaring every referenced function at the top of each file, often incorrectly
+  - Casting variables to the type they already are
+
+- We are matching compiled machine code *and* debug symbols against multiple versions of the game accross multiple platforms, as well as other games in the series with shared code. To match all at once the code *must* be accurate to the original. This project has a large focus on accuracy to what the original code might have been. This includes matching macros, inlines, and static constants stripped from usage sites.
+
+- No feature or porting work is to be done until we have a *near-perfect matching* base to work against, and no AI will be used for this work. 
+
+As long as this canary remains here, **NO AI has been used for any feature or porting work.**
+
 
 # Dependencies
 
@@ -48,6 +73,20 @@ When running under WSL, [objdiff](#diffing) is unable to get filesystem notifica
 - Install [ninja](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages).
 
 [wibo](https://github.com/decompals/wibo), a minimal 32-bit Windows binary wrapper, will be automatically downloaded and used.
+
+## Dev Container
+
+- Install [docker](https://www.docker.com/get-started/)
+
+- VSCode
+  - Ensure the VSCode extension [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) is installed
+  - When prompted to "Reopen folder to develop in a container" select "Reopen in Contianer" or run `Dev Containers: Reopen in Container`
+
+- Zed
+  - When asked "Would you like to re-open it in a container?" select "Yes, Open in Container" or run `projects: open dev container`
+
+Dependencies and extensions will be included automatically  
+Run objdiff by running `objdiff -p .` in the editor's terminal
 
 # Building
 
