@@ -33,10 +33,11 @@ static inline unsigned int geti(const void *src, int bytes) {
     if (bytes == 2) {
         return static_cast<unsigned int>(static_cast<const unsigned char *>(src)[0]) | (static_cast<unsigned int>(static_cast<const unsigned char *>(src)[1]) << 8);
     }
-    return static_cast<unsigned int>(static_cast<const unsigned char *>(src)[0]) |
-           ((static_cast<unsigned int>(static_cast<const unsigned char *>(src)[1]) << 8) |
-            ((static_cast<unsigned int>(static_cast<const unsigned char *>(src)[2]) << 16) |
-             (static_cast<unsigned int>(static_cast<const unsigned char *>(src)[3]) << 24)));
+    src = static_cast<const unsigned char *>(src) + 4;
+    return (static_cast<unsigned int>(static_cast<const unsigned char *>(src)[-1]) << 24) |
+           (static_cast<unsigned int>(static_cast<const unsigned char *>(src)[-2]) << 16) |
+           (static_cast<unsigned int>(static_cast<const unsigned char *>(src)[-3]) << 8) |
+           static_cast<unsigned int>(static_cast<const unsigned char *>(src)[-4]);
 }
 
 #endif
