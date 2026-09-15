@@ -76,6 +76,7 @@ int PATHI_init() {
     return 0;
 }
 
+// NON_MATCHING: delete expressions restore semaphore ownership and exact DWARF; global-address scheduling still differs.
 int PATH_shutdown() {
     int numtracks;
 
@@ -89,21 +90,14 @@ int PATH_shutdown() {
 
         deadrealimp = Path::IPathToReal::realimp;
         Path::IPathToReal::realimp = 0;
-        if (deadrealimp != 0) {
-            delete deadrealimp;
-        }
+        delete deadrealimp;
         deadsndimp = Path::IPathToSnd::sndimp;
         Path::IPathToSnd::sndimp = 0;
-        if (deadsndimp != 0) {
-            delete deadsndimp;
-        }
+        delete deadsndimp;
         if (Path::inited != 0) {
             PATHI_unlock();
         }
-        if (pathsemaphore != 0) {
-            pathsemaphore->~PathSemaphore();
-            PATHI_memfree(pathsemaphore);
-        }
+        delete pathsemaphore;
         Path::inited = 0;
         pathsemaphore = 0;
     }
