@@ -4,6 +4,16 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
+#include "Speed\Indep\Src\Camera\ICE\ICEAnimScene.hpp"
+#include "Speed\Indep\Src\Interfaces\SimActivities\INIS.h"
+#include "Speed\Indep\Src\Camera\ICE\ICEMath.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+// #include "Speed\Indep\Src\Interfaces\Simables\IRigidBody.h"
+#include "Speed\Indep\Src\Physics\Behaviors\RigidBody.h"
+#include "ICEReplay.hpp"
 
 // total size: 0x80
 // Decl: 14
@@ -49,9 +59,11 @@ class ICEManager {
 
     bool RefreshCameraSplines();
 
-    void FixAnimElevation(Vector3 *position);
+    void FixAnimElevation(ICE::Vector3 *position);
     void SetupAnimElevation();
-    float GetAnimElevationFixup(Vector3 *position);
+    float GetAnimElevationFixup(ICE::Vector3 *position);
+
+    int ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Matrix4 *scene_origin);
 
     void SetGenericCameraToPlay(const char *group_name, const char *track_name); // Decl: 48
     bool IsGenericCameraPlaying() {}                                             // Decl: 49
