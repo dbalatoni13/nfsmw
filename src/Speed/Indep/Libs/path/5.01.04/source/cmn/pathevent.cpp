@@ -94,34 +94,34 @@ int PATH_event(int tracks, unsigned int eventID) {
     return result;
 }
 
+// NON_MATCHING: early lock-failure return follows retail control flow; pfstate address lifetime and DWARF homes still differ.
 int PATH_clearallevents(int projects) {
     int result;
 
     if (PATHI_lock() == 0) {
-        result = PATHERR_INUSE;
-    } else {
-        result = PATHERR_INV_PARAM;
-        {
-            int p;
+        return PATHERR_INUSE;
+    }
+    result = PATHERR_INV_PARAM;
+    {
+        int p;
 
-            for (p = 0; p < 4; p++) {
-                if (PATHI_switchproject(static_cast<unsigned char>(p), projects) != 0) {
-                    result = 0;
-                    {
-                        int i;
+        for (p = 0; p < 4; p++) {
+            if (PATHI_switchproject(static_cast<unsigned char>(p), projects) != 0) {
+                result = 0;
+                {
+                    int i;
 
-                        for (i = 0; i < 16; i++) {
-                            if (Path::pfstate->eventqueue[i] != 0) {
-                                PATHI_releaseevent(i, PATHEVENT_PURGED);
-                                i--;
-                            }
+                    for (i = 0; i < 16; i++) {
+                        if (Path::pfstate->eventqueue[i] != 0) {
+                            PATHI_releaseevent(i, PATHEVENT_PURGED);
+                            i--;
                         }
                     }
                 }
             }
         }
-        PATHI_unlock();
     }
+    PATHI_unlock();
     return result;
 }
 
