@@ -10,8 +10,8 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
-SlotPool *AnimBankSlotPool;
-bool AnimBankSlotPoolInitialized;
+SlotPool *AnimBankSlotPool = nullptr;
+bool AnimBankSlotPoolInitialized = false;
 
 CAnimBank::CAnimBank() {
     m_internalDynLoader = 0;

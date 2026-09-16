@@ -170,24 +170,19 @@ bool CAnimPlayer::Load(uint32 anim_id, int camera_track_number, bool DisableZone
 
     if (!TheAnimDirectory) {
         return false;
-    }
-
-    {
+    } else {
         uint32 scene_count = TheAnimDirectory->GetSceneCount();
         bool scene_found = false;
         uint32 scene_slot = 0;
 
-        if (scene_slot < scene_count) {
-            do {
-                AnimSceneLoadInfo info;
-                TheAnimDirectory->GetSceneLoadInfo(scene_slot, info);
-                if (info.mAnimSceneHash == anim_id) {
-                    scene_found = true;
-                    gAnimLoader_Info = info;
-                    break;
-                }
-                scene_slot++;
-            } while (scene_slot < scene_count);
+        for (; scene_slot < scene_count; scene_slot++) {
+            AnimSceneLoadInfo info;
+            TheAnimDirectory->GetSceneLoadInfo(scene_slot, info);
+            if (info.mAnimSceneHash == anim_id) {
+                scene_found = true;
+                gAnimLoader_Info = info;
+                break;
+            }
         }
 
         bool loading_has_begun = false;

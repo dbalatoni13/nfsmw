@@ -260,55 +260,56 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
     }
 
     {
-    bVector3 last_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
+        bVector3 last_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
 
-    mAnimCtrl->AdvanceAnimTime(time_step);
-    mAnimCtrl->UpdateAnimPose(true);
+        mAnimCtrl->AdvanceAnimTime(time_step);
+        mAnimCtrl->UpdateAnimPose(true);
 
-    bMatrix4 *global_matrices = reinterpret_cast<bMatrix4 *>(mAnimCtrl->GetAnimPart()->GetGlobalMatrices());
-    if (mAnimCtrl->GetFlags() & 1) {
-        mSpaceNode->SetBlendingMatrices(global_matrices);
-        if (mKeepOnGround) {
-            bVector3 pelvis_position;
-            FindWorldBonePosition(1, &pelvis_position);
-            float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
-            bool point_valid;
-            float ground_elevation;
-            eUnSwizzleWorldVector(pelvis_position, pelvis_position);
-            pelvis_position.y += 2.0f;
-            if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
-                if (mHavePreviousElevation) {
-                    mPreviousElevation = ground_elevation * 0.5f + mPreviousElevation * 0.5f;
-                } else {
-                    mHavePreviousElevation = true;
-                    mPreviousElevation = ground_elevation;
+        bMatrix4 *global_matrices = reinterpret_cast<bMatrix4 *>(mAnimCtrl->GetAnimPart()->GetGlobalMatrices());
+        if (mAnimCtrl->GetFlags() & 1) {
+            mSpaceNode->SetBlendingMatrices(global_matrices);
+            if (mKeepOnGround) {
+                bVector3 pelvis_position;
+                FindWorldBonePosition(1, &pelvis_position);
+                float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
+                bool point_valid;
+                float ground_elevation;
+                eUnSwizzleWorldVector(pelvis_position, pelvis_position);
+                pelvis_position.y += 2.0f;
+                if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation,
+                                                                      nullptr)) {
+                    if (mHavePreviousElevation) {
+                        mPreviousElevation = ground_elevation * 0.5f + mPreviousElevation * 0.5f;
+                    } else {
+                        mHavePreviousElevation = true;
+                        mPreviousElevation = ground_elevation;
+                    }
+                    mSpaceNode->GetLocalMatrix()->v3.z += (mPreviousElevation - non_adjusted_z) + 0.05f;
                 }
-                mSpaceNode->GetLocalMatrix()->v3.z += (mPreviousElevation - non_adjusted_z) + 0.05f;
+            } else {
+                bMatrix4 local_matrix(*mSpaceNode->GetLocalMatrix());
+                bMatrix4 bip_matrix;
+                bMulMatrix(&bip_matrix, &local_matrix, &global_matrices[1]);
+                mSpaceNode->SetLocalMatrix(&local_matrix);
             }
         } else {
             bMatrix4 local_matrix(*mSpaceNode->GetLocalMatrix());
-            bMatrix4 bip_matrix;
-            bMulMatrix(&bip_matrix, &local_matrix, &global_matrices[1]);
-            mSpaceNode->SetLocalMatrix(&local_matrix);
+            mSpaceNode->SetBlendingMatrices(nullptr);
+            bMatrix4 the_matrix;
+            bIdentity(&the_matrix);
+            bMulMatrix(&the_matrix, &local_matrix, &global_matrices[1]);
+            mSpaceNode->SetLocalMatrix(&the_matrix);
         }
-    } else {
-        bMatrix4 local_matrix(*mSpaceNode->GetLocalMatrix());
-        mSpaceNode->SetBlendingMatrices(nullptr);
-        bMatrix4 the_matrix;
-        bIdentity(&the_matrix);
-        bMulMatrix(&the_matrix, &local_matrix, &global_matrices[1]);
-        mSpaceNode->SetLocalMatrix(&the_matrix);
-    }
 
-    if (time_step > 0.0001f) {
-        bVector3 new_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
-        bVector3 diff = new_pos - last_pos;
-        bScale(&diff, &diff, 1.0f / time_step);
-        mSpaceNode->SetLocalVelocity(&diff);
-    }
+        if (time_step > 0.0001f) {
+            bVector3 new_pos(*reinterpret_cast<bVector3 *>(&mSpaceNode->GetLocalMatrix()->v3));
+            bVector3 diff = new_pos - last_pos;
+            bScale(&diff, &diff, 1.0f / time_step);
+            mSpaceNode->SetLocalVelocity(&diff);
+        }
     }
 }
-// UNSOLVED
+
 void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (mBoneMapType == 3) {
         bVector3 head;

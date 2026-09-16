@@ -137,9 +137,8 @@ void CAnimCtrl::AdvanceAnim() {}
 // STRIPPED
 void CAnimCtrl::GetFlagString(uint32 flag, char *buffer, int size) {}
 
-// UNSOLVED
 int CAnimCtrl::AdvanceAnimTime(float timestep) {
-    int result_anim_is_done = false; // r30
+    int result_anim_is_done = 0;
 
     float this_time_step = timestep * 30.0f * m_timeScale;
     float this_master_delay_elapsed = MasterDelayElapsed * 30.0f * m_timeScale;
@@ -147,13 +146,13 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
     float this_local_delay_elapsed = LocalDelayElapsed * 30.0f * m_timeScale;
     float this_local_delay_len = m_localDelayTime * 30.0f;
 
-    float range_len = m_flags & 0x40 ? m_f_loop_end - m_f_loop_start : m_animLength; // f13
-    float begin_of_anim = m_flags & 0x40 ? m_f_loop_start : 0.0f;                    // f9
-    float end_of_anim = m_flags & 0x40 ? m_f_loop_end : m_animLength;                // f10
+    float range_len = m_flags & 0x40 ? m_f_loop_end - m_f_loop_start : m_animLength;
+    float begin_of_anim = m_flags & 0x40 ? m_f_loop_start : 0.0f;
+    float end_of_anim = m_flags & 0x40 ? m_f_loop_end : m_animLength;
 
-    bool linear = m_flags & 8;      // r10
-    bool loop = m_flags & 0x20;     // r7
-    bool pingpong = m_flags & 0x10; // r9
+    bool linear = m_flags & 8;
+    bool loop = m_flags & 0x20;
+    bool pingpong = m_flags & 0x10;
     if (linear) {
         if (pingpong) {
             m_flags &= ~0x10;
@@ -165,9 +164,9 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
             m_flags |= 8;
         }
     }
-    bool delay_world_start = m_flags & 0x80 && this_master_delay_elapsed < this_master_delay_len && m_evalTime < end_of_anim; // r8
-    bool delay_loop_start = m_flags & 0x100 && this_local_delay_elapsed < this_local_delay_len && m_evalTime < end_of_anim;   // r0
-    float new_evaltime = m_evalTime;                                                                                          // f31
+    bool delay_world_start = m_flags & 0x80 && this_master_delay_elapsed < this_master_delay_len && m_evalTime < end_of_anim;
+    bool delay_loop_start = m_flags & 0x100 && this_local_delay_elapsed < this_local_delay_len && m_evalTime < end_of_anim;
+    float new_evaltime = m_evalTime;
 
     if (delay_world_start) {
         this_master_delay_elapsed = this_master_delay_elapsed + this_time_step;

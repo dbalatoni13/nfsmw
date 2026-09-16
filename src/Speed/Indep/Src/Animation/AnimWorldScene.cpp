@@ -110,13 +110,13 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
 
     int num_entities = treeinfo->loaded_world_anim_entity_chunks.CountElements();
     CWorldAnimEntity **arr_of_ptrs = new ("CWorldAnimEntity*", 0) CWorldAnimEntity *[num_entities];
-    float start_time_normalized;
-    float delay_time_normalized;
     bMemSet(arr_of_ptrs, 0, num_entities * static_cast<int>(sizeof(CWorldAnimEntity *)));
 
+    float start_time_normalized;
     if (instance->play_flags & 0x400) {
         start_time_normalized = bRandom(1.0f);
     }
+    float delay_time_normalized;
     if (instance->play_flags & 0x200) {
         delay_time_normalized = bRandom(1.0f);
     }

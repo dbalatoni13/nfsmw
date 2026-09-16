@@ -11,8 +11,6 @@
 
 #include "Speed/Indep/Src/Animation/AnimChooser.cpp"
 
-#include "Speed/Indep/Src/Animation/GenericNISControlScenario.cpp"
-
 #include "Speed/Indep/Src/Animation/AnimCtrl.cpp"
 
 #include "Speed/Indep/Src/Animation/AnimDirectory.cpp"
@@ -44,6 +42,8 @@
 #include "Speed/Indep/Src/Animation/AnimWorldScene.cpp"
 
 #include "Speed/Indep/Src/Animation/ControlScenario.cpp"
+
+#include "Speed/Indep/Src/Animation/GenericNISControlScenario.cpp"
 
 #include "Speed/Indep/Src/Animation/WorldAnimCtrl.cpp"
 
