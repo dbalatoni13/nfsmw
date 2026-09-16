@@ -111,6 +111,13 @@ block_relocations:
 - source: .data:0x8044C120
   end: .data:0x8044C320
 
+# LoaderAnimSceneData__FP6bChunk
+- source: .text:0x8004BAB8
+  end: .text:0x8004BAC4
+# UnloaderAnimSceneData__FP6bChunk
+- source: .text:0x8004BB94
+  end: .text:0x8004BBA0
+
 add_relocations:
 - source: .text:0x80019604
   type: ha
