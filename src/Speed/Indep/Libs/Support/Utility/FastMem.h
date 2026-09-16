@@ -2,6 +2,7 @@
 #define __FastMem_h_
 
 #include "Allocator/iallocator.h"
+#include "types.h"
 
 // TODO
 #define FASTMEM_ASSERT(_a_) bAssert(_a_)
