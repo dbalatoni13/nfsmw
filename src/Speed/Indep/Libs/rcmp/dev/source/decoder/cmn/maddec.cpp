@@ -376,6 +376,7 @@ static void setchroma(const int *src, unsigned char *dest, int stride) {
     } while (--i != 0);
 }
 
+// NON_MATCHING: original bit-state assignment order restored; quantization-loop induction and DWARF still differ.
 void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     int i;
 
@@ -384,8 +385,8 @@ void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     }
     madshiftreg = (geti(src, 2) << 0x10) |
                   geti(reinterpret_cast<const unsigned char *>(src) + 2, 2);
-    maddataptr = reinterpret_cast<const unsigned short *>(reinterpret_cast<const unsigned char *>(src) + 4);
     madbitcount = 0x20;
+    maddataptr = reinterpret_cast<const unsigned short *>(reinterpret_cast<const unsigned char *>(src) + 4);
     motionframe = motion;
     madquant[0] = fixedmul(quanttbl[0] << 16, idctprescale[0]);
     for (i = 1; i < 0x40; i++) {
