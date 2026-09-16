@@ -70,7 +70,7 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector4 *norm) const {
-        this->UNormal(&UMath::Vector4To3(*norm));
+        this->UNormal(UMath::Vector4To3(norm));
         norm->w = 0.0f;
     }
 

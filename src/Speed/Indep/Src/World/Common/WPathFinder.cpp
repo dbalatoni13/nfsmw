@@ -485,8 +485,6 @@ inline void AStarNode::operator delete(void *ptr) {
     bFree(AStarNodeSlotPool, ptr);
 }
 
-BIND_ACTIVITY_FACTORY(PathFinder);
-
 PathFinder *PathFinder::pInstance = nullptr;
 
 PathFinder::PathFinder() : Activity(0) {
