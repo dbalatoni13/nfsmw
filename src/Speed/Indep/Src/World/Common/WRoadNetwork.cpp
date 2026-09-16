@@ -45,15 +45,15 @@ bool WRoadNetwork::fValidRaceFilter;                       // size: 0x1, address
 bool WRoadNetwork::fValidTrafficRoads;                     // size: 0x1, address: 0x804FFF00
 
 static const int drivable_lanes[8] = {
-    0xFFFFDF7F, 0x00000002, 0xFFFFDF7F, 0xFFFFDF7B, 0xFFFFDF7F, 0x00000402, 0xFFFFDF7F, 0xFFFFFFFF,
+    -8321, 2, -8321, -8325, -8321, 1026, -8321, -1,
 };
 
 static const int selectable_lanes[8] = {
-    0x00000402, 0x00000002, 0xFFFFDF5B, 0x00000472, 0xFFFFDF7F, 0x00000402, 0x00000402, 0xFFFFFFFF,
+    1026, 2, -8357, 1138, -8321, 1026, 1026, -1,
 };
 
 BIND_SIM_SUBSYSTEM(WRoadNetwork, WRoadNetwork::Init, WRoadNetwork::Shutdown);
-BIND_ACTIVITY_FACTORY(PathFinder);
+BIND_ACTIVITY_FACTORY(PathFinder); // TODO why does this need to be here to match the bss order? it's in WPathFinder.cpp according to Carbon
 
 void WRoadNetwork::Init() {
     if (fgRoadNetwork != nullptr) {

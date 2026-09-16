@@ -191,7 +191,7 @@ void WCollider::PrepareRegion(unsigned int updateMask) {
 
 bool WCollider::IsEmpty() const {
     return this->fInstanceCacheList.empty() && this->fBarrierList.empty();
-    this->fObbList.empty();
+    // TODO dwarf: this->fObbList.empty();
 }
 
 void WCollider::Clear() {
