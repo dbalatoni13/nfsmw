@@ -1,5 +1,6 @@
 #include "../../../include/vp6_pbdll.h"
 #include <string.h>
+#include <stddef.h>
 
 #define VP6_PROB_MUL(a, b) ((unsigned int)(a) * (unsigned int)(b) >> 8)
 
@@ -359,6 +360,7 @@ void VP6_ResetAboveContext(struct PB_INSTANCE *pbi) {
     }
 }
 
+// NON_MATCHING: record-relative probability cursor ownership restored; other address lifetimes still differ.
 unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
                                      short *CoeffData, unsigned int Plane,
                                      BLOCK_CONTEXT *Above,
@@ -411,7 +413,8 @@ unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
                 }
                 value = VP6_TokenExtraBits2[token].MinVal;
                 BitsCount = VP6_TokenExtraBits2[token].Length;
-                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token].Probs[BitsCount];
+                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token];
+                ContextProbsPtr += offsetof(TOKENEXTRABITS, Probs) + BitsCount;
                 do {
                     value += nDecodeBool(br, *ContextProbsPtr) << BitsCount;
                     ContextProbsPtr--;
@@ -498,7 +501,8 @@ ac_tokens:
                 }
                 value = VP6_TokenExtraBits2[token].MinVal;
                 BitsCount = VP6_TokenExtraBits2[token].Length;
-                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token].Probs[BitsCount];
+                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token];
+                ContextProbsPtr += offsetof(TOKENEXTRABITS, Probs) + BitsCount;
                 do {
                     value += nDecodeBool(br, *ContextProbsPtr) << BitsCount;
                     ContextProbsPtr--;
