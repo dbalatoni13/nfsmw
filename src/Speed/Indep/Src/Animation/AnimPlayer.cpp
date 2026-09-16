@@ -1,6 +1,7 @@
 #include "AnimPlayer.hpp"
 #include "AnimDirectory.hpp"
 #include "AnimScene.hpp"
+#include "Speed/Indep/Src/Animation/AnimWorldScene.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/Src/World/CarLoader.hpp"

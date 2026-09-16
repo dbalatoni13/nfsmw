@@ -1,114 +1,182 @@
-#ifndef MISC_TABLE_H
-#define MISC_TABLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+#ifndef TABLE_HPP
+#define TABLE_HPP
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Misc/Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include <cstddef>
+
+#define TABLE_TYPE(_TYPE_) USE_FASTALLOC(_TYPE_) // Decl: 16
 
 // total size: 0x10
+// Decl: 20
 class TableBase {
   public:
+    // Decl: 24
     TableBase(int32 num, float min, float max) {
-        NumEntries = num;
-        SetMinMax(min, max);
+        this->NumEntries = num;
+        this->SetMinMax(min, max);
     }
 
+    // Decl: 26
     void SetMinMax(float fMin, float fMax) {
-        MinArg = fMin;
-        MaxArg = fMax;
-        CalcIndexMultiplier();
-    }
-
-    void CalcIndexMultiplier() {
-        IndexMultiplier = (NumEntries - 1) / (MaxArg - MinArg);
+        this->MinArg = fMin;
+        this->MaxArg = fMax;
+        this->CalcIndexMultiplier();
     }
 
   protected:
-    int32 NumEntries;      // offset 0x0, size 0x4
-    float MinArg;          // offset 0x4, size 0x4
-    float MaxArg;          // offset 0x8, size 0x4
-    float IndexMultiplier; // offset 0xC, size 0x4
+    // Decl: 36
+    void CalcIndexMultiplier() {
+        this->IndexMultiplier = (this->NumEntries - 1) / (this->MaxArg - this->MinArg);
+    }
+    int32 NumEntries;      // offset 0x0, size 0x4, Decl: 37
+    float MinArg;          // offset 0x4, size 0x4, Decl: 38
+    float MaxArg;          // offset 0x8, size 0x4, Decl: 38
+    float IndexMultiplier; // offset 0xC, size 0x4, Decl: 39
 };
 
+// total size: 0x14
+// Decl: 44
 class Table : public TableBase {
   public:
-    float GetValue(float arg);
-    float InverseLookup(float value);
-
+    // Decl: 48
     Table(const float *table, int32 num, float min, float max) : TableBase(num, min, max), pTable(table) {}
 
-    const float *GetData() const {
-        return pTable;
-    }
+    float GetValue(float arg);        // Decl: 50
+    float InverseLookup(float value); // Decl: 51
 
+    // Decl: 52
+    const float *GetData() const {
+        return this->pTable;
+    }
+    // Decl: 53
     void SetData(const float *data, int num) {
         // TODO
     }
 
   private:
-    // total size: 0x14
-    const float *pTable; // offset 0x10, size 0x4
+    const float *pTable; // offset 0x10, size 0x4, Decl: 57
 };
 
+// total size: 0x14
+// Decl: 70
 template <typename T> class tTable : public TableBase {
   public:
     tTable() : TableBase(0, 0.0f, 1.0f) {}
 
-    void Blend(T *dest, T *a, T *b, float blend_a);
+    void Blend(T *dest, T *a, T *b, float blend_a); // Decl: 74
 
   private:
-    T *pTable;
+    T *pTable; // Decl: 88
 };
 
-class AverageBase {
+// total size: 0x8
+// Decl: 97
+class Graph {
   public:
-    // void *operator new(std::size_t size, void *ptr) {}
+    USE_FASTALLOC(Graph);                    // Decl: 99
+    Graph(bVector2 *points, int num_points); // Decl: 101
 
-    // void operator delete(void *mem, void *ptr) {}
+    float GetValue(float x); // Decl: 102
+    float GetInverse(float y);
 
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
+    bVector2 *GetData() {
+        return this->Points;
     }
 
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
+  private:
+    bVector2 *Points; // offset 0x0, size 0x4, Decl: 108
+    int NumPoints;    // offset 0x4, size 0x4, Decl: 109
+};
+
+// Decl: 123
+template <typename T> struct GraphEntry {
+    T x; // Decl: 124
+    T y; // Decl: 125
+};
+
+// Decl: 130
+template <typename T> class tGraph {
+  public:
+    // Decl: 133
+    tGraph(GraphEntry<T> *data, int num) {
+        this->GraphData = data;
+        this->NumEntries = num;
+    }
+    void Blend(T *dest, T *a, T *b, T blend_a);
+
+    // Decl: 137
+    float GetValue(T x) {
+        float ret;
+        this->GetValue(&ret, x);
+        return ret;
+    }
+
+    // Credits: Brawltendo
+    // UNSOLVED
+    // Decl: 146
+    void GetValue(T *pValue, T x) {
+        if (this->NumEntries > 1) {
+            if (x <= this->GraphData[0].x) {
+                bMemCpy(pValue, &this->GraphData[0].y, sizeof(T));
+            } else if (x >= this->GraphData[this->NumEntries - 1].x) {
+                bMemCpy(pValue, &this->GraphData[this->NumEntries - 1].y, sizeof(T));
+            } else {
+                for (int i = 0; i < this->NumEntries - 1; ++i) {
+                    if (x >= this->GraphData[i].x && x < this->GraphData[i + 1].x) {
+                        const T blend = (x - this->GraphData[i].x) / (this->GraphData[i + 1].x - this->GraphData[i].x);
+                        this->Blend(pValue, &this->GraphData[i + 1].y, &this->GraphData[i].y, blend);
+                        return;
+                    }
+                }
+            }
+        } else if (this->NumEntries > 0) {
+            bMemCpy(pValue, &this->GraphData[0].y, sizeof(T));
         }
     }
 
-    // void *operator new(std::size_t size, const char *name) {}
-
-    // void operator delete(void *mem, const char *name) {}
-
-    // void operator delete(void *mem, std::size_t size, const char *name) {}
-
-    AverageBase(int size, int slots);
-    virtual ~AverageBase() {}
-
-    static void *Allocate(unsigned int size, const char *name);
-    static void DeAllocate(void *ptr, unsigned int size, const char *name);
-
-    // bool FullySampled() {}
-
-    uint8 GetNumSamples() {
-        return nSamples;
-    }
-
-    virtual void Recalculate() {}
-
-  protected:
-    uint8 nSize;
-    uint8 nSlots;
-    uint8 nSamples;
-    uint8 nCurrentSlot;
+  private:
+    GraphEntry<T> *GraphData; // offset 0x0, size 0x4, Decl: 166
+    int NumEntries;           // offset 0x4, size 0x4, Decl: 167
 };
 
+// total size: 0x8
+// Decl: 172
+class AverageBase {
+  public:
+    USE_FASTALLOC(AverageBase);       // Decl: 174
+    AverageBase(int size, int slots); // Decl: 176
+    virtual ~AverageBase() {}         // Decl: 177
+
+    // bool FullySampled() {} // Decl: 179
+
+    // Decl: 180
+    uint8 GetNumSamples() {
+        return this->nSamples;
+    }
+
+    virtual void Recalculate() {} // Decl: 181
+
+  protected:
+    static void *Allocate(unsigned int size, const char *name);             // Decl: 184
+    static void DeAllocate(void *ptr, unsigned int size, const char *name); // Decl: 185
+
+    uint8 nSize;        // Decl: 187
+    uint8 nSlots;       // Decl: 188
+    uint8 nSamples;     // Decl: 189
+    uint8 nCurrentSlot; // Decl: 190
+};
+
+// total size: 0x28
+// Decl: 195
 class Average : public AverageBase {
   public:
     Average();
@@ -116,123 +184,72 @@ class Average : public AverageBase {
     ~Average() override;
 
     void Init(int slots);
-    void Record(float fValue);
-    void Recalculate() override;
     void Reset(float fValue);
-    void Flush(float fValue);
+    void Record(float fValue);
 
+    // Decl: 206
     float GetValue() const {
-        return fAverage;
+        return this->fAverage;
     }
 
+    // Decl: 207
     float GetTotal() const {
-        return fTotal;
+        return this->fTotal;
     }
 
+    void Flush(float fValue);
+    void Recalculate() override;
     float GetLastRecordedValue() const;
 
   protected:
-    float fTotal;
-    float fAverage;
-    float *pData;
+    float fTotal;   // Decl: 214
+    float fAverage; // Decl: 215
+    float *pData;   // Decl: 216
 
   private:
-    float SmallDataBuffer[5];
+    float SmallDataBuffer[5]; // Decl: 219
 };
 
+// total size: 0x38
+// Decl: 224
 class AverageWindow : public Average {
   public:
     AverageWindow(float f_timewindow, float f_frequency);
     ~AverageWindow();
 
-    // TODO out of line
-    float GetOldestValue() {
-        return pData[iOldestValue];
-    }
-
-    float GetOldestTimeValue() {
-        return pTimeData[iOldestValue];
-    }
-
     void Record(float fValue, float fTimeNow);
     void Reset(float fValue);
+    void DoSnapshot();
+    float GetOldestValue();
+    float GetOldestTime();
 
-    float fTimeWindow;
-    int iOldestValue;
-    float *pTimeData;
-    uint32 AllocSize;
+    float fTimeWindow; // Decl: 239
+    int iOldestValue;  // Decl: 242
+    float *pTimeData;  // Decl: 243
+    uint32 AllocSize;  // Decl: 244
 };
 
-class Graph {
+// total size: 0x8
+// Decl: 334
+class Linear {
   public:
-    static void *operator new(std::size_t size, void *ptr) {}
+    Linear() {}  // Decl: 337
+    ~Linear() {} // Decl: 338
 
-    static void *operator new(std::size_t size) {}
-
-    static void operator delete(void *mem, void *ptr) {}
-
-    static void operator delete(void *mem, std::size_t size) {}
-
-    Graph(bVector2 *points, int num_points);
-
-    float GetValue(float x);
+    void Init(float x0, float y0, float x1, float y1); // Decl: 340
+    float GetValue(float x);                           // Decl: 341
+    float GetInverse(float y);                         // Decl: 342
+    float GetDerivative() {}                           // Decl: 343
 
   private:
-    bVector2 *Points; // offset 0x0, size 0x4
-    int NumPoints;    // offset 0x4, size 0x4
-};
-
-template <typename T> struct GraphEntry {
-    T x;
-    T y;
-};
-
-template <typename T> class tGraph {
-  public:
-    tGraph(GraphEntry<T> *data, int num) {
-        GraphData = data;
-        NumEntries = num;
-    }
-    void Blend(T *dest, T *a, T *b, const T blend_a);
-
-    // Credits: Brawltendo
-    // UNSOLVED
-    void GetValue(T *pValue, T x) {
-        if (NumEntries > 1) {
-            if (x <= GraphData[0].x) {
-                bMemCpy(pValue, &GraphData[0].y, sizeof(float));
-            } else if (x >= GraphData[NumEntries - 1].x) {
-                bMemCpy(pValue, &GraphData[NumEntries - 1].y, sizeof(float));
-            } else {
-                for (int i = 0; i < NumEntries - 1; ++i) {
-                    if (x >= GraphData[i].x && x < GraphData[i + 1].x) {
-                        const T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
-                        Blend(pValue, &GraphData[i + 1].y, &GraphData[i].y, blend);
-                        return;
-                    }
-                }
-            }
-        } else if (NumEntries > 0) {
-            bMemCpy(pValue, &GraphData[0].y, sizeof(float));
-        }
-    }
-
-    float GetValue(T x) {
-        float ret;
-        GetValue(&ret, x);
-        return ret;
-    }
-
-  private:
-    GraphEntry<T> *GraphData; // offset 0x0, size 0x4
-    int NumEntries;           // offset 0x4, size 0x4
+    float m, b; // Decl: 347
 };
 
 // total size: 0x84
+// Decl: 354
 class PidError {
   public:
     USE_FASTALLOC(PidError);
-
     PidError(int nIntegralTerms, int nDerivativeTerms, float f_frequency)
         : aTimes(nIntegralTerms),        //
           aIntegral(nIntegralTerms),     //
@@ -243,38 +260,41 @@ class PidError {
 
     ~PidError() {}
 
-    void Record(float fError, float fTime, bool bZeroDerivative, bool bZeroIntegral);
-    void DoSnapshot(ReplaySnapshot *snapshot);
-    void Reset(float fCalibrate);
-    void ResetIntegral(float fCalibrate);
-    void ResetDerivative(float fCalibrate);
-
     float GetError() {
         return fCurrentError;
     }
 
+    // Decl: 370
     float GetErrorIntegral() {
-        int n_samples = aIntegral.GetNumSamples();
+        int n_samples = this->aIntegral.GetNumSamples();
         if (n_samples != 0) {
-            return (aIntegral.GetTotal() * (float)(int)aIntegral.GetNumSamples()) / (fFrequency * aTimes.GetTotal());
+            return (this->aIntegral.GetTotal() * (float)(int)this->aIntegral.GetNumSamples()) / (this->fFrequency * this->aTimes.GetTotal());
         } else {
             return 0.0f;
         }
     }
 
+    // Decl: 371
     float GetErrorDerivative() {
         return aDerivative.GetValue();
     }
 
     // float GetErrorInstaneousDerivative() {}
 
+    void Reset(float fCalibrate);
+    void ResetIntegral(float fCalibrate);
+    void ResetDerivative(float fCalibrate);
+    void Record(float fError, float fTime, bool bZeroDerivative, bool bZeroIntegral);
+    void DoSnapshot(ReplaySnapshot *snapshot);
+
   private:
-    Average aTimes;       // offset 0x0, size 0x28
-    Average aIntegral;    // offset 0x28, size 0x28
-    Average aDerivative;  // offset 0x50, size 0x28
-    float fFrequency;     // offset 0x78, size 0x4
-    float fCurrentError;  // offset 0x7C, size 0x4
-    float fPreviousError; // offset 0x80, size 0x4
+    Average aTimes;      // offset 0x0, size 0x28, Decl: 381
+    Average aIntegral;   // offset 0x28, size 0x28, Decl: 382
+    Average aDerivative; // offset 0x50, size 0x28, Decl: 383
+
+    float fFrequency;     // offset 0x78, size 0x4, Decl: 385
+    float fCurrentError;  // offset 0x7C, size 0x4, Decl: 386
+    float fPreviousError; // offset 0x80, size 0x4, Decl: 387
 };
 
 #endif

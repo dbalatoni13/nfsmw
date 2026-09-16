@@ -9,15 +9,15 @@
 // total size: 0x8
 class MemoryCardImp {
   public:
-    inline MemoryCardImp() {
+    MemoryCardImp() {
         m_pSaveReq = &m_SaveReq;
         m_SaveReq.mNumSaves = 1;
         m_SaveReq.mSaveInfo = nullptr;
     }
-    inline RealmcIface::SaveInfo *GetSaveInfo() {
+    RealmcIface::SaveInfo *GetSaveInfo() {
         return m_SaveReq.mSaveInfo;
     }
-    inline RealmcIface::SaveReq **GetSaveReqArray() {
+    RealmcIface::SaveReq **GetSaveReqArray() {
         return &m_pSaveReq;
     }
     RealmcIface::SaveInfo *ConstructSaveInfo(MemoryCard::SaveType type, const char *DisplayName, int aSize);
@@ -35,10 +35,8 @@ class MemoryCardImp {
 };
 
 // TODO not sure where these go
-uint16 gSaveType0[32];
-uint16 gSaveType1[32];
-uint16 gSaveType2[16];
-
-uint16 *MemoryCardImp::gEntryType[3] = {gSaveType0, gSaveType1, gSaveType2};
+extern uint16 gSaveType0[32];
+extern uint16 gSaveType1[32];
+extern uint16 gSaveType2[16];
 
 #endif

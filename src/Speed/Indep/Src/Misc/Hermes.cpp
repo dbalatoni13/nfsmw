@@ -2,12 +2,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Generated/Events/EDeliverMessage.hpp"
 
-namespace Hermes {
-
-unsigned int Handler::mKeyNext = 1;
-System *System::mObj = nullptr;
-
-}; // namespace Hermes
+unsigned int Hermes::Handler::mKeyNext = 1;
+Hermes::System *Hermes::System::mObj = nullptr;
 
 int TotalNumHermesHandlers = 0;
 
@@ -15,24 +11,24 @@ namespace Hermes {
 
 void PortMessage::RegisterHandler(Handler &handler) {
     TotalNumHermesHandlers++;
-    if (mHandlers.size() == mHandlers.capacity()) {
-        mHandlers.reserve(mHandlers.capacity() * 2);
+    if (this->mHandlers.size() == this->mHandlers.capacity()) {
+        this->mHandlers.reserve(this->mHandlers.capacity() * 2);
     }
-    mHandlers.push_back(handler);
+    this->mHandlers.push_back(handler);
 }
 
-void PortMessage::UnregisterHandler(HHANDLER key) {
+void PortMessage::UnregisterHandler(Hermes::HHANDLER key) {
     TotalNumHermesHandlers--;
-    for (Handlers::iterator i = mHandlers.begin(); i != mHandlers.end(); i++) {
+    for (Handlers::iterator i = this->mHandlers.begin(); i != this->mHandlers.end(); i++) {
         if (i->mKey == key) {
-            mHandlers.erase(i);
+            this->mHandlers.erase(i);
             break;
         }
     }
 }
 
-void PortMessage::SetIDFilter(HHANDLER key, bool enabled) {
-    for (Handlers::iterator i = mHandlers.begin(); i != mHandlers.end(); i++) {
+void PortMessage::SetIDFilter(Hermes::HHANDLER key, bool enabled) {
+    for (Handlers::iterator i = this->mHandlers.begin(); i != this->mHandlers.end(); i++) {
         Handler &handler = *i;
         if (handler.mKey == key) {
             handler.mNoFilter = !enabled;
@@ -42,7 +38,7 @@ void PortMessage::SetIDFilter(HHANDLER key, bool enabled) {
 }
 
 void PortMessage::HandleMessage(Message *msg) {
-    for (Handlers::iterator i = mHandlers.begin(); i != mHandlers.end(); i++) {
+    for (Handlers::iterator i = this->mHandlers.begin(); i != this->mHandlers.end(); i++) {
         i->Call(msg);
     }
 }
@@ -70,40 +66,40 @@ uint64_t System::CreateKey(UCrc32 port, UCrc32 messageID) {
 }
 
 void System::AddPortMessage(uint64_t key, PortMessage *pm) {
-    mPortMessageMap.Add(key, pm);
+    this->mPortMessageMap.Add(key, pm);
 }
 
 void System::RemovePortMessage(uint64_t key) {
-    mPortMessageMap.Remove(key);
+    this->mPortMessageMap.Remove(key);
 }
 
 PortMessage *System::FindPortMessage(uint64_t key) {
-    return mPortMessageMap.Find(key);
+    return this->mPortMessageMap.Find(key);
 }
 
 System::PortKeyMap &System::GetPortKeyMap() {
-    return mPortKeyMap;
+    return this->mPortKeyMap;
 }
 
 void Message::Post(UCrc32 port) {
-    mPort = port;
+    this->mPort = port;
     new EDeliverMessage(this, port);
 }
 
 void Message::Deliver() {
-    uint64_t key = System::Get().CreateKey(mPort, mKind);
+    uint64_t key = System::Get().CreateKey(this->mPort, mKind);
     PortMessage *pm = System::Get().FindPortMessage(key);
-    if (pm) {
+    if (pm != nullptr) {
         pm->HandleMessage(this);
     }
 }
 
-HHANDLER Handler::_AddToPort(UCrc32 port) {
-    HHANDLER HHANDLER = mKey;
-    if (HHANDLER) {
+Hermes::HHANDLER Handler::_AddToPort(UCrc32 port) {
+    Hermes::HHANDLER HHANDLER = this->mKey;
+    if (HHANDLER != nullptr) {
         uint64_t key = System::Get().CreateKey(port, mKind);
         PortMessage *pm = System::Get().FindPortMessage(key);
-        if (!pm) {
+        if (pm == nullptr) {
             pm = new ("TODO") PortMessage();
             System::Get().AddPortMessage(key, pm);
         }
@@ -119,8 +115,8 @@ HHANDLER Handler::_AddToPort(UCrc32 port) {
     return HHANDLER;
 }
 
-void Handler::Destroy(HHANDLER key) {
-    if (key) {
+void Handler::Destroy(Hermes::HHANDLER key) {
+    if (key != nullptr) {
         System::PortKeyMap &theKeyMap = System::Get().GetPortKeyMap();
 
         System::PortKeyMap::iterator iter = theKeyMap.find(key);
@@ -140,8 +136,8 @@ void Handler::Destroy(HHANDLER key) {
     }
 }
 
-void Handler::SetIDFilter(HHANDLER key, bool enabled) {
-    if (key) {
+void Handler::SetIDFilter(Hermes::HHANDLER key, bool enabled) {
+    if (key != nullptr) {
         System::PortKeyMap &theKeyMap = System::Get().GetPortKeyMap();
 
         System::PortKeyMap::iterator iter = theKeyMap.find(key);

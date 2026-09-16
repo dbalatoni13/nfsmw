@@ -16,7 +16,7 @@
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "realmemcard/3.04.01-layer2/include/common/realmemcard/memcard_interface.h"
+#include "realmemcard/memcard_interface.h"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardImp.hpp"
 
 // TODO d:/packages/realcore/6.24.00/source/std/cmn/locale.cpp
@@ -38,7 +38,7 @@ void Realmc::SystemInterface::Clear() {
     mGetStrCallback = nullptr;
 }
 
-extern IAllocator *gMemoryAllocator;
+extern EA::Allocator::IAllocator *gMemoryAllocator;
 extern MemcardCallbacks gMemcardCallbacks;
 
 MemoryCard *MemoryCard::s_pThis = nullptr;
@@ -215,7 +215,7 @@ void MemoryCard::Init() {
                                                              "Most"
                                                              "\xA0"
                                                              "Wanted");
-    GameInfo *pGameInfo = new ("GameInfo", 0) GameInfo(reinterpret_cast<unsigned short *>(m_GameTitle), 0, false, false);
+    RealmcIface::GameInfo *pGameInfo = new ("GameInfo", 0) RealmcIface::GameInfo(reinterpret_cast<wchar_t *>(m_GameTitle), 0, false, false);
     m_pGameInfo = pGameInfo;
     m_pIMemcard = RealmcIface::MemcardInterface::CreateInstance(&iSystem, &gMemcardCallbacks, pGameInfo);
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);

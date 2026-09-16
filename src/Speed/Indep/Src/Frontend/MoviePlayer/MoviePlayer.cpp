@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/GameCube/Src/G.hpp"
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/systask.h"
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/threads.h"
+#include "realcore/system.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"

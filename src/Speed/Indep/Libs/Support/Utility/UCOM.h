@@ -56,7 +56,7 @@ class Object {
 };
 
 // total size: 0x8
-class ALIGN_16 IUnknown {
+class PS2ALIGN16 IUnknown {
   public:
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();

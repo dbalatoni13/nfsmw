@@ -100,21 +100,21 @@ struct GameTipInfo {
 
 class LoadingTips : public MenuScreen {
   public:
-    static inline void *operator new(size_t size) {
+    static void *operator new(size_t size) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void *operator new(size_t size, char *file, int line) {
+    static void *operator new(size_t size, char *file, int line) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void *operator new(size_t size, char *msg) {
+    static void *operator new(size_t size, char *msg) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void operator delete(void *ptr) {} // Decl: 21
+    static void operator delete(void *ptr) {} // Decl: 21
 
-    static inline void operator delete(void *ptr, char *msg) {} // Decl: 22
+    static void operator delete(void *ptr, char *msg) {} // Decl: 22
 
     LoadingTips(ScreenConstructorData *sd);
     ~LoadingTips() override;
@@ -122,8 +122,11 @@ class LoadingTips : public MenuScreen {
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
     void FinishLoadingTexCallback(uint32 p);
-    static inline bool IsDoneShowingLoadingTips() {
+    static bool IsDoneShowingLoadingTips() {
         return mDoneShowingLoadingTips;
+    }
+    static void SetDoneLoading(bool done) {
+        mDoneLoading = done;
     }
     static void InitLoadingTipsScreen();
     static void CloseLoadingTipsScreen();

@@ -16,7 +16,6 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
-#include "Speed/Indep/Src/Animation/AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
@@ -255,9 +254,8 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
 }
 
 static void HideNonRaceSmackable(IModel *model) {
-    ISceneryModel *scenery = (ISceneryModel *)model;
-
-    if (scenery->QueryInterface(&scenery)) {
+    ISceneryModel *scenery;
+    if (model->QueryInterface(&scenery)) {
         if (scenery->IsExcluded(4)) {
             model->ReleaseModel();
         }
@@ -275,8 +273,8 @@ void World_RestoreProps() {
 
     for (IExplosion::List::const_iterator e = IExplosion::GetList().begin(); e != IExplosion::GetList().end(); e++) {
         IExplosion *explosion = *e;
-        ISimable *isimable = (ISimable *)explosion;
-        if (isimable->QueryInterface(&isimable)) {
+        ISimable *isimable;
+        if (explosion->QueryInterface(&isimable)) {
             isimable->Kill();
         }
     }
@@ -288,6 +286,7 @@ void World_RestoreProps() {
 #ifndef EA_BUILD_A124
     GManager::Get().RestorePursuitBreakerIcons(-1);
 #endif
+    void ResetWorldAnimations();
     ResetWorldAnimations();
     ResetPropTimers();
 }
@@ -304,6 +303,8 @@ void World_Service() {
     }
 
     UglyTimestepHack = 0.0f;
+
+    void ServiceSpaceNodes();
     ServiceSpaceNodes();
     TheTrackStreamer.ServiceGameState();
 
@@ -317,6 +318,9 @@ void World_Service() {
 static void World_Init() {
     ResetWorldTime();
     TheICEManager.Resolve();
+
+    // Decl: 736
+    void EstablishRemoteCaffeineConnection();
     EstablishRemoteCaffeineConnection();
     TrackPathInitRemoteCaffeineConnection();
     InitCarEffects();

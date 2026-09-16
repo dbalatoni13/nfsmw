@@ -367,6 +367,7 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
         "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -466,7 +467,7 @@ elif config.platform == Platform.X360:
     cflags_game = [
         *cflags_base_prodg,
         "/DLUA_NUMBER=float",
-        "/DMILESTONE_OPT",
+        "/DMILESTONE_BUILD",
         "/DDEFAULT_ALLOCATOR=0",
         "/I src/Speed/Indep/Libs/allocator/1.5.0",
         "/I src/Speed/Indep/Libs/csis/dev/include",
@@ -476,6 +477,7 @@ elif config.platform == Platform.X360:
         "/I src/Speed/Indep/Libs/path/5.01.04/include",
         "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "/I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "/I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -558,7 +560,7 @@ elif config.platform == Platform.PS2:
         # "-fregmove",
         # "-fcaller-saves",
         "-DLUA_NUMBER=float",
-        "-DMILESTONE_OPT",
+        "-DMILESTONE_BUILD",
         "-DDEFAULT_ALLOCATOR=0",
         "-I src/Speed/Indep/Libs/allocator/1.5.0",
         "-I src/Speed/Indep/Libs/csis/dev/include",
@@ -568,6 +570,7 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
         "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -643,6 +646,7 @@ elif config.platform == Platform.WIN32:
         "/I src/Speed/Indep/Libs/path/5.01.04/include",
         "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "/I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "/I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [

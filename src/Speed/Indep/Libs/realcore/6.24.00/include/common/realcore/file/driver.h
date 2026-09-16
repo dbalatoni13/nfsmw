@@ -4,7 +4,7 @@
 #include "types.h"
 
 typedef void ASYNCFILE_CALLBACK(intptr_t);
-typedef intptr_t EAFileHandle;
+typedef intptr_t FILEHANDLE;
 
 namespace RealFile {
 
@@ -21,21 +21,21 @@ class DeviceDriver {
 
     virtual void Restore() {}
 
-    virtual EAFileHandle Open(const char *name, int oflags, int *pParentFileHandle) = 0;
+    virtual FILEHANDLE Open(const char *name, int oflags, int *pParentFileHandle) = 0;
 
-    virtual void Close(EAFileHandle h) = 0;
+    virtual void Close(FILEHANDLE h) = 0;
 
-    virtual uint32_t Read(EAFileHandle h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, EAFileHandle ddFileHandle) = 0;
+    virtual uint32_t Read(FILEHANDLE h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, FILEHANDLE ddFileHandle) = 0;
 
-    virtual uint32 Write(EAFileHandle h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
+    virtual uint32 Write(FILEHANDLE h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, FILEHANDLE ddFileHandle) {
         return 0;
     }
 
-    virtual uint64_t Seek(EAFileHandle h, uint64_t offset, int whence, DeviceDriver *ddParent, EAFileHandle ddFileHandle) = 0;
+    virtual uint64_t Seek(FILEHANDLE h, uint64_t offset, int whence, DeviceDriver *ddParent, FILEHANDLE ddFileHandle) = 0;
 
-    virtual uint64_t Getsize(EAFileHandle h) = 0;
+    virtual uint64_t Getsize(FILEHANDLE h) = 0;
 
-    virtual uint64_t QueryLocation(EAFileHandle h) {
+    virtual uint64_t QueryLocation(FILEHANDLE h) {
         return 0;
     }
 
@@ -48,7 +48,7 @@ class DeviceDriver {
     }
 
     virtual const char *GetName() {
-        return mDeviceName;
+        return this->mDeviceName;
     }
 
     virtual uint32_t GetOptimalReadSize() {

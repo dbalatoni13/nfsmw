@@ -104,7 +104,7 @@ void CloseAnimBankSlotPool() {
 
 bTList<CNFSAnimBank> g_loadedAnimBankList;
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 int NumAnimBanks = 0;
 int MaxNumAnimBanks = 0;
 
@@ -119,7 +119,7 @@ void *CNFSAnimBank::operator new(size_t size, const char *debug_name) {
         InitAnimBankSlotPool();
     }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimBanks++;
     if (MaxNumAnimBanks < NumAnimBanks) {
         MaxNumAnimBanks = NumAnimBanks;
@@ -130,7 +130,7 @@ void *CNFSAnimBank::operator new(size_t size, const char *debug_name) {
 }
 
 void CNFSAnimBank::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimBanks--;
 #endif
 

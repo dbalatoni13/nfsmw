@@ -29,7 +29,7 @@ int NewFileCheckResult = 0;
 int bSuperBenderConnected = false;
 #endif
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 float bCodeineVersion = 0.0f;
 #endif
 

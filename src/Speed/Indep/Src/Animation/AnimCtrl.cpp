@@ -27,13 +27,13 @@ void InitAnimCtrls() {
 // STRIPPED
 void CloseAnimCtrls() {}
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 static int NumAnimCtrls = 0;
 static int MaxNumAnimCtrls = 0;
 #endif
 
 void *CAnimCtrl::operator new(size_t size, const char *debug_name) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimCtrls++;
     if (MaxNumAnimCtrls < NumAnimCtrls) {
         MaxNumAnimCtrls = NumAnimCtrls;
@@ -43,7 +43,7 @@ void *CAnimCtrl::operator new(size_t size, const char *debug_name) {
 }
 
 void CAnimCtrl::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimCtrls--;
 #endif
     bFree(AnimCtrlSlotPool, ptr);

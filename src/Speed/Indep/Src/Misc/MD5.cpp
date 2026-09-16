@@ -6,12 +6,13 @@
 #define HH(x, y, z) (x ^ y ^ z)         // Decl: 78
 #define II(x, y, z) (y ^ (x | ~z))      // Decl: 79
 
+// Decl: 82
 #define ACC(r, t, s, x)                                                                                                                              \
     {                                                                                                                                                \
         r += (t);                                                                                                                                    \
         r = (r << s) | (r >> (32 - s));                                                                                                              \
         r += x;                                                                                                                                      \
-    } // Decl: 82
+    }
 
 // Decl: 95
 void MD5::Update(const void *buffer, int length) {
@@ -41,13 +42,24 @@ void MD5::Update(const void *buffer, int length) {
 }
 
 void *MD5::GetRaw() {
-    if (uCount == 0) {
+    if (this->uCount == 0) {
         return nullptr;
     }
-    if (!computed) {
-        _Final();
+    if (!this->computed) {
+        this->_Final();
     }
-    return rawMD5;
+    return this->rawMD5;
+}
+
+// STRIPPED
+const char *MD5::GetString() {
+    if (this->uCount == 0) {
+        return nullptr;
+    }
+    if (!this->computed) {
+        this->_Final();
+    }
+    return reinterpret_cast<const char *>(this->strMD5);
 }
 
 // Decl: 179

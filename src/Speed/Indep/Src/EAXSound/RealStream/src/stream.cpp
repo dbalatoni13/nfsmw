@@ -6,8 +6,7 @@
 #include "endian/big/endian.h"
 
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
-#include "realcore/system/systask.h"
-#include "realcore/system/threads.h"
+#include "realcore/system.h"
 
 #include <cstring>
 

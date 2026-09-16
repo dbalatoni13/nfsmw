@@ -6,9 +6,7 @@
 #include "CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
-typedef int32 CarLoaderHandle;
-
-extern int CarLoaderMemoryPoolNumber;
+extern int CarLoaderMemoryPoolNumber; // Decl: 28
 
 class LoadedTexturePack;
 class LoadedSolidPack;

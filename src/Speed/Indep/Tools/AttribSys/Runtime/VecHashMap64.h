@@ -357,4 +357,12 @@ template <typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHas
     VecHashMap64(std::size_t reservationSize) : VecHashMap<uint64_t, T, Policy, Unk2, Unk3>(reservationSize) {}
 };
 
+inline void *DefaultTableAllocFunc(size_t bytes) {
+    return AttribAlloc::Allocate(bytes, "TODO");
+}
+
+inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
+    AttribAlloc::Free(ptr, bytes, "TODO");
+}
+
 #endif

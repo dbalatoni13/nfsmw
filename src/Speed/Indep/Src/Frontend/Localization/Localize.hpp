@@ -35,7 +35,6 @@ char *GetLocalizedString(uint32 string_label);
 void GetLocalizedString(char *buffer, uint32 bufsize, uint32 string_label);
 
 char *GetTranslatedString(int label_hash);
-void LoadCurrentLanguage();
 void InitLocalization();
 eLanguages GetCurrentLanguage();
 
