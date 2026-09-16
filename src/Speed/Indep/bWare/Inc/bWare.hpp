@@ -23,10 +23,17 @@
 //   #undef  NO_DEBUG_BMEMORY
 //   #define   NULL 0
 #define MUL 0
-// TODO
-#define bPrintf (1) ? ((void)0) : bNullPrintf
-#define bMilestonePutString bReleasePutString
-#define bMilestonePrintf bReleasePrintf
+// TODO use a macro expression instead of "1"?
+#define bPrintf (1) ? ((void)0) : bNullPrintf // Decl: 285
+
+#if defined(MILESTONE_BUILD)
+#define bMilestonePutString bReleasePutString // Decl: 301
+#define bMilestonePrintf bReleasePrintf       // Decl: 302
+#else
+#define bMilestonePutString (1) ? ((void)0) : bNullPrintf // Decl: 301
+#define bMilestonePrintf (1) ? ((void)0) : bNullPrintf    // Decl: 302
+#endif
+
 #define bAssert(exp) bAssertFailMsg(exp) // : 427
 #define bAssertMsg(exp, msg)
 #define bAssertMsg1(exp, msg, arg1)
@@ -88,20 +95,21 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 #define THIS_SCOPE_EXECUTES_ONLY_ONCE()
 
 // TODO get rid of these
-#ifdef DEBUG_OPT
+#ifdef DEBUG
 #define ENABLE_IN_DEBUG true
 #else
 #define ENABLE_IN_DEBUG false
 #endif
 
-#ifdef MILESTONE_OPT
+// TODO get rid of these
+#ifdef MILESTONE_BUILD
 #define ENABLE_IN_MILESTONE true
 #else
 #define ENABLE_IN_MILESTONE false
 #endif
 
 void *bMalloc(int size, int allocation_params);
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
 inline void *bMalloc(int size, int allocation_params) {
@@ -133,14 +141,14 @@ inline void *Alloc(unsigned int bytes, int memtype, const char *name) {
     return bMalloc(bytes, name, 0, memtype);
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *operator new(size_t size, const char *file, int line);
 #else
 // TODO move the milestone path into a cpp file?
 inline void *operator new(size_t size, const char *file, int line) {
 #ifdef EA_BUILD_A124
     return bMalloc(size, 0);
-#elif MILESTONE_OPT
+#elif MILESTONE_BUILD
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -149,7 +157,7 @@ inline void *operator new(size_t size, const char *file, int line) {
 #endif
 
 inline void *operator new[](size_t size, const char *file, int line) {
-#if MILESTONE_OPT
+#if MILESTONE_BUILD
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -247,12 +255,12 @@ inline bool bStrEqual(const char *s1, const char *s2) {
     return bStrICmp(s1, s2) == 0;
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 extern float bCodeineVersion;
 #endif
 
 inline int bIsCodeineConnected() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     return bCodeineVersion > 0.0f;
 #else
     return 0;

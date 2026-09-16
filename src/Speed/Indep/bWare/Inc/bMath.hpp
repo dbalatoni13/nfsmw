@@ -29,7 +29,7 @@ struct bPolar {
     bAngle a;
 };
 
-extern unsigned int bDefaultSeed;
+extern unsigned int bDefaultSeed; // Decl: 179
 
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);

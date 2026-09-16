@@ -66,7 +66,9 @@ inline int FLOAT2INT(float f) {
     return static_cast<int>(f);
 }
 
-inline int FloatAsInt(const float &f) {}
+inline int FloatAsInt(const float &f) {
+    return *reinterpret_cast<const int *>(&f);
+}
 
 #define XBOX_USE_CPU 0     // Decl: 113
 #define GAMECUBE_USE_CPU 0 // Decl: 114
@@ -392,7 +394,7 @@ inline float VU0_fabs(const float a) {
         return -a;
     }
     return a;
-    // return a < 0.0f ? -a : a;
+        // return a < 0.0f ? -a : a;
 #endif
 }
 

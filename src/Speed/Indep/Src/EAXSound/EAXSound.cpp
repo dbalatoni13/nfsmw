@@ -37,6 +37,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Speech/SpeechCache.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
 #define USE_DYNAMIC_MIXER // Decl: 176

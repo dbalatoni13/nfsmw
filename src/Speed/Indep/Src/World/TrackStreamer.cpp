@@ -1337,9 +1337,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     this->CountUserAllocations(&fragmented_user_allocation);
     if (fragmented_user_allocation) {
         this->pMemoryPool->DebugPrint();
-#ifdef MILESTONE_OPT
-        bReleasePrintf("WARNING:  TrackStreamer::DoHoleFilling() is aborting due to fragmented user alloc ation %s\n");
-#endif
+        bMilestonePrintf("WARNING:  TrackStreamer::DoHoleFilling() is aborting due to fragmented user alloc ation %s\n");
         return 0;
     }
 

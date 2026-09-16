@@ -34,7 +34,7 @@ void CloseAnimSkelSlotPool() {
     AnimSkelSlotPoolInitialized = false;
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 static int NumAnimSkels = 0;
 static int MaxNumAnimSkels = 0;
 
@@ -49,7 +49,7 @@ void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
         InitAnimSkelSlotPool();
     }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimSkels++;
     if (MaxNumAnimSkels < NumAnimSkels) {
         MaxNumAnimSkels = NumAnimSkels;
@@ -60,7 +60,7 @@ void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
 }
 
 void CAnimSkeleton::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimSkels--;
 #endif
 

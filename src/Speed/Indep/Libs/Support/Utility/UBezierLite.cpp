@@ -10,10 +10,10 @@ void UBezierLite::Evaluate(const UMath::Matrix4 &fSplineMat, const float t, UMat
     tvec.y = t * t;
     tvec.z = t;
     tvec.w = 1.0f;
-    
+
     UMath::Matrix4 matrix;
 
-    UMath::Mult(USpline::GetBasisMatrix(USpline::OVERHAUSER_LINE), fSplineMat, matrix);
+    UMath::Mult(USpline::GetBasisMatrix(USpline::kSpline_Bezier), fSplineMat, matrix);
     UMath::RotateTranslate(tvec, matrix, position);
     position.w = 1.0f;
 }
