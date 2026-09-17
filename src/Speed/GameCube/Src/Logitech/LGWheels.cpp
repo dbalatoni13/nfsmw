@@ -7,8 +7,7 @@ void LGInit();
 }
 
 
-static const char kPlayForceError[] = "ERROR: trying to play a force on channel %d but no wheel opened.
-";
+static const char kPlayForceError[] = "ERROR: trying to play a force on channel %d but no wheel opened.\n";
 
 LGWheels::LGWheels() {
     {

@@ -49,7 +49,8 @@ static inline void OSInitFastCast(void) {
       "mtspr 916, 3\n\t"
       "li 3, 7\n\t"
       "oris 3, 3, 7\n\t"
-      "mtspr 917, 3");
+      "mtspr 917, 3"
+      : : : "r3");
 #endif
 }
 // clang-format off
