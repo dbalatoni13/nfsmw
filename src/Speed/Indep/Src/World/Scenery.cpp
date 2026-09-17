@@ -70,13 +70,12 @@ class PrecullerBooBooManager {
     uint8 BitField[0x800];
 };
 
-// TODO move these?
-extern float EnvMapShadowExtraHeight;
-extern int CurrentZoneNumber;
-extern int SeeulatorToolActive;
-extern int ScenerySectionToBlink;
-extern int SeeulatorRefreshTrackStreamer;
-extern int ShowSectionBoarder;
+float EnvMapShadowExtraHeight = 2.0f;
+int CurrentZoneNumber = -1;
+int SeeulatorToolActive = 0;
+int ScenerySectionToBlink = 0;
+int ShowSectionBoarder = 0;
+int SeeulatorRefreshTrackStreamer = 0;
 
 bTList<ScenerySectionHeader> ScenerySectionHeaderList;
 HashToHeirarchyMap HeirarchyMap;

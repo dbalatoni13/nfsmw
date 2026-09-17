@@ -25,7 +25,7 @@ extern BOOL bMemoryTracing;
 extern int SeeulatorToolActive;
 extern int ScenerySectionToBlink;
 extern bool PostLoadFixupDisabled;
-extern int ForceHoleFillerMethod;
+int ForceHoleFillerMethod = -1;
 extern int ShowSectionBoarder;
 void NotifySkyLoader();
 
