@@ -29,16 +29,53 @@ int bList::TraversebList(bNode *match_node) {
     return n;
 }
 
-// TODO
-void bList::AddTail(bList *list) {}
+void bList::AddTail(bList *list) {
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    if (list->IsEmpty()) {
+        return;
+    }
 
-// TODO
-void bList::AddHead(bList *list) {}
+    bNode *old_tail = this->GetTail();
 
-// STRIPPED
-bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {}
+    last->Next = &this->HeadNode;
+    first->Prev = old_tail;
+    old_tail->Next = first;
+    this->HeadNode.Prev = last;
 
-// UNSOLVED, it matches in ProStreet..
+    list->InitList();
+}
+
+void bList::AddHead(bList *list) {
+    bNode *first = list->GetHead();
+    bNode *last = list->GetTail();
+    if (list->IsEmpty()) {
+        return;
+    }
+
+    bNode *old_head = this->GetHead();
+
+    first->Prev = &this->HeadNode;
+    last->Next = old_head;
+    old_head->Prev = last;
+    this->HeadNode.Next = first;
+
+    list->InitList();
+}
+
+bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {
+    bNode *insert_point = this->GetHead();
+    while (insert_point != this->EndOfList()) {
+        if (check_flip(node, insert_point) == 0) {
+            return node->AddBefore(insert_point);
+        }
+        insert_point = insert_point->GetNext();
+    }
+    return this->AddTail(node);
+}
+
+// Bottom-up list sort recovered from the PC target; the comparator stays
+// caller-defined so ordering remains identical to the original API.
 void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
     bNode *next_node = node->GetNext();
@@ -161,7 +198,7 @@ int bPListWantToClose = false;
 
 void bPListInit(int num_expected_bpnodes) {
     if (!bPNodeSlotPool) {
-        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", GetVirtualMemoryAllocParams());
+        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", 0);
         bPListWantToClose = false;
     }
 }

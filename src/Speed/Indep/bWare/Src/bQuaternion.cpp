@@ -7,7 +7,7 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     float scale1;
     float scale2;
 
-    if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
+    if ((1.0f - bAbs(cos_theta)) > 0.05f) {
         unsigned short theta = bACos(bAbs(cos_theta));
         float sin_theta = bSin(theta);
         unsigned short a1 = static_cast<unsigned short>(static_cast<int>((1.0f - t) * static_cast<float>(theta)) & 0xffff);
@@ -67,14 +67,58 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
     }
 }
 
-// STRIPPED
-bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {
+    float x = q->x;
+    float y = q->y;
+    float z = q->z;
+    float w = q->w;
+    qdest->x = -x;
+    qdest->y = -y;
+    qdest->z = -z;
+    qdest->w = w;
+    return qdest;
+}
 
-// STRIPPED
-float bLength(bQuaternion *q) {}
+float bLength(bQuaternion *q) {
+    return bSqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+}
 
-// STRIPPED
-bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {
+    float len = bLength(const_cast<bQuaternion *>(q));
+    if (len != 0.0f) {
+        float inv_len = 1.0f / len;
+        qdest->x = q->x * inv_len;
+        qdest->y = q->y * inv_len;
+        qdest->z = q->z * inv_len;
+        qdest->w = q->w * inv_len;
+    } else {
+        qdest->x = 0.0f;
+        qdest->y = 0.0f;
+        qdest->z = 0.0f;
+        qdest->w = 1.0f;
+    }
+    return qdest;
+}
 
-// STRIPPED
-bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {}
+bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {
+    float w2;
+    float w1;
+    w1 = q1->w;
+    w2 = q2->w;
+    float w = w1 * w2 - (q1->x * q2->x + q1->y * q2->y + q1->z * q2->z);
+    bVector3 cross;
+    cross.x = q1->y * q2->z - q1->z * q2->y;
+    cross.y = q1->z * q2->x - q1->x * q2->z;
+    cross.z = q1->x * q2->y - q1->y * q2->x;
+    cross.x += w1 * q2->x;
+    cross.y += w1 * q2->y;
+    cross.z += w1 * q2->z;
+    cross.y += w2 * q1->y;
+    cross.z += w2 * q1->z;
+    cross.x += w2 * q1->x;
+    qdest->x = cross.x;
+    qdest->y = cross.y;
+    qdest->z = cross.z;
+    qdest->w = w;
+    return qdest;
+}

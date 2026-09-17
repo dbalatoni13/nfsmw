@@ -49,14 +49,13 @@ void bBufferedPutChar(char c) {
 
 int bReleasePrintf(const char *fmt, ...) {
     va_list argList;
-    if (EnableReleasePrintf) {
-        va_start(argList, fmt);
-        // TODO returning this causes issues??
-        bVPrintf(fmt, argList);
-        va_end(argList);
-    } else {
+    if (!EnableReleasePrintf) {
         return 0;
     }
+    va_start(argList, fmt);
+    int result = bVPrintf(fmt, argList);
+    va_end(argList);
+    return result;
 }
 
 int bVPrintf(const char *fmt, va_list argList) {
@@ -69,8 +68,19 @@ int bVPrintf(const char *fmt, va_list argList) {
     return _bOutput(&output_info, fmt, argList);
 }
 
-// STRIPPED
-int bVPrintf(char terminal_channel, char *fmt, char *argList) {}
+int bVPrintf(char terminal_channel, char *fmt, char *argList) {
+    bOutputInfo output_info;
+
+    output_info.DestString = nullptr;
+    output_info.DestStringLen = 0;
+    output_info.StdOut = true;
+    output_info.TerminalChannel = static_cast<signed char>(terminal_channel);
+#ifdef EA_PLATFORM_GAMECUBE
+    return _bOutput(&output_info, fmt, *reinterpret_cast<va_list *>(argList));
+#else
+    return _bOutput(&output_info, fmt, reinterpret_cast<va_list>(argList));
+#endif
+}
 
 int bSPrintf(char *destString, const char *fmt, ...) {
     va_list argList;
@@ -82,8 +92,9 @@ int bSPrintf(char *destString, const char *fmt, ...) {
 int bSNPrintf(char *buf, int max_len, const char *format, ...) {
     va_list argList;
     va_start(argList, format);
-    bVSNPrintf(buf, max_len, format, argList);
+    int result = bVSNPrintf(buf, max_len, format, argList);
     va_end(argList);
+    return result;
 }
 
 int bVSPrintf(char *destString, const char *fmt, va_list argList) {
@@ -103,19 +114,16 @@ int bVSPrintf(char *destString, const char *fmt, va_list argList) {
 }
 
 int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList) {
-    bOutputInfo output_info;
-    int retVal;
-
-    if (max_len >= 1) {
-        output_info.DestString = destString;
-        output_info.DestStringLen = max_len;
-        output_info.StdOut = false;
-        output_info.TerminalChannel = 0;
-        retVal = _bOutput(&output_info, fmt, argList);
-    } else {
-        retVal = 0;
+    if (max_len <= 0) {
+        return 0;
     }
-    return retVal;
+
+    bOutputInfo output_info;
+    output_info.DestString = destString;
+    output_info.DestStringLen = max_len;
+    output_info.StdOut = false;
+    output_info.TerminalChannel = 0;
+    return _bOutput(&output_info, fmt, argList);
 }
 
 enum STATE { ST_NORMAL, ST_PERCENT, ST_FLAG, ST_WIDTH, ST_DOT, ST_PRECIS, ST_SIZE, ST_TYPE };
@@ -185,13 +193,10 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
         bBufferedTerminalChannel = static_cast<char>(output_info->TerminalChannel);
     }
 
-    ch = *fmt++;
-
-    while (ch != '\0' && outLen >= 0) {
-        int ci = ch - 0x20;
+    while ((ch = *fmt++) != '\0' && outLen >= 0) {
         int charType;
-        if (static_cast<unsigned char>(ci) <= 0x5A) {
-            charType = statetable[ci] & 0x0F;
+        if (ch >= ' ' && ch <= 'z') {
+            charType = statetable[static_cast<int>(ch) - ' '] & 0x0F;
         } else {
             charType = 0;
         }
@@ -770,12 +775,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                             if (bIsValidPointer(vect, 1)) {
                                 if (vectType == 2) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y);
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y);
                                 } else if (vectType == 3) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width,
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y, width,
                                              precision, vect->z);
                                 } else if (vectType == 4) {
-                                    bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width,
+                                    bSPrintf(tempBuffer, "[%*.*f,%*.*f,%*.*f,%*.*f]", width, precision, vect->x, width, precision, vect->y, width,
                                              precision, vect->z, width, precision, vect->w);
                                 }
                             } else {
@@ -880,7 +885,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 break;
         }
 
-        ch = *fmt++;
     }
 
     if (output_info->StdOut) {
@@ -914,14 +918,16 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
     if (output_info->StdOut) {
         bBufferedPutChar(ch);
-    } else {
-        if (*outLen >= output_info->DestStringLen - 1) {
-            return;
-        }
+        *outLen += 1;
+        return;
+    }
 
-        if (output_info->DestString) {
-            *output_info->DestString++ = ch;
-        }
+    if (*outLen >= output_info->DestStringLen - 1) {
+        return;
+    }
+
+    if (output_info->DestString) {
+        *output_info->DestString++ = ch;
     }
     *outLen += 1;
 }

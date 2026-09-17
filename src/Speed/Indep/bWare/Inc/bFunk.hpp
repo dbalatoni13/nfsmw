@@ -22,25 +22,52 @@ struct bFunkPacketHeader {
     int16 ReturnCode;           // offset 0x18, size 0x2
     int16 MaxReturnSize;        // offset 0x1A, size 0x2
 
-    int GetType() {}
+    int GetType() const {
+        return this->Type;
+    }
 
-    int GetTotalSize() {}
+    int GetTotalSize() const {
+        return this->TotalSize;
+    }
 
-    int GetDataSize() {}
+    int GetDataSize() const {
+        return static_cast<int>(this->TotalSize) - static_cast<int>(sizeof(bFunkPacketHeader));
+    }
 
-    uint8 *GetData() {}
+    uint8 *GetData() {
+        return reinterpret_cast<uint8 *>(this + 1);
+    }
 
-    uint8 *GetData(int pos) {}
+    const uint8 *GetData() const {
+        return reinterpret_cast<const uint8 *>(this + 1);
+    }
 
-    void SetDataSize(int size) {}
+    uint8 *GetData(int pos) {
+        return this->GetData() + pos;
+    }
 
-    void SetTotalSize(int size) {}
+    const uint8 *GetData(int pos) const {
+        return this->GetData() + pos;
+    }
 
-    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code) {}
+    void SetDataSize(int size) {
+        this->TotalSize = static_cast<uint16>(sizeof(bFunkPacketHeader) + size);
+    }
 
-    void SetChecksumParameters(int packet_id, uint16 checksum) {}
+    void SetTotalSize(int size) {
+        this->TotalSize = static_cast<uint16>(size);
+    }
 
-    uint16 CalculateChecksum() {}
+    void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code);
+
+    void SetChecksumParameters(int packet_id, uint16 checksum) {
+        this->PacketID = static_cast<uint16>(packet_id);
+        this->Checksum = checksum;
+    }
+
+    uint16 CalculateChecksum() const {
+        return bFunkPacketHeader::CalculateChecksum(this->GetData(), this->GetDataSize());
+    }
 
     static uint16 CalculateChecksum(const void *data, int data_size);
 };
@@ -82,7 +109,9 @@ class bFunkServer : public bTNode<bFunkServer> {
     virtual ~bFunkServer();
     virtual bool CanDeliverPacket(uint32 server_hash);
     virtual bool DeliverPacket(bFunkPacket *packet);
-    virtual int Service() {}
+    virtual int Service() {
+        return 0;
+    }
 };
 
 // total size: 0x2E0

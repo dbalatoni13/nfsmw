@@ -3,6 +3,7 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#include <cstdlib>
 #include <cstring>
 #include <types.h>
 
@@ -29,7 +30,13 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     const char *GetDebugText() {
+#ifdef MILESTONE_OPT
+        char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
+        const char *debug_text = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
+        return debug_text != nullptr ? debug_text : allocation_info + 6;
+#else
         return "";
+#endif
     }
 
     int GetAllocationNumber() {
@@ -55,7 +62,37 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     int32 RequestedSize; // offset 0x10, size 0x4
 };
 
-// total size: 0x60
+#ifdef EA_PLATFORM_WIN32
+// total size: 0x10
+class BorrowedMemoryBlock : public bTNode<BorrowedMemoryBlock> {
+  public:
+    void *operator new(size_t size) {
+        return std::malloc(size);
+    }
+
+    BorrowedMemoryBlock(int size);
+    ~BorrowedMemoryBlock();
+    __declspec(noinline) void Cleanup();
+
+    void *Memory; // offset 0x8, size 0x4
+    int Size;     // offset 0xC, size 0x4
+};
+
+BorrowedMemoryBlock::BorrowedMemoryBlock(int size) {
+    Size = size;
+    Memory = std::malloc(size);
+}
+
+BorrowedMemoryBlock::~BorrowedMemoryBlock() {
+    Cleanup();
+}
+
+void BorrowedMemoryBlock::Cleanup() {
+    operator delete(Memory);
+}
+#endif
+
+// total size: 0x64 (Win32), 0x60 (other platforms)
 class MemoryPool {
   public:
     void Init(void *memory, int memory_size, const char *debug_name);
@@ -75,6 +112,9 @@ class MemoryPool {
     int GetAllocations(void **allocations, int max_allocations);
     void SetFancyStompDetector(void *mem, int mem_size, const char *name);
     bool CheckFancyStompDetector(const void *mem, int mem_size);
+#ifdef EA_PLATFORM_WIN32
+    __declspec(noinline)
+#endif
     void TraceNewPool();
     void TraceDeletePool();
     void TraceFreeMemory(void *p, int size);
@@ -106,7 +146,13 @@ class MemoryPool {
         return PoolSize;
     }
 
-    bool IsEmpty() {}
+    int GetNumAllocations() {
+        return NumAllocations;
+    }
+
+    bool IsEmpty() {
+        return this->PoolSize == 0;
+    }
 
     void AddAllocationHeader(AllocationHeader *allocation_header) {
         this->AllocationHeaderList.AddTail(allocation_header);
@@ -120,6 +166,21 @@ class MemoryPool {
     const char *pDebugName;                        // offset 0x0, size 0x4
     bTList<FreeBlock> FreeBlockList;               // offset 0x4, size 0x8
     bTList<AllocationHeader> AllocationHeaderList; // offset 0xC, size 0x8
+#ifdef EA_PLATFORM_WIN32
+    bTList<BorrowedMemoryBlock> BorrowedMemoryBlockList; // offset 0x14, size 0x8
+    intptr_t InitialAddress;                       // offset 0x1C, size 0x4
+    int InitialSize;                               // offset 0x20, size 0x4
+    int NumAllocations;                            // offset 0x24, size 0x4
+    int TotalNumAllocations;                       // offset 0x28, size 0x4
+    int PoolSize;                                  // offset 0x2C, size 0x4
+    int AmountAllocated;                           // offset 0x30, size 0x4
+    int MostAmountAllocated;                       // offset 0x34, size 0x4
+    int AmountFree;                                // offset 0x38, size 0x4
+    int LeastAmountFree;                           // offset 0x3C, size 0x4
+    bool DebugFillEnabled;                         // offset 0x40, size 0x1
+    bool DebugTracingEnabled;                      // offset 0x41, size 0x1
+    bMutex Mutex;                                  // offset 0x44, size 0x20
+#else
     intptr_t InitialAddress;                       // offset 0x14, size 0x4
     int InitialSize;                               // offset 0x18, size 0x4
     int NumAllocations;                            // offset 0x1C, size 0x4
@@ -132,11 +193,22 @@ class MemoryPool {
     bool DebugFillEnabled;                         // offset 0x38, size 0x1
     bool DebugTracingEnabled;                      // offset 0x3C, size 0x1
     bMutex Mutex;                                  // offset 0x40, size 0x20
+#endif
 };
+
+#ifdef EA_PLATFORM_WIN32
+typedef char MemoryPoolSizeMustBe0x64[(sizeof(MemoryPool) == 0x64) ? 1 : -1];
+#elif defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_PLAYSTATION2)
+typedef char MemoryPoolSizeMustBe0x60[(sizeof(MemoryPool) == 0x60) ? 1 : -1];
+#endif
 
 int bMemoryAutomaticVerifyPoolIntegrity = 0; // size: 0x4, address: 0x80416418
 int bMemoryPrintEachAllocation = 0;
+#ifdef EA_PLATFORM_WIN32
+int EnableCleanupBorrowedMemoryBlock = 1;
+#else
 int EnableCleanupBorrowedMemoryBlock = 0;
+#endif
 int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
@@ -167,6 +239,9 @@ int GetAlignmentAdjustBottom(intptr_t address, int alignment, int alignment_offs
 void MemoryPool::Init(void *memory, int memory_size, const char *debug_name) {
     this->FreeBlockList.InitList();
     this->AllocationHeaderList.InitList();
+#ifdef EA_PLATFORM_WIN32
+    this->BorrowedMemoryBlockList.InitList();
+#endif
     this->InitialAddress = reinterpret_cast<uintptr_t>(memory);
     this->InitialSize = memory_size;
     this->NumAllocations = 0;
@@ -191,7 +266,13 @@ void MemoryPool::Close() {
         this->PrintAllocationsByAddress(0, 0x7fffffff);
         bBreak();
     }
-    this->TraceDeletePool();
+#ifdef EA_PLATFORM_WIN32
+    while (this->BorrowedMemoryBlockList.GetHead() != this->BorrowedMemoryBlockList.EndOfList()) {
+        BorrowedMemoryBlock *block = this->BorrowedMemoryBlockList.RemoveHead();
+        block->Cleanup();
+        ::operator delete(block);
+    }
+#endif
     this->Mutex.Destroy();
 }
 
@@ -201,14 +282,31 @@ void MemoryPool::AddMemory(void *p, int size) {
 }
 
 // STRIPPED
-void MemoryPool::RemoveMemory(void *p, int size) {}
+void MemoryPool::RemoveMemory(void *p, int size) {
+    this->Mutex.Lock();
+
+    FreeBlock *free_block = static_cast<FreeBlock *>(p);
+    for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
+        if (f == free_block && f->Size == size) {
+            this->FreeBlockList.Remove(f);
+            this->PoolSize -= size;
+            this->AmountFree = this->PoolSize - this->AmountAllocated;
+            if (bMemoryTracing && this->DebugTracingEnabled) {
+                this->TraceRemoveMemory(p, size);
+            }
+            break;
+        }
+    }
+
+    this->Mutex.Unlock();
+}
 
 void MemoryPool::FreeMemory(void *p, int size, const char *debug_name) {
     this->Mutex.Lock();
     this->AddFreeMemory(p, size, debug_name);
-    this->AmountAllocated -= size;
+    int amount_allocated = (this->AmountAllocated -= size);
+    this->AmountFree = this->PoolSize - amount_allocated;
     this->NumAllocations--;
-    this->AmountFree = this->PoolSize - this->AmountAllocated;
     this->Mutex.Unlock();
 }
 
@@ -256,11 +354,27 @@ void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
             }
         }
 
+#ifdef EA_PLATFORM_WIN32
+        if (EnableCleanupBorrowedMemoryBlock) {
+            for (BorrowedMemoryBlock *block = this->BorrowedMemoryBlockList.GetHead();
+                 block != this->BorrowedMemoryBlockList.EndOfList(); block = block->GetNext()) {
+                if ((block->Memory == new_free_block) && (block->Size == new_free_block->Size)) {
+                    this->PoolSize -= block->Size;
+                    this->FreeBlockList.Remove(new_free_block);
+                    this->BorrowedMemoryBlockList.Remove(block);
+                    delete block;
+                    break;
+                }
+            }
+        }
+#endif
+
         this->Mutex.Unlock();
     }
 }
 
 void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, int start_from_top, int use_best_fit, int *new_size) {
+RETRY:
     this->Mutex.Lock();
 
     size = (size + 3) & ~3;
@@ -277,10 +391,10 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
             int alignment_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(f), alignment, alignment_offset);
             int amount_leftover = f->Size - (size + alignment_adjust);
 
-            if (((amount_leftover == 0) || (amount_leftover > 0xf)) && (amount_leftover < best_amount_leftover)) {
+            if (((amount_leftover == 0) || (amount_leftover >= 16)) && (amount_leftover < best_amount_leftover)) {
                 best_amount_leftover = amount_leftover;
-                best_alignment_adjust = alignment_adjust;
                 best_free_block = f;
+                best_alignment_adjust = alignment_adjust;
                 if (use_best_fit == 0) {
                     break;
                 }
@@ -292,10 +406,10 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
                 GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(reinterpret_cast<char *>(f) + f->Size) - size, alignment, alignment_offset);
             int amount_leftover = f->Size - (size + alignment_adjust);
 
-            if (((amount_leftover == 0) || (amount_leftover > 15)) && (amount_leftover < best_amount_leftover)) {
+            if (((amount_leftover == 0) || (amount_leftover >= 16)) && (amount_leftover < best_amount_leftover)) {
+                best_free_block = f;
                 best_amount_leftover = amount_leftover;
                 best_alignment_adjust = alignment_adjust;
-                best_free_block = f;
                 if (use_best_fit == 0) {
                     break;
                 }
@@ -305,7 +419,26 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
 
     if (best_free_block == nullptr) {
         this->Mutex.Unlock();
+#ifdef EA_PLATFORM_WIN32
+        int borrowed_size = size + alignment + 16;
+        if (borrowed_size < BorrowMemoryBlockMinSize) {
+            borrowed_size = BorrowMemoryBlockMinSize;
+        }
+
+        BorrowedMemoryBlock *block = new BorrowedMemoryBlock(borrowed_size);
+
+        if (block->Memory == nullptr) {
+            operator delete(block->Memory);
+            operator delete(block);
+            return nullptr;
+        }
+
+        this->AddMemory(block->Memory, block->Size);
+        this->BorrowedMemoryBlockList.AddTail(block);
+        goto RETRY;
+#else
         return nullptr;
+#endif
     }
 
     size += best_alignment_adjust;
@@ -325,11 +458,12 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
         mem_bottom = best_free_block;
         CheckFancyStompDetector(best_free_block + 1, size - sizeof(FreeBlock));
 
-        if (best_free_block->Size != size) {
+        int amount_leftover = best_free_block->Size - size;
+        if (amount_leftover != 0) {
             FreeBlock *new_free_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(best_free_block) + size);
             CheckFancyStompDetector(new_free_block, sizeof(FreeBlock));
 
-            new_free_block->Size = best_free_block->Size - size;
+            new_free_block->Size = amount_leftover;
             new_free_block->MagicNumber = 0x44443333;
 
             FreeBlockList.AddAfter(best_free_block, new_free_block);
@@ -366,9 +500,8 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
 }
 
 int MemoryPool::GetAmountFree() {
-    int amount_free = 0;
-
     this->Mutex.Lock();
+    int amount_free = 0;
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
         amount_free += f->Size;
     }
@@ -377,9 +510,8 @@ int MemoryPool::GetAmountFree() {
 }
 
 int MemoryPool::GetLargestFreeBlock() {
-    int largest_block = 0;
-
     this->Mutex.Lock();
+    int largest_block = 0;
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
         if (f->Size > largest_block) {
             largest_block = f->Size;
@@ -425,7 +557,11 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
     }
 
     if (errors != 0) {
+#ifdef EA_PLATFORM_WIN32
+        __asm int 3
+#else
         bBreak();
+#endif
         PrintAllocationsByAddress(0, 0x7fffffff);
         if (errors != 0) {
             goto asd;
@@ -453,15 +589,25 @@ asd:
 const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
 int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
 int MemoryInitialized = 0;              // size: 0x4, address: 0x80416458
-char MemoryPoolMem[16][96];             // size: 0x600, address: 0x8045A20D
+char MemoryPoolMem[16][sizeof(MemoryPool)];
 MemoryPool *MemoryPools[16];            // size: 0x40, address: 0x8045A810
 MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
 bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
 unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
 int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
-// STRIPPED
-int MemoryPool::CountAllocations(const char *debug_text) {}
+int MemoryPool::CountAllocations(const char *debug_text) {
+    this->Mutex.Lock();
+    int count = 0;
+    for (AllocationHeader *header = this->AllocationHeaderList.GetHead();
+         header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+        if (bMatchNameWithWildcard(debug_text, header->GetDebugText())) {
+            count += header->Size;
+        }
+    }
+    this->Mutex.Unlock();
+    return count;
+}
 
 int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
     return static_cast<int>(a->GetBottomAddress() <= b->GetBottomAddress());
@@ -526,8 +672,15 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     }
 }
 
-// STRIPPED
-AllocationHeader *MemoryPool::FindAllocation(int allocation_num) {}
+AllocationHeader *MemoryPool::FindAllocation(int allocation_num) {
+    for (AllocationHeader *header = this->AllocationHeaderList.GetHead();
+         header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+        if (header->GetAllocationNumber() == allocation_num) {
+            return header;
+        }
+    }
+    return nullptr;
+}
 
 int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAddress);
@@ -588,17 +741,71 @@ void MemoryPool::TraceFreeMemory(void *p, int size) {
 #endif
 }
 
-// STRIPPED
-void MemoryPool::TraceRemoveMemory(void *p, int size) {}
+void MemoryPool::TraceRemoveMemory(void *p, int size) {
+    bMemoryTraceRemovePacket packet = {0};
+    packet.PoolID = reinterpret_cast<uintptr_t>(this);
+    packet.MemoryAddress = reinterpret_cast<uintptr_t>(p);
+    packet.Size = size;
+#ifdef EA_PLATFORM_GAMECUBE
+    bFunkGameCube("CODEINE", 29, &packet, sizeof(packet));
+#else
+    bFunkCallASync("CODEINE", 29, &packet, sizeof(packet));
+#endif
+}
 
 // STRIPPED
 void TrapMissingMemoryTraces(int size) {}
 
-// STRIPPED
-void MemoryPool::TraceAllocateMemory(void *p, int size) {}
+void MemoryPool::TraceAllocateMemory(void *p, int size) {
+    bMemoryTraceAllocatePacket packet = {0};
+    packet.PoolID = reinterpret_cast<uintptr_t>(this);
+    packet.MemoryAddress = reinterpret_cast<uintptr_t>(p);
+    packet.Size = size;
+    packet.DebugLine = TraceDebugLine;
+    packet.AllocationNumber = bMemoryAllocationNumber;
+    bMemSet(packet.DebugText, 0, sizeof(packet.DebugText));
+    if (pTraceDebugText != nullptr) {
+        bStrNCpy(packet.DebugText, pTraceDebugText, sizeof(packet.DebugText) - 1);
+    }
 
-// STRIPPED
-void MemoryPool::UpdateTraceInformation() {}
+    int packet_size = sizeof(packet) - (sizeof(packet.DebugText) - 1 - bStrLen(packet.DebugText));
+#ifdef EA_PLATFORM_GAMECUBE
+    bFunkGameCube("CODEINE", 28, &packet, packet_size);
+#else
+    bFunkCallASync("CODEINE", 28, &packet, packet_size);
+#endif
+
+    if (pTraceDebugText == nullptr || pTraceDebugText[0] == '\0') {
+        TrapMissingMemoryTraces(size);
+    }
+    pTraceDebugText = nullptr;
+    TraceDebugLine = 0;
+}
+
+void MemoryPool::UpdateTraceInformation() {
+    if (!this->DebugTracingEnabled || !bIsBFunkAvailable()) {
+        return;
+    }
+
+    this->TraceNewPool();
+    for (FreeBlock *block = this->FreeBlockList.GetHead(); block != this->FreeBlockList.EndOfList(); block = block->GetNext()) {
+        this->TraceFreeMemory(block, block->Size);
+    }
+
+    int saved_allocation_number = bMemoryAllocationNumber;
+    for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList();
+         header = header->GetNext()) {
+        char *allocation_info = reinterpret_cast<char *>(header) - header->FrontPadding;
+        pTraceDebugText = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
+        if (pTraceDebugText == nullptr) {
+            pTraceDebugText = allocation_info + 6;
+        }
+        TraceDebugLine = 0;
+        bMemoryAllocationNumber = header->GetAllocationNumber();
+        this->TraceAllocateMemory(header->GetBottomAddress(), header->Size);
+    }
+    bMemoryAllocationNumber = saved_allocation_number;
+}
 
 int bGetFreeMemoryPoolNum() {
     for (int pool_num = 0; pool_num < 16; pool_num++) {
@@ -627,9 +834,6 @@ void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_na
     info->OverflowPoolNumber = -1;
     MemoryPools[pool_num] = reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num]);
     reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num])->Init(mem, mem_size, debug_name);
-    if (pool_num == 0) {
-        MemoryPoolZeroSize = mem_size;
-    }
 }
 
 void bCloseMemoryPool(int pool_num) {
@@ -641,11 +845,13 @@ bool bSetMemoryPoolDebugFill(int pool_num, bool on_off) {
     return MemoryPools[pool_num]->SetDebugFill(on_off);
 }
 
-// STRIPPED
-void bAddToMemoryPool(int pool_num, void *mem, int mem_size) {}
+void bAddToMemoryPool(int pool_num, void *mem, int mem_size) {
+    MemoryPools[pool_num]->AddMemory(mem, mem_size);
+}
 
-// STRIPPED
-void bRemoveFromMemoryPool(int pool_num, void *mem, int mem_size) {}
+void bRemoveFromMemoryPool(int pool_num, void *mem, int mem_size) {
+    MemoryPools[pool_num]->RemoveMemory(mem, mem_size);
+}
 
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off) {
     bool previous;
@@ -750,13 +956,30 @@ void bMemoryInit() {
         bInitMemoryPool(pool_num_VM, reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize, GetVirtualMemoryPoolName());
         MemoryInitialized = TRUE;
     }
-#else
-    // TODO
+#elif defined(EA_PLATFORM_WIN32)
+    if (!MemoryInitialized) {
+        bInitMemoryPool(0, nullptr, 0, "Main Pool");
+        MemoryInitialized = TRUE;
+    }
 #endif
 }
 
-// STRIPPED
-void bMemoryUpdateTraceInformation() {}
+void bMemoryUpdateTraceInformation() {
+    if (!bMemoryTracing) {
+        return;
+    }
+
+#ifdef EA_PLATFORM_GAMECUBE
+    bFunkGameCube("CODEINE", 24, nullptr, 0);
+#else
+    bFunkCallASync("CODEINE", 24, nullptr, 0);
+#endif
+    for (int pool_num = 0; pool_num < BMEMORY_MAX_POOLS; ++pool_num) {
+        if (MemoryPools[pool_num] != nullptr) {
+            MemoryPools[pool_num]->UpdateTraceInformation();
+        }
+    }
+}
 
 #ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
@@ -797,7 +1020,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
     }
 
     if (bMemoryAutomaticVerifyPoolIntegrity != 0) {
-        if (bMemoryAllocationNumber == (bMemoryAllocationNumber / bMemoryAutomaticVerifyPoolIntegrity) * bMemoryAutomaticVerifyPoolIntegrity) {
+        if ((bMemoryAllocationNumber % bMemoryAutomaticVerifyPoolIntegrity) == 0) {
             bVerifyPoolIntegrity(bMemoryGetPoolNum(allocation_params));
         }
     }
@@ -818,7 +1041,6 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 
     if (memory != nullptr) {
         int padding = 0;
-        int front_padding; // TODO
         if (allocation_params & 0x40) {
             padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
         }
@@ -842,6 +1064,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 
     bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(), debug_text,
                    size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
+    bBreak();
     bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
     bBreak();
     return nullptr;
@@ -880,12 +1103,23 @@ void bFree(void *ptr) {
         bVerifyPoolIntegrity(pool_num);
     }
     if (header->MagicNumber != 0x22) {
+#ifdef EA_PLATFORM_WIN32
+        __asm int 3
+#else
         bBreak();
+#endif
     } else {
-        void *allocated_pointer = header->GetBottomAddress();
+        uint16 front_padding = header->FrontPadding;
+        void *allocated_pointer = reinterpret_cast<char *>(header) - front_padding;
         header->MagicNumber = 0;
         pool->RemoveAllocationHeader(header);
         pool->FreeMemory(allocated_pointer, header->Size, debug_name);
+
+        if (MemoryInitialized && (MemoryPools[0]->GetNumAllocations() == 0)) {
+            MemoryPools[0]->Close();
+            MemoryPools[0] = nullptr;
+            MemoryInitialized = 0;
+        }
     }
 }
 
@@ -905,7 +1139,6 @@ int bGetMallocPool(void *ptr) {
     return 0;
 }
 
-// STRIPPED
 int bGetMallocNumber(void *ptr) {
     if (ptr != nullptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
@@ -934,33 +1167,38 @@ int bCountFreeMemory(int pool) {
     return MemoryPools[pool]->GetAmountFree();
 }
 
-// STRIPPED
 int bGetPoolSize(int pool) {
-    if (MemoryPools[pool] != nullptr) {
-        return MemoryPools[pool]->GetPoolSize();
+    MemoryPool *memory_pool = MemoryPools[pool];
+    if (memory_pool == nullptr) {
+        return 0;
     }
-
-    return 0;
+    return memory_pool->GetPoolSize();
 }
 
 int bLargestMalloc(int allocation_params) {
-    if (MemoryPools[allocation_params & 0xfU] == nullptr) {
-        MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[allocation_params & 0xfU].OverrideInfo;
+    int pool_num = allocation_params & 0xfU;
+    MemoryPool *memory_pool = MemoryPools[pool_num];
+    if (memory_pool == nullptr) {
+        MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
         if (override_info != nullptr) {
             return override_info->GetLargestFreeBlock(override_info->Pool);
         } else {
             return 0;
         }
     }
-    int pool = MemoryPools[bMemoryGetPoolNum(allocation_params)]->GetLargestFreeBlock() - 0x5c;
+    if (pool_num == 0) {
+        return 0x6300000;
+    }
+    int pool = memory_pool->GetLargestFreeBlock() - 0x5c;
     int alignment = bMemoryGetAlignment(allocation_params);
     if (alignment == 0) {
         alignment = 16;
     }
-    if (alignment < 128) {
-        alignment = 128;
+    int effective_alignment = alignment;
+    if (effective_alignment < 128) {
+        effective_alignment = 128;
     }
-    int largest_malloc = pool - alignment;
+    int largest_malloc = pool - effective_alignment;
     if (largest_malloc < 0) {
         largest_malloc = 0;
     }
@@ -974,7 +1212,6 @@ void bVerifyPoolIntegrity(int pool) {
     }
 }
 
-// STRIPPED
 const char *bGetMemoryPoolName(int pool_num) {
     if (MemoryPools[pool_num] != nullptr) {
         return MemoryPools[pool_num]->GetName();
@@ -1007,8 +1244,12 @@ int bGetMemoryPoolNum(const char *memory_pool_name) {
     return -1;
 }
 
-// STRIPPED
-int bMemoryCountAllocations(const char *debug_text, int pool_num) {}
+int bMemoryCountAllocations(const char *debug_text, int pool_num) {
+    if (MemoryPools[pool_num] != nullptr) {
+        return MemoryPools[pool_num]->CountAllocations(debug_text);
+    }
+    return 0;
+}
 
 int bMemoryGetAllocationNumber() {
     return bMemoryAllocationNumber;
@@ -1024,8 +1265,15 @@ void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_
     }
 }
 
-// STRIPPED
-void *bMemoryFindAllocation(int pool_num, int allocation_num) {}
+void *bMemoryFindAllocation(int pool_num, int allocation_num) {
+    if (MemoryPools[pool_num] != nullptr) {
+        AllocationHeader *header = MemoryPools[pool_num]->FindAllocation(allocation_num);
+        if (header != nullptr) {
+            return header->GetAllocAddress();
+        }
+    }
+    return nullptr;
+}
 
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations) {
     if (MemoryPools[pool_num] != nullptr) {
@@ -1071,8 +1319,13 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     return bMalloc(size, name, 0, allocation_params);
 }
 
-// STRIPPED
-void *bMemoryAllocator::Alloc(size_t size) {}
+void *bMemoryAllocator::Alloc(size_t size) {
+#ifdef MILESTONE_OPT
+    return bMalloc(static_cast<int>(size), "bMemoryAllocator", 0, this->PoolNumber);
+#else
+    return bWareMalloc(static_cast<int>(size), nullptr, 0, 0);
+#endif
+}
 
 void bMemoryAllocator::Free(void *pBlock, size_t size) {
     bFree(pBlock);
@@ -1084,7 +1337,7 @@ int bMemoryAllocator::AddRef() {
 
 int bMemoryAllocator::Release() {
     this->mRefcount--;
-    if (this->mRefcount < 1) {
+    if (this->mRefcount <= 0) {
         delete this;
         return 0;
     }
