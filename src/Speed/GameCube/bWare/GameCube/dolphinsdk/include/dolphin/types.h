@@ -43,6 +43,12 @@ typedef unsigned char Bool;
 
 #ifdef __cplusplus
 #include <math.h>
+#elif defined(__GNUC__) || defined(__SN__)
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
 #else
 #include "libc/stdio.h"
 #include "libc/stdarg.h"

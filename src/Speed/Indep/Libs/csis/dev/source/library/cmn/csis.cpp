@@ -4,6 +4,7 @@
 
 #include <csis/csis.h>
 #include "csisi.h"
+#include "types.h"
 
 namespace Csis {
 
@@ -22,10 +23,13 @@ struct IAllocatorToICoreAdaptor : public EA::Allocator::IAllocator {
         return ptr;
     }
 
+    static void operator delete(void *ptr, void *place) {}
+
     IAllocatorToICoreAdaptor() {}
     static IAllocatorToICoreAdaptor *CreateInstance(EA::Allocator::ICoreAllocator *pCoreAllocator) {
         IAllocatorToICoreAdaptor *ptemp;
-        ptemp = new (pCoreAllocator->Alloc(4, "CsisAlloc", 1)) IAllocatorToICoreAdaptor;
+        ptemp = static_cast<IAllocatorToICoreAdaptor *>(pCoreAllocator->Alloc(4, "CsisAlloc", 1));
+        new (ptemp) IAllocatorToICoreAdaptor;
         return ptemp;
     }
     virtual int Release() {
@@ -55,7 +59,9 @@ struct ICoreToIAllocatorAdaptor : public EA::Allocator::ICoreAllocator {
     ICoreToIAllocatorAdaptor() {}
 
     static ICoreToIAllocatorAdaptor *CreateInstance(EA::Allocator::IAllocator *pAllocator) {
-        ICoreToIAllocatorAdaptor *ptemp = new (pAllocator->Alloc(sizeof(ICoreToIAllocatorAdaptor), NULLALLOCTVP)) ICoreToIAllocatorAdaptor;
+        ICoreToIAllocatorAdaptor *ptemp;
+        ptemp = static_cast<ICoreToIAllocatorAdaptor *>(pAllocator->Alloc(sizeof(ICoreToIAllocatorAdaptor), NULLALLOCTVP));
+        new (ptemp) ICoreToIAllocatorAdaptor;
         return ptemp;
     }
 
@@ -81,12 +87,13 @@ struct InterfaceHandleData {
 inline Result ValidHandle(FunctionHandle *pHandle, FunctionDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<FunctionDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -96,12 +103,13 @@ inline Result ValidHandle(FunctionHandle *pHandle, FunctionDesc *pInterfaceDesc)
 inline Result ValidHandle(ClassHandle *pHandle, FunctionDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<FunctionDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -111,12 +119,13 @@ inline Result ValidHandle(ClassHandle *pHandle, FunctionDesc *pInterfaceDesc) {
 inline Result ValidHandle(GlobalVariableHandle *pHandle, GlobalVariableDesc *pInterfaceDesc) {
     InterfaceHandleData *pInterfaceHandleData = reinterpret_cast<InterfaceHandleData *>(pHandle);
 
-    if (pInterfaceHandleData->mpPrivate == NULL) {
+    pInterfaceDesc = reinterpret_cast<GlobalVariableDesc *>(pInterfaceHandleData->mpPrivate);
+    if (pInterfaceHandleData->mpPrivate == nullptr) {
         return RESULT_ERR_UNINITIALIZED;
     }
     if (pInterfaceHandleData->mKey != pInterfaceDesc->u.key) {
         pInterfaceHandleData->mKey = RESULT_ERR_HANDLEEXPIRED;
-        pInterfaceHandleData->mpPrivate = NULL;
+        pInterfaceHandleData->mpPrivate = nullptr;
         return RESULT_ERR_HANDLEEXPIRED;
     } else {
         return RESULT_OK;
@@ -138,17 +147,18 @@ Result FunctionHandle::Set(const InterfaceId *pInterfaceId) {
 
 template <typename Handle, typename Id, typename Desc>
 inline Result SetHandle(Handle *pHandle, const Id *pInterfaceId, Desc *pInterfaceDesc,
-                              unsigned int interfaceTypeOffset, unsigned int numInterfacesOffset) {
-    bool tryUnmatched = false;
-    char *pNode;
+                       int interfaceTypeOffset, int numInterfacesOffset) {
     SystemDesc *pSystemDesc;
+    char *pNode;
     int nodeOffset = offsetof(SystemDesc, linkNode);
+    bool tryUnmatched = false;
 
 TryUnmatched:
     pNode = reinterpret_cast<char *>(gSystems.GetHead());
-    while (pNode != NULL) {
+    while (pNode != nullptr) {
         pSystemDesc = reinterpret_cast<SystemDesc *>(pNode - nodeOffset);
         pInterfaceDesc = *reinterpret_cast<Desc **>(reinterpret_cast<char *>(pSystemDesc) + interfaceTypeOffset);
+        unsigned int *pInt;
         int numInterfaces = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(pSystemDesc) + numInterfacesOffset);
         if (pSystemDesc->crc == pInterfaceId->systemCrc || tryUnmatched) {
             int i = 0;
@@ -173,7 +183,10 @@ TryUnmatched:
 }
 
 Result FunctionHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(NULL), 0x14, 0xA);
+    FunctionDesc *pFunctionDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(nullptr), 0x14, 0xA);
 }
 
 Result FunctionHandle::Valid() {
@@ -181,7 +194,7 @@ Result FunctionHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     FunctionDesc *pFunctionDesc;
-    pFunctionDesc = reinterpret_cast<FunctionDesc *>(this->mpPrivate);
+    pFunctionDesc = static_cast<FunctionDesc *>(nullptr);
     return ValidHandle(this, pFunctionDesc);
 }
 
@@ -199,7 +212,10 @@ Result ClassHandle::Set(const InterfaceId *pInterfaceId) {
 }
 
 Result ClassHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(NULL), 0x18, 0xC);
+    FunctionDesc *pClassDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<FunctionDesc *>(nullptr), 0x18, 0xC);
 }
 
 Result ClassHandle::Valid() {
@@ -207,12 +223,15 @@ Result ClassHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     FunctionDesc *pClassDesc;
-    pClassDesc = reinterpret_cast<FunctionDesc *>(this->mpPrivate);
+    pClassDesc = static_cast<FunctionDesc *>(nullptr);
     return ValidHandle(this, pClassDesc);
 }
 
 Result GlobalVariableHandle::SetFast(const InterfaceId *pInterfaceId) {
-    return SetHandle(this, pInterfaceId, static_cast<GlobalVariableDesc *>(NULL), 0x1C, 0xE);
+    GlobalVariableDesc *pGlobalVariableDesc;
+    SystemDesc *pSystemDesc;
+
+    return SetHandle(this, pInterfaceId, static_cast<GlobalVariableDesc *>(nullptr), 0x1C, 0xE);
 }
 
 Result GlobalVariableHandle::Valid() {
@@ -220,7 +239,7 @@ Result GlobalVariableHandle::Valid() {
         return static_cast<Result>(this->mKey);
     }
     GlobalVariableDesc *pGlobalVariableDesc;
-    pGlobalVariableDesc = reinterpret_cast<GlobalVariableDesc *>(this->mpPrivate);
+    pGlobalVariableDesc = static_cast<GlobalVariableDesc *>(nullptr);
     return ValidHandle(this, pGlobalVariableDesc);
 }
 

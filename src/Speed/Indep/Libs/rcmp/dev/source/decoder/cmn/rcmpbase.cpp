@@ -1,3 +1,4 @@
+#include "types.h"
 #include "rcmp/rcmp.h"
 
 extern "C" const float lbl_80410154;
@@ -92,17 +93,17 @@ void DECODER::ReleaseFrame(FRAME *Frame) {
 CHUNK *DECODER::GetChunk() {
     CHUNK *NextChunk;
 
-    if (this->m_FirstChunk == 0) {
-        this->GetCodecIData()->m_GetDataFunc(this, this->GetCodecIData()->m_Streamer, &NextChunk);
-    } else {
+    if (this->m_FirstChunk != nullptr) {
         NextChunk = this->m_FirstChunk;
-        this->m_FirstChunk = 0;
+        this->m_FirstChunk = nullptr;
+        return NextChunk;
     }
+        this->GetCodecIData()->m_GetDataFunc(this, this->GetCodecIData()->m_Streamer, &NextChunk);
     return NextChunk;
 }
 
 void DECODER::ReleaseChunk(CHUNK *Data) {
-    this->m_IData.m_ReleaseDataFunc(this, this->m_IData.m_Streamer, Data);
+    this->GetCodecIData()->m_ReleaseDataFunc(this, this->GetCodecIData()->m_Streamer, Data);
 }
 
 CHUNK::CHUNK() {

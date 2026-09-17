@@ -64,8 +64,7 @@ unsigned int PathToReal6::GetMilliseconds() {
 
     ms = static_cast<float>(TIMER_gettick()) / static_cast<float>(TIMERhz);
     ms *= 1000.0f;
-    return ms < 2147483648.0 ? static_cast<int>(ms)
-                              : static_cast<int>(ms - 2147483648.0) ^ 0x80000000;
+    return static_cast<unsigned int>(ms);
 }
 
 int PathToReal6::FileExists(const char *filename) {

@@ -1,6 +1,8 @@
 #ifndef RCMP_RCMP_H
 #define RCMP_RCMP_H
 
+#include "types.h"
+
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -48,7 +50,7 @@ struct RCMP_SYSTEM {
     inline virtual ~RCMP_SYSTEM() {}
 
     inline bool IsInited() {
-        return this->AllocMemFunc != 0;
+        return this->AllocMemFunc != nullptr && this->FreeMemFunc != nullptr;
     }
 
     inline void *AllocMem(const char *name, unsigned int size, int alignment, int headersize, int type) {
@@ -95,13 +97,13 @@ struct CODEC {
     }
 
     inline CODEC() {}
-    virtual ~CODEC();
+    inline virtual ~CODEC() {}
 
-    virtual DETECTED_USABILITY_ENUM Init(DECODER *Decoder, CHUNK *FirstChunk);
-    virtual FRAME *GetFrame(unsigned int GoalFrame);
-    virtual unsigned int GetCurrentFrameNumber();
-    virtual float GetFrameRate();
-    virtual void ReleaseFrame(FRAME *Frame);
+    virtual DETECTED_USABILITY_ENUM Init(DECODER *Decoder, CHUNK *FirstChunk) = 0;
+    virtual FRAME *GetFrame(unsigned int GoalFrame) = 0;
+    virtual unsigned int GetCurrentFrameNumber() = 0;
+    virtual float GetFrameRate() = 0;
+    virtual void ReleaseFrame(FRAME *Frame) = 0;
 };
 
 class DECODER {

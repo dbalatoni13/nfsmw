@@ -18,8 +18,8 @@ Device *Effect::GetDevice() {
     return nullptr;
 }
 
-void Effect::GetInfo(Info *info) {}
+void Effect::GetInfo(Info *) {}
 
-void Effect::SetInfo(Info *info) {}
+void Effect::SetInfo(Info *) {}
 
 } // namespace RealInput

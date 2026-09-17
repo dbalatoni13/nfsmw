@@ -15,7 +15,7 @@ static void iSPCH_ClearOldEvents(int eventIndex);
 extern unsigned int SPCHEXT_gettick();
 extern unsigned short iSPCH_Rand(int max, int randHandle);
 extern void *iSPCH_MemAlloc(unsigned int numBytes);
-extern int gFilterSetting[8];
+extern int gFilterSetting[];
 extern int gPreLoadTicks;
 
 int SPCH_MakeEventSpec(int projID, int datID, int eventID) {
@@ -350,7 +350,7 @@ static int iSPCH_FindEventSlot(unsigned int eventPriority, unsigned int inChanne
     int startEventIndex;
 
     choice = -1;
-    startEventIndex = choice;
+    startEventIndex = -1;
     i = 0;
     do {
         if (gVoxEvents.events[i].pending == 0) {
@@ -363,11 +363,13 @@ static int iSPCH_FindEventSlot(unsigned int eventPriority, unsigned int inChanne
     i = 0;
     do {
         expiryTime = gVoxEvents.events[i].event->expiryTime;
-        timeSince = timeNow - gVoxEvents.events[i].entryTime;
-        if (expiryTime != 0 && timeSince > expiryTime && i != startEventIndex) {
-            choice = i;
-            iSPCH_ClearEvent(i);
-            goto decided;
+        if (expiryTime != 0) {
+            timeSince = timeNow - gVoxEvents.events[i].entryTime;
+            if (timeSince > expiryTime && startEventIndex != i) {
+                iSPCH_ClearEvent(i);
+                choice = i;
+                goto decided;
+            }
         }
         i++;
     } while (i <= 0xF);
@@ -375,7 +377,7 @@ static int iSPCH_FindEventSlot(unsigned int eventPriority, unsigned int inChanne
     do {
         thisChannel = gVoxEvents.events[i].channel;
         priority = gVoxEvents.events[i].event->priority;
-        if (eventPriority >= priority && thisChannel == inChannel) {
+        if (priority <= eventPriority && thisChannel == inChannel) {
             gVoxEvents.events[i].pending = 0;
             gVoxEvents.numPending[thisChannel]--;
             choice = i;
@@ -387,6 +389,7 @@ decided:
     return choice;
 }
 
+// NON_MATCHING: loop-invariant hoisting and several DWARF register homes still differ.
 static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int inChannel) {
     int i;
     unsigned int timeNow, timeSince;
@@ -410,14 +413,14 @@ static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int
         if (gVoxEvents.events[i].pending != 0) {
             if (gVoxEvents.events[i].channel == inChannel) {
                 expired = 0;
-                event = gVoxEvents.events[i].event;
                 priorityFiltered = 0;
                 followValid = 1;
+                event = gVoxEvents.events[i].event;
                 if (followData != 0) {
                     followValid = iSPCH_EventInFollowGroup(event->ID, followData);
                 }
                 timeSince = timeNow - gVoxEvents.events[i].entryTime;
-                if (event->expiryTime != 0 && event->expiryTime < timeSince) {
+                if (event->expiryTime != 0 && timeSince > event->expiryTime) {
                     expired = 1;
                 }
                 if (gFilterSetting[inChannel] == 1 && VoxEvent_GetFilterPriorityFlag(event) != 0) {
@@ -427,13 +430,13 @@ static int iSPCH_ChooseEventSearch(SPCHType_FollowData *followData, unsigned int
                 if (expired) {
                     iSPCH_ClearEvent(i);
                 } else if (followValid != 0 && priorityFiltered == 0) {
-                    if (highestPriority < event->priority) {
+                    if (event->priority > highestPriority) {
                         choice = i;
                         choiceTimeSince = timeSince;
                         highestPriority = event->priority;
                         choiceSubTicks = gVoxEvents.events[i].subTicks;
                     } else if (event->priority == highestPriority) {
-                        if (timeSince < choiceTimeSince || (timeSince == choiceTimeSince && choiceSubTicks < gVoxEvents.events[i].subTicks)) {
+                        if (timeSince < choiceTimeSince || (timeSince == choiceTimeSince && gVoxEvents.events[i].subTicks > choiceSubTicks)) {
                             choice = i;
                             choiceTimeSince = timeSince;
                             choiceSubTicks = gVoxEvents.events[i].subTicks;

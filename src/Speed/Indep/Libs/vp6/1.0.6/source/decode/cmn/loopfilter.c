@@ -121,8 +121,7 @@ void FilterHoriz_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int Li
     for (j = 0; j < 8; j++) {
         FiltVal = PixelPtr[0] - (PixelPtr[1] * 3) +
                   (PixelPtr[2] * 3) - PixelPtr[3];
-        FiltVal = (FiltVal + 4) >> 3;
-        FiltVal = BoundingValuePtr[FiltVal];
+        FiltVal = BoundingValuePtr[(FiltVal + 4) >> 3];
         PixelPtr[1] = LimitTable[(int)PixelPtr[1] + FiltVal];
         PixelPtr[2] = LimitTable[(int)PixelPtr[2] - FiltVal];
         PixelPtr += LineLength;
@@ -141,8 +140,7 @@ void FilterVert_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int Lin
                   ((int)PixelPtr[-LineLength] * 3) +
                   ((int)PixelPtr[0] * 3) -
                   (int)PixelPtr[LineLength];
-        FiltVal = (FiltVal + 4) >> 3;
-        FiltVal = BoundingValuePtr[FiltVal];
+        FiltVal = BoundingValuePtr[(FiltVal + 4) >> 3];
         PixelPtr[-LineLength] =
             LimitTable[(int)PixelPtr[-LineLength] + FiltVal];
         PixelPtr[0] = LimitTable[(int)PixelPtr[0] - FiltVal];

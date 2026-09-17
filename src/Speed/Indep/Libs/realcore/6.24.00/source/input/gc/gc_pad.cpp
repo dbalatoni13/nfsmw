@@ -74,7 +74,9 @@ GcPad::~GcPad() {
 RiResult GcPad::Update() {
     PADStatus PStat;
     int i;
-    EventQueue *pEventQ = this->mpInterface->GetEventQueue();
+    EventQueue *pEventQ;
+    this->DeviceImp::Update();
+    pEventQ = this->mpInterface->GetEventQueue();
 
     if (pEventQ == nullptr) {
         return RI_OK;
@@ -99,9 +101,11 @@ RiResult GcPad::Update() {
         if (PStat.err == PAD_ERR_NO_CONTROLLER || !this->mInitialized) {
             PStat.err = PAD_ERR_NOT_READY;
             gResetBit |= this->mResetBit;
-            if (ctype != SI_GC_WAVEBIRD && ctype == SI_GC_CONTROLLER) {
-                this->mInfo.mControllerID = 1;
-                this->mCapabilities.mForceFeedback = 1;
+            if (ctype != SI_GC_WAVEBIRD) {
+                if (ctype == SI_GC_CONTROLLER) {
+                    this->mInfo.mControllerID = 1;
+                    this->mCapabilities.mForceFeedback = 1;
+                }
             } else {
                 this->mInfo.mControllerID = 2;
                 this->mCapabilities.mForceFeedback = 0;
@@ -188,10 +192,8 @@ RiResult GcPad::Update() {
                 if (dvalue != data.mButtons[i]) {
                     data.mButtons[i] = dvalue;
                     event.mObject = OBJECT_BUTTON;
-                    event.mType = TYPE_RELEASED;
-                    if (dvalue != 0) {
-                        event.mType = TYPE_PRESSED;
-                    }
+                    dvalue = dvalue != 0 ? TYPE_PRESSED : TYPE_RELEASED;
+                    event.mType = static_cast<RealInput::Type>(dvalue);
                     event.mObjectIndex = i;
                     pEventQ->AddEvent(&event);
                 }

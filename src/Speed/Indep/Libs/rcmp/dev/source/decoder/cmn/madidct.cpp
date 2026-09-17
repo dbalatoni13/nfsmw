@@ -40,35 +40,36 @@ static void IdctColumn(int *src, int *dest) {
         return;
     }
 
-    t1 = src[0];
-    t2 = src[1];
-    t3 = src[2];
-    t4 = src[3];
-    t5 = src[4];
-    t6 = src[5];
-    t7 = src[6];
-    t8 = src[7];
-    t9 = idctmul((t2 - t8) + (t6 - t4), 0x61f8);
-    dest[0] = (t1 + t5) + (t3 + t7 + t9) +
-              ((t2 + t8) + (t4 + t6) + idctmul(t2 - t8, 0x14e7b) - t9);
-    dest[8] = (t1 - t5 + t9) +
-              (idctmul(t2 - t8, 0x14e7b) - t9 +
-               idctmul((t2 + t8) - (t4 + t6), 0xb505));
-    dest[16] = (t1 - t5 - t9) +
-               (idctmul((t2 + t8) - (t4 + t6), 0xb505) + t9 +
-                idctmul(t6 - t4, 0x8a8c));
-    dest[24] = ((t1 + t5) - (t3 + t7 + t9)) +
-               (t9 + idctmul(t6 - t4, 0x8a8c));
-    dest[32] = ((t1 + t5) - (t3 + t7 + t9)) -
-               (t9 + idctmul(t6 - t4, 0x8a8c));
-    dest[40] = (t1 - t5 - t9) -
-               (idctmul((t2 + t8) - (t4 + t6), 0xb505) + t9 +
-                idctmul(t6 - t4, 0x8a8c));
-    dest[48] = (t1 - t5 + t9) -
-               (idctmul(t2 - t8, 0x14e7b) - t9 +
-               idctmul((t2 + t8) - (t4 + t6), 0xb505));
-    dest[56] = (t1 + t5 + t3 + t7 + t9) -
-               ((t2 + t8) + (t4 + t6) + idctmul(t2 - t8, 0x14e7b) - t9);
+    t1 = src[5] - src[3];
+    t2 = src[1] + src[7];
+    t3 = src[1] - src[7];
+    t4 = src[5] + src[3];
+    t5 = t2 - t4;
+    t4 += t2;
+    t2 = idctmul(t1 + t3, 0x61f8);
+    t1 = t2 + idctmul(t1, 0x8a8c);
+    t3 = idctmul(t3, 0x14e7b) - t2;
+    t5 = idctmul(t5, 0xb505);
+    t6 = src[0] + src[4];
+    t7 = src[0] - src[4];
+    t8 = idctmul(src[2] - src[6], 0xb505);
+    t9 = src[2] + src[6] + t8;
+    t2 = t6 - t9;
+    t6 += t9;
+    t9 = t7 - t8;
+    t7 += t8;
+    t4 += t3;
+    t3 += t5;
+    t5 += t1;
+
+    dest[0] = t6 + t4;
+    dest[8] = t7 + t3;
+    dest[16] = t9 + t5;
+    dest[24] = t2 + t1;
+    dest[32] = t2 - t1;
+    dest[40] = t9 - t5;
+    dest[48] = t7 - t3;
+    dest[56] = t6 - t4;
 }
 
 static void IdctRow(int *src, int *dest) {
@@ -82,29 +83,36 @@ static void IdctRow(int *src, int *dest) {
     int t8;
     int t9;
 
-    t1 = src[0] + src[4];
-    t2 = src[0] - src[4];
-    t3 = src[2] + src[6];
-    t4 = src[2] - src[6];
-    t5 = src[1] + src[7];
-    t6 = src[1] - src[7];
-    t7 = src[3] + src[5];
-    t8 = src[3] - src[5];
-    t9 = idctmul(t6 + t8, 0x61f8);
-    dest[0] = (t1 + t3) + (t5 + t7) - t9 + idctmul(t6, 0x14e7b) +
-              idctmul(t4, 0xb505);
-    dest[1] = t2 + idctmul(t5 - t7, 0xb505) - t9 + idctmul(t6, 0x14e7b) +
-              idctmul(t4, 0xb505);
-    dest[2] = t2 + idctmul(t5 - t7, 0xb505) + t9 - idctmul(t4, 0xb505) +
-              idctmul(t8, 0x8a8c);
-    dest[3] = (t1 - t3) + t9 - idctmul(t4, 0xb505) + idctmul(t8, 0x8a8c);
-    dest[4] = (t1 - t3) - t9 - idctmul(t4, 0xb505) - idctmul(t8, 0x8a8c);
-    dest[5] = t2 - idctmul(t5 - t7, 0xb505) - t9 - idctmul(t4, 0xb505) -
-              idctmul(t8, 0x8a8c);
-    dest[6] = t2 - idctmul(t5 - t7, 0xb505) + t9 - idctmul(t6, 0x14e7b) +
-              idctmul(t4, 0xb505);
-    dest[7] = (t1 + t3) - (t5 + t7) + t9 - idctmul(t6, 0x14e7b) +
-              idctmul(t4, 0xb505);
+    t1 = src[5] - src[3];
+    t2 = src[1] + src[7];
+    t3 = src[1] - src[7];
+    t4 = src[5] + src[3];
+    t5 = t2 - t4;
+    t4 += t2;
+    t2 = idctmul(t1 + t3, 0x61f8);
+    t1 = t2 + idctmul(t1, 0x8a8c);
+    t3 = idctmul(t3, 0x14e7b) - t2;
+    t5 = idctmul(t5, 0xb505);
+    t6 = src[0] + src[4];
+    t7 = src[0] - src[4];
+    t8 = idctmul(src[2] - src[6], 0xb505);
+    t9 = src[2] + src[6] + t8;
+    t2 = t6 - t9;
+    t6 += t9;
+    t9 = t7 - t8;
+    t7 += t8;
+    t4 += t3;
+    t3 += t5;
+    t5 += t1;
+
+    dest[0] = t6 + t4;
+    dest[1] = t7 + t3;
+    dest[2] = t9 + t5;
+    dest[3] = t2 + t1;
+    dest[4] = t2 - t1;
+    dest[5] = t9 - t5;
+    dest[6] = t7 - t3;
+    dest[7] = t6 - t4;
 }
 
 }

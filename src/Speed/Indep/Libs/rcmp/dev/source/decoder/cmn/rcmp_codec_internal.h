@@ -6,6 +6,7 @@
 #endif
 
 #include "rcmp/rcmp.h"
+#include "rcmp/mvrcon.h"
 #include <Allocator/iallocator.h>
 
 extern "C" char lbl_80410188[];
@@ -19,8 +20,8 @@ extern "C" double lbl_80410328;
 extern "C" float lbl_80410330;
 extern "C" float lbl_80410334;
 
-extern "C" int RCMP_global_VP6_skipK;
-extern "C" int RCMP_global_VP6_skipK_frameNo;
+extern "C" int RCMP_global_VP6_skipK __attribute__((section(".sbss")));
+extern "C" int RCMP_global_VP6_skipK_frameNo __attribute__((section(".sbss")));
 
 namespace Vp6 {
 void SetAllocator(EA::Allocator::IAllocator *allocator);
@@ -164,131 +165,6 @@ namespace RCMP {
 
 bool VP6_CODEC_is_chunk_for_codec(unsigned int chunktype);
 
-struct DLNode {
-    inline DLNode()
-        : Next(reinterpret_cast<DLNode *>(3))
-        , Prev(reinterpret_cast<DLNode *>(3)) {
-    }
-
-    inline ~DLNode() {
-        this->Next = reinterpret_cast<DLNode *>(7);
-        this->Prev = reinterpret_cast<DLNode *>(7);
-    }
-
-    inline DLNode *GetNext() {
-        return this->Next;
-    }
-
-    inline DLNode *GetPrev() {
-        return this->Prev;
-    }
-
-    inline DLNode *Remove() {
-        DLNode *next_node;
-        DLNode *prev_node;
-
-        next_node = this->Next;
-        prev_node = this->Prev;
-        prev_node->Next = next_node;
-        next_node->Prev = prev_node;
-        this->Next = reinterpret_cast<DLNode *>(11);
-        this->Prev = reinterpret_cast<DLNode *>(11);
-        return this;
-    }
-
-    inline DLNode *AddAfter(DLNode *insert_point) {
-        DLNode *new_prev;
-        DLNode *new_next;
-
-        new_prev = insert_point;
-        new_next = insert_point->Next;
-        new_prev->Next = this;
-        new_next->Prev = this;
-        this->Next = new_next;
-        this->Prev = new_prev;
-        return this;
-    }
-
-    inline DLNode *AddBefore(DLNode *insert_point) {
-        DLNode *new_next;
-        DLNode *new_prev;
-
-        new_next = insert_point;
-        new_prev = new_next->Prev;
-        new_prev->Next = this;
-        this->Next = insert_point;
-        this->Prev = new_prev;
-        return this;
-    }
-
-    DLNode *Next;
-    DLNode *Prev;
-};
-
-struct DLList {
-    inline void InitList() {
-        this->HeadNode.Next = &this->HeadNode;
-        this->HeadNode.Prev = &this->HeadNode;
-    }
-
-    inline DLList()
-        : HeadNode() {
-        this->InitList();
-    }
-
-    inline ~DLList() {
-    }
-
-    inline DLNode *GetHead() {
-        return this->HeadNode.GetNext();
-    }
-
-    inline int IsEmpty() {
-        return this->HeadNode.GetNext() == &this->HeadNode;
-    }
-
-    inline DLNode *RemoveHead() {
-        return this->GetHead()->Remove();
-    }
-
-    inline DLNode *AddHead(DLNode *node) {
-        return node->AddAfter(&this->HeadNode);
-    }
-
-    inline DLNode *AddTail(DLNode *node) {
-        return node->AddBefore(&this->HeadNode);
-    }
-
-    DLNode HeadNode;
-};
-
-template <class T> struct TDLNode : public DLNode {
-    inline TDLNode()
-        : DLNode() {
-    }
-
-    inline T *Remove() {
-        return static_cast<T *>(DLNode::Remove());
-    }
-};
-
-template <class T> struct TDLList : public DLList {
-    inline TDLList()
-        : DLList() {
-    }
-
-    inline T *AddHead(DLNode *node) {
-        return static_cast<T *>(DLList::AddHead(node));
-    }
-
-    inline T *RemoveHead() {
-        return static_cast<T *>(DLList::RemoveHead());
-    }
-
-    inline T *AddTail(DLNode *node) {
-        return static_cast<T *>(DLList::AddTail(node));
-    }
-};
 
 } // namespace RCMP
 
@@ -374,6 +250,10 @@ class VP6_CODEC_INTERNAL : public RCMP::CODEC {
         return RCMP::rcmp_sys.AllocMem(lbl_80410188, size, 0, 0, RCMP::rcmp_sys.m_DefaultMemDir);
     }
 
+    inline static void operator delete(void *ptr) {
+        RCMP::rcmp_sys.FreeMem(ptr);
+    }
+
     VP6_CODEC_INTERNAL();
     virtual ~VP6_CODEC_INTERNAL();
     virtual DETECTED_USABILITY_ENUM Init(RCMP::DECODER *Decoder, RCMP::CHUNK *);
@@ -408,6 +288,10 @@ class MAD_CODEC_INTERNAL : public RCMP::CODEC {
   public:
     inline static void *operator new(unsigned int size) {
         return RCMP::rcmp_sys.AllocMem(lbl_80410308, size, 0, 0, RCMP::rcmp_sys.m_DefaultMemDir);
+    }
+
+    inline static void operator delete(void *ptr) {
+        RCMP::rcmp_sys.FreeMem(ptr);
     }
 
     MAD_CODEC_INTERNAL();

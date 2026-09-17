@@ -1,6 +1,4 @@
-#define REALMC_GC_MESSAGE_INLINE
 #include "../../../include/common/realmemcard/impl/memcard_interface_impl.h"
-#undef REALMC_GC_MESSAGE_INLINE
 #include "../../../include/common/realmemcard/gc_driver.h"
 #include "../../../include/common/realmemcard/memcard_utilities.h"
 
@@ -60,7 +58,7 @@ void GCInterface::UpdateTaskMount() {
     case CR_NOCARD:
         GCInterface::mTaskMount.mCardStatus = STATUS_NO_CARD;
         break;
-    case CR_INSUFFICIENT_SPACE:
+    case CR_CORRUPT:
     case CR_ENCODINGERROR:
         GCInterface::mTaskMount.mCardStatus = STATUS_CARD_UNFORMATTED;
         break;

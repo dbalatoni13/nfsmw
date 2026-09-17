@@ -18,20 +18,20 @@ int PATHI_addevent(unsigned int projectflags, PATHEVENT *event) {
     projectflags &= 0xff000000;
     for (a = 0; a < event->numactions; a++, action++) {
         if (action->type == 1) {
-            if (action->assess > 3) {
-                if (static_cast<int>(action->assess) == 4) {
-                    indent--;
-                    action->indent = indent;
-                } else {
-                    action->indent = indent;
-                }
-            } else {
-                if (action->assess < 2) {
-                    action->indent = indent;
-                    indent++;
-                } else {
-                    action->indent = indent - 1;
-                }
+            switch (action->assess) {
+            case 0:
+            case 1:
+                action->indent = indent;
+                indent++;
+                break;
+            case 2:
+            case 3:
+                action->indent = indent - 1;
+                break;
+            case 4:
+                indent--;
+                action->indent = indent;
+                break;
             }
         } else {
             action->indent = indent;
@@ -94,34 +94,34 @@ int PATH_event(int tracks, unsigned int eventID) {
     return result;
 }
 
+// NON_MATCHING: early lock-failure return follows retail control flow; pfstate address lifetime and DWARF homes still differ.
 int PATH_clearallevents(int projects) {
     int result;
 
     if (PATHI_lock() == 0) {
-        result = PATHERR_INUSE;
-    } else {
-        result = PATHERR_INV_PARAM;
-        {
-            int p;
+        return PATHERR_INUSE;
+    }
+    result = PATHERR_INV_PARAM;
+    {
+        int p;
 
-            for (p = 0; p < 4; p++) {
-                if (PATHI_switchproject(static_cast<unsigned char>(p), projects) != 0) {
-                    result = 0;
-                    {
-                        int i;
+        for (p = 0; p < 4; p++) {
+            if (PATHI_switchproject(static_cast<unsigned char>(p), projects) != 0) {
+                result = 0;
+                {
+                    int i;
 
-                        for (i = 0; i < 16; i++) {
-                            if (Path::pfstate->eventqueue[i] != 0) {
-                                PATHI_releaseevent(i, PATHEVENT_PURGED);
-                                i--;
-                            }
+                    for (i = 0; i < 16; i++) {
+                        if (Path::pfstate->eventqueue[i] != 0) {
+                            PATHI_releaseevent(i, PATHEVENT_PURGED);
+                            i--;
                         }
                     }
                 }
             }
         }
-        PATHI_unlock();
     }
+    PATHI_unlock();
     return result;
 }
 
@@ -140,7 +140,7 @@ PATHEVENT *PATHI_copyevent(PATHEVENT *event) {
         thisevent = Path::pfstate->eventqueue[e];
         if (thisevent >= minevent && thisevent < maxevent) {
             thiseventsize = sizeof(PATHEVENT) + thisevent->numactions * 12;
-            minevent = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(thisevent) + thiseventsize);
+            minevent = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(minevent) + thiseventsize);
         }
     }
     if (reinterpret_cast<char *>(minevent) + eventsize < reinterpret_cast<char *>(maxevent)) {
@@ -237,23 +237,26 @@ void PATHI_releaseevent(int e, PATHEVENTRESULT result) {
     PATHI_removeevent(event);
 }
 
+// NON_MATCHING: full event-ID comparison restored; normalized DWARF is exact,
+// but the shared event lookup still has different address lifetimes.
 void PATHI_seteventfilter(PATHEVENT *in_event, int onOff) {
     PATHEVENT *event;
 
-    event = PATHI_getevent(in_event->eventID, 0xffffff);
+    event = PATHI_getevent(in_event->eventID, 0xffffffff);
     if (event == 0) {
         return;
     }
     event->beingFiltered = onOff;
 }
 
+// NON_MATCHING: staged event address restores index ownership; global-address scheduling and event's DWARF home still differ.
 void PATHI_clearalleventfilters() {
     int i;
     PATHEVENT *event;
 
     for (i = 0; i < Path::pfstate->pmap->numevents; i++) {
-        event = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(Path::pfstate->pmap) +
-                                              Path::pfstate->peventoffsets[i] * 4);
+        event = reinterpret_cast<PATHEVENT *>(Path::pfstate->pmap);
+        event = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(event) + Path::pfstate->peventoffsets[i] * 4);
         if (event != 0) {
             event->beingFiltered = 0;
         }

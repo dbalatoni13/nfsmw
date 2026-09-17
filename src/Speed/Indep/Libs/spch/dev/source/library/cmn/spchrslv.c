@@ -6,6 +6,7 @@ void iSPCH_InitCsis(void *dataFile);
 void SPCH_GetEventDatInfo(char *eventData, int *projID, int *datID);
 void SPCH_ClearMatchParmSettings(unsigned long inChannel);
 
+// NON_MATCHING: normalized DWARF is exact; indexed-memory operand order still differs.
 static int iSPCH_BindData(char *dataFile, unsigned int inChannel) {
     int result;
     int i;
@@ -27,16 +28,14 @@ static int iSPCH_BindData(char *dataFile, unsigned int inChannel) {
             }
             i++;
         } while (i < 8);
-        i = 0;
-        do {
+        for (i = 0; i < 8; i++) {
             if (gEventDats[i].eventDat == 0) {
                 gEventDats[i].eventDat = reinterpret_cast<VoxData *>(dataFile);
-                result = 1;
                 gEventDats[i].channel = inChannel;
+                result = 1;
                 break;
             }
-            i++;
-        } while (i <= 7);
+        }
         SPCH_ClearMatchParmSettings(inChannel);
     }
 abort:

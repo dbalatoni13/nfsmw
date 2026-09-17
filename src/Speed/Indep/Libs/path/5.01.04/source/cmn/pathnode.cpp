@@ -1,5 +1,7 @@
 #include "pathi.h"
 
+// NON_MATCHING: sampleindex owns the retail zero-based sample index;
+// shared lookup/address lifetimes still differ in ASM and normalized DWARF.
 unsigned int PATHI_sampleoffset(int node) {
     unsigned int offset;
     int sampleindex;
@@ -10,9 +12,9 @@ unsigned int PATHI_sampleoffset(int node) {
         return 0;
     }
     nodeinfo = PATHI_getnode(node);
-    sampleindex = nodeinfo->index;
-    if (sampleindex > 0) {
-        offset = Path::pfstate->psampleoffsets[sampleindex - 1].offset;
+    if (nodeinfo->index > 0) {
+        sampleindex = nodeinfo->index - 1;
+        offset = Path::pfstate->psampleoffsets[sampleindex].offset;
     }
     return offset;
 }
@@ -41,18 +43,18 @@ int PATHI_beatinfo(PATHTRACK *track, PATHBEATINFO *beatinfo) {
 }
 
 int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) {
-    float scalar = static_cast<float>(beatinfo->beats) / static_cast<float>(note);
-    float fevery = static_cast<float>(every);
-    float foffset = static_cast<float>(offset);
+    float scalar = static_cast<float>(beatinfo->notes) / static_cast<float>(note);
+    float fevery = scalar * static_cast<float>(every);
+    float foffset = scalar * static_cast<float>(offset);
     int timeinbar = beatinfo->barduration - beatinfo->timetonextbar;
-    int firstsynchtime = static_cast<int>(scalar * foffset * static_cast<float>(beatinfo->beatduration));
+    int firstsynchtime = static_cast<int>(foffset * static_cast<float>(beatinfo->beatduration));
     int nextsynchtime = firstsynchtime;
     if (nextsynchtime < timeinbar) {
         do {
             if (nextsynchtime >= static_cast<int>(beatinfo->barduration)) {
                 break;
             }
-            nextsynchtime += static_cast<int>(scalar * fevery * static_cast<float>(beatinfo->beatduration));
+            nextsynchtime += static_cast<int>(fevery * static_cast<float>(beatinfo->beatduration));
         } while (nextsynchtime <= timeinbar);
     }
     if (nextsynchtime > static_cast<int>(beatinfo->barduration)) {
@@ -61,6 +63,8 @@ int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) 
     return nextsynchtime - timeinbar;
 }
 
+// NON_MATCHING: ASM and normalized DWARF still differ.
+// NON_MATCHING: beat-remainder ownership is restored; timing and global-address scheduling still differ.
 int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEATINFO &masterinfo,
                           unsigned int &waitms) {
     if (static_cast<short>(entryinfo.partID) < 0 || node < 0) {
@@ -82,14 +86,15 @@ int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEA
     int overbeatsleft = static_cast<int>(static_cast<float>(masterinfo.timetonextnode) / beatlen);
     int overbeatsdone = static_cast<int>(static_cast<float>(elapsedtime) / beatlen);
     switch (entryinfo.synch) {
-    case 2:
-        waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
-        nodebeat = nodeinfo->beats - (overbeatsleft % nodeinfo->beats) + 1;
-        break;
     case 1:
         overbeatsdone++;
         waitms = static_cast<int>(overbeatsdone * beatlen) - elapsedtime;
-        nodebeat = (overbeatsdone % nodeinfo->beats) + 1;
+        overbeatsdone %= nodeinfo->beats;
+        nodebeat = overbeatsdone + 1;
+        break;
+    case 2:
+        waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
+        nodebeat = nodeinfo->beats - (overbeatsleft % nodeinfo->beats) + 1;
         break;
     case 3:
         nodebeat = 1;
@@ -153,6 +158,7 @@ int PATHI_pickclosestbranch(int numBranches, int control, PATHFINDBRANCH *branch
     return bestBranch->dstnode;
 }
 
+// NON_MATCHING: ASM and normalized DWARF still differ.
 int PATHI_nextnode(int node, int control, int forreal) {
     PATHFINDNODE *nodeinfo;
     PATHFINDBRANCH *branches;
@@ -171,10 +177,9 @@ int PATHI_nextnode(int node, int control, int forreal) {
     branches = reinterpret_cast<PATHFINDBRANCH *>(nodeinfo + 1);
     track = Path::pfstate->track[nodeinfo->trackID];
     if (track->repeatnode == node) {
-        control = track->control;
+        control = track->repeat & 0x7f;
         if (nodeinfo->repeat > 0 && forreal != 0) {
-            track->repeat--;
-            if (track->repeat == -1) {
+            if (--track->repeat == -1) {
                 track->repeatnode = -1;
             }
         }
@@ -191,11 +196,13 @@ int PATHI_nextnode(int node, int control, int forreal) {
     return nextnode;
 }
 
+// NON_MATCHING: retail control and event-mask ownership restored; target
+// ASM and normalized DWARF still differ in shared inline/loop lifetimes.
 int PATHI_enternode(int origin, int node, int control, int forreal) {
     PATHFINDNODE *nodeinfo;
     PATHTRACK *track;
     PATHEVENT *eventp;
-    int savecontrol;
+    int savecontrol = control;
 
     if (node < 0) {
         return -1;
@@ -210,25 +217,24 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
     }
     track = Path::pfstate->track[nodeinfo->trackID];
     while (nodeinfo->index < 1) {
-        savecontrol = control;
         if (forreal != 0) {
             if (nodeinfo->index == 0) {
                 track->entryinfo = nodeinfo;
                 if (nodeinfo->controller == 1) {
-                    savecontrol = PATHI_random() & 0x7f;
+                    control = PATHI_random() & 0x7f;
                 }
                 if (Path::songprogress != 0) {
                     Path::songprogress(Path::pfstate->idflags, node);
                 }
             } else if (nodeinfo->index == -1) {
                 if (nodeinfo->repeat != 0 && node != track->repeatnode) {
-                    track->repeatnode = node;
                     track->repeat = nodeinfo->repeat;
+                    track->repeatnode = node;
                 }
             } else if (nodeinfo->index == -2) {
-                savecontrol = PATHI_random() & 0x7f;
+                control = PATHI_random() & 0x7f;
             } else if (nodeinfo->index == -3) {
-                eventp = PATHI_getevent(nodeinfo->extra.sendevent.eventID, 0xffffff);
+                eventp = PATHI_getevent(nodeinfo->extra.sendevent.eventID, 0xffffffff);
                 if (eventp != 0) {
                     eventp = PATHI_copyevent(eventp);
                     if (eventp != 0) {
@@ -237,16 +243,12 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
                 }
             }
         }
-        node = PATHI_nextnode(node, savecontrol, forreal);
-        if (node < 0) {
-            if (Path::songprogress != 0 && forreal != 0 && origin >= 0) {
-                Path::songprogress(Path::pfstate->idflags, node);
-            }
-            return -1;
+        node = PATHI_nextnode(node, control, forreal);
+        if (node >= 0) {
+            node = static_cast<short>(PATHI_routenode(origin, node));
         }
-        node = static_cast<short>(PATHI_routenode(origin, node));
         if (node < 0) {
-            if (Path::songprogress != 0 && forreal != 0 && origin >= 0) {
+            if (Path::songprogress != nullptr && forreal != 0 && origin >= 0) {
                 Path::songprogress(Path::pfstate->idflags, node);
             }
             return -1;
@@ -255,6 +257,7 @@ int PATHI_enternode(int origin, int node, int control, int forreal) {
         if (nodeinfo == 0) {
             return -1;
         }
+        control = savecontrol;
     }
     return static_cast<short>(PATHI_routenode(origin, node));
 }
@@ -299,27 +302,21 @@ void PATHI_seeknextnode(int trackindex) {
     savetrack = *track;
     nodeinfo = PATHI_getnode(track->node);
     nodebeat = track->ramtrack != 0 ? 1 : -1;
-    if (track->nodebeat < 1 || nodeinfo->extra.beat.playbeats == 0 ||
-        nodeinfo->beats * nodeinfo->bars < track->nodebeat) {
-        if (track->node >= 0) {
-            nextnode = PATHI_nextnode(track->node, track->control, 1);
-            if (Path::songprogress != 0 && nextnode < 0) {
-                Path::songprogress(Path::pfstate->idflags, nextnode);
-            }
-        }
-    } else {
+    if (track->nodebeat > 0 && nodeinfo->extra.beat.playbeats != 0 &&
+        track->nodebeat <= static_cast<int>(nodeinfo->beats * nodeinfo->bars)) {
         nextnode = track->node;
         nodebeat = track->nodebeat;
+    } else if (track->node >= 0) {
+        nextnode = PATHI_nextnode(track->node, track->control, 1);
+        if (Path::songprogress != 0 && nextnode < 0) {
+            Path::songprogress(Path::pfstate->idflags, nextnode);
+        }
     }
     if (nextnode >= 0) {
         nextnode = PATHI_enternode(track->node, nextnode, track->control, 1);
     }
     track->node = nextnode;
-    if (nextnode > -1) {
-        track->nodebeat = nodebeat;
-    } else {
-        track->nodebeat = -1;
-    }
+    track->nodebeat = nextnode >= 0 ? static_cast<signed char>(nodebeat) : -1;
     result = PATHI_queuenode(track);
     if (result < 0 && result != -9999) {
         Path::pfstate->eventindex = savenumevents;
@@ -327,6 +324,7 @@ void PATHI_seeknextnode(int trackindex) {
     }
 }
 
+// NON_MATCHING: original beat-wrap state restored; shared-helper address scheduling still differs.
 int PATHI_queuenode(PATHTRACK *track) {
     PATHTRACK *mastertrack;
     PATHFINDNODE *nodeinfo;
@@ -336,17 +334,16 @@ int PATHI_queuenode(PATHTRACK *track) {
     int holdtime;
     int sampleoffset;
 
-    mastertrack = 0;
-    playbeat = 0;
-    holdtime = 0;
+    mastertrack = nullptr;
+    holdtime = duration = playbeat = 0;
     if (Path::pfstate->mastertrack > -1) {
         mastertrack = Path::pfstate->track[Path::pfstate->mastertrack];
     }
     if (track->node < 0) {
-        track->entryinfo = 0;
-        track->newestrequesthandle = -1;
-        track->nodebeat = -1;
+        track->entryinfo = nullptr;
         track->node = -1;
+        track->nodebeat = -1;
+        track->newestrequesthandle = -1;
         return 0;
     }
     nodeinfo = PATHI_getnode(track->node);
@@ -367,11 +364,11 @@ int PATHI_queuenode(PATHTRACK *track) {
         bool forcesynch;
         bool playbeats;
 
-        havemastertrack = mastertrack != 0 && mastertrack != track;
+        havemastertrack = mastertrack != nullptr && mastertrack != track;
         forcesynch = track->entryinfo->extra.beat.forcesynch != 0 && havemastertrack;
         playbeats = track->entryinfo->extra.beat.playbeats != 0;
-        masterinfo.beatduration = 0;
         masterinfo.timetonextbeat = 0;
+        masterinfo.beatduration = 0;
         if (havemastertrack) {
             PATHI_beatinfo(mastertrack, &masterinfo);
         }
@@ -382,7 +379,7 @@ int PATHI_queuenode(PATHTRACK *track) {
                 track->nextbeattime -= Path::pfstate->timerinterval * 5;
                 return 0;
             }
-        } else if (forcesynch && Path::pfstate->timerinterval <= masterinfo.timetonextbeat &&
+        } else if (forcesynch && masterinfo.timetonextbeat >= Path::pfstate->timerinterval &&
                    masterinfo.timetonextbeat < masterinfo.beatduration / 2) {
             return -9999;
         }
@@ -398,14 +395,11 @@ int PATHI_queuenode(PATHTRACK *track) {
             track->nextbeattime = masterinfo.timetonextbeat + Path::milliseconds;
             track->nextbeattime -= Path::pfstate->timerinterval * 5;
         }
+        if (!playbeats || track->nodebeat++ >= static_cast<int>(nodeinfo->beats * nodeinfo->bars)) {
+            track->nodebeat = 0;
+        }
         if (playbeats) {
-            track->nodebeat++;
-            if (nodeinfo->beats * nodeinfo->bars <= playbeat) {
-                track->nodebeat = -1;
-            }
             duration /= nodeinfo->beats * nodeinfo->bars;
-        } else {
-            track->nodebeat = -1;
         }
     }
     sampleoffset = PATHI_sampleoffset(track->node);

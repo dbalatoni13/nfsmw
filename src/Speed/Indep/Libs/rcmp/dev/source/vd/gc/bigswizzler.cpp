@@ -38,38 +38,34 @@ struct tBigSwizzler {
 
 struct _GXTexObj;
 
-static void CON_tTileSize2d(tTileSize2d *tsize, unsigned long TileSizeX,
-                            unsigned long TileSizeY, unsigned long SizeX,
-                            unsigned long SizeY) {
-    unsigned long NumberOfTilesX;
-    unsigned long NumberOfTilesY;
-
+static void CON_tTileSize2d(tTileSize2d *tsize, u32 TileSizeX,
+                            u32 TileSizeY, u32 SizeX,
+                            u32 SizeY) {
     tsize->TileWidth = TileSizeX;
     tsize->TileHeight = TileSizeY;
     tsize->Width = SizeX;
     tsize->Height = SizeY;
-    NumberOfTilesX = SizeX - 1;
-    NumberOfTilesX += TileSizeX;
-    NumberOfTilesY = SizeY - 1;
-    NumberOfTilesY += TileSizeY;
-    tsize->NumberOfTilesX = NumberOfTilesX / TileSizeX;
-    tsize->NumberOfTilesY = NumberOfTilesY / TileSizeY;
+    tsize->NumberOfTilesX = tsize->Width - 1;
+    tsize->NumberOfTilesX += TileSizeX;
+    tsize->NumberOfTilesX /= TileSizeX;
+    tsize->NumberOfTilesY = tsize->Height - 1;
+    tsize->NumberOfTilesY += TileSizeY;
+    tsize->NumberOfTilesY /= TileSizeY;
     tsize->TileSize = TileSizeX * TileSizeY;
 }
 
-static void CON_tPixAdr2d(tPixAdr2d *padr, unsigned long x, unsigned long y,
-                          tTileSize2d *tsize) {
+static void CON_tPixAdr2d(tPixAdr2d *padr, u32 x, u32 y, tTileSize2d *tsize) {
     unsigned int TileX;
     unsigned int TileY;
     unsigned int PixX;
     unsigned int PixY;
 
     TileX = ((y * tsize->Width + x) / tsize->TileSize) % tsize->NumberOfTilesX;
-    TileY = (y / tsize->TileHeight) * tsize->TileHeight;
-    PixX = (x % tsize->TileWidth) + TileX * tsize->TileWidth;
-    PixY = (((y * tsize->Width + x) % tsize->TileSize) / tsize->TileWidth) + TileY;
-    padr->X = PixX;
-    padr->Y = PixY;
+    TileY = y / tsize->TileHeight;
+    PixX = x % tsize->TileWidth;
+    PixY = ((y * tsize->Width + x) % tsize->TileSize) / tsize->TileWidth;
+    padr->X = PixX + TileX * tsize->TileWidth;
+    padr->Y = PixY + TileY * tsize->TileHeight;
 }
 
 static int GC_swizzleGetPixelOffset16(int x, int y, int width) {
@@ -82,15 +78,15 @@ static int GC_swizzleGetPixelOffset16(int x, int y, int width) {
     NumberOfBlocksX = (width + 3) >> 2;
     XBlock = x >> 2;
     YBlock = y >> 2;
-    XPix = (x & 3) * 2;
-    YPix = (y & 3) * 8;
-    return (((YBlock * NumberOfBlocksX + XBlock) << 5) + (YPix + XPix));
+    XPix = x & 3;
+    YPix = y & 3;
+    return ((YBlock * NumberOfBlocksX + XBlock) << 5) + (YPix * 8 + XPix * 2);
 }
 
-void DELETE_tBigSwizzler(tBigSwizzler *swizzler) {
-    RCMP::rcmp_sys.FreeMem(swizzler->TextureData);
-    RCMP::rcmp_sys.FreeMem(swizzler->TextureData2);
-    RCMP::rcmp_sys.FreeMem(swizzler);
+void DELETE_tBigSwizzler(tBigSwizzler *This) {
+    RCMP::rcmp_sys.FreeMem(This->TextureData);
+    RCMP::rcmp_sys.FreeMem(This->TextureData2);
+    RCMP::rcmp_sys.FreeMem(This);
 }
 
 struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
@@ -152,8 +148,7 @@ struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
     for (y = 0; y < This->Height; ++y) {
         for (x = 0; x < This->Width; ++x) {
             CON_tPixAdr2d(&padr, x, y, &tsize);
-            CurPixLut = This->TextureData;
-            CurTileLut = CurPixLut + (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2);
+            CurTileLut = This->TextureData + (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2);
             CurTileLut->X = static_cast<unsigned char>(padr.X / TileSizeX);
             CurTileLut->Y = static_cast<unsigned char>(padr.Y / TileSizeY);
         }
@@ -167,12 +162,7 @@ struct tBigSwizzler *NEW_tBigSwizzlerTexture(_GXTexObj *tTexp) {
     for (y = 0; y < This->TextureHeight; ++y) {
         for (x = 0; x < This->TextureWidth; ++x) {
             CON_tPixAdr2d(&padr, x, y, &tsize);
-            CurPixLut = reinterpret_cast<tBigSTPix *>(
-                reinterpret_cast<unsigned char *>(This->TextureData2) +
-                (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2) *
-                    2);
-            CurTileLut = This->TextureData2;
-            CurPixLut += CurTileLut - CurTileLut;
+            CurPixLut = This->TextureData2 + (GC_swizzleGetPixelOffset16(x, y, This->TextureWidth) / 2);
             CurPixLut->X = static_cast<unsigned char>(padr.X % TileSizeX);
             CurPixLut->Y = static_cast<unsigned char>((padr.Y % TileSizeY) - y + 0x80);
         }

@@ -27,10 +27,7 @@ void TaskManager::BootupCheck(const BootupCheckParams *params, unsigned int nEnt
     this->mTaskList[0].InitBootupCheck(params);
 
     if (nEntries > 0) {
-        const char *allEntries = ALL_ENTRIES;
-
-        this->mTaskList[1].mTask = TASK_FINDENTRIES;
-        this->mTaskList[1].InitFindEntries(allEntries, nullptr);
+        this->mTaskList[1].InitFindEntries(ALL_ENTRIES, nullptr);
         this->mTaskList[2].mTask = TASK_LOAD;
         this->mTaskList[2].InitLoad(nEntries, entryNames, content, nullptr, nullptr);
     }
@@ -70,11 +67,9 @@ void TaskManager::FindEntries(const char *entryNamePattern, const TitleInfo *tit
     if (this->mMainTask == TASK_NONE) {
         this->_ClearTaskList();
         this->mMainTask = TASK_FINDENTRIES;
-        this->mTaskList[0].mTask = TASK_FINDENTRIES;
         this->mTaskList[0].InitFindEntries(entryNamePattern, titleInfo);
         this->_StartTask();
     } else {
-        this->mTaskList[1].mTask = TASK_FINDENTRIES;
         this->mTaskList[1].InitFindEntries(entryNamePattern, titleInfo);
         if (this->mMemcardImpl->IsActiveTaskNone()) {
             this->mCurTask--;
@@ -296,7 +291,6 @@ void TaskManager::_StartTask() {
 
 void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other) {
     McTask *curTask = &this->mTaskList[this->mCurTask];
-    asm volatile("" : : : "r28");
 
     switch (curTask->mTask) {
     case TASK_NONE:
@@ -310,8 +304,8 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
             this->mTaskList[2].mDetails.mLoad.mNumEntries != 0) {
             if (this->mTaskList[2].mDetails.mLoad.mLoadInfos != nullptr) {
                 delete[] this->mTaskList[2].mDetails.mLoad.mLoadInfos;
-                this->mTaskList[2].mDetails.mLoad.mLoadInfos = nullptr;
             }
+            this->mTaskList[2].mDetails.mLoad.mLoadInfos = nullptr;
             this->_ClearTaskList();
         }
         this->mCurTask++;
@@ -327,9 +321,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                 curTask->mDetails.mLoad.mLoadInfos = nullptr;
                 this->mCurTask++;
             }
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->LoadDone(reinterpret_cast<const char *>(other));
         } else if (result == RESULT_RETRY) {
             if (this->mMainTask == TASK_BOOTUPCHECK) {
@@ -346,8 +338,14 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
             this->_ClearOldMsgs();
         } else {
             if (this->mMainTask == TASK_BOOTUPCHECK) {
-                if (status != STATUS_NO_CARD && status != STATUS_CARD_REMOVED &&
-                    status != STATUS_CARD_UNFORMATTED && status != STATUS_WRONG_DEVICE) {
+                if (status == STATUS_NO_CARD || status == STATUS_CARD_REMOVED ||
+                    status == STATUS_CARD_UNFORMATTED || status == STATUS_WRONG_DEVICE) {
+                    if (curTask->mDetails.mLoad.mLoadInfos != nullptr) {
+                        delete[] curTask->mDetails.mLoad.mLoadInfos;
+                    }
+                    curTask->mDetails.mLoad.mLoadInfos = nullptr;
+                    this->mCurTask++;
+                } else {
                     if (result == RESULT_CANCELLED && status == STATUS_CARD_CHANGED) {
                         if (curTask->mDetails.mLoad.mLoadInfos != nullptr) {
                             delete[] curTask->mDetails.mLoad.mLoadInfos;
@@ -357,6 +355,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                     } else if (status == STATUS_CARD_CHANGED) {
                         this->_ClearOldMsgs();
                         this->mCurTask--;
+                        curTask->mDetails.mLoad.mLastEntryFound = 0;
                         curTask->mDetails.mLoad.mCurEntry = 0;
                         {
                             unsigned int iEntry;
@@ -377,12 +376,6 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                             this->mCurTask++;
                         }
                     }
-                } else {
-                    if (curTask->mDetails.mLoad.mLoadInfos != nullptr) {
-                        delete[] curTask->mDetails.mLoad.mLoadInfos;
-                    }
-                    curTask->mDetails.mLoad.mLoadInfos = nullptr;
-                    this->mCurTask++;
                 }
                 this->mTaskList[0].mDetails.mBootupCheck.mCardStatus = status;
             } else {
@@ -392,9 +385,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                 curTask->mDetails.mLoad.mLoadInfos = nullptr;
                 this->mCurTask++;
             }
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->Failed(result, status);
         }
         if (status >= STATUS_ENTRY_CORRUPTED && status <= STATUS_ENTRY_DELETED) {
@@ -413,9 +404,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
             this->_ClearOldMsgs();
         } else {
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->SaveCheckDone(result, status);
         }
         if (this->mMainTask == TASK_MONITOR) {
@@ -428,18 +417,14 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
     case TASK_SAVE:
         if (result == RESULT_SUCCESS) {
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->SaveDone(reinterpret_cast<const char *>(other));
         } else if (result == RESULT_RETRY) {
             this->mIGame->Retry(status);
             this->_ClearOldMsgs();
         } else {
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->Failed(result, status);
         }
         if (this->mMainTask == TASK_MONITOR) {
@@ -452,21 +437,17 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
     case TASK_DELETE:
         if (result == RESULT_SUCCESS) {
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->DeleteDone(reinterpret_cast<const char *>(other));
         } else if (result == RESULT_RETRY) {
             this->mIGame->Retry(status);
             this->_ClearOldMsgs();
         } else {
             if (result == RESULT_CANCELLED) {
-                this->mWarningMsgShown = true;
+                this->mCheckingMsgShown = true;
             }
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->Failed(result, status);
         }
         if (status == STATUS_ENTRY_NOT_FOUND) {
@@ -486,18 +467,16 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                 {
                     unsigned int iEntry;
 
-                    this->mTaskList[2].mDetails.mLoad.mLastEntryFound = 0;
-                    for (iEntry = 0; iEntry < this->mTaskList[2].mDetails.mLoad.mNumEntries; iEntry++) {
+                    for (iEntry = 0; this->mTaskList[2].mDetails.mLoad.mNumEntries > iEntry; iEntry++) {
                         if (this->mTaskList[2].mDetails.mLoad.mLoadInfos[iEntry].mTryLoad) {
                             this->mTaskList[2].mDetails.mLoad.mLastEntryFound = iEntry + 1;
                         }
                     }
                 }
-            }
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
+            } else {
                 this->_ClearMainTask();
+                this->mIGame->FindEntriesDone(status);
             }
-            this->mIGame->FindEntriesDone(status);
         } else if (result == RESULT_RETRY) {
             if (this->mCurTask != 0 && this->mMainTask == TASK_BOOTUPCHECK) {
                 this->mCurTask = 0;
@@ -508,9 +487,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
             if (this->mMainTask == TASK_FINDENTRIES ||
                 (this->mMainTask == TASK_MONITOR &&
                  this->mTaskList[this->mCurTask].mTask == TASK_FINDENTRIES)) {
-                if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                    this->_ClearMainTask();
-                }
+                this->_ClearMainTask();
                 this->mIGame->Failed(result, status);
             } else if (this->mMainTask == TASK_BOOTUPCHECK) {
                 this->mTaskList[0].mDetails.mBootupCheck.mCardStatus = status;
@@ -532,6 +509,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
         if (this->mMainTask == TASK_CHECKCARD) {
             if (result == RESULT_RETRY) {
                 this->mIGame->Retry(status);
+                this->_ClearOldMsgs();
             } else {
                 this->mCurTask++;
                 this->_ClearMainTask();
@@ -547,26 +525,29 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
                     this->mIGame->CardChanged(RESULT_CANCELLED, status);
                     this->mCancelledCardChangedCalled = true;
                 }
+                if (result != RESULT_CANCELLED) {
+                    this->mWarningMsgShown = false;
+                    this->mLastMessageId = 0;
+                }
             } else {
                 if (result != RESULT_RETRY) {
-                    curTask->mDetails.mMonitorStatus = status == STATUS_CARD_CHANGED ? STATUS_OK : status;
+                    status = status == STATUS_CARD_CHANGED ? STATUS_OK : status;
+                    curTask->mDetails.mMonitorStatus = status;
                     if (result == RESULT_CANCELLED) {
                         this->mMonitorState = static_cast<MonitorState>(static_cast<int>(result));
                     }
-                }
-                if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
                     this->_ClearMainTask();
+                    this->mIGame->SetMonitorDone(status, this->mMonitorState);
+                    this->mSetMonitorDoneCalled = true;
                 }
-                this->mIGame->SetMonitorDone(curTask->mDetails.mMonitorStatus, this->mMonitorState);
-                this->mSetMonitorDoneCalled = true;
             }
 
-            if (result == RESULT_RETRY) {
+            if (result == RESULT_CANCELLED) {
                 this->mCancelledCardChangedCalled = true;
+            }
+            if (result == RESULT_RETRY) {
                 this->_ClearOldMsgs();
             } else {
-                this->mWarningMsgShown = false;
-                this->mLastMessageId = 0;
                 if (this->mTaskList[this->mCurTask + 1].mTask != TASK_NONE) {
                     this->mCurTask++;
                 }
@@ -579,9 +560,7 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
             this->_ClearOldMsgs();
         } else {
             this->mCurTask++;
-            if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
-                this->_ClearMainTask();
-            }
+            this->_ClearMainTask();
             this->mIGame->SetAutosaveDone(result, status, *static_cast<AutosaveState *>(other));
         }
         if (this->mMainTask == TASK_MONITOR) {

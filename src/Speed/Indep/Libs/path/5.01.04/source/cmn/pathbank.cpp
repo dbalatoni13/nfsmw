@@ -18,40 +18,41 @@ int PATHI_loadbank(PATHTRACK *track, int subbanknum) {
     bool shouldpurge;
     int subbanksize;
 
-    if (track->trackimp == 0) {
+    if (track->trackimp == nullptr) {
         if ((Path::debugchannels & 0x100) != 0) {
-            PATHI_printf("( %.8s )  PATH_createbankimp not called yet\n");
+            PATHI_printf("( %.8s )  PATH_createbankimp not called yet\n", track->trackname);
         }
         return PATHERR_NOT_INITED;
     }
-    if (subbanknum >= track->trackimp->GetMaxSubBanks()) {
+    if (subbanknum >= track->trackimp->GetNumSubBanks()) {
         if ((Path::debugchannels & 0x100) != 0) {
-            PATHI_printf("( %.8s )  PATH_loadbank no subbank %d\n");
+            PATHI_printf("( %.8s )  PATH_loadbank no subbank %d\n", track->trackname, subbanknum);
         }
         return PATHERR_INV_PARAM;
     }
-    if (track->trackimp->GetSubBankPtr(subbanknum) != 0) {
+    if (track->trackimp->GetSubBankPtr(subbanknum) != nullptr) {
         if ((Path::debugchannels & 0x100) != 0) {
-            PATHI_printf("( %.8s )  PATH_loadbank already loaded subbank %d\n");
+            PATHI_printf("( %.8s )  PATH_loadbank already loaded subbank %d\n", track->trackname, subbanknum);
         }
         return PATHERR_ALREADYLOADED;
     }
     trackinfo = PATHI_gettrackinfo(track->trackID);
-    subbankinfo = reinterpret_cast<PATHSUBBANKINFO *>(trackinfo + 1) + subbanknum;
-    canpurge = subbankinfo != 0 && trackinfo != 0 && trackinfo->purgemode != 0;
-    aramtotal = trackinfo->maxaram;
-    mramtotal = trackinfo->maxmram;
-    shouldpurge = (aramtotal != 0 && aramtotal < track->subbankaramuse + subbankinfo->aramsize) ||
-                  (mramtotal != 0 && mramtotal < track->subbankmramuse + subbankinfo->mramsize) ||
-                  track->trackimp->GetAvailSubBankPtr() == 0;
+    subbankinfo = reinterpret_cast<PATHSUBBANKINFO *>(trackinfo + 1);
+    subbankinfo += subbanknum;
+    aramtotal = track->subbankaramuse + subbankinfo->aramsize;
+    mramtotal = track->subbankmramuse + subbankinfo->mramsize;
+    canpurge = subbankinfo != nullptr && trackinfo != nullptr && trackinfo->purgemode != 0;
+    shouldpurge = (trackinfo->maxaram != 0 &&
+                   (aramtotal > trackinfo->maxaram || mramtotal > trackinfo->maxaram)) ||
+                  track->trackimp->GetAvailSubBankPtr() == nullptr;
     if (canpurge && shouldpurge) {
         if (trackinfo->purgemode == 2) {
-            lowesti = -1;
-            lowest = 0x7fffffff;
             oldest = 0x7fffffff;
-            for (i = 0; i < track->trackimp->GetMaxSubBanks(); i++) {
+            lowest = 0x7fffffff;
+            lowesti = -1;
+            for (i = 0; i < track->trackimp->GetNumSubBanks(); i++) {
                 subbank = track->trackimp->GetSubBankPtr(i);
-                if (subbank != 0 && subbank->info.priority <= lowest &&
+                if (subbank != nullptr && subbank->info.priority <= lowest &&
                     (subbank->info.priority < lowest || subbank->lastplaytime < static_cast<int>(oldest))) {
                     lowesti = i;
                     oldest = subbank->lastplaytime;
@@ -72,7 +73,7 @@ int PATHI_loadbank(PATHTRACK *track, int subbanknum) {
         track->subbankaramuse += subbankinfo->aramsize;
         track->subbankmramuse += subbankinfo->mramsize;
         subbank = track->trackimp->GetSubBankPtr(subbanknum);
-        if (subbank != 0) {
+        if (subbank != nullptr) {
             subbank->info = *subbankinfo;
         }
     }
@@ -112,6 +113,7 @@ int PATHI_subbankready(PATHTRACK *track, int subbanknum) {
     return 0;
 }
 
+// NON_MATCHING: exact DWARF; file-operation initialization scheduling still differs in ASM.
 int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
     if (subbanknum < 0 || subbanknum >= track->trackimp->GetNumSubBanks()) {
         return PATHERR_INV_PARAM;
@@ -119,15 +121,14 @@ int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
     if (track->loadingsubbank >= 0) {
         return PATHERR_PENDING;
     }
-    if (track->trackimp->GetSubBankPtr(subbanknum) != 0) {
+    PATHSUBBANKSTATUS *subbank = track->trackimp->GetSubBankPtr(subbanknum);
+    if (subbank != nullptr) {
         return PATHERR_ALREADYLOADED;
     }
 
-    PATHSUBBANKSTATUS *subbank;
-
     subbank = track->trackimp->GetAvailSubBankPtr();
 
-    if (subbank == 0) {
+    if (subbank == nullptr) {
         return PATHERR_TOOMANY;
     }
 

@@ -39,6 +39,7 @@ static void discardbits(int bits) {
     }
 }
 
+// NON_MATCHING: original bit fields restored; global-address scheduling and counter DWARF differ.
 extern "C" int madvlcdecode() {
     int *entry;
     int val;
@@ -63,19 +64,20 @@ extern "C" int madvlcdecode() {
 
     index = 1;
     for (;;) {
-        entry = &madvlctbl1[(madshiftreg >> 0x15) & 0x1ff];
+        entry = &madvlctbl1[madshiftreg >> 23];
         val = *entry;
         bits = val & 0xff;
         if (bits > 9) {
             if (!(val & 0x20)) {
                 if (!(val & 0x10)) {
                     discardbits(9);
-                    val = madvlctbl2[(static_cast<unsigned char>(madshiftreg))];
+                    val = madvlctbl2[madshiftreg >> 24];
+                    bits = val & 0xff;
                 } else {
                     discardbits(6);
-                    val = madvlctbl3[(static_cast<unsigned char>(madshiftreg))];
+                    val = madvlctbl3[madshiftreg >> 24];
+                    bits = val & 0xff;
                 }
-                bits = val & 0xff;
             } else if (!(val & 0x10)) {
                 discardbits(6);
                 val = madshiftreg;

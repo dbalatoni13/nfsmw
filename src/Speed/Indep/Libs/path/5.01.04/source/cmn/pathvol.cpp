@@ -1,5 +1,6 @@
 #include "pathi.h"
 
+// NON_MATCHING: global-state address hoisting still changes ASM and result's DWARF home.
 int PATH_volume(int tracks, signed char scale) {
     int result;
 
@@ -26,7 +27,7 @@ int PATH_volume(int tracks, signed char scale) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track = Path::pfstate->track[t];
 
-                    if (track != 0 && ((static_cast<unsigned int>(tracks) >> t) & 1) == 1) {
+                    if (track != 0 && (((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0) {
                         track->volscale = scale;
                         if (track->volumefade.fadeto < 0) {
                             track->trackimp->SetVolume(track->volume * scale / 100);
@@ -44,8 +45,8 @@ int PATH_volume(int tracks, signed char scale) {
 void PATHI_volume(PATHTRACK *track, signed char volume) {
     track->volume = volume;
     track->trackimp->SetVolume(volume * track->volscale / 100);
+    track->volumefade.fadenum = track->volumefade.fadeto = track->volumefade.fadefrom = -1;
     track->volumefade.fadestart = 0;
-    track->volumefade.fadeto = track->volumefade.fadefrom = track->volumefade.fadenum = -1;
 }
 
 void PATHI_fade(PATHTRACK *track, int fadeto, int fadetime, int fadenum) {
@@ -109,7 +110,7 @@ void PATHI_setfadevolume(PATHTRACK *track) {
     PATHFADEINFO fadeinfo;
     float pct;
     float range;
-    float vol;
+    float vol = -1.0f;
     float lowvol;
 
     range = static_cast<float>(track->volumefade.fadeto) - static_cast<float>(track->volumefade.fadefrom);
@@ -119,25 +120,25 @@ void PATHI_setfadevolume(PATHTRACK *track) {
     pct = static_cast<float>(Path::milliseconds - track->volumefade.fadestart) / fadeinfo.ms;
     if (pct >= 1.0f) {
         track->volume = track->volumefade.fadeto;
-        track->volumefade.fadenum = -1;
-        track->volumefade.fadestart = 0;
         track->volumefade.fadefrom = -1;
         track->volumefade.fadeto = -1;
+        track->volumefade.fadenum = -1;
+        track->volumefade.fadestart = 0;
         track->trackimp->SetVolume(track->volume * track->volscale / 100);
         return;
     }
     if (fadeinfo.flip != 0) {
         pct = 1.0f - pct;
     }
-    vol = 0.0f;
     switch (fadeinfo.id) {
     case 2:
-        pct *= pct;
+        vol = 1.0f - pct * pct;
+        break;
     case 1:
         vol = 1.0f - pct;
         break;
     case 3:
-        vol = 1.0f / pct * 0.01f;
+        vol = 1.0f / pct * 0.04f;
         break;
     }
     lowvol = static_cast<float>(track->volumefade.fadefrom);
@@ -148,7 +149,8 @@ void PATHI_setfadevolume(PATHTRACK *track) {
         range = -range;
     }
     if (vol >= 0.0f && vol <= 1.0f) {
-        track->trackimp->SetVolume(static_cast<int>((range * vol + lowvol) * track->volscale * 0.01f));
+        vol = range * vol + lowvol;
+        track->trackimp->SetVolume(static_cast<int>(vol * track->volscale * 0.01f));
     }
 }
 
@@ -156,7 +158,7 @@ void PATHI_setsfxfadevolume(PATHTRACK *track) {
     PATHFADEINFO fadeinfo;
     float pct;
     float range;
-    float vol;
+    float vol = -1.0f;
     float lowvol;
 
     range = static_cast<float>(track->sfxsendfade.fadeto) - static_cast<float>(track->sfxsendfade.fadefrom);
@@ -166,24 +168,24 @@ void PATHI_setsfxfadevolume(PATHTRACK *track) {
     pct = static_cast<float>(Path::milliseconds - track->sfxsendfade.fadestart) / fadeinfo.ms;
     if (pct >= 1.0f) {
         track->trackimp->SetFXSendLevel(track->sfxbus, track->sfxsendfade.fadeto);
-        track->sfxsendfade.fadestart = 0;
-        track->sfxsendfade.fadenum = -1;
         track->sfxsendfade.fadefrom = -1;
         track->sfxsendfade.fadeto = -1;
+        track->sfxsendfade.fadenum = -1;
+        track->sfxsendfade.fadestart = 0;
         return;
     }
     if (fadeinfo.flip != 0) {
         pct = 1.0f - pct;
     }
-    vol = 0.0f;
     switch (fadeinfo.id) {
     case 2:
-        pct *= pct;
+        vol = 1.0f - pct * pct;
+        break;
     case 1:
         vol = 1.0f - pct;
         break;
     case 3:
-        vol = 1.0f / pct * 0.01f;
+        vol = 1.0f / pct * 0.04f;
         break;
     }
     lowvol = static_cast<float>(track->sfxsendfade.fadefrom);
@@ -194,7 +196,8 @@ void PATHI_setsfxfadevolume(PATHTRACK *track) {
         range = -range;
     }
     if (vol >= 0.0f && vol <= 1.0f) {
-        track->trackimp->SetFXSendLevel(track->sfxbus, static_cast<int>(range * vol + lowvol));
+        vol = range * vol + lowvol;
+        track->trackimp->SetFXSendLevel(track->sfxbus, static_cast<int>(vol));
     }
 }
 
@@ -202,7 +205,7 @@ void PATHI_setdrylevelfadevolume(PATHTRACK *track) {
     PATHFADEINFO fadeinfo;
     float pct;
     float range;
-    float vol;
+    float vol = -1.0f;
     float lowvol;
 
     range = static_cast<float>(track->drylevelfade.fadeto) - static_cast<float>(track->drylevelfade.fadefrom);
@@ -212,24 +215,24 @@ void PATHI_setdrylevelfadevolume(PATHTRACK *track) {
     pct = static_cast<float>(Path::milliseconds - track->drylevelfade.fadestart) / fadeinfo.ms;
     if (pct >= 1.0f) {
         track->trackimp->SetDryLevel(track->drylevelfade.fadeto);
-        track->drylevelfade.fadestart = 0;
-        track->drylevelfade.fadenum = -1;
         track->drylevelfade.fadefrom = -1;
         track->drylevelfade.fadeto = -1;
+        track->drylevelfade.fadenum = -1;
+        track->drylevelfade.fadestart = 0;
         return;
     }
     if (fadeinfo.flip != 0) {
         pct = 1.0f - pct;
     }
-    vol = 0.0f;
     switch (fadeinfo.id) {
     case 2:
-        pct *= pct;
+        vol = 1.0f - pct * pct;
+        break;
     case 1:
         vol = 1.0f - pct;
         break;
     case 3:
-        vol = 1.0f / pct * 0.01f;
+        vol = 1.0f / pct * 0.04f;
         break;
     }
     lowvol = static_cast<float>(track->drylevelfade.fadefrom);
@@ -240,7 +243,8 @@ void PATHI_setdrylevelfadevolume(PATHTRACK *track) {
         range = -range;
     }
     if (vol >= 0.0f && vol <= 1.0f) {
-        track->trackimp->SetDryLevel(static_cast<int>(range * vol + lowvol));
+        vol = range * vol + lowvol;
+        track->trackimp->SetDryLevel(static_cast<int>(vol));
     }
 }
 
@@ -248,7 +252,7 @@ void PATHI_setpitchfadevolume(PATHTRACK *track) {
     PATHFADEINFO fadeinfo;
     float pct;
     float range;
-    float vol;
+    float vol = -1.0f;
     float lowvol;
 
     range = static_cast<float>(track->pitchfade.fadeto) - static_cast<float>(track->pitchfade.fadefrom);
@@ -258,24 +262,24 @@ void PATHI_setpitchfadevolume(PATHTRACK *track) {
     pct = static_cast<float>(Path::milliseconds - track->pitchfade.fadestart) / fadeinfo.ms;
     if (pct >= 1.0f) {
         track->trackimp->SetPitchMult(track->pitchfade.fadeto);
-        track->pitchfade.fadestart = 0;
-        track->pitchfade.fadenum = -1;
         track->pitchfade.fadefrom = -1;
         track->pitchfade.fadeto = -1;
+        track->pitchfade.fadenum = -1;
+        track->pitchfade.fadestart = 0;
         return;
     }
     if (fadeinfo.flip != 0) {
         pct = 1.0f - pct;
     }
-    vol = 0.0f;
     switch (fadeinfo.id) {
     case 2:
-        pct *= pct;
+        vol = 1.0f - pct * pct;
+        break;
     case 1:
         vol = 1.0f - pct;
         break;
     case 3:
-        vol = 1.0f / pct * 0.01f;
+        vol = 1.0f / pct * 0.04f;
         break;
     }
     lowvol = static_cast<float>(track->pitchfade.fadefrom);
@@ -286,7 +290,8 @@ void PATHI_setpitchfadevolume(PATHTRACK *track) {
         range = -range;
     }
     if (vol >= 0.0f && vol <= 1.0f) {
-        track->trackimp->SetPitchMult(static_cast<int>(range * vol + lowvol));
+        vol = range * vol + lowvol;
+        track->trackimp->SetPitchMult(static_cast<int>(vol));
     }
 }
 
@@ -294,7 +299,7 @@ void PATHI_setstretchfadevolume(PATHTRACK *track) {
     PATHFADEINFO fadeinfo;
     float pct;
     float range;
-    float vol;
+    float vol = -1.0f;
     float lowvol;
 
     range = static_cast<float>(track->stretchfade.fadeto) - static_cast<float>(track->stretchfade.fadefrom);
@@ -304,24 +309,24 @@ void PATHI_setstretchfadevolume(PATHTRACK *track) {
     pct = static_cast<float>(Path::milliseconds - track->stretchfade.fadestart) / fadeinfo.ms;
     if (pct >= 1.0f) {
         track->trackimp->SetStretchMult(track->stretchfade.fadeto);
-        track->stretchfade.fadestart = 0;
-        track->stretchfade.fadenum = -1;
         track->stretchfade.fadefrom = -1;
         track->stretchfade.fadeto = -1;
+        track->stretchfade.fadenum = -1;
+        track->stretchfade.fadestart = 0;
         return;
     }
     if (fadeinfo.flip != 0) {
         pct = 1.0f - pct;
     }
-    vol = 0.0f;
     switch (fadeinfo.id) {
     case 2:
-        pct *= pct;
+        vol = 1.0f - pct * pct;
+        break;
     case 1:
         vol = 1.0f - pct;
         break;
     case 3:
-        vol = 1.0f / pct * 0.01f;
+        vol = 1.0f / pct * 0.04f;
         break;
     }
     lowvol = static_cast<float>(track->stretchfade.fadefrom);
@@ -332,6 +337,7 @@ void PATHI_setstretchfadevolume(PATHTRACK *track) {
         range = -range;
     }
     if (vol >= 0.0f && vol <= 1.0f) {
-        track->trackimp->SetStretchMult(static_cast<int>(range * vol + lowvol));
+        vol = range * vol + lowvol;
+        track->trackimp->SetStretchMult(static_cast<int>(vol));
     }
 }

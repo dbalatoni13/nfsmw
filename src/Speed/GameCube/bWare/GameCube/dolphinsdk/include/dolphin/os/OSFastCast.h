@@ -36,11 +36,32 @@ static inline void OSInitFastCast(void) {
         oris    r3, r3, OS_GQR_S16
         mtspr   GQR5, r3
   }
-#else
-
+#elif defined(__GNUC__) || defined(__SN__)
+    __asm__("li 3, 4\n"
+            "oris 3, 3, 4\n"
+            "mtspr 914, 3\n"
+            "li 3, 5\n"
+            "oris 3, 3, 5\n"
+            "mtspr 915, 3\n"
+            "li 3, 6\n"
+            "oris 3, 3, 6\n"
+            "mtspr 916, 3\n"
+            "li 3, 7\n"
+            "oris 3, 3, 7\n"
+            "mtspr 917, 3" : : : "r3");
 #endif
 }
 // clang-format off
+
+#if defined(__GNUC__) || defined(__SN__)
+static inline void OSSetGQR6(unsigned int type, unsigned int scale) {
+    unsigned int val;
+
+    val = type | (scale << 8);
+    val |= val << 16;
+    __asm__("mtspr 918, %0" : : "b"(val));
+}
+#endif
 
 static inline s16 __OSf32tos16(register f32 inF)
 {

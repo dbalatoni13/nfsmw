@@ -41,12 +41,18 @@ void iSPCH_RuleSet(EventSpec *eventSpec, VoxEvent *event, int sentenceNum, unsig
                 rule.parmType = static_cast<ParmType>(ruleData[i * 3 + 2]);
                 ruleID = rule.ruleID;
                 parmIndex = rule.parmIndex;
-                if ((rule.parmType < kParmType_Constant && rule.parmType == kParmType_Variable) ||
-                    rule.parmType == kParmType_BankID) {
+                switch (rule.parmType) {
+                case kParmType_Variable:
+                case kParmType_BankID:
                     if (iSPCH_SentenceUsesParm(sentence, parmIndex) != 0) {
                         parmValue = parms[parmIndex];
                         gCallbacks.setRule(eventSpec, ruleID, parmValue, datID);
                     }
+                    break;
+                case kParmType_Constant:
+                case kParmType_User:
+                default:
+                    break;
                 }
                 i++;
             } while (i < numRules);
@@ -176,22 +182,18 @@ static void iSPCH_GetSentenceRuleSettings(VoxEvent *event, int sentenceNum, unsi
 
     *ioSettings = 0;
     *ioFlags = 0;
-    bytesPerRule = (VoxEvent_GetNumRules(event) + 7) >> 3;
-    settingsAddr = iSPCH_GetSentenceRulesAddr(event) + sentenceNum * bytesPerRule;
+    bytesPerRule = (VoxEvent_GetNumRules(event) + 7) / 8;
     settingsSize = bytesPerRule * event->numSentences;
+    settingsAddr = iSPCH_GetSentenceRulesAddr(event);
+    settingsAddr += sentenceNum * bytesPerRule;
     flagsAddr = settingsAddr + settingsSize;
     if (bytesPerRule > 4) {
         goto abort;
     }
-    i = 0;
-    if (bytesPerRule == 0) {
-        goto abort;
-    }
-    do {
+    for (i = 0; i < bytesPerRule; i++) {
         *ioSettings += settingsAddr[i] << ((3 - i) * 8);
         *ioFlags += flagsAddr[i] << ((3 - i) * 8);
-        i++;
-    } while (i < bytesPerRule);
+    }
 abort:
     ;
 }

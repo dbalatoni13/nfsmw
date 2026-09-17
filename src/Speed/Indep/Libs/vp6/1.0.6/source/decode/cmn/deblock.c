@@ -494,6 +494,7 @@ void DeblockVerticalEdgesInNonFilteredBand
     }
 }
 
+// NON_MATCHING: loop-invariant array address allocation still differs in ASM/DWARF.
 void DeblockVerticalEdgesInNonFilteredBandNewFilter
 (
     POSTPROC_INSTANCE *pbi,
@@ -517,8 +518,7 @@ void DeblockVerticalEdgesInNonFilteredBandNewFilter
 
     QStep = QuantScale[pbi->FrameQIndex];
 
-    for (CurrentFrag = StartFrag; CurrentFrag < (StartFrag + FragsAcross);
-         CurrentFrag++) {
+    while (CurrentFrag < (StartFrag + FragsAcross - 1)) {
         Src = SrcPtr + 8 * (CurrentFrag - StartFrag + 1);
         Des = DesPtr + 8 * (CurrentFrag - StartFrag + 1);
 
@@ -576,6 +576,8 @@ void DeblockVerticalEdgesInNonFilteredBandNewFilter
             Src += PlaneLineStep;
             Des += PlaneLineStep;
         }
+
+        CurrentFrag++;
     }
 }
 

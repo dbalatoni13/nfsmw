@@ -103,9 +103,9 @@ enum UserMessage {
     UMSG_EXPIRE_DELAY = 8,
     UMSG_SHOW_CARD_CHECKING_MSG = 9,
     UMSG_OPTION1 = 10,
-    UMSG_OPTION4 = 11,
-    UMSG_OPTION2 = 12,
-    UMSG_OPTION3 = 13,
+    UMSG_OPTION2 = 11,
+    UMSG_OPTION3 = 12,
+    UMSG_OPTION4 = 13,
     UMSG_TOTAL = 14,
 };
 
@@ -736,14 +736,7 @@ struct TaskTrcStartGame : public TaskTrc {
         this->mSlotStatus[1] = STATUS_UNKNOWN;
     }
 
-    void Start(const StartGameInfo *info) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mInfo = *info;
-        this->mFirstCardChecked = info->checkCardID;
-        this->mSlotStatus[0] = STATUS_UNKNOWN;
-        this->mSlotStatus[1] = STATUS_UNKNOWN;
-    }
+    void Start(const StartGameInfo *info);
 
     StartGameInfo mInfo;
     CardID mFirstCardChecked;
@@ -803,17 +796,7 @@ struct TaskTrcSaveFile : public TaskTrc {
         this->mFilesNeeded = 0;
     }
 
-    void Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileFound = false;
-        this->mFileInfo = *finfo;
-        this->mFileName = finfo->fileName;
-        this->mBlocksNeeded = nBlocksNeeded;
-        this->mFilesNeeded = nFilesNeeded;
-        this->mState = saveTaskType == SAVETASK_CHECK ? TS_START : TS_SAVE_READY;
-    }
+    void Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded);
 
     FileInfo mFileInfo;
     OpenFileDescriptor *mFileHandle;
@@ -837,13 +820,7 @@ struct TaskTrcListFiles : public TaskTrc {
         this->mNumFilesFound = 0;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mListingStarted = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     unsigned int mNumFilesFound;
@@ -864,13 +841,7 @@ struct TaskTrcLoadFile : public TaskTrc {
         this->mFileFound = false;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mFileFound = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     bool mFileFound;
@@ -889,13 +860,7 @@ struct TaskTrcDeleteFile : public TaskTrc {
         this->mFileFound = false;
     }
 
-    void Start(CardID cID, const FileInfo *finfo) {
-        this->Clear();
-        this->TaskTrc::Init(true);
-        this->mCardID = cID;
-        this->mFileInfo = *finfo;
-        this->mFileFound = false;
-    }
+    void Start(CardID cID, const FileInfo *finfo);
 
     FileInfo mFileInfo;
     bool mFileFound;
@@ -1210,30 +1175,71 @@ inline void GcTask::End() {
     this->mParent->EndTask(this);
 }
 
+
+inline void TaskTrcStartGame::Start(const StartGameInfo *info) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mInfo = *info;
+        this->mCardID = info->checkCardID;
+        this->mFirstCardChecked = info->checkCardID;
+        this->mSlotStatus[0] = STATUS_UNKNOWN;
+        this->mSlotStatus[1] = STATUS_UNKNOWN;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcSaveFile::Start(CardID cID, const FileInfo *finfo, SaveTaskType saveTaskType, unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mFileName = this->mFileInfo.fileName;
+        this->mBlocksNeeded = nBlocksNeeded;
+        this->mFilesNeeded = nFilesNeeded;
+        this->mID = saveTaskType == SAVETASK_SAVE ? TID_TRC_SAVEFILE : TID_TRC_SAVECHECK;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcLoadFile::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcListFiles::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mListingStarted = false;
+        this->mParent->StartTask(this);
+    }
+
+inline void TaskTrcDeleteFile::Start(CardID cID, const FileInfo *finfo) {
+        this->Clear();
+        this->TaskTrc::Init(true);
+        this->mCardID = cID;
+        this->mFileInfo = *finfo;
+        this->mFileFound = false;
+        this->mParent->StartTask(this);
+    }
+
 struct GCMessage : public Message {
     GCMessage() {
         this->Init();
     }
     virtual ~GCMessage() {}
 
-#ifdef REALMC_GC_MESSAGE_INIT_INLINE
-    inline void Init() {
+    void Init() {
         this->Clear();
     }
-#else
-    void Init();
-#endif
 
-    void _SetMsgOptions(int options);
-    short *_LcGetSlotString(int slotnum);
-
-#ifdef REALMC_GC_MESSAGE_INLINE
-    inline void Clear() {
+    void Clear() {
         memset(this, 0, 0x78);
     }
-#else
-    void Clear();
-#endif
 
     void Set(LibMessage msg) {
         this->Clear();
@@ -1306,6 +1312,32 @@ struct GCMessage : public Message {
         this->info.trc.mMsgId = msgId;
         this->info.trc.mMsg = Locale::GetString(msgId, "ssii", this->_LcGetSlotString(nSlot), name, space, files);
         this->_SetMsgOptions(options);
+    }
+
+    void _SetMsgOptions(int options) {
+        this->info.trc.mNumOptions = 0;
+        if (options != 0) {
+            while (options != 0) {
+                int curOption;
+                int iOption;
+
+                curOption = options & 0xff;
+                iOption = this->info.trc.mNumOptions++;
+                this->info.trc.mOptions[iOption].mMsgId = curOption;
+                this->info.trc.mOptions[iOption].mMsg = Locale::GetString(curOption, nullptr);
+                options >>= 8;
+            }
+        }
+    }
+
+    short *_LcGetSlotString(int slotnum) {
+        static short slotA[2] = {'A', 0};
+        static short slotB[2] = {'B', 0};
+
+        if (slotnum == 1) {
+            return slotB;
+        }
+        return slotA;
     }
 };
 
@@ -1551,6 +1583,7 @@ struct McTask {
     }
 
     void InitFindEntries(const char *entryNamePattern, const TitleInfo *titleInfo) {
+        this->mTask = TASK_FINDENTRIES;
         this->mDetails.mFindEntries.Init(entryNamePattern, titleInfo);
     }
 
@@ -1648,7 +1681,9 @@ struct TaskManager {
     TaskManager(MemcardInterfaceImpl *, IGameInterface *);
 
     void _ClearMainTask() {
-        this->mMainTask = TASK_NONE;
+        if (this->mMainTask != TASK_MONITOR && this->mMainTask != TASK_BOOTUPCHECK) {
+            this->mMainTask = TASK_NONE;
+        }
     }
 
     void BootupCheck(const BootupCheckParams *, unsigned int, const char **, wchar_t *);
