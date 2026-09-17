@@ -110,16 +110,16 @@ int TrackPathManager::Unloader(bChunk *chunk) {
 }
 
 void TrackPathManager::DisableAllBarriers() {
-    for (int i = 0; i < this->NumBarriers; i++) {
-        TrackPathBarrier *barrier = this->GetBarrier(i);
+    for (int n = 0; n < this->NumBarriers; n++) {
+        TrackPathBarrier *barrier = this->GetBarrier(n);
         barrier->Enabled = 0;
     }
 }
 
 void TrackPathManager::EnableBarriers(const char *group_name) {
     unsigned int group_name_hash = bStringHash(group_name);
-    for (int i = 0; i < this->NumBarriers; i++) {
-        TrackPathBarrier *barrier = this->GetBarrier(i);
+    for (int n = 0; n < this->NumBarriers; n++) {
+        TrackPathBarrier *barrier = this->GetBarrier(n);
         if (barrier->HasGroup(group_name_hash)) {
             barrier->Enabled = 1;
 
