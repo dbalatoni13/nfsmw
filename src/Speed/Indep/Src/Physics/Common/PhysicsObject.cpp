@@ -38,19 +38,32 @@ void PhysicsObject::Behaviors::Remove(Behavior *beh) {
 PhysicsObject::PhysicsObject(const Attrib::Instance &attribs, SimableType objType, WUID wuid,
                              unsigned int num_interfaces)
     : Sim::Object(num_interfaces + 3) //
-    , ISimable(this) //
-    , IBody(this) //
-    , IAttachable(this) //
-    , mWPos(new WWorldPos(0.025f)) //
-    , mObjType(objType) //
-    , mOwner(nullptr) //
-    , mAttributes(attribs.GetConstCollection(), 0, nullptr) //
-    , mRigidBody(nullptr) //
-    , mEntity(nullptr) //
-    , mPlayer(nullptr) //
-    , mBodyService(nullptr) //
-    , mWorldID(reinterpret_cast<unsigned int>(GetInstanceHandle()) | 0x1000000) //
-    , mAttachments(new Sim::Attachments(static_cast<IAttachable *>(this))) //
+      ,
+      ISimable(this) //
+      ,
+      IBody(this) //
+      ,
+      IAttachable(this) //
+      ,
+      mWPos(new WWorldPos(0.025f)) //
+      ,
+      mObjType(objType) //
+      ,
+      mOwner(nullptr) //
+      ,
+      mAttributes(attribs.GetConstCollection(), 0, nullptr) //
+      ,
+      mRigidBody(nullptr) //
+      ,
+      mEntity(nullptr) //
+      ,
+      mPlayer(nullptr) //
+      ,
+      mBodyService(nullptr) //
+      ,
+      mWorldID(reinterpret_cast<unsigned int>(GetInstanceHandle()) | 0x1000000) //
+      ,
+      mAttachments(new Sim::Attachments(static_cast<IAttachable *>(this))) //
 {
     if (wuid != 0) {
         mWorldID = wuid;
@@ -60,24 +73,34 @@ PhysicsObject::PhysicsObject(const Attrib::Instance &attribs, SimableType objTyp
     Sim::Collision::AddParticipant(GetInstanceHandle());
 }
 
-PhysicsObject::PhysicsObject(const char *attributeClass, const char *attribName, SimableType objType,
-                             HSIMABLE owner, WUID wuid)
+PhysicsObject::PhysicsObject(const char *attributeClass, const char *attribName, SimableType objType, HSIMABLE owner, WUID wuid)
     : Sim::Object(13) //
-    , ISimable(this) //
-    , IBody(this) //
-    , IAttachable(this) //
-    , mWPos(new WWorldPos(0.025f)) //
-    , mObjType(objType) //
-    , mOwner(owner) //
-    , mAttributes(Attrib::FindCollectionWithDefault(Attrib::StringToKey(attributeClass),
-                                                    Attrib::StringToKey(attribName)),
-                  0, nullptr) //
-    , mRigidBody(nullptr) //
-    , mEntity(nullptr) //
-    , mPlayer(nullptr) //
-    , mBodyService(nullptr) //
-    , mWorldID(reinterpret_cast<unsigned int>(GetInstanceHandle()) | 0x1000000) //
-    , mAttachments(new Sim::Attachments(static_cast<IAttachable *>(this))) //
+      ,
+      ISimable(this) //
+      ,
+      IBody(this) //
+      ,
+      IAttachable(this) //
+      ,
+      mWPos(new WWorldPos(0.025f)) //
+      ,
+      mObjType(objType) //
+      ,
+      mOwner(owner) //
+      ,
+      mAttributes(Attrib::FindCollectionWithDefault(Attrib::StringToKey(attributeClass), Attrib::StringToKey(attribName)), 0, nullptr) //
+      ,
+      mRigidBody(nullptr) //
+      ,
+      mEntity(nullptr) //
+      ,
+      mPlayer(nullptr) //
+      ,
+      mBodyService(nullptr) //
+      ,
+      mWorldID(reinterpret_cast<unsigned int>(GetInstanceHandle()) | 0x1000000) //
+      ,
+      mAttachments(new Sim::Attachments(static_cast<IAttachable *>(this))) //
 {
     if (wuid != 0) {
         mWorldID = wuid;
@@ -345,8 +368,7 @@ Behavior *PhysicsObject::FindBehavior(const UCrc32 &mechanic) {
     return nullptr;
 }
 
-Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior,
-                                      Sim::Param params) {
+Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior, Sim::Param params) {
     if (IsDirty()) {
         return nullptr;
     }
@@ -379,9 +401,8 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (UTL::COM::ComparePtr(mEntity, object)) {
         return false;
     }
-    Sim::IEntity *ientity = reinterpret_cast<Sim::IEntity *>(
-        (*reinterpret_cast<UTL::COM::Object **>(object))->_mInterfaces.Find((HINTERFACE)Sim::IEntity::_IHandle)
-    );
+    Sim::IEntity *ientity =
+        reinterpret_cast<Sim::IEntity *>((*reinterpret_cast<UTL::COM::Object **>(object))->_mInterfaces.Find((HINTERFACE)Sim::IEntity::_IHandle));
     bool hasIEntity = ientity != nullptr;
     if (hasIEntity) {
         if (mEntity != nullptr) {
@@ -452,7 +473,6 @@ const WWorldPos &PhysicsObject::GetWPos() const {
 IRigidBody *PhysicsObject::GetRigidBody() {
     return mRigidBody;
 }
-
 
 void PhysicsObject::Behaviors::Reset() {
     for (const_iterator iter = begin(); iter != end(); ++iter) {

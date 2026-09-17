@@ -50,12 +50,12 @@ Attrib::StringKey Smackable::TUBE("TUBE");
 Attrib::StringKey Smackable::CONE("CONE");
 Attrib::StringKey Smackable::SPHERE("SPHERE");
 
-template <> UTL::Collections::Listable<Smackable, 160>::List UTL::Collections::Listable<Smackable, 160>::_mTable = UTL::Collections::Listable<Smackable, 160>::List();
+template <>
+UTL::Collections::Listable<Smackable, 160>::List UTL::Collections::Listable<Smackable, 160>::_mTable =
+    UTL::Collections::Listable<Smackable, 160>::List();
 
-UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Smackable("Smackable",
-                                                                       Smackable::Construct);
-UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __RBSmackable(
-    "RBSmackable", RBSmackable::Construct);
+UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Smackable("Smackable", Smackable::Construct);
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __RBSmackable("RBSmackable", RBSmackable::Construct);
 
 static const float Smackable_ManagementRate = 0.125f;
 
@@ -86,14 +86,13 @@ bool Smackable::Simplify() {
     float radius = irb->GetRadius();
     float mass = irb->GetMass();
     UMath::Matrix4 matrix = mCollisionBody->GetMatrix4();
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"),
-                 RBSimpleParams(position, velocity, angular, matrix, radius, mass));
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"), RBSimpleParams(position, velocity, angular, matrix, radius, mass));
     return true;
 }
 
 bool Smackable::TrySimplify() {
-    for (Smackable *const *iter = UTL::Collections::Listable< Smackable, 160 >::GetList().begin();
-         iter != UTL::Collections::Listable< Smackable, 160 >::GetList().end(); ++iter) {
+    for (Smackable *const *iter = UTL::Collections::Listable<Smackable, 160>::GetList().begin();
+         iter != UTL::Collections::Listable<Smackable, 160>::GetList().end(); ++iter) {
         Smackable *smack = *iter;
         if (smack->Simplify()) {
             return true;
@@ -103,7 +102,7 @@ bool Smackable::TrySimplify() {
 }
 
 ISimable *Smackable::Construct(Sim::Param params) {
-    const SmackableParams sp = params.Fetch< SmackableParams >(UCrc32(0xa6b47fac));
+    const SmackableParams sp = params.Fetch<SmackableParams>(UCrc32(0xa6b47fac));
     if (sp.fScenery == nullptr) {
         return nullptr;
     }
@@ -143,37 +142,58 @@ ISimable *Smackable::Construct(Sim::Param params) {
             return nullptr;
         }
     }
-    return new Smackable(matrix, attributes, geoms, sp.fVirginSpawn, sp.fScenery, simple_physics,
-                         is_persistant);
+    return new Smackable(matrix, attributes, geoms, sp.fVirginSpawn, sp.fScenery, simple_physics, is_persistant);
 }
 
-Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes,
-                     const CollisionGeometry::Bounds *geoms, bool virginspawn, IModel *scenery,
-                     bool simple_physics, bool is_persistant)
+Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes, const CollisionGeometry::Bounds *geoms, bool virginspawn,
+                     IModel *scenery, bool simple_physics, bool is_persistant)
     : PhysicsObject(attributes, SIMABLE_SMACKABLE, scenery->GetWorldID(), 10) //
-    , IDisposable(this) //
-    , IRenderable(this) //
-    , IExplodeable(this) //
-    , EventSequencer::IContext(this) //
-    , mAttributes(attributes) //
-    , mSimplifyWeight(0.0f) //
-    , mAge(0.0f) //
-    , mLife(Smackable_ManagementRate) //
-    , mDropTimer(0.0f) //
-    , mDropOutTimerMax(GetDropTimer(attributes)) //
-    , mOffWorldTimer(0.0f) //
-    , mAutoSimplify(attributes.AUTO_SIMPLIFY()) //
-    , mVirgin(virginspawn) //
-    , mModel(scenery) //
-    , mGeometry(geoms) //
-    , mManageTask(nullptr) //
-    , mDroppingOut(false) //
-    , mPersistant(is_persistant) //
-    , mCollisionBody(nullptr) //
-    , mSimpleBody(nullptr) //
-    , mLastImpactSpeed(UMath::Vector3::kZero) //
-    , mRBSpecs(static_cast<ISimable *>(this), 0) //
-    , mLastCollisionPosition(UMath::Vector4::kZero) //
+      ,
+      IDisposable(this) //
+      ,
+      IRenderable(this) //
+      ,
+      IExplodeable(this) //
+      ,
+      EventSequencer::IContext(this) //
+      ,
+      mAttributes(attributes) //
+      ,
+      mSimplifyWeight(0.0f) //
+      ,
+      mAge(0.0f) //
+      ,
+      mLife(Smackable_ManagementRate) //
+      ,
+      mDropTimer(0.0f) //
+      ,
+      mDropOutTimerMax(GetDropTimer(attributes)) //
+      ,
+      mOffWorldTimer(0.0f) //
+      ,
+      mAutoSimplify(attributes.AUTO_SIMPLIFY()) //
+      ,
+      mVirgin(virginspawn) //
+      ,
+      mModel(scenery) //
+      ,
+      mGeometry(geoms) //
+      ,
+      mManageTask(nullptr) //
+      ,
+      mDroppingOut(false) //
+      ,
+      mPersistant(is_persistant) //
+      ,
+      mCollisionBody(nullptr) //
+      ,
+      mSimpleBody(nullptr) //
+      ,
+      mLastImpactSpeed(UMath::Vector3::kZero) //
+      ,
+      mRBSpecs(static_cast<ISimable *>(this), 0) //
+      ,
+      mLastCollisionPosition(UMath::Vector4::kZero) //
 {
     UMath::Vector3 dimension;
     geoms->GetHalfDimensions(dimension);
@@ -200,11 +220,9 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     UCrc32 smack_class;
     if (simple_physics) {
         LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"),
-                     RBSimpleParams(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero,
-                                    UMath::Vector3::kZero, matrix, radius, mass));
+                     RBSimpleParams(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero, UMath::Vector3::kZero, matrix, radius, mass));
     } else {
-        RBComplexParams rbparams(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero,
-                                 UMath::Vector3::kZero, matrix, mass, inertia, dimension, geoms,
+        RBComplexParams rbparams(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero, UMath::Vector3::kZero, matrix, mass, inertia, dimension, geoms,
                                  active, 0);
         if (mPersistant) {
             LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("RigidBody"), rbparams);
@@ -223,9 +241,9 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     mManageTask = AddTask("Physics", 0.1f, 0.0f, Sim::TASK_FRAME_FIXED);
     CalcSimplificationWeight();
     if (mAttributes.EventSequencer().IsNotEmpty()) {
-        Sim::Collision::AddListener(static_cast<Sim::Collision::IListener *>(this),
-                                    GetInstanceHandle(), "Smackable");
-    }}
+        Sim::Collision::AddListener(static_cast<Sim::Collision::IListener *>(this), GetInstanceHandle(), "Smackable");
+    }
+}
 
 Smackable::~Smackable() {
     DetachAll();
@@ -249,8 +267,7 @@ bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynami
 
 template void UTL::Vector<ISimpleBody *, 16>::push_back(ISimpleBody *const &);
 
-bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position,
-                            float dT, IExplosion *explosion) {
+bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position, float dT, IExplosion *explosion) {
     unsigned int targets = explosion->GetTargets();
     if ((targets & 1) == 0) {
         return false;
@@ -274,11 +291,9 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
     }
     EventSequencer::IEngine *sequencer = static_cast<ISimable *>(this)->GetEventSequencer();
     if (sequencer != nullptr) {
-        sequencer->ProcessStimulus(0xab556d39, Sim::GetTime(), nullptr,
-                                   EventSequencer::QUEUE_ALLOW);
+        sequencer->ProcessStimulus(0xab556d39, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
         if (explosion->HasDamage()) {
-            sequencer->ProcessStimulus(0xffcd8a63, Sim::GetTime(), nullptr,
-                                       EventSequencer::QUEUE_ALLOW);
+            sequencer->ProcessStimulus(0xffcd8a63, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
         }
     }
     if (!static_cast<ISimable *>(this)->GetCausality() && explosion->GetCausality()) {
@@ -299,8 +314,7 @@ void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
                 float force = UMath::Max(detach, 0.0f);
                 mCollisionBody->AttachedToWorld(true, force);
             }
-            const CollisionGeometry::Bounds *cog =
-                mGeometry->GetChild(UCrc32(0x28b0bb8d));
+            const CollisionGeometry::Bounds *cog = mGeometry->GetChild(UCrc32(0x28b0bb8d));
             if (cog != nullptr) {
                 UMath::Vector3 cog_position;
                 cog->GetPosition(cog_position);
@@ -329,16 +343,14 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
             intensity = UMath::Clamp(intensity, 0.0f, 1.0f);
             level = static_cast<unsigned int>(intensity * 6.0f);
             for (unsigned int i = 0; i < level + 1; i++) {
-                system->ProcessStimulus(DamageZone::GetImpactStimulus(i).GetValue(), time,
-                                        static_cast<EventSequencer::IContext *>(this),
+                system->ProcessStimulus(DamageZone::GetImpactStimulus(i).GetValue(), time, static_cast<EventSequencer::IContext *>(this),
                                         EventSequencer::QUEUE_ALLOW);
             }
         }
     }
 }
 
-void Smackable::OnImpact(float acceleration, float speed,
-                         Sim::Collision::Info::CollisionType type, ISimable *iother) {
+void Smackable::OnImpact(float acceleration, float speed, Sim::Collision::Info::CollisionType type, ISimable *iother) {
     float time;
     EventSequencer::IEngine *iev;
     EventSequencer::System *system;
@@ -347,26 +359,26 @@ void Smackable::OnImpact(float acceleration, float speed,
     iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev != nullptr) {
         switch (type) {
-        case Sim::Collision::Info::OBJECT:
-            if (iother != nullptr) {
-                float intensity = acceleration / MPH2MPS(100.0f);
-                DoImpactStimulus(0xd59062c8, intensity);
-                if (iother->IsPlayer()) {
-                    DoImpactStimulus(0x2f698829, intensity);
+            case Sim::Collision::Info::OBJECT:
+                if (iother != nullptr) {
+                    float intensity = acceleration / MPH2MPS(100.0f);
+                    DoImpactStimulus(0xd59062c8, intensity);
+                    if (iother->IsPlayer()) {
+                        DoImpactStimulus(0x2f698829, intensity);
+                    }
+                    if (iother->GetSimableType() == SIMABLE_VEHICLE) {
+                        DoImpactStimulus(0x80b88c1d, intensity);
+                    }
                 }
-                if (iother->GetSimableType() == SIMABLE_VEHICLE) {
-                    DoImpactStimulus(0x80b88c1d, intensity);
-                }
-            }
-            break;
-        case Sim::Collision::Info::GROUND:
-            DoImpactStimulus(0x2bf74e61, speed * 0.1f);
-            break;
-        case Sim::Collision::Info::WORLD:
-            DoImpactStimulus(0x7ebe81c0, speed / MPH2MPS(100.0f));
-            break;
-        default:
-            break;
+                break;
+            case Sim::Collision::Info::GROUND:
+                DoImpactStimulus(0x2bf74e61, speed * 0.1f);
+                break;
+            case Sim::Collision::Info::WORLD:
+                DoImpactStimulus(0x7ebe81c0, speed / MPH2MPS(100.0f));
+                break;
+            default:
+                break;
         }
     }
 }
@@ -402,10 +414,16 @@ bool Smackable::InView() const {
     return false;
 }
 
-bool Smackable::IsRenderable() const { return mModel != nullptr; }
+bool Smackable::IsRenderable() const {
+    return mModel != nullptr;
+}
 
-const IModel *Smackable::GetModel() const { return mModel; }
-IModel *Smackable::GetModel() { return mModel; }
+const IModel *Smackable::GetModel() const {
+    return mModel;
+}
+IModel *Smackable::GetModel() {
+    return mModel;
+}
 
 float Smackable::DistanceToView() const {
     if (mModel != nullptr) {
@@ -517,8 +535,7 @@ void Smackable::ProcessDeath(float dT) {
         }
         if (mModel != nullptr) {
             if (CanRetrigger()) {
-                if (mVirgin && mCollisionBody != nullptr &&
-                    mCollisionBody->IsAttachedToWorld()) {
+                if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
                     ISceneryModel *iscenery = nullptr;
                     if (mModel->QueryInterface(&iscenery)) {
                         iscenery->RestoreScene();
@@ -589,7 +606,7 @@ bool Smackable::OnTask(HSIMTASK htask, float dT) {
 void Smackable::OnDetached(IAttachable *pOther) {
     if (UTL::COM::ComparePtr(pOther, mModel)) {
         mModel = nullptr;
-        if (!UTL::Collections::GarbageNode< PhysicsObject, 160 >::IsDirty()) {
+        if (!UTL::Collections::GarbageNode<PhysicsObject, 160>::IsDirty()) {
             static_cast<ISimable *>(this)->Kill();
         }
     }
@@ -639,7 +656,7 @@ Smackable::Manager::~Manager() {
 
 bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
     if (htask == mManageTask) {
-        UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
+        UTL::Collections::Listable<Smackable, 160>::Sort(Smackable::SimplifySort);
         if (Smackable_RigidCount > 0xa) {
             TrySimplify();
         }
@@ -649,19 +666,22 @@ bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
-    const RBComplexParams rp = parms.fparams.Fetch< RBComplexParams >(UCrc32(0xa6b47fac));
+    const RBComplexParams rp = parms.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac));
     return new RBSmackable(parms, rp);
 }
 
 RBSmackable::RBSmackable(const BehaviorParams &parms, const RBComplexParams &rp)
     : RigidBody(parms, rp) //
-    , mSpecs(this, 0) //
+      ,
+      mSpecs(this, 0) //
 {
     mFrame = 0;
     Smackable_RigidCount++;
 }
 
-RBSmackable::~RBSmackable() { Smackable_RigidCount--; }
+RBSmackable::~RBSmackable() {
+    Smackable_RigidCount--;
+}
 
 bool RBSmackable::ShouldSleep() const {
     if (Dynamics::Articulation::IsJoined(this)) {
@@ -708,29 +728,37 @@ bool RBSmackable::CanCollideWithWorld() const {
     return RigidBody::CanCollideWithWorld();
 }
 
-HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry,
-                               UCrc32 rendernode, HeirarchyModel *parent,
-                               const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
-                               unsigned int heirarchynode, bool visible)
-    : Sim::Model(parent != nullptr ? static_cast<IModel *>(parent) : nullptr, geometry,
-                 rendernode, 6) //
-    , IBody(this) //
-    , ITriggerableModel(this) //
-    , Attrib::Gen::smackable(attribs, 0, nullptr) //
-    , mTriggerAvoid(UMath::Vector4::kZero) //
-    , mHeirarchy(const_cast<ModelHeirarchy *>(heirarchy)) //
-    , mRenderMesh(rendermesh) //
-    , mTrigger(nullptr) //
-    , mOffScreenTimer(10.0f) //
-    , mHeirarchyNode(static_cast<unsigned short>(heirarchynode)) //
-    , mFlags(0) //
-    , mChildVisibility(0xFFFFFFFF) //
-    , mAvoidable(nullptr) //
+HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, UCrc32 rendernode, HeirarchyModel *parent,
+                               const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy, unsigned int heirarchynode, bool visible)
+    : Sim::Model(parent != nullptr ? static_cast<IModel *>(parent) : nullptr, geometry, rendernode, 6) //
+      ,
+      IBody(this) //
+      ,
+      ITriggerableModel(this) //
+      ,
+      Attrib::Gen::smackable(attribs, 0, nullptr) //
+      ,
+      mTriggerAvoid(UMath::Vector4::kZero) //
+      ,
+      mHeirarchy(const_cast<ModelHeirarchy *>(heirarchy)) //
+      ,
+      mRenderMesh(rendermesh) //
+      ,
+      mTrigger(nullptr) //
+      ,
+      mOffScreenTimer(10.0f) //
+      ,
+      mHeirarchyNode(static_cast<unsigned short>(heirarchynode)) //
+      ,
+      mFlags(0) //
+      ,
+      mChildVisibility(0xFFFFFFFF) //
+      ,
+      mAvoidable(nullptr) //
 {
     Attrib::Gen::smackable smackable(attribs, 0, nullptr);
     if (visible) {
-        RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
-                                           mHeirarchy, mHeirarchyNode);
+        RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(), mHeirarchy, mHeirarchyNode);
         BeginDraw(UCrc32(0x804c146e), &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
@@ -823,7 +851,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
     if (mHeirarchy == nullptr || IsDirty()) {
         return nullptr;
     }
-    if (UTL::Collections::Listable< IModel, 434 >::Count() > 434u) {
+    if (UTL::Collections::Listable<IModel, 434>::Count() > 434u) {
         return nullptr;
     }
     int childindex = FindHeirarchyChild(rendernode);
@@ -844,8 +872,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
     if (emodel == nullptr) {
         return nullptr;
     }
-    HeirarchyModel *child = new HeirarchyModel(bHash32(emodel->GetNameHash()), bounds, rendernode, this, attribs,
-                                               mHeirarchy, childindex, true);
+    HeirarchyModel *child = new HeirarchyModel(bHash32(emodel->GetNameHash()), bounds, rendernode, this, attribs, mHeirarchy, childindex, true);
     IModel *result = nullptr;
     if (child != nullptr) {
         result = static_cast<IModel *>(child);
@@ -941,41 +968,35 @@ void HeirarchyModel::OnBeginSimulation() {
     if (mAvoidable != nullptr) {
         mAvoidable->SetRefrence(static_cast<IModel *>(this)->GetSimable());
     }
-    RenderConn::Pkt_Smackable_Open pkt(mRenderMesh,
-                                       static_cast<IModel *>(this)->GetWorldID(),
-                                       static_cast<IModel *>(this)->GetCollisionGeometry(),
-                                       mHeirarchy,
-                                       mHeirarchyNode);
+    RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, static_cast<IModel *>(this)->GetWorldID(), static_cast<IModel *>(this)->GetCollisionGeometry(),
+                                       mHeirarchy, mHeirarchyNode);
     BeginDraw(UCrc32(0x804c146e), &pkt);
 }
 
 bool HeirarchyModel::OnDraw(Sim::Packet *service) {
-    RenderConn::Pkt_Smackable_Service *pss =
-        static_cast<RenderConn::Pkt_Smackable_Service *>(service);
+    RenderConn::Pkt_Smackable_Service *pss = static_cast<RenderConn::Pkt_Smackable_Service *>(service);
     UpdateVisibility(pss->IsVisible(), pss->DistanceToView());
     pss->SetChildVisibility(mChildVisibility);
     return true;
 }
 
-PlaceableScenery::PlaceableScenery(bHash32 rendermesh,
-                                   const CollisionGeometry::Bounds *geometry,
-                                   const Attrib::Collection *attribs,
+PlaceableScenery::PlaceableScenery(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, const Attrib::Collection *attribs,
                                    const ModelHeirarchy *heirarchy)
     : HeirarchyModel(rendermesh, geometry, UCrc32(0x9756df79), nullptr, attribs, heirarchy, 0,
                      false) //
-    , IPlaceableScenery(this) //
-{
-}
+      ,
+      IPlaceableScenery(this) //
+{}
 
 void PlaceableScenery::ReleaseModel() {
     static_cast<IPlaceableScenery *>(this)->PickUp();
 }
 
 PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int attributes) {
-    if (static_cast<unsigned int>(UTL::Collections::Listable< IModel, 434 >::Count()) > 434u) {
+    if (static_cast<unsigned int>(UTL::Collections::Listable<IModel, 434>::Count()) > 434u) {
         return nullptr;
     }
-    if (static_cast<unsigned int>(UTL::Collections::Countable< IPlaceableScenery >::Count()) > 12u) {
+    if (static_cast<unsigned int>(UTL::Collections::Countable<IPlaceableScenery>::Count()) > 12u) {
         return nullptr;
     }
     bHash32 render_name(name);
@@ -1021,7 +1042,7 @@ bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_groun
         mat.v3.y = worldHeight + dim.y;
     }
     PlaceTrigger(mat, false);
-    ISimable *physics = UTL::COM::Factory< Sim::Param, ISimable, UCrc32 >::CreateInstance(
+    ISimable *physics = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(
         UCrc32("Smackable"), SmackableParams(mat, true, static_cast<IModel *>(this), false));
     if (physics == nullptr) {
         static_cast<IPlaceableScenery *>(this)->PickUp();
@@ -1031,15 +1052,11 @@ bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_groun
 }
 
 SmackableAvoidable::SmackableAvoidable(HeirarchyModel *model)
-    : AIAvoidable(
-          mModel != nullptr
-              ? static_cast<UTL::COM::IUnknown *>(static_cast<IModel *>(mModel))
-              : nullptr) //
-    , mModel(model) //
+    : AIAvoidable(mModel != nullptr ? static_cast<UTL::COM::IUnknown *>(static_cast<IModel *>(mModel)) : nullptr) //
+      ,
+      mModel(model) //
 {
-    SetAvoidableObject(mModel != nullptr
-                           ? static_cast<UTL::COM::IUnknown *>(static_cast<IBody *>(mModel))
-                           : nullptr);
+    SetAvoidableObject(mModel != nullptr ? static_cast<UTL::COM::IUnknown *>(static_cast<IBody *>(mModel)) : nullptr);
 }
 
 bool SmackableAvoidable::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
@@ -1061,4 +1078,3 @@ IPlaceableScenery *IPlaceableScenery::CreateInstance(const char *name, unsigned 
 }
 
 PlaceableScenery::~PlaceableScenery() {}
-

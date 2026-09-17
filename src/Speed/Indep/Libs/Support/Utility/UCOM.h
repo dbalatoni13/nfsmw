@@ -179,8 +179,7 @@ template <typename T, typename U, typename V> class Factory {
     static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
 };
 
-template <typename T, typename U, typename V>
-U *Factory<T, U, V>::CreateInstance(V sig, T params) {
+template <typename T, typename U, typename V> U *Factory<T, U, V>::CreateInstance(V sig, T params) {
     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
         if (f->mSignature == sig) {
             return f->mConstructor(params);

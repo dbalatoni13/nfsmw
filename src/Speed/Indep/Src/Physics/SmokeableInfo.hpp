@@ -14,22 +14,22 @@ struct SceneryModel;
 struct SmokeableSection {
     float LastLoadTime;
     int SectionID;
-    BitArray< unsigned int, 256 > Rebuilds;
+    BitArray<unsigned int, 256> Rebuilds;
 
     SmokeableSection()
         : LastLoadTime(0.0f) //
-        , SectionID(-1)
-        , Rebuilds() {}
+          ,
+          SectionID(-1), Rebuilds() {}
 
     SmokeableSection(int section_id)
         : LastLoadTime(0.0f) //
-        , SectionID(section_id)
-        , Rebuilds() {}
+          ,
+          SectionID(section_id), Rebuilds() {}
 
     SmokeableSection(const SmokeableSection &_ctor_arg)
         : LastLoadTime(_ctor_arg.LastLoadTime) //
-        , SectionID(_ctor_arg.SectionID)
-        , Rebuilds(_ctor_arg.Rebuilds) {}
+          ,
+          SectionID(_ctor_arg.SectionID), Rebuilds(_ctor_arg.Rebuilds) {}
 
     SmokeableSection &operator=(const SmokeableSection &_ctor_arg) {
         LastLoadTime = _ctor_arg.LastLoadTime;
@@ -49,7 +49,7 @@ class SmokeableSectionQ {
     }
 
   private:
-    UCircularQueue< SmokeableSection, 96 > mQueue;
+    UCircularQueue<SmokeableSection, 96> mQueue;
 };
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -120,7 +120,7 @@ class SmokeableSpawner {
     friend class SceneryModel;
 };
 
-struct SmokeableSpawnerPack : public bTNode< SmokeableSpawnerPack > {
+struct SmokeableSpawnerPack : public bTNode<SmokeableSpawnerPack> {
     short ScenerySectionNumber;
     short FirstSmokeableSpawnerID;
     short NumSmokeableSpawners;

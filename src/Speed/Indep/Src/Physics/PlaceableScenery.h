@@ -10,8 +10,8 @@
 #include "Speed/Indep/Src/Physics/HeirarchyModel.h"
 
 struct PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
-    PlaceableScenery(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry,
-                     const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy);
+    PlaceableScenery(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, const Attrib::Collection *attribs,
+                     const ModelHeirarchy *heirarchy);
     ~PlaceableScenery() override;
 
     void *operator new(std::size_t size) {

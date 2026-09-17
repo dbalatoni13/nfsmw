@@ -32,8 +32,7 @@ struct SmackableParams : public Sim::Param {
         return value;
     }
 
-    SmackableParams(const UMath::Matrix4 &mat, bool virginspawn, IModel *scenery, bool simple_physics)
-        : Sim::Param(UCrc32(UCRC32_BASE), this) {
+    SmackableParams(const UMath::Matrix4 &mat, bool virginspawn, IModel *scenery, bool simple_physics) : Sim::Param(UCrc32(UCRC32_BASE), this) {
         UMath::Copy(mat, fMatrix);
         fVirginSpawn = virginspawn;
         fScenery = scenery;
@@ -46,7 +45,6 @@ struct SmackableParams : public Sim::Param {
     bool fSimplePhysics;           // offset 0x58, size 0x1
 };
 
-
 class Smackable : public PhysicsObject,
                   public IDisposable,
                   public IRenderable,
@@ -57,9 +55,13 @@ class Smackable : public PhysicsObject,
   public:
     class Manager : public Sim::Activity, public UTL::Collections::Singleton<Manager> {
       public:
-        void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+        void *operator new(std::size_t size) {
+            return gFastMem.Alloc(size, nullptr);
+        }
         void operator delete(void *mem, std::size_t size) {
-            if (mem) { gFastMem.Free(mem, size, nullptr); }
+            if (mem) {
+                gFastMem.Free(mem, size, nullptr);
+            }
         }
         Manager(float rate);
         virtual ~Manager();
@@ -69,9 +71,13 @@ class Smackable : public PhysicsObject,
         HSIMTASK mManageTask; // offset 0x50, size 0x4
     };
 
-    void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
     void operator delete(void *mem, std::size_t size) {
-        if (mem) { gFastMem.Free(mem, size, nullptr); }
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
 
     static ISimable *Construct(Sim::Param params);
@@ -82,12 +88,13 @@ class Smackable : public PhysicsObject,
     static Attrib::StringKey CONE;
     static Attrib::StringKey SPHERE;
 
-    Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes,
-              const CollisionGeometry::Bounds *geoms, bool virginspawn, IModel *scenery,
-              bool simple_physics, bool is_persistant);
+    Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes, const CollisionGeometry::Bounds *geoms, bool virginspawn,
+              IModel *scenery, bool simple_physics, bool is_persistant);
     virtual ~Smackable();
 
-    bool IsRequired() const override { return false; }
+    bool IsRequired() const override {
+        return false;
+    }
     bool InView() const override;
     bool IsRenderable() const override;
     HMODEL GetModelHandle() const override {
@@ -115,7 +122,9 @@ class Smackable : public PhysicsObject,
 
     virtual void HidePart(const UCrc32 &name) {}
     virtual void ShowPart(const UCrc32 &name) {}
-    virtual bool IsPartVisible(const UCrc32 &name) const { return true; }
+    virtual bool IsPartVisible(const UCrc32 &name) const {
+        return true;
+    }
 
   protected:
     bool Simplify();
@@ -174,9 +183,13 @@ class RBSmackable : public RigidBody {
 
 class SmackableAvoidable : public AIAvoidable {
   public:
-    void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
     void operator delete(void *mem, std::size_t size) {
-        if (mem) { gFastMem.Free(mem, size, nullptr); }
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
     SmackableAvoidable(HeirarchyModel *model);
     void SetRefrence(UTL::COM::IUnknown *pUnk) {

@@ -77,7 +77,6 @@ struct VehicleParams : public Sim::Param {
     unsigned int Flags;                         // offset 0x2C, size 0x4
 };
 
-
 class PVehicle : public PhysicsObject,
                  public bTNode<PVehicle>,
                  public IVehicle,
@@ -116,14 +115,22 @@ class PVehicle : public PhysicsObject,
 
         Resource() {}
         Resource(const Attrib::Gen::pvehicle &pvehicle, bool spool, bool is_player);
-        bool NeedsCompositing() const { return (Flags & NEEDS_COMPOSITING) != 0; }
-        bool IsValid() const { return (Flags & VALID) != 0; }
-        bool IsSpooled() const { return (Flags & SPOOL) != 0; }
-        void Invalidate() { Flags &= ~VALID; }
+        bool NeedsCompositing() const {
+            return (Flags & NEEDS_COMPOSITING) != 0;
+        }
+        bool IsValid() const {
+            return (Flags & VALID) != 0;
+        }
+        bool IsSpooled() const {
+            return (Flags & SPOOL) != 0;
+        }
+        void Invalidate() {
+            Flags &= ~VALID;
+        }
 
-        CarType Type;        // offset 0x0, size 0x4
-        unsigned int Cost;   // offset 0x4, size 0x4
-        unsigned int Flags;  // offset 0x8, size 0x4
+        CarType Type;       // offset 0x0, size 0x4
+        unsigned int Cost;  // offset 0x4, size 0x4
+        unsigned int Flags; // offset 0x8, size 0x4
     };
 
     struct ManageNode {
@@ -170,10 +177,10 @@ class PVehicle : public PhysicsObject,
             return h.result == VCR_WANT;
         }
 
-        PVehicle *vehicle;            // offset 0x0, size 0x4
-        Resource resource;            // offset 0x4, size 0xC
-        eVehicleCacheResult result;   // offset 0x10, size 0x4
-        unsigned int instancecount;   // offset 0x14, size 0x4
+        PVehicle *vehicle;          // offset 0x0, size 0x4
+        Resource resource;          // offset 0x4, size 0xC
+        eVehicleCacheResult result; // offset 0x10, size 0x4
+        unsigned int instancecount; // offset 0x14, size 0x4
     };
 
     struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {
@@ -183,10 +190,8 @@ class PVehicle : public PhysicsObject,
     typedef UTL::Std::list<Resource, _type_list> ResourceList;
     typedef UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq> ChangeRequest;
 
-
-    PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialVec,
-             const UMath::Vector3 &initialPos, const CollisionGeometry::Bounds *bounds,
-             const FECustomizationRecord *customization, const Resource &resource,
+    PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialVec, const UMath::Vector3 &initialPos,
+             const CollisionGeometry::Bounds *bounds, const FECustomizationRecord *customization, const Resource &resource,
              const Physics::Info::Performance *performance, const char *cache_name);
     virtual ~PVehicle();
 

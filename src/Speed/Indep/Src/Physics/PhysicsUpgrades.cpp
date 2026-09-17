@@ -42,7 +42,6 @@ struct tPartMap {
 } // namespace Upgrades
 } // namespace Physics
 
-
 static Physics::Upgrades::tPartMap put_maps[] = {
     {Physics::Upgrades::PUT_TIRES, "tires", 0x570E7E24, 0x3F16D2B1, 0x65E52BDE, 0xC5860F58, 0x5F4A69DB},
     {Physics::Upgrades::PUT_BRAKES, "brakes", 0x2DD1F36A, 0xA2AEA57C, 0xC316DCD1, 0x56C63B6F, 0xE6C23DE6},
@@ -132,8 +131,7 @@ void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attr
     new_attrib.Set(index, new_data);
 }
 
-template <typename T>
-void ScalePart(Attribute &attrib, unsigned int index, float scale) {
+template <typename T> void ScalePart(Attribute &attrib, unsigned int index, float scale) {
     T start_data = T();
 
     attrib.Get(index, start_data);
@@ -151,8 +149,7 @@ void ScalePart(Attribute &attrib, unsigned int index, float scale) {
     attrib.Set(index, new_data);
 }
 
-template <>
-void ScalePart<int>(Attribute &attrib, unsigned int index, float scale) {
+template <> void ScalePart<int>(Attribute &attrib, unsigned int index, float scale) {
     int start_data = 0;
 
     attrib.Get(index, start_data);
@@ -180,7 +177,7 @@ int Physics::Upgrades::GetLevel(const Attrib::Gen::pvehicle &vehicle, Physics::U
     if (t == nullptr || !vehicle.Lookup(t->currentkey, attrib)) {
         return 0;
     }
-    return attrib.Get< int >(0u);
+    return attrib.Get<int>(0u);
 }
 
 void Physics::Upgrades::GetPackage(const Attrib::Gen::pvehicle &vehicle, Package &package) {
@@ -247,18 +244,18 @@ bool Physics::Upgrades::CanInstallJunkman(const Attrib::Gen::pvehicle &vehicle, 
     }
 
     switch (type) {
-    case Physics::Upgrades::PUT_NOS:
-        if (!Physics::Info::HasNos(vehicle)) {
-            return false;
-        }
-        break;
-    case Physics::Upgrades::PUT_INDUCTION:
-        if (Physics::Info::InductionType(vehicle) == Physics::Info::INDUCTION_NONE) {
-            return false;
-        }
-        break;
-    default:
-        break;
+        case Physics::Upgrades::PUT_NOS:
+            if (!Physics::Info::HasNos(vehicle)) {
+                return false;
+            }
+            break;
+        case Physics::Upgrades::PUT_INDUCTION:
+            if (Physics::Info::InductionType(vehicle) == Physics::Info::INDUCTION_NONE) {
+                return false;
+            }
+            break;
+        default:
+            break;
     }
 
     Attrib::Gen::junkman junkman(vehicle.junkman(), 0, nullptr);
@@ -307,7 +304,7 @@ bool Physics::Upgrades::SetJunkman(Attrib::Gen::pvehicle &vehicle, Physics::Upgr
         return false;
     }
 
-    RefSpec basepart(part_attribute.Get< RefSpec >(0));
+    RefSpec basepart(part_attribute.Get<RefSpec>(0));
 
     Attrib::Gen::junkman junkman(newvehicle.junkman(), 0, nullptr);
     PUJunkNode node(basepart, junkman, junk_key);
@@ -474,7 +471,7 @@ int Physics::Upgrades::GetMaxLevel(const Attrib::Gen::pvehicle &vehicle, Physics
     if (t == nullptr || !vehicle.Lookup(t->countkey, attrib)) {
         return 0;
     }
-    return attrib.Get< int >(0u);
+    return attrib.Get<int>(0u);
 }
 
 bool Physics::Upgrades::SetMaximum(Attrib::Gen::pvehicle &pvehicle) {
@@ -630,24 +627,24 @@ bool Physics::Upgrades::MatchPerformance(Attrib::Gen::pvehicle &vehicle, const P
         float weight;
 
         switch (type) {
-        case Physics::Upgrades::PUT_BRAKES:
-            weight = match_line.Handling;
-            break;
-        case Physics::Upgrades::PUT_TIRES:
-        case Physics::Upgrades::PUT_CHASSIS:
-            weight = (match_line.Handling + match_line.TopSpeed) * 0.5f;
-            break;
-        case Physics::Upgrades::PUT_INDUCTION:
-        case Physics::Upgrades::PUT_NOS:
-            weight = match_line.Acceleration;
-            break;
-        case Physics::Upgrades::PUT_TRANSMISSION:
-        case Physics::Upgrades::PUT_ENGINE:
-            weight = (match_line.Acceleration + match_line.TopSpeed) * 0.5f;
-            break;
-        default:
-            weight = (match_line.Acceleration + match_line.TopSpeed + match_line.Handling) * 0.33333334f;
-            break;
+            case Physics::Upgrades::PUT_BRAKES:
+                weight = match_line.Handling;
+                break;
+            case Physics::Upgrades::PUT_TIRES:
+            case Physics::Upgrades::PUT_CHASSIS:
+                weight = (match_line.Handling + match_line.TopSpeed) * 0.5f;
+                break;
+            case Physics::Upgrades::PUT_INDUCTION:
+            case Physics::Upgrades::PUT_NOS:
+                weight = match_line.Acceleration;
+                break;
+            case Physics::Upgrades::PUT_TRANSMISSION:
+            case Physics::Upgrades::PUT_ENGINE:
+                weight = (match_line.Acceleration + match_line.TopSpeed) * 0.5f;
+                break;
+            default:
+                weight = (match_line.Acceleration + match_line.TopSpeed + match_line.Handling) * 0.33333334f;
+                break;
         }
 
         weight = UMath::Clamp(weight, 0.0f, 1.0f);
@@ -672,8 +669,7 @@ void Physics::Upgrades::Flush() {
     Database::Get().CollectGarbage();
 }
 
-PUJunkNode::PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &junkman, unsigned int junkkey)
-    : Instance(collection, 0, nullptr) {
+PUJunkNode::PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &junkman, unsigned int junkkey) : Instance(collection, 0, nullptr) {
     Attribute junk_attribute;
     if (junkman.Lookup(junkkey, junk_attribute)) {
         Modify(GenerateUniqueKey("junk_upgrade", false), 0);
@@ -689,18 +685,18 @@ PUJunkNode::PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &ju
                     unsigned int type = attribute.GetType();
                     for (unsigned int i = 0; i < count; i++) {
                         switch (type) {
-                        case 0x4cb36381:
-                            ScalePart<AxlePair>(attribute, i, modifire.Scale);
-                            break;
-                        case 0x3c16ec5e:
-                            ScalePart<float>(attribute, i, modifire.Scale);
-                            break;
-                        case 0x5763da41:
-                            ScalePart<int>(attribute, i, modifire.Scale);
-                            break;
-                        default:
-                            bBreak();
-                            break;
+                            case 0x4cb36381:
+                                ScalePart<AxlePair>(attribute, i, modifire.Scale);
+                                break;
+                            case 0x3c16ec5e:
+                                ScalePart<float>(attribute, i, modifire.Scale);
+                                break;
+                            case 0x5763da41:
+                                ScalePart<int>(attribute, i, modifire.Scale);
+                                break;
+                            default:
+                                bBreak();
+                                break;
                         }
                     }
                 }
@@ -709,8 +705,7 @@ PUJunkNode::PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &ju
     }
 }
 
-PUPartNode::PUPartNode(const RefSpec &collection0, const RefSpec &collection1, float weight)
-    : Instance(collection0, 0, nullptr) {
+PUPartNode::PUPartNode(const RefSpec &collection0, const RefSpec &collection1, float weight) : Instance(collection0, 0, nullptr) {
     if (weight >= 1.0f) {
         ChangeWithDefault(collection1);
     } else if (weight > 0.0f) {
@@ -739,18 +734,18 @@ PUPartNode::PUPartNode(const RefSpec &collection0, const RefSpec &collection1, f
                     unsigned int type = start_attribute.GetType();
                     for (unsigned int i = 0; i < count; i++) {
                         switch (type) {
-                        case 0x4cb36381:
-                            BlendParts<AxlePair>(start_attribute, end_attribute, i, weight, new_attrib);
-                            break;
-                        case 0x3c16ec5e:
-                            BlendParts<float>(start_attribute, end_attribute, i, weight, new_attrib);
-                            break;
-                        case 0x5763da41:
-                            BlendParts<int>(start_attribute, end_attribute, i, weight, new_attrib);
-                            break;
-                        default:
-                            bBreak();
-                            break;
+                            case 0x4cb36381:
+                                BlendParts<AxlePair>(start_attribute, end_attribute, i, weight, new_attrib);
+                                break;
+                            case 0x3c16ec5e:
+                                BlendParts<float>(start_attribute, end_attribute, i, weight, new_attrib);
+                                break;
+                            case 0x5763da41:
+                                BlendParts<int>(start_attribute, end_attribute, i, weight, new_attrib);
+                                break;
+                            default:
+                                bBreak();
+                                break;
                         }
                     }
                 }

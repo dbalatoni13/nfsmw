@@ -8,9 +8,10 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 
-struct IRecordablePlayer : public UTL::COM::IUnknown,
-                           public UTL::Collections::Listable<IRecordablePlayer, 8> {
-    static HINTERFACE _IHandle() { return (HINTERFACE)_IHandle; }
+struct IRecordablePlayer : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRecordablePlayer, 8> {
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 
     IRecordablePlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 

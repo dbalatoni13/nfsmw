@@ -10,9 +10,7 @@ bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority);
 }
 
 static inline ISimpleBody *FindSimpleBody(ISimable *owner) {
-    return reinterpret_cast<ISimpleBody *>(
-        (*reinterpret_cast<UTL::COM::Object **>(owner))->_mInterfaces.Find((HINTERFACE)ISimpleBody::_IHandle)
-    );
+    return reinterpret_cast<ISimpleBody *>((*reinterpret_cast<UTL::COM::Object **>(owner))->_mInterfaces.Find((HINTERFACE)ISimpleBody::_IHandle));
 }
 
 UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Explosion("Explosion", Explosion::Construct);
@@ -27,30 +25,35 @@ ISimable *Explosion::Construct(Sim::Param params) {
 
 Explosion::Explosion(const ExplosionParams &params, Sim::Param sp)
     : PhysicsObject("explosion", "default", SIMABLE_EXPLOSION, nullptr, 0) //
-    , IExplosion(this) //
-    , mExpansionSpeed(params.fExpansionSpeed) //
-    , mExpansionRadius(params.fRadius) //
-    , mSource(params.fSource) //
-    , mIRBSimple(nullptr) //
-    , mEffectSource(params.fEffectSource) //
-    , mCausality(nullptr) //
-    , mCauseTime(0.0f) //
-    , mDamages(params.fDamage) //
-    , mTargets(params.fTargets)
-{
+      ,
+      IExplosion(this) //
+      ,
+      mExpansionSpeed(params.fExpansionSpeed) //
+      ,
+      mExpansionRadius(params.fRadius) //
+      ,
+      mSource(params.fSource) //
+      ,
+      mIRBSimple(nullptr) //
+      ,
+      mEffectSource(params.fEffectSource) //
+      ,
+      mCausality(nullptr) //
+      ,
+      mCauseTime(0.0f) //
+      ,
+      mDamages(params.fDamage) //
+      ,
+      mTargets(params.fTargets) {
     float start_radius = UMath::Max(params.fStartRadius, 0.01f);
-    LoadBehavior(
-        UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), //
-        UCrc32("SimpleRigidBody"), //
-        RBSimpleParams(
-            params.fPosition, //
-            UMath::Vector3::kZero, //
-            UMath::Vector3::kZero, //
-            UMath::Matrix4::kIdentity, //
-            start_radius, //
-            1.0f
-        )
-    );
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY),      //
+                 UCrc32("SimpleRigidBody"),                //
+                 RBSimpleParams(params.fPosition,          //
+                                UMath::Vector3::kZero,     //
+                                UMath::Vector3::kZero,     //
+                                UMath::Matrix4::kIdentity, //
+                                start_radius,              //
+                                1.0f));
 
     IModel *model = IModel::FindInstance(mSource);
     if (model) {
@@ -75,26 +78,22 @@ void Explosion::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
 }
 
-void Explosion::OnCollide(IRigidBody *other, float dT, float radius,
-                          const Dynamics::Collision::Geometry &explosion_sphere) {
+void Explosion::OnCollide(IRigidBody *other, float dT, float radius, const Dynamics::Collision::Geometry &explosion_sphere) {
     IExplodeable *iexplodeable;
     if (!other->QueryInterface(&iexplodeable)) {
         return;
     }
 
     float total_radius = radius + other->GetRadius();
-    if (UMath::DistanceSquare(other->GetPosition(), explosion_sphere.GetPosition()) <
-        total_radius * total_radius) {
+    if (UMath::DistanceSquare(other->GetPosition(), explosion_sphere.GetPosition()) < total_radius * total_radius) {
         float targetspeed;
         UMath::Vector3 dim;
         UMath::Matrix4 matrix;
         other->GetDimension(dim);
         other->GetMatrix4(matrix);
-        Dynamics::Collision::Geometry box(matrix, other->GetPosition(), dim,
-                                          Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+        Dynamics::Collision::Geometry box(matrix, other->GetPosition(), dim, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
         if (Dynamics::Collision::Geometry::FindIntersection(&box, &explosion_sphere, &box)) {
-            iexplodeable->OnExplosion(box.GetCollisionNormal(), box.GetCollisionPoint(), dT,
-                                      static_cast<IExplosion *>(this));
+            iexplodeable->OnExplosion(box.GetCollisionNormal(), box.GetCollisionPoint(), dT, static_cast<IExplosion *>(this));
         }
     }
 }
@@ -124,9 +123,8 @@ void Explosion::TestCollisions(float dT) {
             IRigidBody *mybody = GetRigidBody();
             float radius = mybody->GetRadius();
             UVector3 mydim(radius, radius, radius);
-            Dynamics::Collision::Geometry explosion_sphere(UMath::Matrix4::kIdentity, mybody->GetPosition(),
-                                                           mydim, Dynamics::Collision::Geometry::SPHERE,
-                                                           UMath::Vector3::kZero);
+            Dynamics::Collision::Geometry explosion_sphere(UMath::Matrix4::kIdentity, mybody->GetPosition(), mydim,
+                                                           Dynamics::Collision::Geometry::SPHERE, UMath::Vector3::kZero);
 
             for (unsigned int i = 0; i < 0xA0; i++) {
                 if (!cmap->CollisionWithOrderedBody(i)) {

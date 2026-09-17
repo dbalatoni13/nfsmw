@@ -25,15 +25,15 @@ struct RBComplexParams : public Sim::Param {
                     const UMath::Vector3 &moment, const UMath::Vector3 &dimension, const CollisionGeometry::Bounds *geoms, bool active,
                     unsigned int collision_mask)
         : Sim::Param(UCrc32(UCRC32_BASE), this), //
-          finitPos(pos),                //
-          finitVel(vel),                //
-          finitAngVel(angvel),          //
-          finitMat(mat),                //
-          finitMass(mass),              //
-          finitMoment(moment),          //
-          fdimension(dimension),        //
-          factive(active),              //
-          fgeoms(geoms),                //
+          finitPos(pos),                         //
+          finitVel(vel),                         //
+          finitAngVel(angvel),                   //
+          finitMat(mat),                         //
+          finitMass(mass),                       //
+          finitMoment(moment),                   //
+          fdimension(dimension),                 //
+          factive(active),                       //
+          fgeoms(geoms),                         //
           fCollisionMask(collision_mask) {}
 
     const UMath::Vector3 &finitPos;          // offset 0x10, size 0x4
@@ -58,11 +58,11 @@ struct RBSimpleParams : public Sim::Param {
     RBSimpleParams(const UMath::Vector3 &pos, const UMath::Vector3 &vel, const UMath::Vector3 &angvel, const UMath::Matrix4 &mat, float radius,
                    float mass)
         : Sim::Param(UCrc32(UCRC32_BASE), this), //
-          finitPos(pos),                //
-          finitVel(vel),                //
-          finitAngVel(angvel),          //
-          finitMat(mat),                //
-          finitRadius(radius),          //
+          finitPos(pos),                         //
+          finitVel(vel),                         //
+          finitAngVel(angvel),                   //
+          finitMat(mat),                         //
+          finitRadius(radius),                   //
           finitMass(mass) {}
 
     const UMath::Vector3 &finitPos;    // offset 0x10, size 0x4

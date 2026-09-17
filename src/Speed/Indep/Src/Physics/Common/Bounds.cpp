@@ -302,8 +302,8 @@ bool CreateJoint(IBoundable *ifemale, UCrc32 femalenode_name, IBoundable *imale,
         *out_male = lever_male;
     }
 
-    Dynamics::Articulation::HJOINT__ *hjoint = Dynamics::Articulation::Create(ide_female, lever_female, ide_male, lever_male,
-                                                                             static_cast<Dynamics::Articulation::eJointFlags>(joint_flags));
+    Dynamics::Articulation::HJOINT__ *hjoint =
+        Dynamics::Articulation::Create(ide_female, lever_female, ide_male, lever_male, static_cast<Dynamics::Articulation::eJointFlags>(joint_flags));
     if (hjoint == nullptr) {
         return false;
     }

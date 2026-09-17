@@ -97,7 +97,7 @@ SmackableTrigger::~SmackableTrigger() {
 #define IMPL_INSTANCABLE(HANDLE, TYPE, N)                                                                                                            \
     template <>                                                                                                                                      \
     UTL::Collections::Instanceable<HANDLE, TYPE, N>::_List UTL::Collections::Instanceable<HANDLE, TYPE, N>::_mList =                                 \
-        UTL::Collections::Instanceable<HANDLE, TYPE, N>::_List();                                                                                     \
+        UTL::Collections::Instanceable<HANDLE, TYPE, N>::_List();                                                                                    \
     template <> unsigned int UTL::Collections::Instanceable<HANDLE, TYPE, N>::_mHNext = 0;
 
 IMPL_LISTABLE(IExplosion, 96)

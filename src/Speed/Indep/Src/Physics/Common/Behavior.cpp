@@ -14,13 +14,13 @@ Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS("BEHAVIOR_MECHANIC_EFFECTS");
 Attrib::StringKey BEHAVIOR_MECHANIC_RESET("BEHAVIOR_MECHANIC_RESET");
 
 Behavior::Behavior(const BehaviorParams &params, unsigned int num_interfaces)
-    : Sim::Object(num_interfaces + 1),   //
-      mPaused(false),                    //
-      mOwner(params.fowner),             //
-      mIOwner(params.fowner),            //
-      mMechanic(params.fMechanic),       //
-      mSignature(params.fSig),           //
-      mPriority(0),                      //
+    : Sim::Object(num_interfaces + 1), //
+      mPaused(false),                  //
+      mOwner(params.fowner),           //
+      mIOwner(params.fowner),          //
+      mMechanic(params.fMechanic),     //
+      mSignature(params.fSig),         //
+      mPriority(0),                    //
       mProfile(nullptr) {
     const Attrib::Instance &attribs = params.fowner->GetAttributes();
     unsigned int count = attribs->Num_BEHAVIOR_ORDER();

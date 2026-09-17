@@ -66,18 +66,18 @@ struct PerfStats {
 
     bool Fetch(const Attrib::Gen::pvehicle &pvehicle, bVector2 *graph_data, int *num_data);
 
-    float Time0To100;      // offset 0x0, size 0x4
-    float TopSpeed;        // offset 0x4, size 0x4
-    float HandlingRating;  // offset 0x8, size 0x4
+    float Time0To100;     // offset 0x0, size 0x4
+    float TopSpeed;       // offset 0x4, size 0x4
+    float HandlingRating; // offset 0x8, size 0x4
 };
 
 // total size: 0x2C
 struct PerfLevel {
     PerfLevel(unsigned int key)
-        : Stats(),       //
-          Stock(),       //
-          Upgraded(),    //
-          Key(key),      //
+        : Stats(),    //
+          Stock(),    //
+          Upgraded(), //
+          Key(key),   //
           Analyzed(false) {}
 
     bool Analyze(const Attrib::Gen::pvehicle &pvehicle);
@@ -137,7 +137,8 @@ bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf
 bool GetStockPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool GetMaximumPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehicle, float &top_speed, float *table, int num_entries);
-void FindPerformanceCandidates(const Performance &minimum_perf, const Performance &maximum_perf, UTL::Std::list<unsigned int, _type_list> &candidates);
+void FindPerformanceCandidates(const Performance &minimum_perf, const Performance &maximum_perf,
+                               UTL::Std::list<unsigned int, _type_list> &candidates);
 
 extern Performance PerformanceWeights[7];
 

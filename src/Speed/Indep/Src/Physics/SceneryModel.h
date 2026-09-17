@@ -14,8 +14,7 @@ class SmokeableSpawner;
 
 class SceneryModel : public HeirarchyModel, public ISceneryModel {
   public:
-    SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry,
-                 const Attrib::Collection *attribs, bool hidden);
+    SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry, const Attrib::Collection *attribs, bool hidden);
     ~SceneryModel() override;
 
     void *operator new(std::size_t size) {
@@ -23,7 +22,9 @@ class SceneryModel : public HeirarchyModel, public ISceneryModel {
     }
 
     void operator delete(void *mem, std::size_t size) {
-        if (mem) { gFastMem.Free(mem, size, nullptr); }
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
 
     static SceneryModel *Construct(SmokeableSpawner *data, const Attrib::Collection *attributes, bool hidden);

@@ -45,11 +45,11 @@ SmokeableSection *SmokeableSectionQ::Find(int section_id) {
     return nullptr;
 }
 
-SceneryModel::SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry,
-                           const Attrib::Collection *attribs, bool hidden)
+SceneryModel::SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry, const Attrib::Collection *attribs, bool hidden)
     : HeirarchyModel(spawner->GetRenderMesh(), geometry, UCrc32(0x9756DF79u), nullptr, attribs, //
-                     spawner->GetRenderHeirarchy(), 0, false) //
-    , ISceneryModel(this) {
+                     spawner->GetRenderHeirarchy(), 0, false)                                   //
+      ,
+      ISceneryModel(this) {
     mInstanceVisible = true;
     mSpawner = spawner;
     if (!hidden) {

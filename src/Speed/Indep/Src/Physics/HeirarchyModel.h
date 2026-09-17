@@ -16,14 +16,17 @@
 
 class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel, public Attrib::Gen::smackable {
   public:
-    void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
     void operator delete(void *mem, std::size_t size) {
-        if (mem) { gFastMem.Free(mem, size, nullptr); }
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
 
-    HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, UCrc32 nodename,
-                   HeirarchyModel *parent, const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
-                   unsigned int child_index, bool visible);
+    HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, UCrc32 nodename, HeirarchyModel *parent,
+                   const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy, unsigned int child_index, bool visible);
 
     ~HeirarchyModel() override;
 

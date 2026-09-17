@@ -522,7 +522,8 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &pvehicle, bVector2 *graph_dat
         time += dT;
 
         if (TopSpeed > 0.0f) {
-            if (Time0To100 > 0.0f) break;
+            if (Time0To100 > 0.0f)
+                break;
         }
 
         if (rpm >= shift_up[gear + G_FIRST]) {
@@ -555,8 +556,7 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &pvehicle, bVector2 *graph_dat
     return TopSpeed > 0.0f && Time0To100 > 0.0f;
 }
 
-void PerfLevel::Print(const char *) {
-}
+void PerfLevel::Print(const char *) {}
 
 void PerfLevel::Rate() {
     Stock.Handling = UMath::Ramp(Stats.HandlingRating, bottom_stats.HandlingRating, top_stats.HandlingRating);
@@ -715,7 +715,8 @@ bool Physics::Info::ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehic
         float accel = (force - drag) / mass;
 
         if (accel <= 0.0f) {
-            if (prev_accel <= 0.0f) break;
+            if (prev_accel <= 0.0f)
+                break;
             float ratio = 1.0f - prev_accel / (prev_accel - accel);
             speed = UMath::Lerp(prev_speed, speed, ratio);
             accel = 0.0f;
@@ -908,12 +909,9 @@ void Physics::Info::FindPerformanceCandidates(const Performance &minimum_perf, c
 
     for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         const PerfLevel &p = *iter;
-        if (p.Stock.TopSpeed <= maximum_perf.TopSpeed &&
-            p.Stock.Acceleration <= maximum_perf.Acceleration &&
-            p.Stock.Handling <= maximum_perf.Handling &&
-            p.Upgraded.TopSpeed >= minimum_perf.TopSpeed &&
-            p.Upgraded.Acceleration >= minimum_perf.Acceleration &&
-            p.Upgraded.Handling >= minimum_perf.Handling) {
+        if (p.Stock.TopSpeed <= maximum_perf.TopSpeed && p.Stock.Acceleration <= maximum_perf.Acceleration &&
+            p.Stock.Handling <= maximum_perf.Handling && p.Upgraded.TopSpeed >= minimum_perf.TopSpeed &&
+            p.Upgraded.Acceleration >= minimum_perf.Acceleration && p.Upgraded.Handling >= minimum_perf.Handling) {
             vlist.push_back(p.Key);
         }
     }
