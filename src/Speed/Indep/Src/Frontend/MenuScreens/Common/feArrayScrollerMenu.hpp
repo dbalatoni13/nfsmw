@@ -235,7 +235,7 @@ class ArrayScroller {
     }
 
     int GetCurrentDatumNum() {
-        return data.GetNodeNumber(currentDatum);
+        return data.GetNodeNumber(currentDatum) - 1;
     }
 
     int GetNumDatum() {

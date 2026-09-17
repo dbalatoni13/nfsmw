@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FEngHashes/SoundHashes.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/DemoDisc.hpp"
@@ -147,7 +148,7 @@ void PauseMenu::Setup() {
     } else {
         FEngSetLanguageHash(GetPackageName(), 0x863404B5, 0x6C839FBE);
     }
-    if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_TimeTrial) {
+    if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Online) {
         SetupOnlineOptions();
     } else {
         SetupOptions();

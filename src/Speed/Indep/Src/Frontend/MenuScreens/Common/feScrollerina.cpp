@@ -91,6 +91,14 @@ void Scrollerina::AddSlot(ScrollerSlot *slot) {
     }
 }
 
+ScrollerDatum *Scrollerina::AddData(const char *string) {
+    ScrollerDatum *datum = new ("ScrollerDatum", 0) ScrollerDatum(string, 0);
+
+    Data.AddTail(datum);
+
+    return datum;
+}
+
 void Scrollerina::AddData(ScrollerDatum *datum) {
     Data.AddTail(datum);
     iNumData++;

@@ -714,7 +714,6 @@ class MoviePlayer {
     }
 
     int GetStatus() { // Decl: 214
-
         return fStatus;
     }
     int GetLiveStatus() { // Decl: 215
@@ -722,7 +721,7 @@ class MoviePlayer {
     }
 
     bool IsMoviePlaying() { // Decl: 217
-        return fStatus >= 3 && fStatus < 6;
+        return this->fStatus == 3 || this->fStatus == 4 || this->fStatus == 5;
     }
 
     const char *GetMovieFilename();
@@ -736,6 +735,8 @@ class MoviePlayer {
     uint32 GetMillisecondsPerFrame();
 
     void HandleFatalError();
+
+    void GetInShape();
 
     int GetMovieCategoryVolume();
 

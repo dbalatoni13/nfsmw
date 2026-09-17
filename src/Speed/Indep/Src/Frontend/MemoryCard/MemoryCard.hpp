@@ -191,13 +191,16 @@ class MemoryCard {
     bool IsWaitingForResponse() {
         return m_bWaitingForResponse;
     }
+#ifdef EA_PLATFORM_GAMECUBE
     GCIconDataInfo *GetSaveIcon() {
         return m_pRMIcon;
     }
     GCBannerDataInfo *GetSaveBanner() {
         return m_pRMBanner;
     }
+#endif
     static int GetLastError() {
+
         return s_pThis->m_LastError;
     }
     static int GetSpecialError() {
@@ -281,59 +284,61 @@ class MemoryCard {
 
   private:
     RealmcIface::BootupCheckParams m_BootupParams; // offset 0x0, size 0x10
-    GCIconDataInfo *m_pRMIcon;                     // offset 0x10, size 0x4
-    GCBannerDataInfo *m_pRMBanner;                 // offset 0x14, size 0x4
-    void *m_pLocaleFileHandler;                    // offset 0x18, size 0x4
-    bool m_bWaitingForResponse;                    // offset 0x1C, size 0x1
-    bool m_bBootFoundFile;                         // offset 0x20, size 0x1
-    bool m_bAutoSave;                              // offset 0x24, size 0x1
-    bool m_bAutoSaveCardPulled;                    // offset 0x28, size 0x1
-    bool m_bInBootSequence;                        // offset 0x2C, size 0x1
-    bool m_bRetryBootCheck;                        // offset 0x30, size 0x1
-    bool m_bManualSave;                            // offset 0x34, size 0x1
-    bool m_bAutoSaveCardPulledDuringSave;          // offset 0x38, size 0x1
-    bool m_bOldSaveFileExists;                     // offset 0x3C, size 0x1
-    bool m_bListingOldSaveFiles;                   // offset 0x40, size 0x1
-    bool m_bInAutoSave;                            // offset 0x44, size 0x1
-    bool m_bAutoSaveRequested;                     // offset 0x48, size 0x1
-    bool m_bCheckingCardForAutoSave;               // offset 0x4C, size 0x1
-    bool m_bFoundAutoSaveFile;                     // offset 0x50, size 0x1
-    bool m_bCheckingCardForOverwrite;              // offset 0x54, size 0x1
-    bool m_bMemcardScreenShowing;                  // offset 0x58, size 0x1
-    bool m_bCardRemoved;                           // offset 0x5C, size 0x1
-    bool m_bRetryAutoSave;                         // offset 0x60, size 0x1
-    bool m_bInitialized;                           // offset 0x64, size 0x1
-    bool m_bDisablingAutoSaveForSave;              // offset 0x68, size 0x1
-    bool m_bAutoLoading;                           // offset 0x6C, size 0x1
-    bool m_bListingForCreate;                      // offset 0x70, size 0x1
-    bool m_bHUDLoaded;                             // offset 0x74, size 0x1
-    bool m_bCancelNextAutoSave;                    // offset 0x78, size 0x1
-    bool m_bMonitorOn;                             // offset 0x7C, size 0x1
-    bool m_bAutoSaveIconShowing;                   // offset 0x80, size 0x1
-    bool m_bNeedToAllowControllerErrors;           // offset 0x84, size 0x1
-    bool m_bNonSilentAutoSave;                     // offset 0x88, size 0x1
-    bool m_bAutoLoadDone;                          // offset 0x8C, size 0x1
-    bool m_bMemcardScreenExiting;                  // offset 0x90, size 0x1
-    MemoryCardMessage *m_PendingMessage;           // offset 0x94, size 0x4
-    RealmcIface::GameInfo *m_pGameInfo;            // offset 0x98, size 0x4
-    int m_ReqOp;                                   // offset 0x9C, size 0x4
-    const char *m_ReqFilename;                     // offset 0xA0, size 0x4
-    int m_MemOp;                                   // offset 0xA4, size 0x4
-    char *m_pBuffer;                               // offset 0xA8, size 0x4
-    uint16 m_LastError;                            // offset 0xAC, size 0x2
-    uint16 m_SpecialError;                         // offset 0xAE, size 0x2
-    int m_EntryCount;                              // offset 0xB0, size 0x4
-    int m_nPlayer;                                 // offset 0xB4, size 0x4
-    uint32 m_Header[2];                            // offset 0xB8, size 0x8
-    char m_Filename[32];                           // offset 0xC0, size 0x20
-    char m_BootupFilename[32];                     // offset 0xE0, size 0x20
-    int m_GameTitle[32];                           // offset 0x100, size 0x80
-    SaveType m_Type;                               // offset 0x180, size 0x4
-    uint32 m_DataSize;                             // offset 0x184, size 0x4
-    int32 m_TimeOffsetSec;                         // offset 0x188, size 0x4
-    RealmcIface::MemcardInterface *m_pIMemcard;    // offset 0x18C, size 0x4
-    UIMemcardBase *m_pFEScreen;                    // offset 0x190, size 0x4
-    MemoryCardImp *m_pImp;                         // offset 0x194, size 0x4
+#ifdef EA_PLATFORM_GAMECUBE
+    GCIconDataInfo *m_pRMIcon;     // offset 0x10, size 0x4
+    GCBannerDataInfo *m_pRMBanner; // offset 0x14, size 0x4
+#endif
+    void *m_pLocaleFileHandler;                 // offset 0x18, size 0x4
+    bool m_bWaitingForResponse;                 // offset 0x1C, size 0x1
+    bool m_bBootFoundFile;                      // offset 0x20, size 0x1
+    bool m_bAutoSave;                           // offset 0x24, size 0x1
+    bool m_bAutoSaveCardPulled;                 // offset 0x28, size 0x1
+    bool m_bInBootSequence;                     // offset 0x2C, size 0x1
+    bool m_bRetryBootCheck;                     // offset 0x30, size 0x1
+    bool m_bManualSave;                         // offset 0x34, size 0x1
+    bool m_bAutoSaveCardPulledDuringSave;       // offset 0x38, size 0x1
+    bool m_bOldSaveFileExists;                  // offset 0x3C, size 0x1
+    bool m_bListingOldSaveFiles;                // offset 0x40, size 0x1
+    bool m_bInAutoSave;                         // offset 0x44, size 0x1
+    bool m_bAutoSaveRequested;                  // offset 0x48, size 0x1
+    bool m_bCheckingCardForAutoSave;            // offset 0x4C, size 0x1
+    bool m_bFoundAutoSaveFile;                  // offset 0x50, size 0x1
+    bool m_bCheckingCardForOverwrite;           // offset 0x54, size 0x1
+    bool m_bMemcardScreenShowing;               // offset 0x58, size 0x1
+    bool m_bCardRemoved;                        // offset 0x5C, size 0x1
+    bool m_bRetryAutoSave;                      // offset 0x60, size 0x1
+    bool m_bInitialized;                        // offset 0x64, size 0x1
+    bool m_bDisablingAutoSaveForSave;           // offset 0x68, size 0x1
+    bool m_bAutoLoading;                        // offset 0x6C, size 0x1
+    bool m_bListingForCreate;                   // offset 0x70, size 0x1
+    bool m_bHUDLoaded;                          // offset 0x74, size 0x1
+    bool m_bCancelNextAutoSave;                 // offset 0x78, size 0x1
+    bool m_bMonitorOn;                          // offset 0x7C, size 0x1
+    bool m_bAutoSaveIconShowing;                // offset 0x80, size 0x1
+    bool m_bNeedToAllowControllerErrors;        // offset 0x84, size 0x1
+    bool m_bNonSilentAutoSave;                  // offset 0x88, size 0x1
+    bool m_bAutoLoadDone;                       // offset 0x8C, size 0x1
+    bool m_bMemcardScreenExiting;               // offset 0x90, size 0x1
+    MemoryCardMessage *m_PendingMessage;        // offset 0x94, size 0x4
+    RealmcIface::GameInfo *m_pGameInfo;         // offset 0x98, size 0x4
+    int m_ReqOp;                                // offset 0x9C, size 0x4
+    const char *m_ReqFilename;                  // offset 0xA0, size 0x4
+    int m_MemOp;                                // offset 0xA4, size 0x4
+    char *m_pBuffer;                            // offset 0xA8, size 0x4
+    uint16 m_LastError;                         // offset 0xAC, size 0x2
+    uint16 m_SpecialError;                      // offset 0xAE, size 0x2
+    int m_EntryCount;                           // offset 0xB0, size 0x4
+    int m_nPlayer;                              // offset 0xB4, size 0x4
+    uint32 m_Header[2];                         // offset 0xB8, size 0x8
+    char m_Filename[32];                        // offset 0xC0, size 0x20
+    char m_BootupFilename[32];                  // offset 0xE0, size 0x20
+    int m_GameTitle[32];                        // offset 0x100, size 0x80
+    SaveType m_Type;                            // offset 0x180, size 0x4
+    uint32 m_DataSize;                          // offset 0x184, size 0x4
+    int32 m_TimeOffsetSec;                      // offset 0x188, size 0x4
+    RealmcIface::MemcardInterface *m_pIMemcard; // offset 0x18C, size 0x4
+    UIMemcardBase *m_pFEScreen;                 // offset 0x190, size 0x4
+    MemoryCardImp *m_pImp;                      // offset 0x194, size 0x4
 
     static MemoryCard *s_pThis;
 };

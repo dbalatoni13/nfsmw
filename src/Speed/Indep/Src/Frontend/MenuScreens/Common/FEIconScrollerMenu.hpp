@@ -258,8 +258,8 @@ class IconScroller : public IconPanel {
         bAllowColorAnim = allow;
     }
     void StartFadeIn() {
-        bFadingIn = true;
         bDelayUpdate = false;
+        bFadingIn = true;
         bFadingOut = false;
         fCurFadeTime = 0.0f;
     }
@@ -313,9 +313,12 @@ class IconScroller : public IconPanel {
     void UpdateArrows();
     void PulseSelected();
 
-    IconOption *HeadBookEnd;                // offset 0x38, size 0x4
-    IconOption *TailBookEnd;                // offset 0x3C, size 0x4
-    FEScrollBar ScrollBar;                  // offset 0x40, size 0x64
+    IconOption *HeadBookEnd; // offset 0x38, size 0x4
+    IconOption *TailBookEnd; // offset 0x3C, size 0x4
+    FEScrollBar ScrollBar;   // offset 0x40, size 0x64
+#ifdef EA_PLATFORM_WIN32
+    uint32 TODO_PAD; // TODO: is there an extra member here or is tCubic aligned?
+#endif
     tCubic1D AnimateCubic;                  // offset 0xA4, size 0x2C
     eScrollerAlignment AlignmentToSelected; // offset 0xD0, size 0x4
     int iNumBookEnds;                       // offset 0xD4, size 0x4

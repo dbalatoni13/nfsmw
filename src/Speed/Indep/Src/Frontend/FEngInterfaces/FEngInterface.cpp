@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 Timer MessengerCreationTimer(0);
 
@@ -101,12 +102,12 @@ void cFEng::PauseAllSystems() {
     if (UTL::Collections::Singleton<INIS>::Get()) {
         UTL::Collections::Singleton<INIS>::Get()->Pause();
     }
-    SoundPause(true, static_cast<eSNDPAUSE_REASON>(-1));
+    SoundPause(true, ePAUSE_ERROR);
     SetSoundControlState(true, SNDSTATE_ERROR, "PauseAllSystems");
 }
 
 void cFEng::ResumeAllSystems(bool flushActions) {
-    SoundPause(false, static_cast<eSNDPAUSE_REASON>(-1));
+    SoundPause(false, ePAUSE_ERROR);
     SetSoundControlState(false, SNDSTATE_ERROR, "PauseAllSystems");
     if (UTL::Collections::Singleton<INIS>::Get()) {
         UTL::Collections::Singleton<INIS>::Get()->UnPause();
@@ -305,5 +306,22 @@ void cFEng::MakeLoadedPackagesDirty() {
             pkg->ForAllObjects(dirt);
             pkg = pkg->GetNext();
         }
+    }
+}
+
+void cFEng::EnablePackageControl(FEPackage *pkg, bool bProcess) {}
+
+// UNSOLVED
+void cFEng::QueuePopChildPackages(const char *pPackageName) {
+    FEPackage *pPkg = mFEng->GetPackageList()->GetFirstPackage();
+    FEPackage *pNextPkg;
+    FEPackage *pParent = FindPackage(pPackageName);
+    while (pPkg != nullptr) {
+        pNextPkg = pPkg->GetNext();
+        if (bStrCmp(pParent->GetName(), pPkg->GetName()) != 0 && pPkg->GetPriority() < 100) {
+            QueuePopChildPackages(pPkg->GetName());
+            mInstance->QueuePackagePop(1);
+        }
+        pPkg = pNextPkg;
     }
 }

@@ -33,7 +33,11 @@ class cFEng {
     void PushErrorPackage(const char *pPackageName, int pArg, u32 ControlMask); // Decl: 41
     void PopErrorPackage();                                                     // Decl: 42
     bool IsErrorState() {                                                       // Decl: 43
+#ifdef EA_PLATFORM_WIN32
+        return (mFEng != nullptr) ? mFEng->IsErrorScreenMode() : false;
+#else
         return mFEng->IsErrorScreenMode();
+#endif
     }
 
     void PopErrorPackage(int port); // Decl: 42

@@ -35,7 +35,7 @@ void MemcardCallbacks::ShowMessage(const wchar_t *msg, uint32_t nOptions, const 
     }
     DisplayMessage(msg, nOptions, options);
     GetMemcard()->m_bWaitingForResponse = true;
-    if (GetMemcard()->IsAutoSaving() && gMemcardSetup.GetCommand() != 0xb0) {
+    if (GetMemcard()->IsAutoSaving() && gMemcardSetup.GetCommand() != MCO_AutoSave) {
         if (nOptions == 0) {
             GetMemcard()->m_bWaitingForResponse = false;
         } else {
@@ -126,14 +126,14 @@ void MemcardCallbacks::SaveDone(const char *filename) {
     FEDatabase->bProfileLoaded = true;
     FEDatabase->SetOptionsDirty(false);
     GetMemcard()->m_bCardRemoved = false;
-    if (GetMemcard()->m_bManualSave && gMemcardSetup.GetCommand() != 0xb0) {
+    if (GetMemcard()->m_bManualSave && gMemcardSetup.GetCommand() != MCO_AutoSave) {
         if (FEDatabase->GetGameplaySettings()->AutoSaveOn) {
             GetMemcard()->SetRetryAutoSave(false);
             GetMemcard()->SetAutoSaveEnabled(true);
         } else {
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
-    } else if (GetMemcard()->IsAutoSaving() || gMemcardSetup.GetCommand() == 0xb0) {
+    } else if (GetMemcard()->IsAutoSaving() || gMemcardSetup.GetCommand() == MCO_AutoSave) {
         GetMemcard()->m_bAutoSaveCardPulled = false;
 #ifndef EA_BUILD_A124
         if (GetMemcard()->m_bFoundAutoSaveFile) {
@@ -146,7 +146,7 @@ void MemcardCallbacks::SaveDone(const char *filename) {
             GetMemcard()->SetAutoSaveEnabled(true);
         }
         GetMemcard()->EndAutoSave();
-        if (gMemcardSetup.GetCommand() == 0xb0) {
+        if (gMemcardSetup.GetCommand() == MCO_AutoSave) {
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
     }
@@ -200,7 +200,7 @@ void MemcardCallbacks::LoadDone(const char *filename) {
                 }
                 GetMemcard()->SetAutoSaveEnabled(true);
             } else {
-                cFEng::Get()->QueueGameMessage(gMemcardSetup.GetCommand() == 0x20 ? 0xa4bb7ae1 : 0x461a18ee, nullptr, 0xff);
+                cFEng::Get()->QueueGameMessage(gMemcardSetup.GetCommand() == MCO_BootList ? 0xa4bb7ae1 : 0x461a18ee, nullptr, 0xff);
             }
         } else {
             GetMemcard()->ShowMessages(false);
@@ -324,7 +324,7 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result, RealmcIface::CardS
     if (GetMemcard()->IsAutoSaving() || GetMemcard()->IsCheckingCardForAutoSave()) {
         GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
         GetMemcard()->EndAutoSave();
-        if (gMemcardSetup.GetMethod() == 0xb0) {
+        if (gMemcardSetup.GetMethod() == MCO_AutoSave) {
             cFEng::Get()->QueueGameMessage(0x8867412d, nullptr, 0xff);
         }
         FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
@@ -342,7 +342,7 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result, RealmcIface::CardS
             msg = 0xfe202e3b;
         }
     }
-    if (gMemcardSetup.GetMethod() == 0x60 && GetMemcard()->GetOp() == MemoryCard::MO_List) {
+    if (gMemcardSetup.GetMethod() == MCO_CreateNew && GetMemcard()->GetOp() == MemoryCard::MO_List) {
         GetMemcard()->SetListingForCreate(false);
         GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
         cFEng::Get()->QueueGameMessage(0x5a051729, GetScreen()->GetPackageName(), 0xff);
@@ -364,7 +364,7 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result, RealmcIface::CardS
             }
             goto failed_skip_autosave;
         failed_check_autosave:
-            if (gMemcardSetup.GetMethod() == 0x60) {
+            if (gMemcardSetup.GetMethod() == MCO_CreateNew) {
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
             }
         failed_skip_autosave:

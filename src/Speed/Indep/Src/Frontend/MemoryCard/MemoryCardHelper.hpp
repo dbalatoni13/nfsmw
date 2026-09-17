@@ -36,10 +36,8 @@ class MyMutex : public Realmc::IMutex {
 
     int Release() override { // Decl: 54
         mRefcount--;
-        if (mRefcount < 1) {
-            if (this != nullptr) {
-                delete this;
-            }
+        if (mRefcount <= 0) {
+            delete this;
             return 0;
         }
         return mRefcount;
@@ -80,10 +78,8 @@ class MyThread : public Realmc::IThread {
     };
     int Release() override { // Decl: 99
         mRefcount--;
-        if (mRefcount < 1) {
-            if (this != nullptr) {
-                delete this;
-            }
+        if (mRefcount <= 0) {
+            delete this;
             return 0;
         }
         return mRefcount;
@@ -107,17 +103,20 @@ class MyThread : public Realmc::IThread {
     };
     void WaitForEnd(int) override { // Decl: 137
         THREAD_waitexit(&mThreadData, 0);
-        if (mStackBuffer != nullptr) {
-            delete[] static_cast<char *>(mStackBuffer);
-        }
+        delete[] static_cast<char *>(mStackBuffer);
         mActive = false;
     };
     void Sleep(int ticks) override { // Decl: 143
         THREAD_yield(ticks);
     };
     void SetPriority(int priority) override { // Decl: 148
+#ifdef EA_PLATFORM_WIN32
+        mPriority = priority;
+        THREAD_setpriority(&mThreadData, priority);
+#else
         mPriority = 0;
         THREAD_setpriority(&mThreadData, 0);
+#endif
     };
     virtual Realmc::ThreadEntryFunc GetEntryFunc() { // Decl: 153
         return mEntryFunc;

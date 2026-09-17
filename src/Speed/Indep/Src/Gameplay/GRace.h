@@ -20,10 +20,7 @@ namespace GRace {
 
 enum Context {
     kRaceContext_QuickRace,
-    kRaceContext_TimeTrial,
-#if ONLINE_SUPPORT
     kRaceContext_Online,
-#endif
     kRaceContext_Career,
     kRaceContext_Count,
 };

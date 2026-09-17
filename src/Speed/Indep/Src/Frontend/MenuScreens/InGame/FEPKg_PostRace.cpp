@@ -274,7 +274,7 @@ void PostRaceResultsScreen::SetupStat_NosUsed() {
 void PostRaceResultsScreen::SetupStat_TopSpeed() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
     uint32 speedUnits = 0x8569AB44;
-    float speed = MPS2MPH(racerInfo.GetTopSpeed()); //*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x114) * 2.23699f;
+    float speed = MPS2MPH(racerInfo.GetTopSpeed());
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         speedUnits = 0x8569A25F;

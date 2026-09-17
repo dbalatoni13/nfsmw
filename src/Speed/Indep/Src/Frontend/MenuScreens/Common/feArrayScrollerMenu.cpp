@@ -109,7 +109,7 @@ void ArrayScroller::SetSelection(ArrayDatum *newDatum, int newStartDatum) {
         startDatum = newStartDatum;
         currentDatum = newDatum;
         if (bSelectableArray) {
-            ArraySlot *pSlot = GetSlotAt(GetCurrentDatumNum() - (startDatum + 1));
+            ArraySlot *pSlot = GetSlotAt(GetCurrentDatumNum() - startDatum);
             if (pSlot != nullptr) {
                 FEngSetCurrentButton(GetPkgName(), pSlot->GetFEngObject());
             }
@@ -136,7 +136,7 @@ void ArrayScroller::ScrollHor(eScrollDir dir) {
     }
 
     ArrayDatum *new_datum = currentDatum;
-    int current_num = GetCurrentDatumNum() - 1;
+    int current_num = GetCurrentDatumNum();
     int new_index = current_num;
     if (dir == eSD_PREV) {
         new_index = new_index - 1;
@@ -180,7 +180,7 @@ void ArrayScroller::ScrollVer(eScrollDir dir) {
         return;
     }
     ArrayDatum *new_datum = currentDatum;
-    int new_index = GetCurrentDatumNum() - 1;
+    int new_index = GetCurrentDatumNum();
     int new_start = startDatum;
     if (dir == eSD_PREV) {
         new_index = new_index - width;
@@ -193,7 +193,7 @@ void ArrayScroller::ScrollVer(eScrollDir dir) {
             new_start = new_start - width;
         }
         if (new_index > -1) {
-            for (int i = 0; i < GetCurrentDatumNum() - 1 - new_index; i++) {
+            for (int i = 0; i < GetCurrentDatumNum() - new_index; i++) {
                 new_datum = new_datum->GetPrev();
             }
         }
@@ -234,7 +234,7 @@ void ArrayScroller::UpdateScrollbar() {
     int view_size = GetHeight();
     int num_rows_of_data = (GetNumDatum() - 1) / GetWidth() + 1;
     int top_item = startDatum / GetWidth() + 1;
-    int selected_item = (GetCurrentDatumNum() - 1) / GetWidth() + 1;
+    int selected_item = GetCurrentDatumNum() / GetWidth() + 1;
     ScrollBar.Update(view_size, num_rows_of_data, top_item, selected_item);
 }
 

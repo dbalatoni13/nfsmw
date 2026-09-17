@@ -111,9 +111,8 @@ void cSlider::ToggleVisible(bool bOn) {
 }
 
 void cSlider::SetValue(float fvalue) {
-    fvalue = bMax(fvalue, fMinValue);
     fPrevValue = fCurValue;
-    fCurValue = bMin(fvalue, fMaxValue);
+    fCurValue = bMin(bMax(fvalue, fMinValue), fMaxValue);
 }
 
 void cSlider::Highlight() {

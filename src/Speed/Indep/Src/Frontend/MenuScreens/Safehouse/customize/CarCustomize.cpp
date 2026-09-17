@@ -3500,7 +3500,7 @@ void CustomizePaint::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u3
     switch (msg) {
         case __PAD_BUTTON0__:
             Showcase::FromFilter = TheFilter;
-            Showcase::FromIndex = ThePaints.GetCurrentDatumNum();
+            Showcase::FromIndex = ThePaints.GetCurrentDatumNum() + 1;
 #ifndef EA_BUILD_A124
             for (int i = 0; i < CP_VINYL_NUM_COLORS; i++) {
                 Showcase::FromColor[i] = VinylColors[i];
@@ -3678,7 +3678,7 @@ void CustomizePaint::ScrollFilters(eScrollDir dir) {
     }
 
     if (filter != TheFilter) {
-        SelectedIndex[TheFilter] = ThePaints.GetCurrentDatumNum() - 1;
+        SelectedIndex[TheFilter] = ThePaints.GetCurrentDatumNum();
         TheFilter = filter;
         switch (GetCategory()) {
             case CC_PAINT:
@@ -3983,7 +3983,7 @@ void CustomizePaint::RefreshHeader() {
     }
 
     DisplayHelper.SetCareerStuff(GetSelectedPart(), GetCategory(), 0);
-    DisplayHelper.SetPartStatus(GetSelectedPart(), GetUnlockBlurb(), ThePaints.GetCurrentDatumNum(), ThePaints.GetNumDatum());
+    DisplayHelper.SetPartStatus(GetSelectedPart(), GetUnlockBlurb(), ThePaints.GetCurrentDatumNum() + 1, ThePaints.GetNumDatum());
 }
 
 CustomizeDecals::CustomizeDecals(ScreenConstructorData *sd)
