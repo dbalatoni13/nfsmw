@@ -407,7 +407,6 @@ VisibleSectionManager::VisibleSectionManager() {
     bMemSet(this->UserInfoTable, 0, sizeof(this->UserInfoTable));
     this->NumAllocatedUserInfo = 0;
 
-    bNode *head = this->UnallocatedUserInfoList.GetHead();
     for (int n = 0; n < 512; n++) {
         UnallocatedVisibleSectionUserInfo *unallocated_info = reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(&this->UserInfoStorageTable[n]);
         this->UnallocatedUserInfoList.AddTail(unallocated_info);

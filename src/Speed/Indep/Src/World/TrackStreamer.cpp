@@ -1573,13 +1573,11 @@ void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num
     for (int i = 0; i < num_sections_to_load; i++) {
         this->CurrentVisibleSectionTable.Set(sections_to_load[i]);
 
-        // TODO this variable is fake
-        short &section_number = sections_to_load[i];
         if (this->SplitScreen) {
-            section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
+            sections_to_load[i] = static_cast<short>(Get2PlayerSectionNumber(sections_to_load[i]));
         }
 
-        TrackStreamingSection *section = this->FindSection(section_number);
+        TrackStreamingSection *section = this->FindSection(sections_to_load[i]);
         if (section == nullptr) {
             continue;
         }
@@ -1593,9 +1591,9 @@ void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num
         if (((section->CurrentlyVisible >> position_number) ^ 1U) & 1) {
             section->CurrentlyVisible |= static_cast<unsigned char>(1 << position_number);
             if (section->Status < TrackStreamingSection::LOADED) {
-                StreamingPositionEntry *streaming_position = &this->StreamingPositionEntries[position_number];
-                streaming_position->NumSectionsToLoad++;
-                streaming_position->AmountToLoad += section->Size;
+                StreamingPositionEntry *position_entry = &this->StreamingPositionEntries[position_number];
+                position_entry->NumSectionsToLoad++;
+                position_entry->AmountToLoad += section->Size;
             }
         }
     }
@@ -2283,17 +2281,10 @@ void TrackStreamer::AssignLoadingPriority() {
 
 void TrackStreamer::CalculateLoadingBacklog() {
     float loading_backlog = 0.0f;
-    for (int i = 0; i < this->NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = this->CurrentStreamingSections[i];
-        // TODO
+    for (int n = 0; n < this->NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = this->CurrentStreamingSections[n];
         if (section->CurrentlyVisible && (section->Status - TrackStreamingSection::LOADED > 1U)) {
-            // TODO get rid of temp
-            int rounded_size = section->Size;
-            if (rounded_size < 0) {
-                rounded_size += 0x3ff;
-            }
-
-            float time = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.15f;
+            float time = static_cast<float>(section->Size / 1024) * 0.0004f + 0.15f;
             if (section->BaseLoadingPriority == 1) {
                 time *= 0.4f;
             }
