@@ -571,14 +571,13 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
     return 0;
 }
 
-// UNSOLVED
 int VisibleSectionManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_MANAGER) {
-        this->pInfo = nullptr;
+        this->DrivableBoundaryList.InitList();
         this->NonDrivableBoundaryList.InitList();
         this->LoadingSectionList.InitList();
         this->DrivableSectionList.InitList();
-        this->DrivableBoundaryList.InitList();
+        this->pInfo = nullptr;
         return 1;
     }
 
