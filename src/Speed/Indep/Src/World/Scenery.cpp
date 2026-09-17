@@ -653,9 +653,9 @@ void CloseVisibleZones() {
     }
 }
 
-int IsInTable(short *section_numbers, int num_sections, int section_number) {
-    for (int i = 0; i < num_sections; i++) {
-        if (section_numbers[i] == section_number) {
+int IsInTable(short *table, int num_entries, int entry) {
+    for (int i = 0; i < num_entries; i++) {
+        if (table[i] == entry) {
             return i;
         }
     }

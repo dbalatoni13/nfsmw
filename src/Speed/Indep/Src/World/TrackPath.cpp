@@ -94,6 +94,7 @@ int TrackPathManager::Loader(bChunk *chunk) {
 
 int TrackPathManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_PATH_MANAGER) {
+        extern void NotifyGameZonesChanged();
         this->Clear();
         NotifyGameZonesChanged();
         return 1;
