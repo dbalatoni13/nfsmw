@@ -964,7 +964,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
                 num_sections_to_draw = ToggleIsInTable(sections_to_draw, num_sections_to_draw, max_sections_to_draw, ScenerySectionToBlink);
             }
             if (SeeulatorToolActive && SeeulatorRefreshTrackStreamer != 0) {
-                extern void RefreshTrackStreamer();
+                void RefreshTrackStreamer();
                 RefreshTrackStreamer();
                 SeeulatorRefreshTrackStreamer = 0;
             }

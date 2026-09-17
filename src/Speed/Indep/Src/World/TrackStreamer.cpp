@@ -946,7 +946,7 @@ void TrackStreamer::EmptyCaffeineLayers() {
         return;
     }
     if (RemoteCaffeinating && TrackStreamerRemoteCaffeinating) {
-        extern int ShowSectionBoarder;
+        extern int ShowSectionBoarder; //TODO: guessed, zero-length block
         ShowSectionBoarder = 1;
     }
 }
