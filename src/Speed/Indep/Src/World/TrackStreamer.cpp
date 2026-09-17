@@ -2359,16 +2359,16 @@ void TrackStreamer::FinishedLoading() {
     }
 }
 
-void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position) {
-    if (RemoteCaffeinating && TrackStreamerRemoteCaffeinating && streaming_position->CurrentZone > 0 &&
-        streaming_position->BeginLoadingTime != 0.0f) {
+void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *position_entry) {
+    if (RemoteCaffeinating && TrackStreamerRemoteCaffeinating && position_entry->CurrentZone > 0 &&
+        position_entry->BeginLoadingTime != 0.0f) {
         float load_time = GetDebugRealTime();
         unsigned int obj =
-            ::PlotLoadingMarker("TrackStreamingLoadedZone", &streaming_position->BeginLoadingPosition, &streaming_position->Position, load_time);
+            ::PlotLoadingMarker("TrackStreamingLoadedZone", &position_entry->BeginLoadingPosition, &position_entry->Position, load_time);
         char text[32];
-        bSPrintf(text, "%d/%d", streaming_position->NumSectionsLoaded, streaming_position->NumSectionsToLoad);
+        bSPrintf(text, "%d/%d", position_entry->NumSectionsLoaded, position_entry->NumSectionsToLoad);
         espSetAttributeString(obj, "NumSectionsLoaded", text);
-        bSPrintf(text, "%d/%d", streaming_position->AmountLoaded / 1024, streaming_position->AmountToLoad / 1024);
+        bSPrintf(text, "%d/%d", position_entry->AmountLoaded / 1024, position_entry->AmountToLoad / 1024);
         espSetAttributeString(obj, "AmountLoaded", text);
     }
 }
