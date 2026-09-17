@@ -24,13 +24,13 @@ void LGWheels_StopSlipperyRoadEffect(LGWheels *, long) asm("StopSlipperyRoadEffe
 void LGWheels_PlaySpringForce(LGWheels *, long, signed char, unsigned char, short) asm("PlaySpringForce__8LGWheelslScUcs");
 
 class IOModule {
-public:
+  public:
     static IOModule &GetIOModule();
     void Update();
 };
 
 class cFEngJoyInput {
-public:
+  public:
     static cFEngJoyInput *mInstance;
     void HandleJoy();
 };
@@ -38,7 +38,7 @@ public:
 class FEObject;
 
 class cFEng {
-public:
+  public:
     static cFEng *mInstance;
 
     static cFEng *Get() {
@@ -54,12 +54,14 @@ public:
 };
 
 class EAXSound {
-public:
+  public:
     void Update(float);
 };
 
 class TextureInfo;
-namespace RealShape { class Shape; }
+namespace RealShape {
+class Shape;
+}
 
 struct MoviePlayer {
     void Stop();
@@ -67,7 +69,7 @@ struct MoviePlayer {
 };
 
 class FEManager {
-public:
+  public:
     static FEManager *Get();
     void Render();
 };
@@ -235,12 +237,24 @@ int DVDValidErrorState(int error) {
     int errorstate;
 
     switch (error) {
-        case 5: errorstate = 5; break;
-        case 4: errorstate = 4; break;
-        case 6: errorstate = 6; break;
-        case 11: errorstate = 11; break;
-        case -1: errorstate = -1; break;
-        default: errorstate = 0; break;
+        case 5:
+            errorstate = 5;
+            break;
+        case 4:
+            errorstate = 4;
+            break;
+        case 6:
+            errorstate = 6;
+            break;
+        case 11:
+            errorstate = 11;
+            break;
+        case -1:
+            errorstate = -1;
+            break;
+        default:
+            errorstate = 0;
+            break;
     }
 
     return errorstate;
@@ -345,9 +359,7 @@ void DVDErrorTask(void *, int) {
                         LGWheels_StopDamperForce(plat_lgwheels, port);
                         LGWheels_StopCarAirborne(plat_lgwheels, port);
                         LGWheels_StopSlipperyRoadEffect(plat_lgwheels, port);
-                        LGWheels_PlaySpringForce(plat_lgwheels, port,
-                            *(signed char *)((char *)plat_lgwheels + port * 10 + 3),
-                            0xb4, 0xb4);
+                        LGWheels_PlaySpringForce(plat_lgwheels, port, *(signed char *)((char *)plat_lgwheels + port * 10 + 3), 0xb4, 0xb4);
                     }
                 }
             }
@@ -411,8 +423,7 @@ void DVDErrorTask(void *, int) {
                 feng->PushErrorPackage("DiscError.fng", 0, 0xff);
             }
 
-            FEPrintf("DiscError.fng", 0xEEFFD04F,
-                s_OpenCover_ErrorText[current_language][dvderrormessagehash]);
+            FEPrintf("DiscError.fng", 0xEEFFD04F, s_OpenCover_ErrorText[current_language][dvderrormessagehash]);
             nextFrame = dvderrorticks + 1;
         } else if (g_discErrorOccured == 0) {
             nextFrame = dvderrorticks + 1;
@@ -433,8 +444,7 @@ void DVDErrorTask(void *, int) {
                 char copy_length;
                 int anim_frames;
 
-                copy_length = static_cast<char>(bStrLen(
-                    s_OpenCover_ErrorText[current_language][5]));
+                copy_length = static_cast<char>(bStrLen(s_OpenCover_ErrorText[current_language][5]));
                 bMemSet(the_loading_text, 0, 16);
 
                 anim_frames = 0x10;
@@ -456,9 +466,7 @@ void DVDErrorTask(void *, int) {
                     current_anim_tick = current_anim_tick + 1;
                 }
 
-                bStrNCpy(the_loading_text,
-                    s_OpenCover_ErrorText[current_language][5],
-                    copy_length - strip_chars);
+                bStrNCpy(the_loading_text, s_OpenCover_ErrorText[current_language][5], copy_length - strip_chars);
 
                 to_copy = bStrLen(the_loading_text);
                 while (to_copy <= copy_length) {
@@ -510,8 +518,7 @@ void DVDErrorTask(void *, int) {
             eEndScene();
 
             /* Read Logitech wheel data for pad input */
-            if (LGWheels_IsConnected(plat_lgwheels, 0) ||
-                LGWheels_IsConnected(plat_lgwheels, 1)) {
+            if (LGWheels_IsConnected(plat_lgwheels, 0) || LGWheels_IsConnected(plat_lgwheels, 1)) {
                 LGWheels_ReadAll(plat_lgwheels);
                 HardwarePadStatus[0].button = *(u16 *)((char *)plat_lgwheels);
                 HardwarePadStatus[1].button = *(u16 *)((char *)plat_lgwheels + 10);

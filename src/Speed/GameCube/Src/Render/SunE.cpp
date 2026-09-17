@@ -24,10 +24,8 @@ void eSetOrthographicMatrixToHW();
 void eRecalculateOthographicProjection(int view_id, float far_clip);
 void SetCurrentSunInfo();
 
-void RenderViewPoly(eView *view, ePoly *poly, TextureInfo *texture_info, int flags)
-    __asm__("Render__18eViewPlatInterfaceP5ePolyP11TextureInfoi");
-void GetScreenPosition(eView *view, bVector3 *screen, const bVector3 *world)
-    __asm__("GetScreenPosition__18eViewPlatInterfaceP8bVector3PC8bVector3");
+void RenderViewPoly(eView *view, ePoly *poly, TextureInfo *texture_info, int flags) __asm__("Render__18eViewPlatInterfaceP5ePolyP11TextureInfoi");
+void GetScreenPosition(eView *view, bVector3 *screen, const bVector3 *world) __asm__("GetScreenPosition__18eViewPlatInterfaceP8bVector3PC8bVector3");
 void eMulVector(bVector4 *dst, const bMatrix4 *matrix, const bVector4 *src) __asm__("eMulVector__FP8bVector4PC8bMatrix4PC8bVector4");
 void ConstructePoly(ePoly *poly) __asm__("__5ePoly");
 

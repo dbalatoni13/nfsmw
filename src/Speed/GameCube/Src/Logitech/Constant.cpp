@@ -14,7 +14,9 @@ static const char kUpdateConstantForceError[] = "ERROR: UpdateForce(constant for
 
 Constant::Constant() : Force() {}
 
-int Constant::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+int Constant::DownloadForce(long channel, long forceNumber, unsigned long &handle, unsigned long duration, unsigned long startDelay, short magnitude,
+                            unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel,
+                            unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
 
@@ -47,7 +49,8 @@ int Constant::DownloadForce(long channel, long forceNumber, unsigned long & hand
     return ret;
 }
 
-int Constant::UpdateForce(long channel, long forceNumber, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+int Constant::UpdateForce(long channel, long forceNumber, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction,
+                          unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
 

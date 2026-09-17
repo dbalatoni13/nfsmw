@@ -6,7 +6,6 @@ extern "C" {
 void LGInit();
 }
 
-
 static const char kPlayForceError[] = "ERROR: trying to play a force on channel %d but no wheel opened.\n";
 
 LGWheels::LGWheels() {
@@ -53,94 +52,97 @@ void LGWheels::ReadAll() {
 
 void LGWheels::StopForce(long channel, long forceType) {
     switch (forceType) {
-    case 0:
-        if (IsPlaying(channel, 0)) {
-            condition.Stop(channel, 0);
-        }
-        break;
-    case 1:
-        if (IsPlaying(channel, 1)) {
-            constant.Stop(channel, 0);
-        }
-        break;
-    case 2:
-        if (IsPlaying(channel, 2)) {
-            condition.Stop(channel, 1);
-        }
-        break;
-    case 3:
-        if (IsPlaying(channel, 3)) {
-            constant.Stop(channel, 1);
-        }
-        break;
-    case 4:
-        if (IsPlaying(channel, 4)) {
-            periodic.Stop(channel, 0);
-        }
-        break;
-    case 5:
-        if (IsPlaying(channel, 5)) {
-            periodic.Stop(channel, 1);
-        }
-        break;
-    case 6:
-        if (IsPlaying(channel, 6)) {
-            periodic.Stop(channel, 2);
-        }
-        break;
-    case 7:
-        if (IsPlaying(channel, 7)) {
-            condition.Stop(channel, 2);
-        }
-        if (damperWasPlaying[channel]) {
-            PlayDamperForce(channel, DamperForceParams[channel].coefficient);
-            condition.Playing[channel][1] = 1;
-            damperWasPlaying[channel] = 0;
-        }
-        if (springWasPlaying[channel]) {
-            PlaySpringForce(channel, SpringForceParams[channel].offset, SpringForceParams[channel].saturation, SpringForceParams[channel].coefficient);
-            condition.Playing[channel][0] = 1;
-            springWasPlaying[channel] = 0;
-        }
-        break;
-    case 8:
-        if (IsPlaying(channel, 8)) {
-            periodic.Stop(channel, 3);
-        }
-        break;
-    case 9:
-        if (IsPlaying(channel, 9)) {
-            IsAirborne[channel] = 0;
-            if (wasPlayingBeforeAirborne[channel][0] == 1) {
-                PlaySpringForce(channel, SpringForceParams[channel].offset, SpringForceParams[channel].saturation, SpringForceParams[channel].coefficient);
+        case 0:
+            if (IsPlaying(channel, 0)) {
+                condition.Stop(channel, 0);
             }
-            if (wasPlayingBeforeAirborne[channel][1] == 1) {
-                PlayConstantForce(channel, ConstantForceParams[channel].magnitude, ConstantForceParams[channel].direction);
+            break;
+        case 1:
+            if (IsPlaying(channel, 1)) {
+                constant.Stop(channel, 0);
             }
-            if (wasPlayingBeforeAirborne[channel][2] == 1) {
+            break;
+        case 2:
+            if (IsPlaying(channel, 2)) {
+                condition.Stop(channel, 1);
+            }
+            break;
+        case 3:
+            if (IsPlaying(channel, 3)) {
+                constant.Stop(channel, 1);
+            }
+            break;
+        case 4:
+            if (IsPlaying(channel, 4)) {
+                periodic.Stop(channel, 0);
+            }
+            break;
+        case 5:
+            if (IsPlaying(channel, 5)) {
+                periodic.Stop(channel, 1);
+            }
+            break;
+        case 6:
+            if (IsPlaying(channel, 6)) {
+                periodic.Stop(channel, 2);
+            }
+            break;
+        case 7:
+            if (IsPlaying(channel, 7)) {
+                condition.Stop(channel, 2);
+            }
+            if (damperWasPlaying[channel]) {
                 PlayDamperForce(channel, DamperForceParams[channel].coefficient);
+                condition.Playing[channel][1] = 1;
+                damperWasPlaying[channel] = 0;
             }
-            if (wasPlayingBeforeAirborne[channel][5] == 1) {
-                PlayDirtRoadEffect(channel, static_cast<unsigned char>(DirtRoadParams[channel].magnitude));
+            if (springWasPlaying[channel]) {
+                PlaySpringForce(channel, SpringForceParams[channel].offset, SpringForceParams[channel].saturation,
+                                SpringForceParams[channel].coefficient);
+                condition.Playing[channel][0] = 1;
+                springWasPlaying[channel] = 0;
             }
-            if (wasPlayingBeforeAirborne[channel][6] == 1) {
-                PlayBumpyRoadEffect(channel, static_cast<unsigned char>(BumpyRoadParams[channel].magnitude));
+            break;
+        case 8:
+            if (IsPlaying(channel, 8)) {
+                periodic.Stop(channel, 3);
             }
-            if (wasPlayingBeforeAirborne[channel][7] == 1) {
-                PlaySlipperyRoadEffect(channel, SlipperyRoadParams[channel].magnitude);
-            }
-            if (wasPlayingBeforeAirborne[channel][8] == 1) {
-                PlaySurfaceEffect(channel, SurfaceEffectParams[channel].type, SurfaceEffectParams[channel].magnitude, SurfaceEffectParams[channel].period);
-            }
-            {
-                int jj;
+            break;
+        case 9:
+            if (IsPlaying(channel, 9)) {
+                IsAirborne[channel] = 0;
+                if (wasPlayingBeforeAirborne[channel][0] == 1) {
+                    PlaySpringForce(channel, SpringForceParams[channel].offset, SpringForceParams[channel].saturation,
+                                    SpringForceParams[channel].coefficient);
+                }
+                if (wasPlayingBeforeAirborne[channel][1] == 1) {
+                    PlayConstantForce(channel, ConstantForceParams[channel].magnitude, ConstantForceParams[channel].direction);
+                }
+                if (wasPlayingBeforeAirborne[channel][2] == 1) {
+                    PlayDamperForce(channel, DamperForceParams[channel].coefficient);
+                }
+                if (wasPlayingBeforeAirborne[channel][5] == 1) {
+                    PlayDirtRoadEffect(channel, static_cast<unsigned char>(DirtRoadParams[channel].magnitude));
+                }
+                if (wasPlayingBeforeAirborne[channel][6] == 1) {
+                    PlayBumpyRoadEffect(channel, static_cast<unsigned char>(BumpyRoadParams[channel].magnitude));
+                }
+                if (wasPlayingBeforeAirborne[channel][7] == 1) {
+                    PlaySlipperyRoadEffect(channel, SlipperyRoadParams[channel].magnitude);
+                }
+                if (wasPlayingBeforeAirborne[channel][8] == 1) {
+                    PlaySurfaceEffect(channel, SurfaceEffectParams[channel].type, SurfaceEffectParams[channel].magnitude,
+                                      SurfaceEffectParams[channel].period);
+                }
+                {
+                    int jj;
 
-                for (jj = 0; jj < 10; jj++) {
-                    wasPlayingBeforeAirborne[channel][jj] = 0;
+                    for (jj = 0; jj < 10; jj++) {
+                        wasPlayingBeforeAirborne[channel][jj] = 0;
+                    }
                 }
             }
-        }
-        break;
+            break;
     }
 }
 
@@ -150,56 +152,56 @@ bool LGWheels::IsConnected(long channel) {
 
 bool LGWheels::IsPlaying(long channel, long forceType) {
     switch (forceType) {
-    case 0:
-        if (condition.Playing[channel][0] != 0) {
-            return true;
-        }
-        break;
-    case 1:
-        if (constant.Playing[channel][0] != 0) {
-            return true;
-        }
-        break;
-    case 2:
-        if (condition.Playing[channel][1] != 0) {
-            return true;
-        }
-        break;
-    case 3:
-        if (constant.Playing[channel][1] != 0) {
-            return true;
-        }
-        break;
-    case 4:
-        if (periodic.Playing[channel][0] != 0) {
-            return true;
-        }
-        break;
-    case 5:
-        if (periodic.Playing[channel][1] != 0) {
-            return true;
-        }
-        break;
-    case 6:
-        if (periodic.Playing[channel][2] != 0) {
-            return true;
-        }
-        break;
-    case 7:
-        if (condition.Playing[channel][2] != 0) {
-            return true;
-        }
-        break;
-    case 8:
-        if (periodic.Playing[channel][3] != 0) {
-            return true;
-        }
-        break;
-    case 9:
-        if (IsAirborne[channel] == 1) {
-            return true;
-        }
-        break;
+        case 0:
+            if (condition.Playing[channel][0] != 0) {
+                return true;
+            }
+            break;
+        case 1:
+            if (constant.Playing[channel][0] != 0) {
+                return true;
+            }
+            break;
+        case 2:
+            if (condition.Playing[channel][1] != 0) {
+                return true;
+            }
+            break;
+        case 3:
+            if (constant.Playing[channel][1] != 0) {
+                return true;
+            }
+            break;
+        case 4:
+            if (periodic.Playing[channel][0] != 0) {
+                return true;
+            }
+            break;
+        case 5:
+            if (periodic.Playing[channel][1] != 0) {
+                return true;
+            }
+            break;
+        case 6:
+            if (periodic.Playing[channel][2] != 0) {
+                return true;
+            }
+            break;
+        case 7:
+            if (condition.Playing[channel][2] != 0) {
+                return true;
+            }
+            break;
+        case 8:
+            if (periodic.Playing[channel][3] != 0) {
+                return true;
+            }
+            break;
+        case 9:
+            if (IsAirborne[channel] == 1) {
+                return true;
+            }
+            break;
     }
 
     return false;
@@ -245,7 +247,8 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
                 return;
             }
 
-            ret = condition.UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            ret =
+                condition.UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
             if (ret < 0) {
                 return;
             }
@@ -257,7 +260,8 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
         }
 
         if (condition.EffectID[channel][0] == static_cast<unsigned long>(-1)) {
-            ret = condition.DownloadForce(channel, 0, wheels.WheelHandles[channel], 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            ret = condition.DownloadForce(channel, 0, wheels.WheelHandles[channel], 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation,
+                                          saturation, coefficient, coefficient);
             if (ret >= 0) {
                 SpringForceParams[channel].offset = offset;
                 SpringForceParams[channel].saturation = saturation;
@@ -268,7 +272,8 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
         } else if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
             condition.Start(channel, 0);
         } else {
-            ret = condition.UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            ret =
+                condition.UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
             if (ret >= 0) {
                 SpringForceParams[channel].offset = offset;
                 SpringForceParams[channel].saturation = saturation;
@@ -316,7 +321,8 @@ void LGWheels::PlayConstantForce(long channel, short magnitude, unsigned short d
         }
 
         if (constant.EffectID[channel][0] == static_cast<unsigned long>(-1)) {
-            ret = constant.DownloadForce(channel, 0, wheels.WheelHandles[channel], static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
+            ret =
+                constant.DownloadForce(channel, 0, wheels.WheelHandles[channel], static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
             if (ret >= 0) {
                 ConstantForceParams[channel].magnitude = magnitude;
                 ConstantForceParams[channel].direction = direction;
@@ -375,7 +381,8 @@ void LGWheels::PlayDamperForce(long channel, short coefficient) {
         }
 
         if (condition.EffectID[channel][1] == static_cast<unsigned long>(-1)) {
-            ret = condition.DownloadForce(channel, 1, wheels.WheelHandles[channel], 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF, coefficient, coefficient);
+            ret = condition.DownloadForce(channel, 1, wheels.WheelHandles[channel], 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF,
+                                          coefficient, coefficient);
             if (ret >= 0) {
                 DamperForceParams[channel].coefficient = coefficient;
             }
@@ -476,9 +483,8 @@ void LGWheels::PlayDirtRoadEffect(long channel, unsigned char magnitude) {
         }
 
         if (periodic.EffectID[channel][1] == static_cast<unsigned long>(-1)) {
-            ret = periodic.DownloadForce(
-                channel, 1, wheels.WheelHandles[channel], 2, static_cast<unsigned long>(-1), 0, magnitude, 90,
-                65, 0, 0, 0, 0, 0, 0);
+            ret = periodic.DownloadForce(channel, 1, wheels.WheelHandles[channel], 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0,
+                                         0, 0, 0);
             if (ret >= 0) {
                 DirtRoadParams[channel].magnitude = magnitude;
             }
@@ -531,9 +537,8 @@ void LGWheels::PlayBumpyRoadEffect(long channel, unsigned char magnitude) {
         }
 
         if (periodic.EffectID[channel][2] == static_cast<unsigned long>(-1)) {
-            ret = periodic.DownloadForce(
-                channel, 2, wheels.WheelHandles[channel], 3, static_cast<unsigned long>(-1), 0, magnitude,
-                90, 100, 0, 0, 0, 0, 0, 0);
+            ret = periodic.DownloadForce(channel, 2, wheels.WheelHandles[channel], 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0,
+                                         0, 0, 0);
             if (ret >= 0) {
                 BumpyRoadParams[channel].magnitude = magnitude;
             }
@@ -598,7 +603,8 @@ void LGWheels::PlaySlipperyRoadEffect(long channel, short magnitude) {
         }
 
         if (condition.EffectID[channel][2] == static_cast<unsigned long>(-1)) {
-            ret = condition.DownloadForce(channel, 2, wheels.WheelHandles[channel], 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF, -magnitude, -magnitude);
+            ret = condition.DownloadForce(channel, 2, wheels.WheelHandles[channel], 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF,
+                                          -magnitude, -magnitude);
             if (ret >= 0) {
                 SlipperyRoadParams[channel].magnitude = magnitude;
             }
@@ -642,7 +648,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
 
             if (type != SurfaceEffectParams[channel].type) {
                 periodic.Destroy(channel, 3);
-                ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+                ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period,
+                                             0, 0, 0, 0, 0, 0);
                 periodic.Start(channel, 3);
             } else {
                 ret = periodic.UpdateForce(channel, 3, type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
@@ -657,7 +664,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
         }
 
         if (periodic.EffectID[channel][3] == static_cast<unsigned long>(-1)) {
-            ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+            ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0,
+                                         0, 0, 0, 0, 0);
             if (ret >= 0) {
                 SurfaceEffectParams[channel].type = type;
                 SurfaceEffectParams[channel].magnitude = magnitude;
@@ -674,7 +682,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
 
         if (type != SurfaceEffectParams[channel].type) {
             periodic.Destroy(channel, 3);
-            ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+            ret = periodic.DownloadForce(channel, 3, wheels.WheelHandles[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0,
+                                         0, 0, 0, 0, 0);
         } else {
             ret = periodic.UpdateForce(channel, 3, type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
         }

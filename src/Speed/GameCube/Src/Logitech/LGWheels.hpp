@@ -87,12 +87,12 @@ struct Wheels {
     void GenerateNonLinValues(long channel, unsigned char nonLinCoeff);
     float CalculateNonLinValue(int inputValue, unsigned char nonLinearCoeff, short nonLinMinOutput, short nonLinMaxOutput);
 
-    LGPosition Position[4];            // offset 0x0, size 0x28
-    short NonLinearWheel[256][4];      // offset 0x28, size 0x800
-    unsigned long WheelHandles[4];     // offset 0x828, size 0x10
-    unsigned long type[4];             // offset 0x838, size 0x10
-    unsigned long WheelHandle[4];      // offset 0x848, size 0x10
-    LGPosition PositionLast[4];        // offset 0x858, size 0x28
+    LGPosition Position[4];        // offset 0x0, size 0x28
+    short NonLinearWheel[256][4];  // offset 0x28, size 0x800
+    unsigned long WheelHandles[4]; // offset 0x828, size 0x10
+    unsigned long type[4];         // offset 0x838, size 0x10
+    unsigned long WheelHandle[4];  // offset 0x848, size 0x10
+    LGPosition PositionLast[4];    // offset 0x858, size 0x28
 };
 
 struct Force {
@@ -105,26 +105,34 @@ struct Force {
     void SetOverallForceGain(unsigned long &handle, int value);
     int GetOverallForceGain(unsigned long &handle);
 
-    bool Playing[4][8];                // offset 0x0, size 0x80
-    unsigned long EffectID[4][8];      // offset 0x80, size 0x80
+    bool Playing[4][8];           // offset 0x0, size 0x80
+    unsigned long EffectID[4][8]; // offset 0x80, size 0x80
 };
 
 struct Condition : public Force {
     Condition();
-    int DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos);
-    int UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos);
+    int DownloadForce(long channel, long forceNumber, unsigned long &handle, unsigned char type, unsigned long duration, unsigned long startDelay,
+                      signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos);
+    int UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset,
+                    unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos);
 };
 
 struct Constant : public Force {
     Constant();
-    int DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
-    int UpdateForce(long channel, long forceNumber, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
+    int DownloadForce(long channel, long forceNumber, unsigned long &handle, unsigned long duration, unsigned long startDelay, short magnitude,
+                      unsigned short direction, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
+    int UpdateForce(long channel, long forceNumber, unsigned long duration, unsigned long startDelay, short magnitude, unsigned short direction,
+                    unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
 };
 
 struct Periodic : public Force {
     Periodic();
-    int DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
-    int UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
+    int DownloadForce(long channel, long forceNumber, unsigned long &handle, unsigned char type, unsigned long duration, unsigned long startDelay,
+                      unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset,
+                      unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
+    int UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude,
+                    unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime,
+                    unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel);
 };
 
 struct Ramp : public Force {
@@ -171,52 +179,52 @@ struct LGWheels {
     void PlayCarAirborne(long channel);
     void StopCarAirborne(long channel);
 
-    LGPosition Position[4];                   // offset 0x0, size 0x28
-    short NonLinearWheel[4][256];             // offset 0x28, size 0x800
-    Wheels wheels;                            // offset 0x828, size 0x880
-    Force force;                              // offset 0x10A8, size 0x100
-    Condition condition;                      // offset 0x11A8, size 0x100
-    Constant constant;                        // offset 0x12A8, size 0x100
-    Periodic periodic;                        // offset 0x13A8, size 0x100
-    Ramp ramp;                                // offset 0x14A8, size 0x100
-    unsigned char OverallGain;                // offset 0x15A8, size 0x1
-    bool damperWasPlaying[4];                 // offset 0x15AC, size 0x10
-    bool springWasPlaying[4];                 // offset 0x15BC, size 0x10
-    bool wasPlayingBeforeAirborne[4][10];     // offset 0x15CC, size 0xA0
-    bool IsAirborne[4];                       // offset 0x166C, size 0x10
+    LGPosition Position[4];               // offset 0x0, size 0x28
+    short NonLinearWheel[4][256];         // offset 0x28, size 0x800
+    Wheels wheels;                        // offset 0x828, size 0x880
+    Force force;                          // offset 0x10A8, size 0x100
+    Condition condition;                  // offset 0x11A8, size 0x100
+    Constant constant;                    // offset 0x12A8, size 0x100
+    Periodic periodic;                    // offset 0x13A8, size 0x100
+    Ramp ramp;                            // offset 0x14A8, size 0x100
+    unsigned char OverallGain;            // offset 0x15A8, size 0x1
+    bool damperWasPlaying[4];             // offset 0x15AC, size 0x10
+    bool springWasPlaying[4];             // offset 0x15BC, size 0x10
+    bool wasPlayingBeforeAirborne[4][10]; // offset 0x15CC, size 0xA0
+    bool IsAirborne[4];                   // offset 0x166C, size 0x10
     struct {
-        char offset;                          // offset 0x0, size 0x1
-        unsigned char saturation;             // offset 0x1, size 0x1
-        short coefficient;                    // offset 0x2, size 0x2
-    } SpringForceParams[4];                   // offset 0x167C, size 0x10
+        char offset;              // offset 0x0, size 0x1
+        unsigned char saturation; // offset 0x1, size 0x1
+        short coefficient;        // offset 0x2, size 0x2
+    } SpringForceParams[4];       // offset 0x167C, size 0x10
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-        unsigned short direction;             // offset 0x2, size 0x2
-    } ConstantForceParams[4];                 // offset 0x168C, size 0x10
+        short magnitude;          // offset 0x0, size 0x2
+        unsigned short direction; // offset 0x2, size 0x2
+    } ConstantForceParams[4];     // offset 0x168C, size 0x10
     struct {
-        short coefficient;                    // offset 0x0, size 0x2
-    } DamperForceParams[4];                   // offset 0x169C, size 0x8
+        short coefficient;  // offset 0x0, size 0x2
+    } DamperForceParams[4]; // offset 0x169C, size 0x8
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-        unsigned short direction;             // offset 0x2, size 0x2
-    } SideCollisionParams[4];                 // offset 0x16A4, size 0x10
+        short magnitude;          // offset 0x0, size 0x2
+        unsigned short direction; // offset 0x2, size 0x2
+    } SideCollisionParams[4];     // offset 0x16A4, size 0x10
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-    } FrontalCollisionParams[4];              // offset 0x16B4, size 0x8
+        short magnitude;         // offset 0x0, size 0x2
+    } FrontalCollisionParams[4]; // offset 0x16B4, size 0x8
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-    } DirtRoadParams[4];                      // offset 0x16BC, size 0x8
+        short magnitude; // offset 0x0, size 0x2
+    } DirtRoadParams[4]; // offset 0x16BC, size 0x8
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-    } BumpyRoadParams[4];                     // offset 0x16C4, size 0x8
+        short magnitude;  // offset 0x0, size 0x2
+    } BumpyRoadParams[4]; // offset 0x16C4, size 0x8
     struct {
-        short magnitude;                      // offset 0x0, size 0x2
-    } SlipperyRoadParams[4];                  // offset 0x16CC, size 0x8
+        short magnitude;     // offset 0x0, size 0x2
+    } SlipperyRoadParams[4]; // offset 0x16CC, size 0x8
     struct {
-        unsigned char type;                   // offset 0x0, size 0x1
-        unsigned char magnitude;              // offset 0x1, size 0x1
-        unsigned short period;                // offset 0x2, size 0x2
-    } SurfaceEffectParams[4];                 // offset 0x16D4, size 0x10
+        unsigned char type;      // offset 0x0, size 0x1
+        unsigned char magnitude; // offset 0x1, size 0x1
+        unsigned short period;   // offset 0x2, size 0x2
+    } SurfaceEffectParams[4];    // offset 0x16D4, size 0x10
 };
 
 extern LGWheels *plat_lgwheels;

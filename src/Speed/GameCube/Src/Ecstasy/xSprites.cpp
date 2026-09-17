@@ -34,15 +34,15 @@ struct XSpriteManager {
     XSpriteManager() {}
     ~XSpriteManager() {}
 
-    uint32 position;             // offset 0x0, size 0x4
+    uint32 position;              // offset 0x0, size 0x4
     SpriteDef XSpriteBuffer[300]; // offset 0x4, size 0x3390
 
     void AddSpark(const NGParticle &particle, TextureInfo *CurrentTexture);
     void RenderAll(eView *view);
 };
 
-void RenderViewPolyEx(eView *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias)
-    __asm__("Render__18eViewPlatInterfaceP5ePolyP11TextureInfoP8bMatrix4if");
+void RenderViewPolyEx(eView *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags,
+                      float z_bias) __asm__("Render__18eViewPlatInterfaceP5ePolyP11TextureInfoP8bMatrix4if");
 
 XSpriteManager NGSpriteManager;
 
@@ -62,8 +62,7 @@ void XSpriteManager::AddSpark(const NGParticle &particle, TextureInfo *CurrentTe
         endPos.z += particle.gravity * endAge * endAge;
 
         XSpriteBufferP->texture_info = CurrentTexture;
-        XSpriteBufferP->color =
-            particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
+        XSpriteBufferP->color = particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
         XSpriteBufferP->startPos = startPos;
         XSpriteBufferP->EndPosPos = endPos;
         XSpriteBufferP->width = static_cast<float>(static_cast<int>(particle.width)) * (1.0f / 2048.0f);
@@ -89,7 +88,6 @@ void XSpriteManager::RenderAll(eView *view) {
             pPoly.Vertices[3] = XSpriteBufferP->EndPosPos;
             pPoly.Vertices[2] = XSpriteBufferP->EndPosPos;
             pPoly.Vertices[2].z = XSpriteBufferP->EndPosPos.z + XSpriteBufferP->width;
-
 
             RenderViewPolyEx(view, &pPoly, XSpriteBufferP->texture_info, eGetIdentityMatrix(), 0, 0.0f);
             XSpriteBufferP++;

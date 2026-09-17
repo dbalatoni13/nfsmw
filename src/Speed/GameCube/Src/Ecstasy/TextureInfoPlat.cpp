@@ -139,16 +139,16 @@ unsigned char TextureInfoPlatInfo::SetImage(TextureInfo *texture_info) {
     TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
 
     if (plat_info) {
-        plat_info->SetImage(texture_info->Width, texture_info->Height, texture_info->NumMipMapLevels, plat_info->Format,
-                            texture_info->ImageData, texture_info->PaletteData, texture_info->AlphaUsageType, texture_info->TilableUV);
+        plat_info->SetImage(texture_info->Width, texture_info->Height, texture_info->NumMipMapLevels, plat_info->Format, texture_info->ImageData,
+                            texture_info->PaletteData, texture_info->AlphaUsageType, texture_info->TilableUV);
         return 1;
     }
 
     return 0;
 }
 
-unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal,
-                                            int alphaUsageType, int clamp) {
+unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal, int alphaUsageType,
+                                            int clamp) {
     GXTexWrapMode wrap_s;
     GXTexWrapMode wrap_t;
     unsigned int texture_format;
@@ -175,12 +175,12 @@ unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int 
     palette_format = format >= static_cast<int>(texture_format_IA8) ? GX_TL_RGB5A3 : GX_TL_IA8;
 
     if (HasClut()) {
-        GXInitTexObjCI(&ImageInfos.obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXCITexFmt>(texture_format),
-                       wrap_s, wrap_t, static_cast<u8>(mip), 0);
+        GXInitTexObjCI(&ImageInfos.obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXCITexFmt>(texture_format), wrap_s,
+                       wrap_t, static_cast<u8>(mip), 0);
         GXInitTlutObj(&ImageInfos.objClut, imagePal, static_cast<GXTlutFmt>(palette_format), texture_format == GX_TF_C4 ? 0x10 : 0x100);
     } else {
-        GXInitTexObj(&ImageInfos.obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXTexFmt>(texture_format),
-                     wrap_s, wrap_t, static_cast<u8>(mip));
+        GXInitTexObj(&ImageInfos.obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXTexFmt>(texture_format), wrap_s,
+                     wrap_t, static_cast<u8>(mip));
     }
 
     if (mip) {

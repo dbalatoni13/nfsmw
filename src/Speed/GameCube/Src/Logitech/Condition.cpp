@@ -9,12 +9,15 @@ void OSReport(const char *fmt, ...);
 }
 
 static const char kDownloadConditionForceError[] = "ERROR: DownloadForce(condition force) on channel %d returned %d\n";
-static const char kDownloadConditionForceInvalidWheel[] = "ERROR: Trying to download a condition force to channel %d but wheel has not been opened.\n";
+static const char kDownloadConditionForceInvalidWheel[] =
+    "ERROR: Trying to download a condition force to channel %d but wheel has not been opened.\n";
 static const char kUpdateConditionForceError[] = "ERROR: UpdateForce(condition force) on channel %d returned %d\n";
 
 Condition::Condition() : Force() {}
 
-int Condition::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
+int Condition::DownloadForce(long channel, long forceNumber, unsigned long &handle, unsigned char type, unsigned long duration,
+                             unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos,
+                             short coeffNeg, short coeffPos) {
     LGForceEffect force;
     int ret;
 
@@ -48,7 +51,8 @@ int Condition::DownloadForce(long channel, long forceNumber, unsigned long & han
     return ret;
 }
 
-int Condition::UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
+int Condition::UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset,
+                           unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
     LGForceEffect force;
     int ret;
 

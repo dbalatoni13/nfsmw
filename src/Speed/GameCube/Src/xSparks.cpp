@@ -19,15 +19,14 @@ inline void Scalexyz(UMath::Vector4 &r, const UMath::Vector4 &b) {
     VU0_v4scalexyz(r, b, r);
 }
 
-
 DECLARE_CONTAINER_TYPE(XenonEffectDef);
 
 struct XenonEffectDef {
     // total size: 0x58
-    UMath::Vector4 vel;                 // offset 0x0, size 0x10
-    UMath::Matrix4 mat;                 // offset 0x10, size 0x40
-    const Attrib::Collection *spec;     // offset 0x50, size 0x4
-    EmitterGroup *piggyback_effect;     // offset 0x54, size 0x4
+    UMath::Vector4 vel;             // offset 0x0, size 0x10
+    UMath::Matrix4 mat;             // offset 0x10, size 0x40
+    const Attrib::Collection *spec; // offset 0x50, size 0x4
+    EmitterGroup *piggyback_effect; // offset 0x54, size 0x4
 };
 
 typedef UTL::Std::vector<XenonEffectDef, _type_XenonEffectDef> XenonEffectStdVector;
@@ -120,8 +119,10 @@ TextureInfo *GetTextureInfo(unsigned int name_hash, int allow_default, int force
 
 CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     : mEmitterDef(spec, 0, nullptr) //
-    , mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
-    , mLocalWorld(eDef.mat) {
+      ,
+      mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
+      ,
+      mLocalWorld(eDef.mat) {
     mVel = eDef.vel;
 }
 
@@ -211,11 +212,8 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
             ppos.w = 1.0f;
 
             UMath::RotateTranslate(ppos, local_world, ppos);
-            UMath::ScaleAdd(
-                reinterpret_cast<const UMath::Vector3 &>(pvel),
-                current_particle_age,
-                reinterpret_cast<const UMath::Vector3 &>(ppos),
-                particle->initialPos);
+            UMath::ScaleAdd(reinterpret_cast<const UMath::Vector3 &>(pvel), current_particle_age, reinterpret_cast<const UMath::Vector3 &>(ppos),
+                            particle->initialPos);
 
             particle->initialPos.z += gravity * current_particle_age * current_particle_age;
             particle->vel.x = pvel.x;
@@ -236,8 +234,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
     }
 }
 
-NGEffect::NGEffect(const XenonEffectDef &eDef)
-    : mEffectDef(eDef.spec, 0, nullptr) {
+NGEffect::NGEffect(const XenonEffectDef &eDef) : mEffectDef(eDef.spec, 0, nullptr) {
     int numEmitters;
 
     if (mEffectDef.IsValid()) {

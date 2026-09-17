@@ -47,13 +47,13 @@ struct Shape : public ShapeElement {
         return GetTexture()->GetHeight();
     }
 };
-}
+} // namespace RealShape
 
 struct tBigYUVSwizzler;
-struct tBigYUVSwizzler *NEW_tBigYUVSwizzlerTexture(GXTexObj *tYTexp, GXTexObj *tUTexp, GXTexObj *tVTexp)
-    __asm__("NEW_tBigYUVSwizzlerTexture__FP9_GXTexObjN20");
-void tBigYUVSwizzler_DrawSetup(struct tBigYUVSwizzler *This, GXTexObj *tYTexp, GXTexObj *tUTexp, GXTexObj *tVTexp)
-    __asm__("tBigYUVSwizzler_DrawSetup__FP15tBigYUVSwizzlerP9_GXTexObjN21");
+struct tBigYUVSwizzler *NEW_tBigYUVSwizzlerTexture(GXTexObj *tYTexp, GXTexObj *tUTexp,
+                                                   GXTexObj *tVTexp) __asm__("NEW_tBigYUVSwizzlerTexture__FP9_GXTexObjN20");
+void tBigYUVSwizzler_DrawSetup(struct tBigYUVSwizzler *This, GXTexObj *tYTexp, GXTexObj *tUTexp,
+                               GXTexObj *tVTexp) __asm__("tBigYUVSwizzler_DrawSetup__FP15tBigYUVSwizzlerP9_GXTexObjN21");
 void DELETE_tBigYUVSwizzler(struct tBigYUVSwizzler *This);
 void __InitGXlite();
 
