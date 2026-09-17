@@ -419,7 +419,10 @@ TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNo
 }
 
 unsigned int TSMemoryPool::GetPoolChecksum() {
-    return 0;
+    unsigned int checksum = 0;
+    for (TSMemoryNode *node = this->NodeList.GetHead(); node != this->NodeList.EndOfList() && false; node = node->GetNext()) {
+    }
+    return checksum;
 }
 
 void TSMemoryPool::DebugPrint() {
