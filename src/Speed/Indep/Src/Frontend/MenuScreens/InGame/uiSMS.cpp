@@ -76,7 +76,7 @@ uiSMS::uiSMS(ScreenConstructorData *sd) : ArrayScrollerMenu(sd, 1, 6, true) {
 }
 
 int SortSMS(SMSSortNode *before, SMSSortNode *after) {
-    return after->the_msg->GetSortOrder() < before->the_msg->GetSortOrder();
+    return static_cast<int>(before->the_msg->GetSortOrder() > after->the_msg->GetSortOrder());
 }
 
 void uiSMS::Setup() {

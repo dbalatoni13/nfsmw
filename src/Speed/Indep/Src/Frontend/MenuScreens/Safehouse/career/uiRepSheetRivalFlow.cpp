@@ -21,6 +21,11 @@ void uiRepSheetRivalFlow::Init() {
     mInstance = new ("uiRepSheetRivalFlow", 0) uiRepSheetRivalFlow();
 }
 
+void uiRepSheetRivalFlow::Destroy() {
+    delete mInstance;
+    mInstance = nullptr;
+}
+
 uiRepSheetRivalFlow *uiRepSheetRivalFlow::Get() {
     return mInstance;
 }

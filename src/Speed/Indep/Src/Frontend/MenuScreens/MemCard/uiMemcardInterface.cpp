@@ -16,18 +16,18 @@ void MemcardEnter(const char *from, const char *to, uint32 op, MemCardOpType pTe
     gMemcardSetup.mSuccessMsg = successMsg;
     gMemcardSetup.mFailedMsg = failedMsg;
     MemoryCard::GetInstance()->ShowMessages(true);
-    MemoryCard::GetInstance()->SetPlayerNum((op >> 17) & 1);
+    MemoryCard::GetInstance()->SetPlayerNum(op == MCE_Player2 ? 1 : 0);
     if (TheGameFlowManager.IsInFrontend()) {
         gMemcardSetup.mMemScreen = "MC_Main_GC.fng";
     } else {
         gMemcardSetup.mMemScreen = "InGame_MC_Main_GC.fng";
     }
     switch (gMemcardSetup.GetMethod()) {
-        case 2:
+        case MCF_Switch:
             cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mMemScreen, 0, 0, false);
             break;
-        case 1:
-        case 3:
+        case MCF_Modal:
+        case MCF_ModalSwitch:
             cFEng::Get()->QueuePackagePush(gMemcardSetup.mMemScreen, 0, 0, false);
             break;
     }

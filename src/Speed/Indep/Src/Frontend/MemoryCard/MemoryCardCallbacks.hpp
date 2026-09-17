@@ -5,6 +5,8 @@
 
 class MemcardCallbacks : public RealmcIface::IGameInterface, public IJoyHelper {
   public:
+    MemcardCallbacks() {}
+
     MemoryCard *GetMemcard();
     UIMemcardBase *GetScreen();
 

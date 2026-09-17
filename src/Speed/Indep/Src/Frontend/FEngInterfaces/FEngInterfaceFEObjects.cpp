@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEScript.h"
@@ -92,10 +93,15 @@ void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash, bo
 }
 
 FEScript *FEngGetScript(FEObject *object, uint32 script_hash) {
-    if (object == nullptr) {
-        return nullptr;
+    if (object != nullptr) {
+        return object->FindScript(script_hash);
     }
-    return object->FindScript(script_hash);
+    return nullptr;
+}
+
+FEScript *FEngGetScript(const char *pkg_name, uint32 obj_hash, const char *script_name) {
+    FEObject *obj = FEngFindObject(pkg_name, obj_hash);
+    return FEngGetScript(obj, FEHashUpper(script_name));
 }
 
 FEScript *FEngGetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash) {
@@ -117,12 +123,12 @@ bool FEngIsScriptSet(FEObject *obj, uint32 script_hash) {
     return true;
 }
 
-bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash) {
+bool FEngIsScriptRunning(const char *pkg_name, uint32 obj_hash, uint32 script_hash) {
     FEObject *object = FEngFindObject(pkg_name, obj_hash);
     return FEngIsScriptRunning(object, script_hash);
 }
 
-bool FEngIsScriptRunning(FEObject *object, unsigned int script_hash) {
+bool FEngIsScriptRunning(FEObject *object, uint32 script_hash) {
     if (object != nullptr) {
         FEScript *cur = object->pCurrentScript;
         if (cur != nullptr && cur->ID == script_hash && cur->CurTime <= cur->Length) {
@@ -130,6 +136,26 @@ bool FEngIsScriptRunning(FEObject *object, unsigned int script_hash) {
         }
     }
     return false;
+}
+
+bool FEngIsScriptFinished(FEObject *object, uint32 script_hash) {
+    if (object != nullptr) {
+        FEScript *script = object->FindScript(script_hash);
+        if (script != nullptr && script->CurTime >= script->Length) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FEngIsScriptFinished(const char *pkg_name, uint32 obj_hash, uint32 script_hash) {
+    FEObject *object = FEngFindObject(pkg_name, obj_hash);
+    return FEngIsScriptFinished(object, script_hash);
+}
+
+void FEngSynchronizeScripts(const char *pkg_name, uint32 obj1_hash, uint32 obj2_hash) {
+    FEObject *object1;
+    FEObject *object2;
 }
 
 void FEngSetRotationZ(FEObject *obj, float angle_degrees) {
@@ -156,6 +182,23 @@ void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees) {
         FEMultiImageData *image_data = reinterpret_cast<FEMultiImageData *>(image->pData);
         image_data->PivotRot.z = angle_degrees;
         image->Flags |= FF_DirtyCode;
+    }
+}
+
+void FEngSetMultiImageTopLeftUVs(FEMultiImage *image, FEVector2 &topLeftUVs, int textureNumber) {
+    if (image != nullptr) {
+        FEVector2 currTopLeftUVs;
+        FEVector2 currBottomRightUVs;
+        image->GetUVs(textureNumber, currTopLeftUVs, currBottomRightUVs);
+        image->SetUVs(textureNumber, topLeftUVs, currBottomRightUVs);
+        image->Flags |= FF_DirtyCode;
+    }
+}
+
+void FEngSetPosition(const char *pkg_name, uint32 obj_hash, FEVector3 &pos) {
+    FEObject *object = FEngFindObject(pkg_name, obj_hash);
+    if (object != nullptr) {
+        object->SetPosition(pos, false);
     }
 }
 
