@@ -1603,16 +1603,15 @@ void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num
 void TrackStreamer::DetermineStreamingSections() {
     const int max_sections_to_load = 0x180;
     short sections_to_load[384];
-    int num_sections_to_load = 3;
+    int num_sections_to_load = 0;
 
     this->RemoveCurrentStreamingSections();
-    sections_to_load[0] = GetScenerySectionNumber('Y', 0);
-    sections_to_load[1] = GetScenerySectionNumber('X', 0);
-    sections_to_load[2] = GetScenerySectionNumber('Z', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('Y', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('X', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('Z', 0);
 
     if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
-        num_sections_to_load = 4;
-        sections_to_load[3] = static_cast<short>(ScenerySectionToBlink);
+        sections_to_load[num_sections_to_load++] = static_cast<short>(ScenerySectionToBlink);
     }
 
     short section_number;
