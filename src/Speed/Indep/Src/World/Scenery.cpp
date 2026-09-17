@@ -597,6 +597,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
 
     int point_number;
+    position.z = 0.0f;
     for (point_number = 0; point_number < boundary->GetNumPoints(); point_number++) {
         bVector2 normal = *boundary->GetPoint((point_number + 1) % boundary->GetNumPoints()) - *boundary->GetPoint(point_number);
         float length = bLength(&normal);
