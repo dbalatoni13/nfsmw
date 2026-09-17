@@ -1211,14 +1211,10 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                     top_free_top = this->pMemoryPool->GetNextFreeNode(true, top_free_top);
                 }
 
-                if (!top_free_top) {
-                    done = true;
-                } else {
+                if (top_free_top) {
                     top_free_memory = top_free_top->Size;
                     bottom_free_top = this->pMemoryPool->GetNextFreeNode(true, top_free_top);
-                    if (!bottom_free_top) {
-                        done = true;
-                    } else {
+                    if (bottom_free_top) {
                         bottom_free_memory = bottom_free_top->Size;
                         total_free_memory = top_free_memory + bottom_free_memory;
                         top_allocated = this->pMemoryPool->GetNextNode(true, top_free_top);
@@ -1288,7 +1284,11 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                 }
                             }
                         }
+                    } else {
+                        done = true;
                     }
+                } else {
+                    done = true;
                 }
             } while (!done);
 
