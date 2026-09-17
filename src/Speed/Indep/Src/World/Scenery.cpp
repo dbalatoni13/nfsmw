@@ -52,9 +52,9 @@ class PrecullerBooBooManager {
         return (*p & this->GetBit(n)) != 0;
     }
 
-    int GetSectionNumber(bVector3 &position) {
-        int nx = (static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F;
-        int ny = (static_cast<int>(position.y) & 0xFE0) << 2;
+    int GetSectionNumber(bVector3 &pos) {
+        int nx = (static_cast<unsigned int>(static_cast<int>(pos.x)) >> 5) & 0x7F;
+        int ny = (static_cast<int>(pos.y) & 0xFE0) << 2;
         return ny | nx;
     }
 
@@ -238,8 +238,8 @@ void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork) {
     }
 }
 
-void DisableSceneryGroup(unsigned int name_hash) {
-    SceneryGroup *group = FindSceneryGroup(name_hash);
+void DisableSceneryGroup(unsigned int group_name_hash) {
+    SceneryGroup *group = FindSceneryGroup(group_name_hash);
     if (group != nullptr) {
         group->DisableRendering();
         SceneryGroupEnabledTable[group->GroupNumber] = 0;

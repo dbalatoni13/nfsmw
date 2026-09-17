@@ -859,7 +859,7 @@ void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
 
 bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
     if ((section->UnactivatedFrameCount != 0) && (section->UnactivatedFrameCount == eGetFrameCounter())) {
-        if (this->LastWaitUntilRenderingDoneFrameCount != section->UnactivatedFrameCount) {
+        if (this->LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
             return true;
         }
     }
