@@ -105,6 +105,10 @@ inline void Clear(Vector3 &r) {
 #endif
 }
 
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    r = a;
+}
+
 inline void Copy(const Matrix4 &a, Matrix4 &r) {
     VU0_MATRIX4Copy(a, r);
 }
@@ -131,6 +135,10 @@ inline void Transpose(const Vector4 &q, Vector4 &r) {
 
 inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
     return *reinterpret_cast<const Vector3 *>(&m[row]);
+}
+
+inline Vector3 &ExtractAxis(Matrix4 &m, unsigned int row) {
+    return *reinterpret_cast<Vector3 *>(&m[row]);
 }
 
 inline void ExtractXAxis(const Vector4 &q, Vector3 &r) {
@@ -196,6 +204,10 @@ inline void Unit(const Vector4 &a, Vector4 &r) {
 
 inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
+}
+
+inline void Unitxyz(Vector4 &a) {
+    VU0_v4unitxyz(a, a);
 }
 
 inline void MultXRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
@@ -276,6 +288,14 @@ inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vecto
 
 inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 &r) {
     VU0_v3addscale(a, b, s, r);
+}
+
+inline void AddScale(const Vector4 &a, const Vector4 &b, const float s, Vector4 &r) {
+    VU0_v4addscale(a, b, s, r);
+}
+
+inline void AddScalexyz(const Vector4 &a, const Vector4 &b, const float s, Vector4 &r) {
+    VU0_v4addscalexyz(a, b, s, r);
 }
 
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
@@ -435,7 +455,7 @@ inline float ASina(const float x) {
     return VU0_ASin(x);
 }
 
-inline float Atan2d(float o, float a) {
+inline float Atan2d(const float o, const float a) {
     return ANGLE2DEG(VU0_Atan2(o, a));
 }
 

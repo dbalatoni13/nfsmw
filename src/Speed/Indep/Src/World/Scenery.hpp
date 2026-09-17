@@ -227,6 +227,10 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
         return &this->pSceneryInstance[scenery_instance_number];
     }
 
+    SceneryInfo *GetSceneryInfo(SceneryInstance *scenery_instance) {
+        return &pSceneryInfo[scenery_instance->SceneryInfoNumber];
+    }
+
     SceneryInfo *GetSceneryInfo(int scenery_info_number) {
         return &this->pSceneryInfo[scenery_info_number];
     }
@@ -256,6 +260,8 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     int32 ViewsVisibleThisFrame;           // offset 0x38, size 0x4
 };
 
+ScenerySectionHeader *GetScenerySectionHeader(int section_number);
+
 // total size: 0x6
 struct SceneryOverrideInfo {
     void EndianSwap() {
@@ -275,6 +281,14 @@ struct SceneryOverrideInfo {
     void SetExcludeFlags(unsigned short exclude_flag_mask, unsigned short exclude_flag_override) {
         this->ExcludeFlags = (this->ExcludeFlags & exclude_flag_mask) | exclude_flag_override;
         this->AssignOverrides();
+    }
+
+    void EnableRendering() {
+        this->SetExcludeFlags(~0x10, 0);
+    }
+
+    void DisableRendering() {
+        this->SetExcludeFlags(~0, 0x10);
     }
 
     void AssignOverrides();

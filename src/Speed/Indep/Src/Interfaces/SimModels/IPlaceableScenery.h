@@ -10,9 +10,9 @@ class IPlaceableScenery : public UTL::COM::IUnknown, public UTL::Collections::Co
   public:
     DECL_INTERFACE(IPlaceableScenery);
 
-    virtual void PickUp();
-    virtual bool Place(const UMath::Matrix4 &transform, bool snap_to_ground);
-    virtual void Destroy();
+    virtual void PickUp() = 0;
+    virtual bool Place(const UMath::Matrix4 &transform, bool snap_to_ground) = 0;
+    virtual void Destroy() = 0;
 
     static IPlaceableScenery *CreateInstance(const char *name, Attrib::Key attributes);
 };

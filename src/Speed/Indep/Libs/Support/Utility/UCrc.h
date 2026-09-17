@@ -7,22 +7,26 @@
 
 #include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 class bHash32 {
     unsigned int mCRC;
 
   public:
     bHash32() {}
-    bHash32(const char *name) {}
-    bHash32(const bHash32 &from) {}
-    bHash32(unsigned int crc) {}
+    bHash32(const bHash32 &from) : mCRC(from.mCRC) {}
+    bHash32(const char *name) : mCRC(bStringHashUpper(name)) {}
+    bHash32(unsigned int crc) : mCRC(crc) {}
 
     const bHash32 &operator=(const bHash32 &from) {
         this->mCRC = from.mCRC;
         return *this;
     }
 
-    bHash32 &operator=(const char *from) {}
+    bHash32 &operator=(const char *from) {
+        this->mCRC = bStringHashUpper(from);
+        return *this;
+    }
 
     unsigned int GetValue() const {
         return mCRC;

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+inline void dbattrib(float min1, float max1, unsigned int attr1, float min2, float max2, unsigned int attr2) {}
 
+inline void dbattrib(int min1, int max1, unsigned int attr1, int min2, int max2, unsigned int attr2) {}
 
 #endif

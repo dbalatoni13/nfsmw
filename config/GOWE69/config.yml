@@ -29,6 +29,17 @@ block_relocations:
 # - source: .text:0x800F9368
 #   end: .text:0x800F9370
 
+# The bChunk ID 0x8003B900 that LoaderBounds/UnloaderBounds compare against is a
+# literal, but it collides with the address of a real function.
+- target: .text:0x8003b900
+
+# UCrc32("smackable")'s hash 0x804C146E collides with snddrv+0x10AE, so the
+# delinker relocates the lis/ori pair that materialises it.
+- source: .text:0x8021f0b0
+  end: .text:0x8021f0c4
+- source: .text:0x8021fe78
+  end: .text:0x8021fe84
+
 - target: .text:0x80135100
 - target: .text:0x80135000
 - target: .text:0x80134001
