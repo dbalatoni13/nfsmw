@@ -2194,6 +2194,7 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
         pos.x = section->Centre.x;
         pos.y = section->Centre.y;
         pos.z = 0.0f;
+        FloatVector face[4];
         espCreateObjectAsync(layer_name, "LoadingPriorityPoint", &pos);
         espSetAttributeString(1, "Section", section->SectionName);
         espCreateUserMesh(1, boundary->GetNumPoints());
@@ -2220,7 +2221,6 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 
             espSetUserMeshFace(1, n, face);
         }
-        FloatVector face[4];
         // TODO
         // face[0].x = v32;
         // face[0].y = v33;
