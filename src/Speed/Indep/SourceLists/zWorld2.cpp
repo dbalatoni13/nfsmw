@@ -14,9 +14,9 @@
 
 #include "Speed/Indep/Src/World/Common/WGridNode.cpp"
 
-#include "Speed/Indep/Src/World/Common/WPathFinder.cpp"
-
 #include "Speed/Indep/Src/World/Common/WRoadNetwork.cpp"
+
+#include "Speed/Indep/Src/World/Common/WPathFinder.cpp"
 
 #include "Speed/Indep/Src/World/Common/WTrigger.cpp"
 

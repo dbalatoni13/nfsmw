@@ -14,24 +14,29 @@ template <typename T> class Grid {
         // total size: 0x18
         class Node {
           public:
-            // UNSOLVED
             Node(Axis &axis, Node *&root, float position)
                 : mHead(nullptr), mTail(nullptr), mPosition(position), mSort(position), mAxis(axis), mRoot(root) {
                 if (this->mRoot == nullptr) {
                     this->mRoot = this;
                 } else {
-                    Node *node = this->mRoot;
-                    Node *head = nullptr;
+                    {
+                        Node *node = nullptr;
+                        Node *head = this->mRoot;
 
-                    while (node != nullptr && node->mPosition < this->mPosition) {
-                        head = node;
-                        node = node->mTail;
-                    }
+                        while (head != nullptr) {
+                            if (head->mPosition < this->mPosition) {
+                                node = head;
+                            } else {
+                                break;
+                            }
+                            head = head->mTail;
+                        }
 
-                    if (head != nullptr) {
-                        this->Link(head, head->GetTail());
+                    if (node != nullptr) {
+                        this->Link(node, node->GetTail());
                     } else {
-                        this->Link(node->GetHead(), node);
+                        this->Link(this->mRoot->GetHead(), this->mRoot);
+                    }
                     }
                 }
             }

@@ -270,10 +270,10 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
 
     if (view_id >= EVIEW_FIRST_PLAYER && view_id <= EVIEW_LAST_PLAYER) {
         if (DrawSky) {
-            SkydomeLocalWorld->v3.z = CamPosWORLD.z + heightAdjust;
+            SkydomeLocalWorld->v3.z += heightAdjust;
             SkydomeLocalWorld->v0.x *= MainSkyScale * ScaleFactor;
-            SkydomeLocalWorld->v2.z *= MainSkyScale * ScaleFactor;
             SkydomeLocalWorld->v1.y *= MainSkyScale * ScaleFactor;
+            SkydomeLocalWorld->v2.z *= MainSkyScale * ScaleFactor;
 
             if (MoveMent) {
                 bMatrix4 LocalRot;
@@ -290,10 +290,10 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
             view->Render(&SkydomeModel, SkydomeLocalWorld, nullptr, 0x20000, nullptr);
         }
     } else {
-        SkydomeLocalWorld->v3.z = CamPosWORLD.z + heightAdjust;
         SkydomeLocalWorld->v0.x *= ScaleFactor;
         SkydomeLocalWorld->v1.y *= ScaleFactor;
         SkydomeLocalWorld->v2.z *= ScaleFactor;
+        SkydomeLocalWorld->v3.z += heightAdjust;
 
         view->Render(&SkydomeModel, SkydomeLocalWorld, nullptr, 0x20000, nullptr);
     }
@@ -301,7 +301,7 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
 
 // UNSOLVED
 void StuffSpecular(eView *view) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int view_id = view->GetID();
     Camera *view_camera = view->GetCamera();
     bVector3 CamPosWORLD(*view_camera->GetPosition());
@@ -322,9 +322,10 @@ void StuffSpecular(eView *view) {
 
     GetSunPos(view, &SunPos.x, &SunPos.y, &SunPos.z);
     SunPos.z = 0.0f;
+    SkydomeLocalWorld->v2.z = -1.0f;
     SkydomeLocalWorld->v0.x *= 0.035f;
     SkydomeLocalWorld->v1.y *= 0.035f;
-    SkydomeLocalWorld->v2.z *= -0.035f;
+    SkydomeLocalWorld->v2.z *= 0.035f;
     SkydomeLocalWorld->v3.z += 50.0f;
 
     {
@@ -349,11 +350,11 @@ void StuffSpecular(eView *view) {
         eIdentity(SkydomeLocalWorld2);
         SkydomeLocalWorld2->v3.x = CamPosWORLD.x;
         SkydomeLocalWorld2->v3.y = CamPosWORLD.y;
-        SkydomeLocalWorld2->v3.z = -50.0f + CamPosWORLD.z;
-
+        SkydomeLocalWorld2->v3.z = CamPosWORLD.z;
         SkydomeLocalWorld2->v0.x *= 0.035f;
         SkydomeLocalWorld2->v1.y *= 0.035f;
         SkydomeLocalWorld2->v2.z *= 0.035f;
+        SkydomeLocalWorld2->v3.z += -50.0f;
         eMulMatrix(SkydomeLocalWorld2, &LocalRot, SkydomeLocalWorld2);
         view->Render(&SkySpecularModel, SkydomeLocalWorld2, nullptr, 0, nullptr);
     }

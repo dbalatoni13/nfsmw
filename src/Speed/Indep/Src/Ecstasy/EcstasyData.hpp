@@ -81,18 +81,18 @@ enum TARGET_ID {
 };
 
 enum FILTER_ID {
-    FILTER_TOTAL = 11,
-    FILTER_PIXELATE = 10,
-    FILTER_EFB_XFB_AA = 9,
-    FILTER_CONTRAST_INTENSITY = 8,
-    FILTER_GLOWBLOOM = 7,
-    FILTER_MOTIONBLUR = 6,
-    FILTER_REFLECTION = 5,
-    FILTER_SPHERE_MAP = 4,
-    FILTER_CUBE_FACES = 3,
-    FILTER_EFB_XFB = 2,
-    FILTER_DEFAULT = 1,
     FILTER_OFF = 0,
+    FILTER_DEFAULT = 1,
+    FILTER_EFB_XFB = 2,
+    FILTER_CUBE_FACES = 3,
+    FILTER_SPHERE_MAP = 4,
+    FILTER_REFLECTION = 5,
+    FILTER_MOTIONBLUR = 6,
+    FILTER_GLOWBLOOM = 7,
+    FILTER_CONTRAST_INTENSITY = 8,
+    FILTER_EFB_XFB_AA = 9,
+    FILTER_PIXELATE = 10,
+    FILTER_TOTAL = 11,
 };
 
 enum EVIEWMODE {
@@ -109,7 +109,9 @@ class eTextureEntry {
     uint32 NameHash;                  // offset 0x0, size 0x4
     struct TextureInfo *pTextureInfo; // offset 0x4, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+    }
 };
 
 class eSolidListHeader : public bTNode<eSolidListHeader> {
@@ -156,7 +158,9 @@ class eLightMaterialEntry {
     uint32 NameHash;                      // offset 0x0, size 0x4
     struct eLightMaterial *LightMaterial; // offset 0x4, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+    }
 };
 
 class eSmoothVertex {
@@ -168,7 +172,9 @@ class eSmoothVertex {
     int8 NY;                    // offset 0x6, size 0x1
     int8 NZ;                    // offset 0x7, size 0x1
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->VertexHash);
+    }
 };
 
 class eSmoothVertexPlat {
@@ -178,7 +184,11 @@ class eSmoothVertexPlat {
     uint32 SmoothingGroup; // offset 0x4, size 0x4
     uint32 VertexOffset;   // offset 0x8, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->VertexHash);
+        bPlatEndianSwap(&this->SmoothingGroup);
+        bPlatEndianSwap(&this->VertexOffset);
+    }
 };
 
 class eNormalSmoother {
@@ -189,7 +199,23 @@ class eNormalSmoother {
     int16 NumSmoothVertex;                    // offset 0x8, size 0x2
     int16 NumSmoothVertexPlat;                // offset 0xA, size 0x2
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NumSmoothVertex);
+        bPlatEndianSwap(&this->NumSmoothVertexPlat);
+    }
+};
+
+// total size: 0x2
+struct eDamageVertex {
+    uint16 Data; // offset 0x0, size 0x2
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Data);
+    }
+
+    uint32 GetDirection();
+    uint32 GetDistance();
+    uint32 GetCell();
 };
 
 // total size: 0x50
@@ -201,7 +227,13 @@ class ePositionMarker {
     float fParam1;   // offset 0xC, size 0x4
     bMatrix4 Matrix; // offset 0x10, size 0x40
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->iParam0);
+        bPlatEndianSwap(&this->fParam0);
+        bPlatEndianSwap(&this->fParam1);
+        bPlatEndianSwap(&this->Matrix);
+    }
 };
 
 class eModel;
@@ -223,11 +255,14 @@ class eViewPlatInterface {
     }
 
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
-    static void FEBeginBatchRender(int numPolys);
-    static void FEEndBatchRender();
+    void FEBeginBatchRender(int numPolys);
+    void FEEndBatchRender();
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *position, bMatrix4 *local_world);
     void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
+    int GetPixelWidth();
+    int GetPixelHeight();
 
     void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
     void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
@@ -247,6 +282,20 @@ class eLoadedSolidStats {
     uint32 TotalSolidsByteSize;      // offset 0x8, size 0x4
     uint32 TotalNormalSmootherBytes; // offset 0xC, size 0x4
     uint32 TotalDamageBytes;         // offset 0x10, size 0x4
+};
+
+// total size: 0x10
+struct eStripEntry {
+    unsigned int DataOffset;            // offset 0x0, size 0x4
+    unsigned short DataSize;            // offset 0x4, size 0x2
+    unsigned short Flags;               // offset 0x6, size 0x2
+    unsigned char NumVerts;             // offset 0x8, size 0x1
+    unsigned char PolyGroupNumber;      // offset 0x9, size 0x1
+    char TextureNumber;                 // offset 0xA, size 0x1
+    char LightMaterialIndex;            // offset 0xB, size 0x1
+    unsigned char VertexDescription;    // offset 0xC, size 0x1
+    unsigned char VertexFormat;         // offset 0xD, size 0x1
+    unsigned short DataDisplayListSize; // offset 0xE, size 0x2
 };
 
 class eSolidPlatInfo {
@@ -269,6 +318,8 @@ class eSolidPlatInfo {
 #endif
     struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
     uint8 *StripDataStart;               // offset 0x20, size 0x4
+
+    void FixStripEntryTable(struct eSolid *solid, uint8 *strip_entry_data, uint8 *previous_strip_entry_data);
 };
 
 #endif

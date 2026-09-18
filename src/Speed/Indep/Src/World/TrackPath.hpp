@@ -32,9 +32,11 @@ class TrackPathBarrier {
     TrackPathBarrier();
 
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&Points[0]);
         bPlatEndianSwap(&Points[1]);
         bPlatEndianSwap(&GroupHash);
+#endif
     }
 
     bool IsEnabled() {

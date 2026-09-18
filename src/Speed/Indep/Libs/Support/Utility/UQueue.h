@@ -17,7 +17,7 @@ template <typename T, int U> class UCircularQueue {
         this->Size = 0;
         this->Head = -1;
         this->Tail = 0;
-        this->MaxSize = 50;
+        this->MaxSize = U;
     }
 
     void enqueue(const T &insert) {
@@ -50,9 +50,13 @@ template <typename T, int U> class UCircularQueue {
         return this->Elements[this->Head];
     }
 
-    // T &operator[](int i) {
-    // int newindex;
-    // }
+    T &operator[](int i) {
+        int newindex = this->Head - i;
+        if (newindex < 0) {
+            newindex += this->MaxSize;
+        }
+        return this->Elements[newindex];
+    }
 
     void reset() {
         this->Size = 0;

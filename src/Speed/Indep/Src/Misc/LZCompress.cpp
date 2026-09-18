@@ -2,6 +2,9 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstring>
 
+// El nombre lo da el DWARF; el valor, el 0x2000 que ya teniamos.
+static const int JLZ_HTSize = 8192;
+
 static int Compare(unsigned char *a, unsigned char *b, int max) {
     int Result = 0;
     while (Result < max && a[Result] == b[Result]) {
@@ -44,7 +47,7 @@ struct JLZHashPool {
 JLZHashPool::JLZHashPool(int WindowSize) {
     PoolSize = WindowSize;
     pPool = new ("JLZHash", 0) JLZHash[WindowSize];
-    pHead = new ("JLZHash", 0) JLZHash *[0x2000];
+    pHead = new ("JLZHash", 0) JLZHash *[JLZ_HTSize];
     bMemSet(pPool, 0, PoolSize << 4);
     bMemSet(pHead, 0, 0x8000);
 }

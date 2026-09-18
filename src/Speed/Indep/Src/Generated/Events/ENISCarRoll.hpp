@@ -22,7 +22,7 @@ class ENISCarRoll : public Event {
 
     ~ENISCarRoll() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fRoll; // offset: 0x8, size 0x4
@@ -32,5 +32,7 @@ class ENISCarRoll : public Event {
 };
 
 void ENISCarRoll_MakeEvent_Callback(const void *staticData);
+int ENISCarRoll_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISCarRoll_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

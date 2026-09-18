@@ -19,9 +19,11 @@ class EBecomePlayerCar : public Event {
 
     ~EBecomePlayerCar() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EBecomePlayerCar_MakeEvent_Callback(const void *staticData);
+int EBecomePlayerCar_MakeEvent_LuaBinding(struct lua_State *L);
+void EBecomePlayerCar_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

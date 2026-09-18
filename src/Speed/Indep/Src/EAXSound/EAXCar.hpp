@@ -66,9 +66,13 @@ class EAXCar : public CSTATE_Base {
 
     Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48, size 0x14, Decl: 98
 
-    void SetPhysicsCTLPtr(SFXCTL_Physics *_m_pPhysicsCTL) {} // Decl: 106
+    void SetPhysicsCTLPtr(SFXCTL_Physics *_m_pPhysicsCTL) {
+        this->m_pPhysicsCTL = _m_pPhysicsCTL;
+    } // Decl: 106
 
-    SFXCTL_Physics *GetPhysicsCTL() {} // Decl: 108
+    SFXCTL_Physics *GetPhysicsCTL() {
+        return this->m_pPhysicsCTL;
+    } // Decl: 108
     SFXCTL_Physics *m_pPhysicsCTL;     // offset 0x5C, size 0x4, Decl: 109
 
     float GetPhysTRQ() {
@@ -124,7 +128,7 @@ class EAXCar : public CSTATE_Base {
     float t_DeltaTime; // offset 0x7C, size 0x4, Decl: 138
 
     bool m_bIsInSoundSphere;   // offset 0x80, size 0x1, Decl: 140
-    bVector3 m_v3CurSpherePos; // offset 0x84, size 0x10, Decl: 141
+    ALIGNVEC bVector3 m_v3CurSpherePos; // offset 0x84, size 0x10, Decl: 141
     float m_fSphereRadius;     // offset 0x94, size 0x4, Decl: 142
 
     DriverInfo *m_pDriverInfo; // offset 0x98, size 0x4, Decl: 144
@@ -184,5 +188,14 @@ class EAXCar : public CSTATE_Base {
     static Attrib::Gen::shiftpattern *g_ShiftInfo; // size: 0x4, address: 0x80417E2C
     static Attrib::Gen::turbosfx *g_TurboInfo;     // size: 0x4, address: 0x80417E30
 };
+
+
+inline float SFXCTL::GetPhysTRQ() {
+    return this->m_pEAXCar->PhysTRQ;
+}
+
+inline float SFXCTL::GetPhysRPM() {
+    return this->m_pEAXCar->GetPhysRPM();
+}
 
 #endif

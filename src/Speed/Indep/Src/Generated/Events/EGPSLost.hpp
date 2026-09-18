@@ -19,7 +19,7 @@ class EGPSLost : public Event {
 
     ~EGPSLost() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EGPSLost_MakeEvent_Callback(const void *staticData);

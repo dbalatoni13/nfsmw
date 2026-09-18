@@ -6,7 +6,6 @@
 #endif
 
 #include "Ecstasy.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitterdata.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emittergroup.h"
@@ -26,10 +25,7 @@ class smVector3 {
     float magnitude;   // offset 0x4, size 0x4
 
     smVector3() {
-        this->x = 0;
-        this->y = 0;
-        this->z = 0;
-        this->pad = 0;
+        this->x = this->y = this->z = this->pad = 0;
         this->magnitude = 0.0f;
     }
 };
@@ -101,9 +97,7 @@ class EmitterParticle : public bTNode<EmitterParticle> {
         this->Prev = nullptr;
         this->mColour = 0;
         this->mSize = 0.0f;
-        this->mPosX = 0.0f;
-        this->mPosY = 0.0f;
-        this->mPosZ = 0.0f;
+        this->mPosX = this->mPosY = this->mPosZ = 0.0f;
         this->mFlags = 0;
         this->mUVStart = 0;
         this->mUVEnd = 0;
@@ -178,23 +172,23 @@ struct TexturePageRange {
 };
 
 enum EmitterFlags {
+    TRACKED_EMITTER = 32,
+    ALREADY_ORPHANED_PARTICLES = 8,
+    START_DELAY_ALREADY_DONE = 4,
+    DELAYING = 2,
     ONE_SHOT = 1,
-    DELAYING = 1 << 1,
-    START_DELAY_ALREADY_DONE = 1 << 2,
-    ALREADY_ORPHANED_PARTICLES = 1 << 3,
-    TRACKED_EMITTER = 1 << 5,
 };
 
 enum EmitterGroupFlags {
+    ENABLED = 16,
+    LOADED = 8,
+    TRACKED_GROUP = 4,
+    IS_STATIC = 2,
     AUTO_UPDATE = 1,
-    IS_STATIC = 1 << 1,
-    TRACKED_GROUP = 1 << 2,
-    LOADED = 1 << 3,
-    ENABLED = 1 << 4,
 };
 
-// total size: 0x90
 class Emitter : public bTNode<Emitter> {
+    // total size: 0x90
     EmitterControl mControl;                // offset 0x8, size 0x8
     float mParticleAccumulation;            // offset 0x10, size 0x4
     uint32 mRandomSeed;                     // offset 0x14, size 0x4
@@ -212,10 +206,17 @@ class Emitter : public bTNode<Emitter> {
     EmitterGroup *mGroup;                   // offset 0x8C, size 0x4
 
   public:
-    ~Emitter();
-    USE_SLOTALLOC(EmitterSlotPool);
     Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group);
 
+    void *operator new(std::size_t size) {
+        return bOMalloc(EmitterSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(EmitterSlotPool, ptr);
+    }
+
+    ~Emitter();
     void GetInitialParticleColorAndSize(const bMatrix4 *xtra_basis, const bMatrix4 *clr_basis, EmitterParticle *outParticle) const;
     void GetDiscVelocity(float &x, float &y, float &z, uint32 &rand_seed) const;
     void GetConeVelocity(float &x, float &y, float &z, uint32 &rand_seed) const;
@@ -242,7 +243,7 @@ class Emitter : public bTNode<Emitter> {
     }
 
     bool HasOrphanedParticles() {
-        return (this->mFlags & ALREADY_ORPHANED_PARTICLES) != 0;
+        return this->mFlags & ALREADY_ORPHANED_PARTICLES;
     }
 
     void SetOrphanedParticlesFlag() {
@@ -250,7 +251,7 @@ class Emitter : public bTNode<Emitter> {
     }
 
     bool IsEnabled() const {
-        return (this->mFlags & ENABLED) != 0;
+        return this->mFlags & ENABLED;
     }
 
     void Enable() {
@@ -285,7 +286,7 @@ class Emitter : public bTNode<Emitter> {
     }
 
     bool IsOneShot() const {
-        return (this->mFlags & ONE_SHOT) != 0;
+        return this->mFlags & ONE_SHOT;
     }
 
     EmitterControlState GetControlState() {
@@ -303,11 +304,11 @@ class Emitter : public bTNode<Emitter> {
 
 extern SlotPool *EmitterGroupSlotPool;
 
-// total size: 0x80
 class EmitterGroup : public bTNode<EmitterGroup> {
     // typedefs
     typedef void (*OnDeleteCallback)(void *, EmitterGroup *);
 
+    // total size: 0x80
     bTList<Emitter> mEmitters;               // offset 0x8, size 0x8
     uint32 mGroupKey;                        // offset 0x10, size 0x4
     uint32 Padding;                          // offset 0x14, size 0x4
@@ -344,7 +345,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
     void Enable();
     void Disable();
-    void SubscribeToDeletion(void *subscriber, OnDeleteCallback callback);
+    void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
     void UnSubscribe();
     void DeleteEmitters();
     void Update(float dt);
@@ -368,15 +369,15 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsAutoUpdate() {
-        return (this->mFlags & AUTO_UPDATE) != 0;
+        return this->mFlags & AUTO_UPDATE;
     }
 
     bool IsStatic() {
-        return (this->mFlags & IS_STATIC) != 0;
+        return this->mFlags & IS_STATIC;
     }
 
     bool IsEnabled() {
-        return (this->mFlags & ENABLED) != 0;
+        return this->mFlags & ENABLED;
     }
 
     void SetOldSurfaceEffectFlag() {
@@ -384,7 +385,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsOldSurfaceEffect() {
-        return (this->mFlags & 0x80000) != 0;
+        return this->mFlags & 0x80000;
     }
 
     void SetLoadedFlag() {
@@ -408,7 +409,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsFlagSet(uint32 flag) {
-        return (this->mFlags & flag) != 0;
+        return this->mFlags & flag;
     }
 
     const Attrib::Gen::emittergroup &GetAttribs() const {
@@ -452,7 +453,7 @@ struct EmitterLibrary {
     void EndianSwap();
 };
 
-// TODO right place? the line numbers show this file, but Carbon shows another
+// TODO right place?
 // total size: 0x30
 class WorldFXTrigger : public bTNode<WorldFXTrigger> {
   public:
@@ -515,6 +516,9 @@ class EmitterSystem {
     static int32 TexturePageLoader(bChunk *bchunk);
     static int32 TexturePageUnloader(bChunk *bchunk);
     static void SetTexturePageRanges(int32 num_ranges, TexturePageRange *ranges);
+    static bChunkLoader mLoader;
+    static bChunkLoader mLibLoader;
+    static bChunkLoader mTexPageLoader;
 
     EmitterSystem();
     void OrphanParticlesFromThisEmitter(Emitter *em);
@@ -535,11 +539,6 @@ class EmitterSystem {
     void Render(eView *view);
     EmitterDataAttribWrapper *GetEmitterData(const Attrib::Collection *spec);
     EmitterGroupAttribWrapper *GetEmitterGroup(const Attrib::Collection *spec);
-
-    int GetNumParticles() {
-        return this->mTotalNumParticles;
-    }
-
     bool IsCloseEnough(const bVector3 *group_pos, float farclip, int32 frustrum, float cos_angle_fov) const;
     bool IsCloseEnough(const bVector4 *group_pos, float farclip, int32 frustrum, float cos_angle_fov) const;
     bool IsCloseEnough(EmitterGroup *group, int32 frustrum, float cos_angle_fov) const;
@@ -552,6 +551,10 @@ class EmitterSystem {
 
     int GetNumEmitterGroups() {
         return this->mNumEmitterGroups;
+    }
+
+    int GetNumParticles() {
+        return this->mTotalNumParticles;
     }
 
     void OnDeleteEmitter() {

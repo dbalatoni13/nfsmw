@@ -44,7 +44,7 @@ void tCubic1D::ClampDerivative(float maxDeriv) {
 }
 
 void tCubic1D::ClampSecondDerivative(float fMag) {
-    float fAcc0 = GetSecondDerivative(0);
+    float fAcc0 = GetSecondDerivative(0.0f);
     float fAcc0Abs = bAbs(fAcc0);
     float fAcc1 = GetSecondDerivative(duration);
     float fAcc1Abs = bAbs(fAcc1);
@@ -63,7 +63,7 @@ void tCubic1D::ClampSecondDerivative(float fMag) {
         float fDurationSquared = duration * duration;
         fAcc0 *= fDurationSquared;
         Coeff[1] = fAcc0 * 0.5f;
-        Coeff[0] = (fAcc1 * fDurationSquared - fAcc0) / 6.0f;
+        Coeff[0] = (fAcc1 * fDurationSquared - fAcc0) * 0.16666667f; // scaf-data r71: bloque +0x187C (1/6, GCC ya lo plegaba a fmuls)
     }
 }
 

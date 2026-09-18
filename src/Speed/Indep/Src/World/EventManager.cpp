@@ -40,7 +40,7 @@ void emEventManagerInit() {
 }
 
 int LoaderEventManager(bChunk *bchunk) {
-    if (bchunk->GetID() != BCHUNK_EVENT_TRIGGER) {
+    if (bchunk->GetID() != BCHUNK_SPEED_EMTRIGGER_PACK) {
         return 0;
     }
 
@@ -49,7 +49,7 @@ int LoaderEventManager(bChunk *bchunk) {
     bChunk *last_chunk = bchunk->GetLastChunk();
     for (; chunk != last_chunk; chunk = chunk->GetNext()) {
         switch (chunk->GetID()) {
-            case BCHUNK_EVENT_TRIGGER_PACK_HEADER: {
+            case BCHUNK_SPEED_EMTRIGGER_PACK_HEADER: {
                 trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(16));
                 if (!trigger_pack->EndianSwapped) {
                     bPlatEndianSwap(&trigger_pack->ScenerySectionNumber);
@@ -66,7 +66,7 @@ int LoaderEventManager(bChunk *bchunk) {
                 break;
             }
 
-            case BCHUNK_EVENT_TRIGGER_NODES:
+            case BCHUNK_SPEED_EMTRIGGER_PACK_TREE:
                 if (trigger_pack != nullptr) {
                     trigger_pack->EventTree = reinterpret_cast<vAABBTree *>(chunk->GetAlignedData(16));
                     trigger_pack->EventTree->NodeArray = reinterpret_cast<vAABB *>(reinterpret_cast<int *>(trigger_pack->EventTree) + 4);
@@ -76,7 +76,7 @@ int LoaderEventManager(bChunk *bchunk) {
                 }
                 break;
 
-            case BCHUNK_EVENT_TRIGGER_ENTRIES:
+            case BCHUNK_SPEED_EMTRIGGER_PACK_EVENT_TRIGGERS:
                 if (trigger_pack != nullptr) {
                     trigger_pack->EventTriggerArray = reinterpret_cast<EventTrigger *>(chunk->GetAlignedData(16));
                     if (!trigger_pack->EndianSwapped) {
@@ -98,8 +98,13 @@ int LoaderEventManager(bChunk *bchunk) {
         }
     }
 
+#ifdef EA_BUILD_A124
+    if (trigger_pack != nullptr) {
+        trigger_pack->EndianSwapped = 1;
+#else
     trigger_pack->EndianSwapped = 1;
     if (trigger_pack != nullptr) {
+#endif
         if (trigger_pack->NumEventTriggers != 0 && (trigger_pack->EventTree != nullptr) && (trigger_pack->EventTriggerArray != nullptr)) {
             EventTriggerPackList.AddTail(trigger_pack);
         } else {
@@ -111,7 +116,7 @@ int LoaderEventManager(bChunk *bchunk) {
 }
 
 int UnloaderEventManager(bChunk *bchunk) {
-    if (bchunk->GetID() != BCHUNK_EVENT_TRIGGER) {
+    if (bchunk->GetID() != BCHUNK_SPEED_EMTRIGGER_PACK) {
         return 0;
     }
 
@@ -119,7 +124,7 @@ int UnloaderEventManager(bChunk *bchunk) {
     bChunk *last_chunk = bchunk->GetLastChunk();
     // The loop doesn't make sense (we don't do chunk = chunk->GetNext())
     while (chunk != last_chunk) {
-        if (chunk->GetID() == BCHUNK_EVENT_TRIGGER_PACK_HEADER) {
+        if (chunk->GetID() == BCHUNK_SPEED_EMTRIGGER_PACK_HEADER) {
             EventTriggerPack *trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(16));
             if (trigger_pack->Version == 2) {
                 trigger_pack->Remove();
@@ -136,7 +141,7 @@ int UnloaderEventManager(bChunk *bchunk) {
 }
 
 int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
-    if (!(function != nullptr) && (stream_mask != 0)) {
+    if (function == nullptr || stream_mask == 0) {
         return 0;
     }
     emEventHandler *handler;

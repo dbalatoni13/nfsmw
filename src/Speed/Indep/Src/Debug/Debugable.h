@@ -1,10 +1,8 @@
-#ifndef DEBUG_DEBUGABLE_H
-#define DEBUG_DEBUGABLE_H
+//
+#ifndef DEBUGABLE_H
+#define DEBUGABLE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+// Decl: 5
 enum eDebugableClass {
     DBG_RIGIDBODY = 0,
     DBG_AI = 1,
@@ -28,6 +26,7 @@ enum eDebugableClass {
     DBG_MAX = 19,
 };
 
+// Decl: 53
 class Debugable {
   protected:
     Debugable() {}
@@ -40,5 +39,7 @@ class Debugable {
 
     // static bool GetDebugState(eDebugableClass) {}
 };
+
+#define IMPLEMENT_DEBUGABLE() // Decl: 66
 
 #endif

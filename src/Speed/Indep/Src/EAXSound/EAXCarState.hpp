@@ -29,39 +29,7 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return nullptr;
     }
 
-    EAX_CarState(const Attrib::Collection *atr, Sound::Context context, WUID wuid, HSIMABLE handle)
-        : mVel0(0.0f, 0.0f, 0.0f),         //
-          mRacePos(0),                     //
-          mBrake(0.0f),                    //
-          mEBrake(0.0f),                   //
-          mNosEmptyFlag(false),            //
-          mMovementMode(PHYSICS_MOVEMENT), //
-          mPlayerZone(PLAYER_ZONE_NONE),   //
-          mSteering(0),                    //
-          mAngle(0),                       //
-          mSirenState(Sound::SIREN_OFF),   //
-          mHotPursuit(false),              //
-          mAttributes(atr, 0, nullptr),    //
-          mWorldID(wuid),                  //
-          mEngineInfo(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
-        static int PlayerUpgrade;
-        float max_torque_rpm;
-
-        mContext = context;
-        mSimUpdating = true;
-        mHandle = handle;
-        mTrailerID = 0;
-        mNISCarID = -1;
-        mAssetsLoaded = false;
-        mControlSource = Sound::CONTROL_AI;
-        mDesiredSpeed = 0.0f;
-        mVel1 = mVel0;
-        mOversteer = 0.0f;
-        mUndersteer = 0.0f;
-        mSlipAngle = 0.0f;
-        mVisualRPM = 0.0f;
-        // TODO do the rest
-    }
+    EAX_CarState(const Attrib::Collection *atr, Sound::Context context, WUID wuid, HSIMABLE handle);
 
     ~EAX_CarState() {}
 
@@ -259,7 +227,7 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
 
     bVector2 GetWheelSlip(int w) {
-        return bVector2(this->mWheel[w].mWheelSlip.x, this->mWheel[w].mWheelSlip.y);
+        return this->mWheel[w].mWheelSlip;
     }
     float GetWheelLoad(int wheel_ndx) {
         return this->mWheel[wheel_ndx].mLoad;
@@ -302,11 +270,11 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float mMinRPM;                        // offset 0xC, size 0x4, Decl: 149
     float mRedline;                       // offset 0x10, size 0x4, Decl: 151
     bMatrix4 mMatrix;                     // offset 0x14, size 0x40, Decl: 251
-    bVector3 mVel0;                       // offset 0x54, size 0x10, Decl: 252
+    ALIGNVEC bVector3 mVel0;                       // offset 0x54, size 0x10, Decl: 252
     int mRacePos;                         // offset 0x64, size 0x4, Decl: 253
-    bVector3 mVel1;                       // offset 0x68, size 0x10, Decl: 254
+    ALIGNVEC bVector3 mVel1;                       // offset 0x68, size 0x10, Decl: 254
     float mBrake;                         // offset 0x78, size 0x4, Decl: 255
-    bVector3 mAccel;                      // offset 0x7C, size 0x10, Decl: 256
+    ALIGNVEC bVector3 mAccel;                      // offset 0x7C, size 0x10, Decl: 256
     float mEBrake;                        // offset 0x8C, size 0x4, Decl: 257
     float mFWSpeed;                       // offset 0x90, size 0x4, Decl: 258
     bool mIsShocked;                      // offset 0x94, size 0x1, Decl: 259

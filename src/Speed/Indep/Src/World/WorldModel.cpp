@@ -125,7 +125,7 @@ eModel *WorldModel::GetModel() {
     }
 
     if (this->mHeirarchy != nullptr) {
-        return mHeirarchy->GetNodes()[mHeirarchyIndex].mModel;
+        return this->mHeirarchy->GetNodes()[this->mHeirarchyIndex].mModel;
     }
 
     return nullptr;
@@ -202,7 +202,7 @@ void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bM
         }
 
         eDynamicLightContext *light_context = nullptr;
-        if (mAddLighting) {
+        if (this->mAddLighting) {
             light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(sizeof(eDynamicLightContext) + 0xC)); // TODO why +0xC?
             if (light_context == nullptr) {
                 return;
@@ -322,14 +322,14 @@ void WorldModel::Render(eView *view, int exc_flag) {
             this->RenderModel(render_model, view, exc_flag, blended_matrices, matrix);
         }
 
-        mLastVisibleFrame = eGetFrameCounter();
+        this->mLastVisibleFrame = eGetFrameCounter();
     }
 }
 
 static const int DisableWorldObjectReflections = 0;
 
 void RenderWorldModels(eView *view, int exc_flag) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     if (!DrawWorldModels || (DisableWorldObjectReflections && (exc_flag & 0x1000) != 0)) {
         return;

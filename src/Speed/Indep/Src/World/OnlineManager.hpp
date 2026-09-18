@@ -24,8 +24,158 @@ enum eOnlineState {
 
 class OnlineManager {
   public:
+    void InitForRace();
+
+    void UninitForRace();
+
+    void Disconnect(bool force);
+
+    void Update(bool receive);
+
+    float SyncWorldTimestep(float timestep);
+
+    bool IsOnline();
+
+    bool IsServer();
+
+    uint32 GetMasterTime();
+
+    uint32 GetServerTime();
+
+    void DriverLeft(int driver_number, bool he_quit);
+
+    void SetServerTime(uint32 time);
+
+    void SignalRestartLoad(int driver_num);
+
+    void SetStartRaceTime(uint32 tick, float time, float ping);
+
+    float GetStartRaceTime(uint32 tick);
+
+    bool GetRestartingRace();
+
+    void RequestRestart();
+
+    void SignalLoad();
+
+    void PrintQuantizersUsageReport();
+
+    void PrintCheatTallies(bool to_screen);
+
+    void StartLobby();
+
+    void StartOnlineRace();
+
+    void ReadyStartLine();
+
+    int AreAllPlayersFinishedRacing();
+
+    void NotifyDiscEjected();
+
+    void SendSyncAnimations();
+
+    void InitAntiCheating(int num_players);
+
+    bool HasAnyoneCheated();
+
+    int GetGetAwayLeaderDriverNumber();
+
+    Timer GetGetAwayFinishTime(int driver_num);
+
+    Timer GetGetAwayLeaderTime(int driver_num);
+
+    bool GetGetAwayRaceTimedOut();
+
+    void SetPlayerIDs(const char (*personas)[16]);
+
+    int GetDrift();
+
+    bool RaceStartTimeSet();
+
+    void SetPostCountdownStartRaceTime(float time);
+
+    void SetRestartingRace(bool r);
+
+    Timer GetRaceRestartTimer();
+
+    void RestartLastRace();
+
+    void RejectRestartRequest();
+
+    bool IsRestartRequested();
+
+    bool CanRestartRace();
+
+    bool RaceStartAborted();
+
+    bool IsAntiCheatingEnabled();
+
+    void SetRaceEndDisconnect();
+
+    void SetRaceTimeup();
+
+    bool IsRaceTimeup();
+
+    void UpdateOutgoing();
+
+    void SetPosUpdatePing(float ping);
+
+    void SetupRaceParams();
+
+    void SetupLocalDriver(int driver_num);
+
+    void ChangeState(eOnlineState new_state);
+
+    void MapRacers2PlayerIDs();
+
+    void StartRace();
+
+    void PurgeDisconnectedRacers();
+
+    int GetNumConnectedRacers();
+
+    bool IsRaceOver();
+
+    void FinalizeCheatDetection();
+
+    void CalculateFinishOrder();
+
+    void SendEndOfRaceResults();
+
+    void ClearAnimWorldObjects();
+
+    void BuildAnimWorldObjects();
+
+    void SyncRunningAnimations(float delta_t, bool resetfirst);
+
+    void SendLocalPlayerDataCRC();
+
+    void CheckWorldTimerHacking();
+
+    void CheckGetAwayLeaderChange();
+
+    void SetupStartingPositions();
+
+    void SetupRestartRace();
+
+    void FinishGetAwayRace();
+
+    void SelfDisconnect();
+
+    Timer &GetTimeupStartTime();
+
+    float GetTimeupLength();
+
+    void UpdateIncoming();
+
+    int GetNumRacers();
+
     void StartSimFrame();
     void InitQuantizers();
+
+    OnlineManager() {
+        InitQuantizers();
+    }
 
     void EndSimFrame() {}
 

@@ -25,12 +25,24 @@ struct LuaAttribAccessors {
     void (*mSetAttrib)(const LuaAttribAccessInfo &);  // offset 0x4, size 0x4
 };
 
+// total size: 0x8
+struct LuaAttribArrayInfo {
+    GRuntimeInstance *mRuntimeInstance; // offset 0x0, size 0x4
+    unsigned int mAttributeKey;         // offset 0x4, size 0x4
+};
+
 // total size: 0x14
 class LuaAttributes {
   public:
+    LuaAttributes();
+    ~LuaAttributes();
+
     static void Init();
     static void Shutdown();
 
+    void BuildAttributeTypeTable();
+    void PushAttributeValue(const LuaAttribAccessInfo &info, bool arrayAccess);
+    void SetAttributeValue(const LuaAttribAccessInfo &info);
     void BindAccessors(lua_State *luaState);
 
     static LuaAttributes &Get() {

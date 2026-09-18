@@ -9,17 +9,25 @@
 struct stDriveByInfo {
     // Decl: 10
     stDriveByInfo() {
+#ifdef EA_BUILD_A124
+        this->pEAXCar = nullptr;
+        this->UniqueID = 0;
+        this->vLocation = bVector3(0.0f, 0.0f, 0.0f);
+        this->eDriveByType = DRIVE_BY_LAMPPOST;
+        this->ClosingVelocity = 0.0f;
+#else
         this->eDriveByType = DRIVE_BY_LAMPPOST;
         this->pEAXCar = nullptr;
         this->ClosingVelocity = 0.0f;
         this->vLocation = bVector3(0.0f, 0.0f, 0.0f);
         this->UniqueID = 0;
+#endif
     }
 
     eDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4, Decl: 19
     EAXCar *pEAXCar;             // offset 0x4, size 0x4, Decl: 20
     float ClosingVelocity;       // offset 0x8, size 0x4, Decl: 21
-    bVector3 vLocation;          // offset 0xC, size 0x10, Decl: 22
+    ALIGNVEC bVector3 vLocation; // offset 0xC, size 0x10, Decl: 22
     uintptr_t UniqueID;          // offset 0x1C, size 0x4, Decl: 23
 };
 

@@ -22,7 +22,7 @@ class ENISSteering : public Event {
 
     ~ENISSteering() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fDegrees;     // offset: 0x8, size 0x4
@@ -32,5 +32,7 @@ class ENISSteering : public Event {
 };
 
 void ENISSteering_MakeEvent_Callback(const void *staticData);
+int ENISSteering_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISSteering_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

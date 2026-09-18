@@ -20,9 +20,27 @@ class MICECameraFinished : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MICECameraFinished &message);
+
     MICECameraFinished() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 
     ~MICECameraFinished() {}
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MICECameraFinished::HandleMessage_LuaBinding(const MICECameraFinished &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MICECameraFinished::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    lua_newtable(luaState);
+}
 
 #endif

@@ -38,6 +38,11 @@
 #include "VehicleFX.h"
 #include <cmath>
 
+static inline bQuaternion *bSlerp(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2, float t) {
+    q1->Slerp(*qdest, *q2, t);
+    return qdest;
+}
+
 // int32 DrawLightFlares; // why is this here in the dwarfs? shouldn't it be in eLight?
 
 static const int RenderShaperRigLightIndicators = 0;
@@ -262,7 +267,7 @@ void CarPartCuller::RenderPart(eCullableCarParts type, eView *view, const bMatri
 
 // UNSOLVED, weird debug_print stuff
 void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     bVector3 Modcamera_eye = *camera_eye;
     bVector3 *unModcamera_eyeP = camera_eye;
     bMatrix4 turnMat;
@@ -301,7 +306,6 @@ void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
                 int debug_print = 0;
 
                 if (plane_info->Polarity == CULLING_POLARITY_ANY_VISIBLE) {
-                    debug_print = plane_info->NumPlanes;
                     int n = 0;
 
                     for (; n < plane_info->NumPlanes; n++) {
@@ -312,17 +316,17 @@ void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
                         }
 
                         float distance = bDot(&v, &normal) - plane_info->NormalDistance[n];
-                        debug_print = plane_info->NumPlanes;
                         if (distance < 0.0f) {
                             break;
                         }
                     }
 
-                    if (n == debug_print) {
+                    if (n == plane_info->NumPlanes) {
                         visible = false;
                     }
                 } else if (plane_info->Polarity == CULLING_POLARITY_ALL_MUST_BE_VISIBLE) {
                     for (int n = 0; n < plane_info->NumPlanes; n++) {
+                        debug_print = plane_info->NumPlanes;
                         bVector3 normal = plane_info->Normal[n];
 
                         if (pCurrentPartCullingPlaneInfo != nullptr) {
@@ -1130,7 +1134,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mAttributes(0xeec2271a, 0, nullptr), //
       mFlashing(false),                    //
       mFlashInterval(0.0f) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     mWheelWobbleEnabled[0] = false;
     mWheelWobbleEnabled[1] = false;
     mWheelWobbleEnabled[2] = false;
@@ -1339,7 +1343,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     bAdd(&v_underneath, &v_underneath, &v_normal);
 
     {
-        ProfileNode profile_node("TODO", 0);
+        ProfileNode profile_node;
         eModel *model_table[CARSLOTID_MODEL_NUM][CARPART_MODEL_NUM];
 
         for (int lod_index = this->mMinLodLevel; lod_index < this->mMaxLodLevel + 1; lod_index++) {
@@ -1696,7 +1700,7 @@ uint32 CarRenderInfo::HideCarPart(int slotId, bool hide) {
 }
 
 void CarRenderInfo::UpdateCarParts() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     bInitializeBoundingBox(&this->AABBMin, &this->AABBMax);
 
@@ -1914,7 +1918,6 @@ void CarRenderInfo::UpdateCarParts() {
 int TweakKitWheelOffsetFront = 0;
 int TweakKitWheelOffsetRear = 0;
 
-// UNSOLVED
 void CarRenderInfo::UpdateWheelYRenderOffset() {
     if (this->pCarTypeInfo == nullptr) {
         bMemSet(this->WheelYRenderOffset, 0, sizeof(this->WheelYRenderOffset));
@@ -1967,11 +1970,11 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
         }
 
         float kit_wheel_offset_float = static_cast<float>(kit_wheel_offset) * 0.001f;
-        if (this->WheelYRenderOffset[wheel] <= 0.0f) {
-            this->WheelYRenderOffset[wheel] -= kit_wheel_offset_float;
-        } else {
-            this->WheelYRenderOffset[wheel] += kit_wheel_offset_float;
-        }
+        // lmap da la linea 3248 del original a SIETE instrucciones seguidas
+        // (add, lfsx, fcmpu, bgt, fsubs, fadds, stfs): es UNA sentencia, no un
+        // if/else. Con el ternario GCC materializa la direccion (add r11, base,
+        // idx) en vez de usar stfsx, que era lo que faltaba. 96,781 -> 98,904%.
+        this->WheelYRenderOffset[wheel] += (this->WheelYRenderOffset[wheel] <= 0.0f) ? -kit_wheel_offset_float : kit_wheel_offset_float;
 
         float model_width = this->WheelWidths[wheel_end];
         float model_radius = this->WheelRadius[wheel_end];
@@ -2112,11 +2115,11 @@ void CarRenderInfo::UpdateLightStateTextures() {
 
     {
         int left_light_state = 0;
-        if (lights_always_on) {
+        if (lights_always_on || (!this->IsLightBroken(VehicleFX::LIGHT_LHEAD) && this->IsLightOn(VehicleFX::LIGHT_LHEAD))) {
             left_light_state = 1;
         }
         int right_light_state = 0;
-        if (lights_always_on) {
+        if (lights_always_on || (!this->IsLightBroken(VehicleFX::LIGHT_RHEAD) && this->IsLightOn(VehicleFX::LIGHT_RHEAD))) {
             right_light_state = 1;
         }
         int left_light_state_hash = this->mUsedTextureInfos.ReplaceHeadlightHash[left_light_state];
@@ -2189,7 +2192,6 @@ void CarRenderInfo::UpdateLightStateTextures() {
     }
 }
 
-// TODO regswap
 void CarRenderInfo::CreateCarLightFlares() {
     int found_STRINGHASH_LEFT_REVERSE_slot;
     int found_STRINGHASH_RIGHT_REVERSE_slot;
@@ -2439,10 +2441,9 @@ float HackTime = 0.0f;
 
 int Lightslot = 3;
 
-// UNSOLVED, just scheduling, our variant doesn't use r1+0x20
 void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
                                       int renderFlareFlags) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     float Ftime = Sim::GetTime() + this->CarTimebaseStart;
     Camera *camera = view->GetCamera();
     int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
@@ -2485,8 +2486,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         return;
     }
 
-    float base_headlight_intensity;
-    float base_brakelight_intensity;
+    float base_headlight_intensity = 0.0f;
+    float base_brakelight_intensity = 0.0f;
     CarTypeInfo *car_type_info = GetCarTypeInfo(this->pRideInfo->Type);
     int is_traffic_car = static_cast<int>(car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC);
 
@@ -2712,7 +2713,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
                 break;
         }
 
-        if ((preview_part_id == CARPARTID_BRAKELIGHT && is_brakelight != 0) || (preview_part_id == CARPARTID_HEADLIGHT && is_headlight != 0)) {
+        if (preview_part_id == CARPARTID_BRAKELIGHT && is_brakelight != 0) {
+            intensity = 0.0f;
+        } else if (preview_part_id == CARPARTID_HEADLIGHT && is_headlight != 0) {
             intensity = 0.0f;
         }
 
@@ -2793,20 +2796,11 @@ static const float PartDamage_Intens = 0.0f;
 static const uint32 CullBFace = 1;
 static const uint32 shadowBias = 1;
 
-// TODO
-#ifdef NON_MATCHING
-const float lbl_8040AD3C = 1.0f;
-const float lbl_8040AD4C = 0.0f;
-#else
-extern "C" const float lbl_8040AD3C;
-extern "C" const float lbl_8040AD4C;
-#endif
-
 // UNSOLVED
 bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,
                            bMatrix4 *brake_matrices, bMatrix4 *spinner_matrices, unsigned int extra_render_flags, int force_light_state,
                            int reflexion, float shadow_scale, enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     bVector3 position(*world_position);
 
 #ifndef EA_BUILD_A124
@@ -2851,7 +2845,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     local_world->v3.x = position.x;
     local_world->v3.y = position.y;
     local_world->v3.z = position.z;
-    local_world->v3.w = lbl_8040AD3C;
+    local_world->v3.w = 1.0f;
 
     unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
     if (visibility_state == EVISIBLESTATE_NOT) {
@@ -2863,7 +2857,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     camera_world_position.x = eye->x;
     camera_world_position.y = eye->y;
     camera_world_position.z = eye->z;
-    camera_world_position.w = lbl_8040AD3C;
+    camera_world_position.w = 1.0f;
 
     Player *player1 = Player::GetPlayerByIndex(0);
     int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
@@ -2875,7 +2869,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     cpy_local_world->v3.x = position.x;
     cpy_local_world->v3.y = position.y;
     cpy_local_world->v3.z = position.z;
-    cpy_local_world->v3.w = lbl_8040AD3C;
+    cpy_local_world->v3.w = 1.0f;
 
     eDynamicLightContext base_light_context;
     elResetLightContext(&base_light_context);
@@ -2976,14 +2970,14 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     if (car_body_lod == CARPART_LOD_A) {
         if (fDistanceToCamera < 4.0f && view->GetID() == EVIEW_FIRST_PLAYER && !INIS::Exists()) {
             camera_eye_in_car_space.z += 0.5f;
-            if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, lbl_8040AD4C) != 0) {
+            if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, 0.0f) != 0) {
                 return false;
             }
             camera_eye_in_car_space.z -= 0.5f;
         }
     }
 
-    if (this->mFlashing == true && this->mFlashInterval > lbl_8040AD4C) {
+    if (this->mFlashing == true && this->mFlashInterval > 0.0f) {
         return true;
     }
 
@@ -3043,7 +3037,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         body_render_flags = 0x8000;
     }
 
-    if ((static_cast<unsigned int>(view->GetID() - EVIEW_PLAYER1) <= 1) && WorldTimeElapsed > lbl_8040AD4C) {
+    if ((static_cast<unsigned int>(view->GetID() - EVIEW_PLAYER1) <= 1) && WorldTimeElapsed > 0.0f) {
         if (this->mDamageBehaviour != nullptr) {
             this->mDamageBehaviour->Update(biased_local_world);
         }
@@ -3078,41 +3072,14 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
         int current_model_lod = car_body_lod;
         for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
-            CarPartModel *model_lod_base = &this->mCarPartModels[model_index][model_number][current_model_lod];
+            CarPartModel *model_lod_base = this->mCarPartModels[model_index][model_number];
             int model_part_id = model_index;
             eLightMaterial *model_light_material = light_material_carskin;
 
             // TODO get rid of gotos, there are probably switch statements here
-            if (model_lod_base->GetModel() != nullptr && !model_lod_base->IsHidden()) {
-                if (model_part_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
-                    goto render_side_mirror;
-                }
-
-                {
-                    if (model_part_id < CARSLOTID_DRIVER) {
-                        if (model_part_id == CARSLOTID_LEFT_SIDE_MIRROR) {
-                            goto render_side_mirror;
-                        } else if (model_part_id < CARSLOTID_REAR_BRAKE) {
-                            if (model_part_id == CARSLOTID_FRONT_BRAKE) {
-                                continue;
-                            }
-                        } else if (model_part_id == CARSLOTID_REAR_BRAKE) {
-                            continue;
-                        }
-                    } else if (model_part_id != CARSLOTID_ROOF) {
-                        if (model_part_id < CARSLOTID_HOOD) {
-                            if (model_part_id == CARSLOTID_SPOILER) {
-                                continue;
-                            }
-                        } else if (model_part_id <= CARSLOTID_LICENSE_PLATE) {
-                            if (-1 < model_part_id - CARSLOTID_FRONT_WHEEL) {
-                                continue;
-                            }
-                        }
-                    } else {
-                        continue;
-                    }
-
+            if (model_lod_base[current_model_lod].GetModel() != nullptr && !model_lod_base[current_model_lod].IsHidden()) {
+                switch (model_part_id) {
+                    default: {
                     int draw_part = this->pRideInfo->IsPartEnabled(model_part_id);
 
                     switch (model_part_id) {
@@ -3140,6 +3107,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                             if (this->CarbonHood != 0) {
                                 model_light_material = this->LightMaterial_Carbon;
                             }
+                            draw_part &= 1;
                             break;
                         case CARSLOTID_HEADLIGHT:
                             draw_part &= 1;
@@ -3160,7 +3128,9 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         case CARSLOTID_DAMAGE_RIGHT_REAR_DOOR:
                             if (IsNISCopCar(this->pRideInfo->Type)) {
                                 int door_index = 0;
-                                if (model_part_id == CARSLOTID_DAMAGE_RIGHT_DOOR) {
+                                if (model_part_id == CARSLOTID_DAMAGE_LEFT_DOOR) {
+                                    door_index = 0;
+                                } else if (model_part_id == CARSLOTID_DAMAGE_RIGHT_DOOR) {
                                     door_index = 1;
                                 } else if (model_part_id == CARSLOTID_DAMAGE_RIGHT_REAR_DOOR) {
                                     door_index = 2;
@@ -3168,20 +3138,20 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                                     door_index = 3;
                                 }
 
-                                if (NISCopCarDoorOpenAmount[door_index] == lbl_8040AD4C) {
+                                if (NISCopCarDoorOpenAmount[door_index] == 0.0f) {
                                     eMulMatrix(finalmat, &NISCopCarDoorClosedMarkers[door_index], biased_local_world);
-                                } else if (NISCopCarDoorOpenAmount[door_index] == lbl_8040AD3C) {
+                                } else if (NISCopCarDoorOpenAmount[door_index] == 1.0f) {
                                     eMulMatrix(finalmat, &NISCopCarDoorOpenMarkers[door_index], biased_local_world);
                                 } else {
                                     bQuaternion open_quaternion(NISCopCarDoorOpenMarkers[door_index]);
                                     bQuaternion closed_quaternion(NISCopCarDoorClosedMarkers[door_index]);
                                     bQuaternion blend_quaternion;
-                                    closed_quaternion.Slerp(blend_quaternion, open_quaternion, NISCopCarDoorOpenAmount[door_index]);
+                                    bSlerp(&blend_quaternion, &closed_quaternion, &open_quaternion, NISCopCarDoorOpenAmount[door_index]);
 
                                     bVector4 blend_translation(NISCopCarDoorOpenMarkers[door_index].v3);
                                     bScale(&blend_translation, &blend_translation, NISCopCarDoorOpenAmount[door_index]);
                                     bScaleAdd(&blend_translation, &blend_translation, &NISCopCarDoorClosedMarkers[door_index].v3,
-                                              lbl_8040AD3C - NISCopCarDoorOpenAmount[door_index]);
+                                              1.0f - NISCopCarDoorOpenAmount[door_index]);
 
                                     bMatrix4 blend_matrix;
                                     blend_quaternion.GetMatrix(&blend_matrix);
@@ -3208,32 +3178,46 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
                     if (draw_part != 0) {
                         eLightMaterial *light_material_body = model_light_material;
-                        eModel *model = model_lod_base->GetModel();
+                        eModel *model = model_lod_base[current_model_lod].GetModel();
 
                         model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_body);
-                        model = model_lod_base->GetModel();
+                        model = model_lod_base[current_model_lod].GetModel();
                         model->ReplaceLightMaterial(STRINGHASH_WINDSHIELD, light_material_tint);
 
-                        if (this->mDamageBehaviour == nullptr || model_part_id == 0x2b) {
-                            this->RenderPart(view, model_lod_base, finalmat, light_context,
-                                             disable_env_flag | extra_render_flags | body_render_flags);
-                        } else if (model_part_id <= CARSLOTID_BODY) {
-                            bMatrix4 *damage_matrix = this->mDamageBehaviour->GetPartMatrix(model_part_id);
-                            bCopy(finalmat, damage_matrix);
-                            if (!this->mDamageBehaviour->IsPartHidden(model_part_id)) {
-                                this->RenderPart(view, model_lod_base, finalmat, light_context,
-                                                 disable_env_flag | extra_render_flags | body_render_flags);
+                        if (this->mDamageBehaviour != nullptr && model_part_id != 0x2b) {
+                            if (model_part_id <= CARSLOTID_BODY) {
+                                bMatrix4 *damage_matrix = this->mDamageBehaviour->GetPartMatrix(model_part_id);
+                                bCopy(finalmat, damage_matrix);
+                                if (!this->mDamageBehaviour->IsPartHidden(model_part_id)) {
+                                    this->RenderPart(view, &model_lod_base[current_model_lod], finalmat, light_context,
+                                                     disable_env_flag | extra_render_flags | body_render_flags);
+                                }
                             }
+                        } else {
+                            this->RenderPart(view, &model_lod_base[current_model_lod], finalmat, light_context,
+                                             disable_env_flag | extra_render_flags | body_render_flags);
                         }
                     }
-                }
-                goto done_model_part;
-
-            render_side_mirror:
-                if (reflexion == 0) {
-                    eModel *model = model_lod_base->GetModel();
-                    model->ReplaceLightMaterial(STRINGHASH_CARSKIN, this->LightMaterial_CarSkin);
-                    view->Render(model, biased_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags, nullptr);
+                    break;
+                    }
+                    case CARSLOTID_FRONT_BRAKE:
+                    case CARSLOTID_REAR_BRAKE:
+                    case CARSLOTID_SPOILER:
+                    case CARSLOTID_ROOF:
+                    case CARSLOTID_FRONT_WHEEL:
+                    case CARSLOTID_REAR_WHEEL:
+                    case CARSLOTID_SPINNER:
+                    case CARSLOTID_LICENSE_PLATE:
+                        continue;
+                    case CARSLOTID_LEFT_SIDE_MIRROR:
+                    case CARSLOTID_RIGHT_SIDE_MIRROR:
+                        if (reflexion == 0) {
+                            eModel *model = model_lod_base[current_model_lod].GetModel();
+                            model->ReplaceLightMaterial(STRINGHASH_CARSKIN, this->LightMaterial_CarSkin);
+                            view->Render(model, biased_local_world, light_context,
+                                         disable_env_flag | extra_render_flags | body_render_flags, nullptr);
+                        }
+                        break;
                 }
 
             done_model_part:;
@@ -3241,7 +3225,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         }
     }
 
-    if (car_body_lod <= this->pRideInfo->GetMaxLicenseLodLevel() || reflexion == 0) {
+    if (car_body_lod <= this->pRideInfo->GetMaxLicenseLodLevel() || reflexion != 0) {
         bMatrix4 license_rotate;
         eIdentity(&license_rotate);
         eRotateY(&license_rotate, &license_rotate, 0x4000);
@@ -3347,7 +3331,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         wheel_camber_push_down_rear = camber_amount_rear * 0.03f;
     }
 
-    unsigned short wheel_wobble_angle = bDegToAng(lbl_8040AD4C);
+    unsigned short wheel_wobble_angle = bDegToAng(0.0f);
 
     for (int wheel = 0; wheel < 4; wheel++) {
         int wheel_end = static_cast<int>(wheel > 1);
@@ -3406,25 +3390,26 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         float extra_rear_tire_offset = this->mAttributes.ExtraRearTireOffset();
         bMatrix4 *extra_tire_local_world = nullptr;
 
-        if (extra_rear_tire_offset != lbl_8040AD4C) {
+        if (extra_rear_tire_offset != 0.0f) {
             extra_tire_local_world = eFrameMallocMatrix(2);
         }
 
         tire_light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(0x490));
 
         if (tire_local_world != nullptr && tire_light_context != nullptr) {
-            int tire_lod = car_tire_lod;
             CarPartModel *front_tire_models[CARPART_MODEL_NUM];
             CarPartModel *rear_tire_models[CARPART_MODEL_NUM];
             eLightMaterial *light_material_rim[2];
             bMatrix4 *left_tire_flip;
             unsigned int extra_mirror_flag;
+            bMatrix4 wobbleMat;
 
             tire_visible0 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FL));
             tire_visible1 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FR));
             tire_visible2 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RR));
             tire_visible3 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RL));
 
+            int tire_lod = car_tire_lod;
             if (car_tire_lod > this->pRideInfo->GetMaxTireLodLevel()) {
                 tire_lod = this->pRideInfo->GetMaxTireLodLevel();
             }
@@ -3455,7 +3440,6 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 extra_mirror_flag = 0x40000;
             }
 
-            bMatrix4 wobbleMat;
             if (this->mWheelWobbleEnabled[0] || this->mWheelWobbleEnabled[1] || this->mWheelWobbleEnabled[2] || this->mWheelWobbleEnabled[3]) {
                 bIdentity(&wobbleMat);
                 eRotateX(&wobbleMat, &wobbleMat, 0x4fa);
@@ -3469,7 +3453,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3498,7 +3482,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_front);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3527,7 +3511,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_rear);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3575,7 +3559,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3653,9 +3637,9 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 }
 
                 eIdentity(&mirror);
-                mirror.v0.x = lbl_8040AD3C; // TODO BrakeMirrorX?
+                mirror.v0.x = 1.0f; // TODO BrakeMirrorX?
                 mirror.v1.y = -1.0f;
-                mirror.v2.z = lbl_8040AD3C;
+                mirror.v2.z = 1.0f;
 
                 if (brakes_visible_front_left) {
                     bMatrix4 *starting_brake_matrix = &brake_matrices[0];
@@ -3665,7 +3649,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3706,7 +3690,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_front);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3746,7 +3730,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bVector3 wheel_offset;
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_rear);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3786,7 +3770,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3863,14 +3847,13 @@ static inline bool ccw(float **P, int i, int j, int k) {
 int make_chain(float **V, int n, int (*cmp)(const void *, const void *)) {
     int i;
     int j;
-    int s;
+    int s = 1;
     float *t;
 
     qsort(V, n, 4, cmp);
 
-    s = 1;
     for (i = 2; i < n; i++) {
-        for (j = s; j >= 1 && !ccw(V, j - 1, j, i); j--) {
+        for (j = s; j >= 1 && !ccw(V, i, j, j - 1); j--) {
         }
 
         s = j + 1;
@@ -4177,9 +4160,9 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         unsigned int colour = static_cast<unsigned int>(bClamp(i, 0, 0xFE) << 24) | 0x00808080;
 
         if (dshad != 0) {
-            int nMax = (nVert & ~1) - 1; // TODO doesn't exist
+            int nMax = nVert & ~1;
 
-            for (i = 0; i < nMax; i += 2) {
+            for (i = 0; i < nMax - 1; i += 2) {
                 if (eBeginStrip(this->ShadowRampTexture, 4, biasedIdentity)) {
                     eAddVertex(p[i]);
                     eAddVertex(mid);
@@ -4286,17 +4269,18 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     bVector3 min(this->AABBMin);
     bVector3 max(this->AABBMax);
 
-    // TODO
-    float scale = 1.05f;
+    // El volcado DWARF del original NO tiene ninguna local `scale_mult`: el
+    // 1,05f vive en `scaleW` (f13) y `scaleL` se queda sin usar (sin registro).
+    scaleW = 1.05f;
+    float scale = 1.0f;
     if (this->pRideInfo->Type == CARTYPE_COPHELI) {
-        scale *= heliScale;
+        scale = heliScale;
     }
 
-    // TODO
-    min.x *= scale;
-    min.y *= scale;
-    max.x *= scale;
-    max.y *= scale;
+    min.y *= scale * scaleW;
+    max.y *= scale * scaleW;
+    min.x *= scale * scaleW;
+    max.x *= scale * scaleW;
 
     bVector3 SunCarVector;
     bVector3 light_pos;
@@ -4326,8 +4310,17 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     float sunDX = bAbs(sunAdjX * 0.33333334f);
     float sunDY = bAbs(sunAdjY * 0.33333334f);
 
-    float sunStartX = sunAdjX > 0.0f ? 0.0f : sunAdjX;
-    float sunStartY = sunAdjY > 0.0f ? 0.0f : sunAdjY;
+    float sunStartX, sunStartY;
+    if (sunAdjX > 0.0f) {
+        sunStartX = 0.0f;
+    } else {
+        sunStartX = sunAdjX;
+    }
+    if (sunAdjY > 0.0f) {
+        sunStartY = 0.0f;
+    } else {
+        sunStartY = sunAdjY;
+    }
 
     bVector3 p[16];
     bVector3 *pp;
@@ -4335,30 +4328,26 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     bVector2 *puv;
     int bad_points[4];
 
+    float py, px, dy, dx, ps, pt, ds, dt;
+
+    dy = (max.y - min.y) * 0.33333334f;
+    dx = (max.x - min.x) * 0.33333334f;
+
+    ds = 0.33333334f;
+    dt = 0.33333334f;
+    py = min.y + sunStartY;
+    pt = 0.0f;
+
     pp = p;
     puv = uv;
-
-    float py = min.y + sunStartY;
-    scaleW = (max.y - min.y) * 0.33333334f;
-    scaleL = (max.x - min.x) * 0.33333334f;
-    float px;
-    float dy = scaleW;
-    float dx = scaleL;
-    float ps;
-    float pt = 0.0f;
-    float ds = 0.33333334f;
-    float dt = 0.33333334f;
 
     for (int y = 0; y < 4; y++) {
         px = min.x + sunStartX;
         ps = 0.0f;
 
         for (int x = 0; x < 4; x++) {
-            pp->x = px;
-            pp->y = py;
-            pp->z = 0.0f;
-            puv->x = ps;
-            puv->y = pt;
+            bFill(pp, px, py, 0.0f);
+            bFill(puv, ps, pt);
             eMulVector(pp, localWorld, pp);
             px += sunDX;
             px += dx;
@@ -4479,11 +4468,6 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
                     }
 
                     exEndStrip(view);
-                } else {
-                    p0 += 4;
-                    p1 += 4;
-                    u0 += 4;
-                    u1 += 4;
                 }
             } else {
                 p0 += 4;

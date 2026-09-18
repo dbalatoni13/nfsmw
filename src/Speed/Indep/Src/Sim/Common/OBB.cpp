@@ -62,18 +62,27 @@ bool OBB::CheckOBBOverlap(OBB *other) {
             b = this;
         }
         for (int a_lp = 0; a_lp < 3; a_lp++) {
-            int a_normal_index = 2;
-            if (a_lp != 1) {
+            int a_normal_index;
+
+            if (a_lp == 1) {
+                a_normal_index = 2;
+            } else {
                 a_normal_index = (a_lp ^ 2) == 0; // really written this way?
             }
             a_normal = a->normal[a_normal_index];
-            UMath::Subxyz(a->position, b->position, rel_position);
-            projected_interval = fabsf(UMath::Dotxyz(rel_position, a_normal));
-            projected_interval -= a->dimension[a_normal_index];
             b_extent = b->extent;
+
+            UMath::Subxyz(a->position, b->position, rel_position);
+
+            projected_interval = fabsf(UMath::Dotxyz(rel_position, a_normal));
+
+            projected_interval -= a->dimension[a_normal_index];
             for (int b_normal_index = 0; b_normal_index < 3; b_normal_index++) {
                 b_projected_interval = UMath::Dotxyz(a_normal, *b_extent);
-                projected_interval -= fabsf(b_projected_interval);
+
+                b_projected_interval = fabsf(b_projected_interval);
+
+                projected_interval -= b_projected_interval;
                 b_extent++;
             }
             if (projected_interval > 0.0f) {
@@ -84,14 +93,151 @@ bool OBB::CheckOBBOverlap(OBB *other) {
     return true;
 }
 
-bool OBB::BoxVsBox(OBB *a, OBB *b, OBB *result) {
-    // TODO
-    return false;
+bool OBB::BoxVsBox(OBB *obbA, OBB *obbB, OBB *result) {
+    UMath::Vector4 rel_position;
+    UMath::Vector4 a_normal;
+    UMath::Vector4 col_pt;
+    OBB *a = obbA;
+    OBB *b = obbB;
+
+    for (int cycle = 0; cycle <= 1; cycle++) {
+        if (cycle == 1) {
+            a = obbB;
+            b = obbA;
+        }
+        for (int a_lp = 0; a_lp <= 2; a_lp++) {
+            int a_normal_index;
+
+            if (a_lp == 1) {
+                a_normal_index = 2;
+            } else {
+                a_normal_index = (a_lp ^ 2) == 0;
+            }
+            a_normal = a->normal[a_normal_index];
+            UMath::Vector4 *b_extent = b->extent;
+            col_pt = b->position;
+            UMath::Subxyz(a->position, b->position, rel_position);
+            float projected_interval = UMath::Dotxyz(rel_position, a_normal);
+
+            if (projected_interval < 0.0f) {
+                projected_interval = -projected_interval;
+            } else {
+                a_normal.x = -a_normal.x;
+                a_normal.y = -a_normal.y;
+                a_normal.z = -a_normal.z;
+            }
+            projected_interval -= a->dimension[a_normal_index];
+
+            for (int b_normal_index = 0; b_normal_index <= 2; b_normal_index++) {
+                float b_projected_interval =
+                    UMath::Dot(reinterpret_cast<const UMath::Vector3 &>(a_normal), reinterpret_cast<const UMath::Vector3 &>(*b_extent));
+
+                projected_interval -= fabsf(b_projected_interval);
+
+                if (b_projected_interval > 0.0f) {
+                    UMath::Subxyz(col_pt, *b_extent, col_pt);
+                } else if (b_projected_interval < 0.0f) {
+                    UMath::Addxyz(col_pt, *b_extent, col_pt);
+                }
+                b_extent++;
+            }
+            if (projected_interval > 0.0f) {
+                return false;
+            }
+            if (projected_interval > result->penetration_depth) {
+                result->penetration_depth = projected_interval;
+                result->collision_point = col_pt;
+
+                if (result != a) {
+                    result->collision_normal.x = -a_normal.x;
+                    result->collision_normal.y = -a_normal.y;
+                    result->collision_normal.z = -a_normal.z;
+                } else {
+                    result->collision_normal.x = a_normal.x;
+                    result->collision_normal.y = a_normal.y;
+                    result->collision_normal.z = a_normal.z;
+                }
+            }
+        }
+    }
+    return true;
 }
 
-bool OBB::SphereVsBox(OBB *a, OBB *b, OBB *result) {
-    // TODO
-    return false;
+bool OBB::SphereVsBox(OBB *sphereA, OBB *boxB, OBB *result) {
+    UMath::Vector4 rPos;
+    UMath::Subxyz(sphereA->position, boxB->position, rPos);
+
+    const float radius = sphereA->dimension[0];
+    int a_lp;
+    float dists[3];
+    float abs_dists[3];
+    float penetration[3];
+
+    result->collision_point = UMath::Vector4::kIdentity;
+
+    for (a_lp = 0; a_lp <= 2; a_lp++) {
+        const float b_dim = boxB->dimension[a_lp];
+
+        dists[a_lp] = UMath::Dotxyz(rPos, boxB->normal[a_lp]);
+        abs_dists[a_lp] = UMath::Abs(dists[a_lp]);
+
+        if (abs_dists[a_lp] >= b_dim + radius) {
+            return false;
+        }
+
+        penetration[a_lp] = abs_dists[a_lp] - (b_dim + radius);
+    }
+
+    if (abs_dists[0] < boxB->dimension[0] && abs_dists[1] < boxB->dimension[1] && abs_dists[2] < boxB->dimension[2]) {
+        int nearestface = 0;
+
+        for (a_lp = 1; a_lp <= 2; a_lp++) {
+            if (penetration[a_lp] > penetration[nearestface]) {
+                nearestface = a_lp;
+            }
+        }
+
+        const UMath::Vector4 &normal = boxB->normal[nearestface];
+        const float planedist = dists[nearestface];
+        const float normal_dir = planedist > 0.0f ? -1.0f : 1.0f;
+
+        result->penetration_depth = penetration[nearestface];
+
+        UMath::Scalexyz(normal, normal_dir, result->collision_normal);
+
+        UMath::ScaleAddxyz(normal, normal_dir * (penetration[nearestface] + radius), sphereA->position, result->collision_point);
+    } else {
+        for (a_lp = 0; a_lp <= 2; a_lp++) {
+            const float b_dim = boxB->dimension[a_lp];
+            const float abs_planedist = abs_dists[a_lp];
+
+            if (abs_planedist >= b_dim) {
+                const UMath::Vector4 &normal = boxB->normal[a_lp];
+                const float planedist = dists[a_lp];
+                const float normal_dir = planedist > 0.0f ? -1.0f : 1.0f;
+
+                UMath::ScaleAddxyz(normal, normal_dir * (penetration[a_lp] + radius), result->collision_point, result->collision_point);
+            }
+        }
+
+        const float coldist = UMath::Lengthxyz(result->collision_point);
+
+        if (coldist > radius || coldist == 0.0f) {
+            return false;
+        }
+
+        result->penetration_depth = coldist - radius;
+
+        UMath::Unit(result->collision_point, result->collision_normal);
+
+        UMath::Addxyz(result->collision_point, sphereA->position, result->collision_point);
+    }
+
+    if (result != sphereA) {
+        UMath::Scalexyz(result->collision_normal, -1.0f, result->collision_normal);
+    }
+
+    return true;
 }
 
 bool OBB::SphereVsSphere(OBB *a, OBB *b, OBB *result) {

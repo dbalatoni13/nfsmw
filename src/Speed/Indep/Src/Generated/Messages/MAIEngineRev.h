@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
+class EAX_CarState;
+
 // total size: 0x20
 class MAIEngineRev : public Hermes::Message {
   public:
@@ -19,6 +21,10 @@ class MAIEngineRev : public Hermes::Message {
 
         return k;
     }
+
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MAIEngineRev &message);
 
     MAIEngineRev(unsigned int _hSimable, unsigned int _CarID, EAX_CarState *_CarState, unsigned int _PatterToPlay)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fhSimable(_hSimable), fCarID(_CarID), fCarState(_CarState), fPatterToPlay(_PatterToPlay) {}
@@ -63,5 +69,41 @@ class MAIEngineRev : public Hermes::Message {
     EAX_CarState *fCarState;    // offset 0x18, size 0x4
     unsigned int fPatterToPlay; // offset 0x1c, size 0x4
 };
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MAIEngineRev::HandleMessage_LuaBinding(const MAIEngineRev &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MAIEngineRev::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MAIEngineRev *message = static_cast<const MAIEngineRev *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "hSimable");
+    lua_pushnumber(luaState, message->fhSimable);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "CarID");
+    lua_pushnumber(luaState, message->fCarID);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "CarState");
+    if (message->fCarState != NULL) {
+        *static_cast<EAX_CarState **>(lua_newuserdata(luaState, sizeof(EAX_CarState *))) = message->fCarState;
+        LuaBindery::AttachMetatable(luaState, "EAX_CarState");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "PatterToPlay");
+    lua_pushnumber(luaState, message->fPatterToPlay);
+    lua_settable(luaState, -3);
+}
 
 #endif

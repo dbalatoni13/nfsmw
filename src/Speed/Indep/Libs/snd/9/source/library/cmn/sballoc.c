@@ -19,5 +19,5 @@ TAGGEDPATCH *SNDBANKI_getppatch(BANKVER5 *pb, int patnum) {
         return NULL;
     }
 
-    return reinterpret_cast<TAGGEDPATCH *>((int)&pb->patch[patnum] + (int)pb->patch[patnum]);
+    return reinterpret_cast<TAGGEDPATCH *>((sndptrint)&pb->patch[patnum] + (sndptrint)pb->patch[patnum]);
 }

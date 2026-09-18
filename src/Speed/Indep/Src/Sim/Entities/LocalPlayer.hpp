@@ -22,6 +22,10 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
         return gFastMem.Alloc(size, nullptr);
     }
 
+    static Sim::IEntity *Construct(Sim::Param params) {
+        return new LocalPlayer(params);
+    }
+
     void operator delete(void *mem, std::size_t size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);
@@ -135,5 +139,7 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     HACTIVITY mLastPursuit; // offset 0x90, size 0x4
 #endif
 };
+
+extern float Tweak_GameBreakerCollisionMass;
 
 #endif

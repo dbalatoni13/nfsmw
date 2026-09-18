@@ -77,10 +77,18 @@ struct RaceParameters {
     inline bool IsDriftRace() {
         return this->bDriftRaceFlag || (g_tweakIsDriftRace != 0);
     }
-    bool IsBurnout() {}
-    bool IsShortTrackRace() {}
-    bool IsDriftPhysics() {}
-    bool IsBurnoutPhysics() {}
+    bool IsBurnout() {
+        return this->bBurnoutFlag || (g_tweakIsBurnout != 0);
+    }
+    bool IsShortTrackRace() {
+        return this->bShortRaceFlag || (g_tweakIsShortTrackRace != 0);
+    }
+    bool IsDriftPhysics() {
+        return this->IsDriftRace() || (g_tweakDriftPhysics != 0);
+    }
+    bool IsBurnoutPhysics() {
+        return this->IsBurnout() || (g_tweakBurnoutPhysics != 0);
+    }
     bool IsTestTrack() {}
     bool IsSkidPad() {}
     bool IsFreeRoam() {}

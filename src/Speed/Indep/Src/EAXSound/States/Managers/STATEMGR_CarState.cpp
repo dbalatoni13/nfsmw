@@ -25,7 +25,7 @@ CSTATEMGR_CarState::CSTATEMGR_CarState() {
 CSTATEMGR_CarState::~CSTATEMGR_CarState() {}
 
 void CSTATEMGR_CarState::UpdateParams(float t) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     for (CarSoundConn::List::const_iterator iter = CarSoundConn::GetList().begin(); iter != CarSoundConn::GetList().end(); ++iter) {
         CarSoundConn *pconn = *iter;
@@ -116,7 +116,7 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     EnginesThatCanUpgradeToV8.clear();
     EnginesThatAreV8.clear();
 
-    bool CopsCanBeInGame = !FEDatabase->IsSplitScreenMode(); // TODO this is actually !IsQuickRaceMode()
+    bool CopsCanBeInGame = !FEDatabase->IsQuickRaceMode();
     ForcePrintResolveInfo = false;
 
     if (DEBUG_CAR_BANK_TEST_CASE == -1) {
@@ -258,7 +258,7 @@ BeginRule3: {
 
 BeginRule4: {
     int n = static_cast<int>(AIEnginesWeWantToLoad.size()) - 1;
-    if (n >= 0) {
+    for (; n >= 0; --n) {
         Attrib::Gen::engineaudio wantstoload(AIEnginesWeWantToLoad[n], 0, nullptr);
 
         for (int m = 0; m < static_cast<int>(FinalEngines.size()); ++m) {
@@ -296,9 +296,10 @@ BeginRule4: {
         unsigned int *first = std::find(AIEnginesWeWantToLoad.begin(), AIEnginesWeWantToLoad.end(), AIEnginesWeWantToLoad[n]);
         AIEnginesWeWantToLoad.erase(first);
 
-        if (FinalEngines.size() + AIEnginesWeWantToLoad.size() > 4) {
-            goto BeginRule4;
+        if (FinalEngines.size() + AIEnginesWeWantToLoad.size() <= 4) {
+            goto LoadRemainingEngines;
         }
+        goto BeginRule4;
     }
 }
 
@@ -327,10 +328,10 @@ LoadRemainingEngines:
         for (const EngineMappingPair *iter = FinalMapping.begin(); iter != FinalMapping.end() && !found; ++iter) {
             EngineMappingPair mapping = *iter;
             if (eax_car->GetEngineInfo()->GetCollection() == mapping.Start) {
-                EngToCarStruct carmapping;
                 eax_car->GetEngineInfo()->ChangeWithDefault(mapping.Finish);
                 found = true;
 
+                EngToCarStruct carmapping;
                 carmapping.EngineKey = mapping.Finish;
                 carmapping.pCar = eax_car;
                 EngineToCarMapping.push_back(carmapping);
@@ -382,6 +383,22 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
             }
         }
     }
+
+#ifdef EA_BUILD_A124
+    Attrib::Gen::engineaudio engtounload(engkey, 0, nullptr);
+    int index = gAEMSMgr.IsAssetInList(engtounload.BankName_mainRAM());
+    if (index == -1) {
+        const Attrib::StringKey *auxbank = static_cast<const Attrib::StringKey *>(
+            engtounload.GetAttributePointer(Attrib::Hash::engineaudio::BankName_auxRAM));
+        if (auxbank == nullptr) {
+            auxbank = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(sizeof(Attrib::StringKey)));
+        }
+        index = gAEMSMgr.IsAssetInList(*auxbank);
+    }
+    if (index != -1) {
+        gAEMSMgr.UnloadSndData(index);
+    }
+#endif
 }
 
 void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {

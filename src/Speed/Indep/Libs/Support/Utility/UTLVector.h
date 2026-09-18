@@ -9,6 +9,19 @@ static const int DEFAULT_VECTOR_ALIGNMENT = 16;
 
 namespace UTL {
 
+template <typename T> class RepeatSequencer {
+  public:
+    explicit RepeatSequencer(const T &t)
+        : mValue(&t) {}
+
+    const T &operator[](unsigned int) const {
+        return *mValue;
+    }
+
+  private:
+    const T *mValue;
+};
+
 // total size: 0x10
 template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
   public:
@@ -25,12 +38,13 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     typedef std::ptrdiff_t difference_type;
 
   public:
-    void Init() {}
-
-    Vector() {
+    void Init() {
         mBegin = nullptr;
         mCapacity = 0;
         mSize = 0;
+    }
+
+    Vector() {
         Init();
     }
 
@@ -76,6 +90,84 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
         mSize++;
     }
 
+    void push_back() {
+        if (size() >= capacity()) {
+            reserve(GetGrowSize(size() + 1));
+        }
+        new (&mBegin[size()]) T();
+        mSize++;
+    }
+
+    void resize(size_type num) {
+        if (num > size()) {
+            reserve(num);
+            while (size() < num) {
+                push_back();
+            }
+        } else {
+            while (size() > num) {
+                pop_back();
+            }
+        }
+    }
+
+    void assign(const Vector &src) {
+        assign(src.begin(), src.end());
+    }
+
+    void assign(const_iterator srcBeg, const_iterator srcEnd) {
+        size_type minSize = srcEnd - srcBeg;
+        const_iterator srcIt = srcBeg;
+        if (srcIt == 0) {
+            // El objetivo emite aqui `reserve` + un bucle de CRECIMIENTO con
+            // push_back() -- leido del desensamblado de
+            // `_Storage<CameraAI::Director*,2>::_Storage(const&)` en zCamera
+            // (0x80081938..0x80081A44): sube el 59,56% -> 96,16%. El
+            // `push_back()` sin argumento instancia `new (p) T()`, asi que
+            // `GarbageNode<T,N>::Collector::_Node` necesita su constructor por
+            // defecto (anadido en UCollections.h). Compilado zSim, zPhysics,
+            // zMain y zFe tras el cambio.
+            // r51-cam: la condicion del bucle NO puede llamar a `size()`.
+            // El mapa de lineas del objetivo tiene `UTLVector.h:249` DOS veces
+            // --delante del bucle y al fondo, con un `mr r4,r9` de mas--: es
+            // `jump.c::duplicate_loop_exit_test`, y solo dispara si
+            // `stmt.c::expand_end_loop` roto antes el bucle. A -O1 eso no ocurre
+            // si la condicion lleva una llamada inline, porque emite
+            // NOTE_INSN_BLOCK_BEG y el barrido se corta en
+            // `if (optimize < 2 && ...) break;`. Con `mSize` a pelo si rota, y
+            // los dos racimos estructurales de `_Storage` se cierran.
+            // Radio medido: once SourceLists con y sin, +0 B en las once, y los
+            // once objetos distintos por md5 (el cambio llega y no cuesta).
+            if (minSize > size()) {
+                reserve(minSize);
+                while (minSize > mSize) {
+                    push_back();
+                }
+            }
+            return;
+        }
+        reserve(minSize);
+        iterator destIt = begin();
+        while (destIt != end() && srcIt != srcEnd) {
+            reference dest = *destIt++;
+            const_reference src = *srcIt++;
+            dest = src;
+        }
+        while (end() != destIt) {
+            pop_back();
+        }
+        while (srcIt != srcEnd) {
+            push_back(*srcIt++);
+        }
+    }
+
+    iterator insert(iterator position, const_reference val) {
+        size_type posIndex = position - mBegin;
+        RepeatSequencer<const value_type> sequencer(val);
+        insert_sequence(position, 1, sequencer);
+        return mBegin + posIndex;
+    }
+
     void pop_back() {
         mSize = size() - 1;
     }
@@ -117,7 +209,6 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 
     void clear() {
         make_empty();
-        Init();
     }
 
     size_type indexof(pointer pos) {
@@ -126,6 +217,10 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     }
 
     iterator erase(iterator begIt, iterator endIt) {
+        if (begIt == endIt) {
+            return end();
+        }
+
         size_type iPos = indexof(begIt);
         size_type num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
@@ -151,13 +246,75 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     }
 
   protected:
+    // OJO: la forma exacta de este cuerpo es la que casa (Speech::SpeechHashIDMap::Add y
+    // Speech::EventHistory::Init al 100%). Tres detalles NO son cosmeticos:
+    //   - el primer guardian es `oldBuffer != mBegin`, sin el `oldBuffer &&`;
+    //   - el bucle de desplazamiento NO lleva delante un `if (oldSize != iPos)`;
+    //   - las direcciones se calculan como `offset + (unsigned int)base` y no como
+    //     `base + indice`: el front-end normaliza `ptr + int` a plus(ptr,int) y GCC 2.9
+    //     emite entonces `add base,offset`, mientras que el original emite `add offset,base`.
+    // Y `src[-1]` en vez de `--src` evita que GCC funda el decremento en un `lwzu`.
+    void insert_sequence(iterator pos, unsigned int num, RepeatSequencer<const value_type> &sequencer) {
+        pointer oldBuffer = mBegin;
+        size_type oldSize = size();
+        size_type oldCapacity = capacity();
+        size_type iPos = pos - oldBuffer;
+        size_type newSize = oldSize + num;
+
+        if (newSize > oldCapacity) {
+            OnGrowRequest(newSize);
+
+            oldSize = size();
+            oldCapacity = capacity();
+            iPos = pos - mBegin;
+            newSize = oldSize + num;
+
+            if (newSize > oldCapacity) {
+                mBegin = AllocVectorSpace(newSize, Alignment);
+                mCapacity = newSize;
+            }
+        }
+
+        mSize = newSize;
+
+        if (oldBuffer != mBegin) {
+            for (size_type ii = 0; ii < iPos; ++ii) {
+                pointer dst = reinterpret_cast<pointer>(ii * sizeof(value_type) + reinterpret_cast<unsigned int>(mBegin));
+                if (dst) {
+                    new (dst) T(oldBuffer[ii]);
+                }
+            }
+        }
+
+        for (size_type ii = 0; ii < oldSize - iPos; ++ii) {
+            pointer dst = reinterpret_cast<pointer>((newSize - ii) * sizeof(value_type) + reinterpret_cast<unsigned int>(mBegin));
+            --dst;
+            if (dst) {
+                pointer src = reinterpret_cast<pointer>((oldSize - ii) * sizeof(value_type) + reinterpret_cast<unsigned int>(oldBuffer));
+                new (dst) T(src[-1]);
+            }
+        }
+
+        for (size_type ii = 0; ii < num; ++ii) {
+            pointer dst = reinterpret_cast<pointer>((iPos + ii) * sizeof(value_type) + reinterpret_cast<unsigned int>(mBegin));
+            if (dst) {
+                new (dst) T(sequencer[ii]);
+            }
+        }
+
+        if (oldBuffer && oldBuffer != mBegin) {
+            FreeVectorSpace(oldBuffer, oldCapacity);
+        }
+    }
+
     // Unfinished
     virtual pointer AllocVectorSpace(size_type num, unsigned int alignment) = 0;
 
     virtual void FreeVectorSpace(pointer buffer, size_type num) = 0;
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        return UMath::Max(mCapacity + ((mCapacity + 1) >> 1), minSize);
+        size_type growSize = mCapacity + ((mCapacity + 1) >> 1);
+        return minSize > growSize ? minSize : growSize;
     }
 
     virtual size_type GetMaxCapacity() const {
@@ -166,7 +323,7 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 
     virtual void OnGrowRequest(size_type newSize) {}
 
-  private:
+  protected:
     pointer mBegin;      // offset 0x0, size 0x4
     size_type mCapacity; // offset 0x4, size 0x4
     size_type mSize;     // offset 0x8, size 0x4
@@ -175,6 +332,16 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
     FixedVector() {}
+
+    FixedVector(const FixedVector &src) {
+        Vector<T, Alignment>::Init();
+        *this = src;
+    }
+
+    FixedVector &operator=(const FixedVector &rhs) {
+        Vector<T, Alignment>::assign(rhs);
+        return *this;
+    }
 
     ~FixedVector() override {
         // clang is being annoying
@@ -213,11 +380,11 @@ template <typename T, int Alignment = 16> class FastVector : public Vector<T, Al
 
   protected:
     typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) override {
-        return static_cast<typename Vector<T, Alignment>::pointer>(gFastMem.Alloc(num * sizeof(T), nullptr));
+        return static_cast<typename Vector<T, Alignment>::pointer>(gFastMem.Alloc(num * sizeof(T), "FastVector"));
     }
 
     void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t num) override {
-        gFastMem.Free(buffer, num * sizeof(T), nullptr);
+        gFastMem.Free(buffer, num * sizeof(T), "FastVector");
     }
 };
 }; // namespace UTL

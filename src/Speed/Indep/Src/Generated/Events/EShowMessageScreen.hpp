@@ -21,12 +21,14 @@ class EShowMessageScreen : public Event {
 
     ~EShowMessageScreen() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fID; // offset: 0x8, size 0x4
 };
 
 void EShowMessageScreen_MakeEvent_Callback(const void *staticData);
+int EShowMessageScreen_MakeEvent_LuaBinding(struct lua_State *L);
+void EShowMessageScreen_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

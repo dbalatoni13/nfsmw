@@ -10,7 +10,6 @@ class SFXCTL_3DColPos : public SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
 
-    SFXCTL_3DColPos() {}           // Decl: 13
     ~SFXCTL_3DColPos() override {} // Decl: 14
 };
 
@@ -20,7 +19,6 @@ class SFXCTL_3DScrapePos : public SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
 
-    SFXCTL_3DScrapePos() {}           // Decl: 23
     ~SFXCTL_3DScrapePos() override {} // Decl: 24
 };
 

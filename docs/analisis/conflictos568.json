@@ -1,0 +1,5005 @@
+{
+ "src/Speed/GameCube/Src/Movie_GC.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/GameCube/Src/Platform_G.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Miscellaneous/CARP.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Miscellaneous/SAP.h": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Utility/UListable.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Utility/UMath.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Utility/UTLVector.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/Support/Utility/UVectorMathGC.hpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/allocator/1.5.0/Allocator/iallocator.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/filesys.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/std.h": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Libs/snd/9/include/snd/sndo.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zAI.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zAnim.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zAttribSys.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zBWare.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zCamera.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zDebug.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zDynamics.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zEAXSound.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/SourceLists/zEAXSound2.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zEagl4Anim.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zEcstasy.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zFEng.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zFe.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zFe2.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/SourceLists/zFeOverlay.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zFoundation.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zGameplay.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zLua.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zMain.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zMisc.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zMiscSmall.cpp": {
+  "hunks": 0,
+  "clase": "MEZCLA",
+  "clases": [],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zOnline.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zPhysics.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zPhysicsBehaviors.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zPlatform.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zRender.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zSim.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zSpeech.cpp": {
+  "hunks": 0,
+  "clase": "MEZCLA",
+  "clases": [],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zTrack.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zWorld.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/SourceLists/zWorld2.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIAction.h": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIAvoidable.h": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIBasics.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIMath.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIPursuit.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIRoadBlock.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AISpawnManager.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AITarget.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AIVehicle.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionAirborne.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionHeadOnRam.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionHeliExit.cpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionHeliPursuit.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionJackKnife.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionNone.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionPursuitOffRoad.cpp": {
+  "hunks": 23,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionRace.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionRam.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionSpline.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionStopShort.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionStrafe.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Actions/AIActionTraffic.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Activities/AICopManager.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Activities/AITrafficManager.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Activities/AvoidableManager.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/AdaptivePIDController.h": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Common/AIGoal.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AIMath.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AIPursuit.cpp": {
+  "hunks": 22,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/AI/Common/AIRoadBlock.cpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Common/AIRoadBlockSetups.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AISpawnManager.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehicle.cpp": {
+  "hunks": 36,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 4
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehicleCopCar.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehicleHelicopter.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehiclePursuit.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehicleRacecar.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Common/AIVehicleTraffic.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/AI/Common/AdaptivePIDController.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/AI/Gps.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Animation/AnimEntity_BasicCharacter.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Animation/GenericNISControlScenario.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Camera/Camera.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Camera/CameraAI.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Camera/CameraMover.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Camera/CameraMover.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Camera/ICE/ICEData.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Camera/ICE/ICEManager.hpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/AemsDef.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/CARSFX_PreColWoosh.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Roadnoise.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/CARSFX_SparkChatter.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMap.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMapState.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAITunerCar.cpp": {
+  "hunks": 7,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAITunerCar.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAIUtils.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 4
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAIUtils.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAemsManager.cpp": {
+  "hunks": 31,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXAemsManager.h": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXCar.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXCarState.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXFrontEnd.cpp": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXSND8Wrapper.cpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXSOund.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXSndUtil.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXSound.cpp": {
+  "hunks": 30,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXSoundTypes.h": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXTrafficCar.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXTunerCar.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXTunerCar.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EAXVolumes.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/EaxSoundTypes.cpp": {
+  "hunks": 18,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/PF_iallocatorimpl.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/SND_GEN/FE_AEMS.h": {
+  "hunks": 19,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/SND_GEN/STITCH_AEMS.h": {
+  "hunks": 12,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/STICH_Loader.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/STICH_PlayBack.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/STICH_Playback.h": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/SndCamera.hpp": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/SoundCollision.cpp": {
+  "hunks": 19,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/EAXSound/SoundCollision.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/SoundConn.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/SoundConn.h": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/SpeechManager.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/UG/SndDataParams.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.cpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.cpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.cpp": {
+  "hunks": 31,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Helicopter.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_HybridMotor.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 9
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_HybridMotor.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_MasterVol.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Pathfinder5.cpp": {
+  "hunks": 18,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.cpp": {
+  "hunks": 27,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp": {
+  "hunks": 5,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.cpp": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.cpp": {
+  "hunks": 25,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Wheel.cpp": {
+  "hunks": 8,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Ecstasy/Ecstasy.hpp": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Ecstasy/EcstasyData.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Ecstasy/EmitterSystem.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Ecstasy/Texture.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Ecstasy/eSolid.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Ecstasy/eSprites.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEAnimImage.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEButtonMap.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEButtonMap.h": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEChunk.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FECodeListBox.cpp": {
+  "hunks": 41,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FECodeListBox.h": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEColoredImage.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEEvent.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEEvent.h": {
+  "hunks": 4,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEGameInterface.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEGenericVal.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEGroup.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEGroup.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEJoyPad.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEJoyPad.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEKeyInterp.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEKeyInterpLinear.cpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEKeyInterpNone.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEKeyTrack.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEKeyTrack.h": {
+  "hunks": 6,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FELibraryRef.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEList.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEList.h": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEListBox.cpp": {
+  "hunks": 19,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/FEng/FEListBox.h": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FELocalizer.h": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMath.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMath.h": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMemStream.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMessageResponse.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMessageResponse.h": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEModel.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMouse.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMouse.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMovie.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMsgTargetList.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMsgTargetList.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEMultiImage.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEObject.cpp": {
+  "hunks": 27,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEObject.h": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEObjectCallback.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEObjectSorter.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackage.cpp": {
+  "hunks": 37,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/FEng/FEPackage.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackageFile.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackageList.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackageList.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackageReader.cpp": {
+  "hunks": 47,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEPackageReader.h": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FERefList.cpp": {
+  "hunks": 7,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FERefList.h": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEScript.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEScript.h": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FESimpleImage.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FESlotPool.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FESlotPool.h": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEString.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEString.h": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypeLib.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypeLib.h": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypeNode.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypeNode.h": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypes.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FETypes.h": {
+  "hunks": 10,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEWideString.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEWideString.h": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/FEng/FEngStandard.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/FEng/FEngine.cpp": {
+  "hunks": 80,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/FEng/ObjectPool.h": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Careers/UnlockSystem.cpp": {
+  "hunks": 45,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Database/FEDatabase.cpp": {
+  "hunks": 75,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/Database/FEDatabase.hpp": {
+  "hunks": 30,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/Database/RaceDB.cpp": {
+  "hunks": 23,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 9
+ },
+ "src/Speed/Indep/Src/Frontend/Database/RaceDB.hpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Database/VehicleDB.cpp": {
+  "hunks": 75,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/Database/VehicleDB.hpp": {
+  "hunks": 12,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Database/uiProfileManager.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/FECarLoader.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEJoyInput.cpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEJoyInput.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEManager.cpp": {
+  "hunks": 27,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEManager.hpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEObjectCallbacks.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp": {
+  "hunks": 4,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEPackageData.cpp": {
+  "hunks": 24,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 5
+ },
+ "src/Speed/Indep/Src/Frontend/FEPackageData.hpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEPackageManager.cpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEPackageManager.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FERenderObject.cpp": {
+  "hunks": 32,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FERenderObject.hpp": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngFont.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngFont.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngFrontend.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEGameInterface.cpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.cpp": {
+  "hunks": 34,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/FEngRender.cpp": {
+  "hunks": 33,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/FEngRender.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.cpp": {
+  "hunks": 49,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 5
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp": {
+  "hunks": 7,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FESpeedBreakerMeter.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FETachometerDrag.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeCostToState.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeCountdown.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeEngineTempGauge.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeGenericMessage.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeGenericMessage.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeHeatMeter.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeHeatMeter.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeHudElement.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeInfractions.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.cpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMilestoneBoard.cpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMilestoneBoard.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMinimap.cpp": {
+  "hunks": 22,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeNitrousGauge.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeNitrousGauge.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FePursuitBoard.cpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceInformation.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceInformation.hpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRadarDetector.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeRadarDetector.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeReputation.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeShiftUpdater.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeShiftUpdater.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeSpeedBreakerMeter.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeSpeedometer.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTachometer.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTachometerDrag.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTimeExtension.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTimeExtension.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeTurboMeter.cpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/HUD/feMinimap.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Localization/Localize.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Localization/Localize.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/Localization/WideCharHistogram.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.cpp": {
+  "hunks": 33,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.cpp": {
+  "hunks": 35,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MemoryCard/MemoryCardHelper.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Career/FEPkg_EngageEventDialog.cpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyMovieScreen.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyTutorialScreen.cpp": {
+  "hunks": 11,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.cpp": {
+  "hunks": 12,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp": {
+  "hunks": 6,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.cpp": {
+  "hunks": 20,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.cpp": {
+  "hunks": 31,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 4
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feIconScrollerMenu.cpp": {
+  "hunks": 30,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.cpp": {
+  "hunks": 35,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.cpp": {
+  "hunks": 30,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.cpp": {
+  "hunks": 42,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/ControllerUnplugged.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.cpp": {
+  "hunks": 18,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPKg_PostRace.cpp": {
+  "hunks": 89,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_MU_Keyboard.hpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEpkg_MU_Keyboard.cpp": {
+  "hunks": 25,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FeBustedOverlay.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FeBustedOverlay.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.cpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameMovieScreen.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameTutorialScreen.cpp": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.cpp": {
+  "hunks": 22,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiPause.cpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiPause.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMS.cpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMS.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMSMessage.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSixDaysLater.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSixDaysLater.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.cpp": {
+  "hunks": 47,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.cpp": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELanguageSelect.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.hpp": {
+  "hunks": 2,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp": {
+  "hunks": 3,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.cpp": {
+  "hunks": 13,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FESplashScreen.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FESplashScreen.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.cpp": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.cpp": {
+  "hunks": 50,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.cpp": {
+  "hunks": 55,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.cpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerManager.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerManager.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiInfractions.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiInfractions.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiMarkerSelect.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetCTS.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetCTS.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetLogin.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetLogin.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetMain.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetMain.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetPD.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetPD.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRS.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRS.hpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRankings.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRankingsDetail.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetTEP.cpp": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetUS.cpp": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetUS.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetVD.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetVD.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetBounty.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetBounty.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMain.cpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMain.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMilestones.cpp": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMilestones.hpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRaceEvents.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRaceEvents.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRival.cpp": {
+  "hunks": 11,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRival.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalBio.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalBio.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.cpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalStreamer.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalStreamer.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiSafehouseRegionUnlock.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.cpp": {
+  "hunks": 247,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 8
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.hpp": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.cpp": {
+  "hunks": 60,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp": {
+  "hunks": 12,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/DebugCarCustomize.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/DebugCarCustomize.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.cpp": {
+  "hunks": 8,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp": {
+  "hunks": 9,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/MyCarsManager.cpp": {
+  "hunks": 16,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/MyCarsManager.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiCredits.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiCredits.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiEATraxJukebox.cpp": {
+  "hunks": 21,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiEATraxJukebox.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.cpp": {
+  "hunks": 52,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.hpp": {
+  "hunks": 26,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsController.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsScreen.cpp": {
+  "hunks": 23,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 8
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsTrailers.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsTrailers.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.cpp": {
+  "hunks": 57,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 5
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.hpp": {
+  "hunks": 10,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRChallengeSeries.cpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.cpp": {
+  "hunks": 6,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRPressStart.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackOptions.cpp": {
+  "hunks": 20,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.cpp": {
+  "hunks": 20,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.cpp": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.cpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.cpp": {
+  "hunks": 12,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.cpp": {
+  "hunks": 19,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp": {
+  "hunks": 15,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/RaceStarter.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/SubTitle.cpp": {
+  "hunks": 5,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Frontend/UnicodeFile.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GCharacter.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GIcon.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GIcon.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GInfractionManager.h": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GManager.h": {
+  "hunks": 5,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GMarker.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GMilestone.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Gameplay/GRaceDatabase.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GRaceDatabase.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GRaceStatus.h": {
+  "hunks": 17,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GRuntimeInstance.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GSpeedTrap.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GSpeedTrap.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GTimer.h": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Gameplay/GTrigger.h": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Input/ActionQueue.h": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Input/Common/actionqueue.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Input/IOModule.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Input/ISteeringWheel.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Input/InputDevice.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Interfaces/IFengHud.h": {
+  "hunks": 7,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Interfaces/Simables/IExplosion.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Main/ScratchPtr.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Math/SimRandom.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/BuildRegion.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/Config.cpp": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/Config.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/PackedDecimal.h": {
+  "hunks": 1,
+  "clase": "APORTAN",
+  "clases": [
+   "APORTAN"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Misc/Spline.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/Spline.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Misc/attribuserinclude.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Online/OnlineCfg.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behavior.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/DrawVehicle.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/RBTractor.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/RigidBody.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/SuspensionRacer.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/SuspensionSimple.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/Behaviors/SuspensionTraffic.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/PhysicsInfo.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Physics/PhysicsUpgrades.hpp": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Sim/Entities/LocalPlayer.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Sim/SimConn.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Speech/EAXCharacter.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Speech/MiscSpeech.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Speech/SoundAI.h": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/Speech/SpeechCache.h": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/CarLoader.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/World/CarRender.cpp": {
+  "hunks": 11,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/CarRenderConn.cpp": {
+  "hunks": 8,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/CarSkin.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Common/WCollisionMgr.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Common/WGrid.cpp": {
+  "hunks": 7,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Common/WGridManagedDynamicElem.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Common/WPathFinder.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Common/WRoadNetwork.cpp": {
+  "hunks": 20,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/World/Common/WTrigger.cpp": {
+  "hunks": 4,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/NeuQuant.cpp": {
+  "hunks": 3,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/ParameterMaps.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/RaceParameters.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Scenery.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/Scenery.hpp": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/SkyRender.cpp": {
+  "hunks": 3,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/TrackPath.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/TrackStreamer.cpp": {
+  "hunks": 18,
+  "clase": "MEZCLA",
+  "clases": [
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/VisibleSection.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/VisibleSection.hpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/VisualTreatment.cpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/WCollision.h": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/WRoadNetwork.h": {
+  "hunks": 4,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/WTrigger.h": {
+  "hunks": 2,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/WeatherMan.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/World.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Src/World/rain.cpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h": {
+  "hunks": 1,
+  "clase": "MARCADOR",
+  "clases": [
+   "MARCADOR"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/Tools/Inc/ConversionUtil.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "VALORES"
+  ],
+  "aportan": 1
+ },
+ "src/Speed/Indep/bWare/Inc/Strings.hpp": {
+  "hunks": 5,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/bWare/Inc/bList.hpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/bWare/Inc/bMath.hpp": {
+  "hunks": 14,
+  "clase": "MEZCLA",
+  "clases": [
+   "APORTAN",
+   "COLOCACION",
+   "MARCADOR",
+   "VALORES"
+  ],
+  "aportan": 2
+ },
+ "src/Speed/Indep/bWare/Inc/bWare.hpp": {
+  "hunks": 1,
+  "clase": "COLOCACION",
+  "clases": [
+   "COLOCACION"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/bWare/Src/bMath.cpp": {
+  "hunks": 1,
+  "clase": "VALORES",
+  "clases": [
+   "VALORES"
+  ],
+  "aportan": 0
+ },
+ "src/Speed/Indep/bWare/Src/bPrintf.cpp": {
+  "hunks": 2,
+  "clase": "MEZCLA",
+  "clases": [
+   "COLOCACION",
+   "VALORES"
+  ],
+  "aportan": 0
+ }
+}

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
 #include "Speed/Indep/Src/Main/Event.h"
 
 // total size: 0x10
@@ -22,7 +23,7 @@ class EShowResults : public Event {
 
     ~EShowResults() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     FERESULTTYPE fResultType; // offset: 0x8, size 0x4

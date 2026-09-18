@@ -24,7 +24,7 @@ class EDebugScreenMessage : public Event {
 
     ~EDebugScreenMessage() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     const char *fDebugMsg; // offset: 0x8, size 0x4
@@ -34,5 +34,7 @@ class EDebugScreenMessage : public Event {
 };
 
 void EDebugScreenMessage_MakeEvent_Callback(const void *staticData);
+int EDebugScreenMessage_MakeEvent_LuaBinding(struct lua_State *L);
+void EDebugScreenMessage_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

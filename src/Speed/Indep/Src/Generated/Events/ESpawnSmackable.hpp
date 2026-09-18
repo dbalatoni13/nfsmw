@@ -6,6 +6,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Main/Event.h"
 
+class WTrigger;
+
 // total size: 0x34
 class ESpawnSmackable : public Event {
   public:
@@ -24,7 +26,7 @@ class ESpawnSmackable : public Event {
 
     ~ESpawnSmackable() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     UMath::Vector3 fPosition;    // offset: 0x8, size 0xc

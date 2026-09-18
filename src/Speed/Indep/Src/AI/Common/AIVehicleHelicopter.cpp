@@ -8,7 +8,13 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/World/Rain.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+
+float kHeliVisualSphere = 75.0f;
+
+AIVehicleHelicopter *gHeliVehicle = nullptr;
 
 bool HeliVehicleActive() {
     if (gHeliVehicle) {
@@ -44,6 +50,9 @@ AIVehicleHelicopter::~AIVehicleHelicopter() {
 Behavior *AIVehicleHelicopter::Construct(const BehaviorParams &bp) {
     return new AIVehicleHelicopter(bp);
 }
+
+BIND_BEHAVIOR_FACTORY(AIVehicleHelicopter)
+
 
 void AIVehicleHelicopter::SetFuelFull() {
     gHeliVehicle = this;
@@ -90,6 +99,81 @@ void AIVehicleHelicopter::UpdateFuel(float dT) {
             SetGoal("AIGoalHeliExit");
         }
     }
+}
+
+bool AIVehicleHelicopter::CanSeeTarget(AITarget *target) {
+    bool isperphidden = false;
+    IPerpetrator *iperp;
+    target->QueryInterface(&iperp);
+    if (iperp && iperp->IsHiddenFromHelicopters()) {
+        isperphidden = true;
+    }
+
+    if (isperphidden && mPerpHiddenFromMe) {
+        return false;
+    }
+
+    mPerpHiddenFromMe = false;
+
+    IPursuit *ipursuit = GetPursuit();
+    float dist = -1.0f;
+    if (ipursuit) {
+        Attrib::Gen::pursuitlevels *pursuitLevels = iperp->GetPursuitLevelAttrib();
+        if (pursuitLevels) {
+            dist = pursuitLevels->heliLOSdistance();
+        }
+    }
+
+    if (dist < 0.0f) {
+        dist = 250.0f;
+    }
+
+    const UMath::Vector3 &targetPosition = target->GetPosition();
+    const UMath::Vector3 &position = GetOwner()->GetRigidBody()->GetPosition();
+    UMath::Vector3 forwardVec;
+    GetOwner()->GetRigidBody()->GetForwardVector(forwardVec);
+
+    UMath::Vector3 heli2Perp;
+    UMath::Sub(targetPosition, position, heli2Perp);
+    float distanceToTarget = UMath::Normalize(heli2Perp);
+
+    bool isinsight = distanceToTarget <= kHeliVisualSphere;
+    if (!isinsight && distanceToTarget < dist) {
+        isinsight = UMath::Dot(forwardVec, heli2Perp) > 0.0f;
+    }
+
+    if (isinsight) {
+        UMath::Vector4 posToDest[2];
+        posToDest[0] = UMath::Vector4Make(position, 1.0f);
+        posToDest[1] = UMath::Vector4Make(targetPosition, 1.0f);
+        posToDest[1].y += 1.0f;
+
+        eView *view = eGetView(1, false);
+        if (view && AmIinATunnel(view, 1)) {
+            isinsight = false;
+        } else {
+            WCollisionMgr::WorldCollisionInfo cInfo;
+            if (WCollisionMgr(0, 3).CheckHitWorld(posToDest, cInfo, 1)) {
+                isinsight = false;
+            } else {
+                mLastPlaceHeliSawPerp = targetPosition;
+            }
+        }
+    }
+
+    if (!isinsight) {
+        if (isperphidden) {
+            mPerpHiddenFromMe = true;
+        } else if (distanceToTarget < kHeliVisualSphere + kHeliVisualSphere) {
+            float distSQFromLastKnown = UMath::DistanceSquare(targetPosition, mLastPlaceHeliSawPerp);
+            if (distSQFromLastKnown < 400.0f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return true;
 }
 
 bool AIVehicleHelicopter::StartPathToPoint(UMath::Vector3 &point) {

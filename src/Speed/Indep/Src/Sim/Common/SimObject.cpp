@@ -54,3 +54,5 @@ void Object::CloseService(HSIMSERVICE hservice) {
 }
 
 }; // namespace Sim
+
+IMPLEMENT_COUNTABLE(Sim::Object)

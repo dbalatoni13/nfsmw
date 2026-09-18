@@ -240,4 +240,6 @@ int AmIinATunnelSlow(eView *view, int CheckOverPass);
 void SetRainBase();
 void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, bMatrix4 *world);
 
+void SetOverRideRainIntensity(float rov);
+
 #endif

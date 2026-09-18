@@ -39,11 +39,10 @@ protected:
     volatile ValueType mValue; // offset 0x0, size 0x4
 };
 
-// TODO find int32_t
-// typedef AtomicInt<int32_t> AtomicInt32;
-// typedef AtomicInt<u_int32_t> AtomicUint32;
-// typedef AtomicInt<int64_t> AtomicInt64;
-// typedef AtomicInt<u_int64_t> AtomicUint64;
-// typedef AtomicInt32 AtomicIntPtr;
+typedef AtomicInt<int> AtomicInt32;
+typedef AtomicInt<unsigned int> AtomicUint32;
+typedef AtomicInt<long long> AtomicInt64;
+typedef AtomicInt<unsigned long long> AtomicUint64;
+typedef AtomicInt32 AtomicIntPtr;
 
 #endif

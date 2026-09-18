@@ -9,6 +9,13 @@
 
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 
+struct OnlineCfg {
+    static void ReadConfigFile(const char *filename);
+
+  private:
+    static void ProcessSetting(const char *attribute, const char *value);
+};
+
 // TODO right place for these?
 enum eOnlineGameDetails { eHOSTING = 0, eJOINING = 1, eVIEW_PLAYER = 2, eVIEW_GAME = 3 };
 
@@ -24,15 +31,19 @@ enum eOnlineDisconnectPerc {
 
 enum eOnlinePrevPage { ePrevPage_None = 0, ePrevPage_LobbyRoom = 1 };
 
-struct OnlineRaceParameters { // 0xc
+#ifndef ONLINERACEPARAMETERS_DEFINED
+#define ONLINERACEPARAMETERS_DEFINED
+struct OnlineRaceParameters { // 0x10
     void Default();
 
     /* 0x0 */ uint32 EventHash;
     /* 0x4 */ uint8 NumLaps;
     /* 0x5 */ uint8 TrackDirection;
     /* 0x6 */ uint8 CopDensity;
-    /* 0x8 */ bool IsLapKO;
+    /* 0x8 */ float TimeOfDay;
+    /* 0xC */ bool IsLapKO;
 };
+#endif
 
 // TODO
 namespace TODO {
@@ -49,6 +60,7 @@ enum eOnlineState {
 
 // total size: 0x114
 struct cOnlineSettings {
+    friend struct OnlineCfg;
     /* 0x000 */ int iNumPlayers;
     static uint8 MaxOnlinePlayers;
     /* 0x004 */ uint8 MinOnlinePlayers;
@@ -79,6 +91,8 @@ struct cOnlineSettings {
     /* 0x07c */ eOnlinePrevPage ePrevPage;
 
   private:
+    friend struct BuddyCore;
+
     /* 0x080 */ OnlineRaceParameters TheOnlineRaceSettings;
     /* 0x08c */ TODO::eOnlineState onlineState;
     /* 0x090 */ TODO::eOnlineState lastState;
@@ -102,7 +116,7 @@ struct cOnlineSettings {
     TODO::eOnlineState GetLastState();
     void SetErrorState();
     bool IsInErrorState();
-    OnlineRaceParameters *GetRaceSettings();
+    OnlineRaceParameters *GetRaceSettings() { return &TheOnlineRaceSettings; }
     char *GetLobbyAccountName();
     char *GetLobbyPersona();
     char *GetLobbyPassword();

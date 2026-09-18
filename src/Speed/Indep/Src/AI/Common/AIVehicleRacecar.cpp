@@ -5,13 +5,45 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/Itransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 int nThrottleIntegralTerms = 4;
 int nThrottleDerivativeTerms = 4;
+
+bVector2 vHeadingErrorModelData[] = {
+    bVector2(0.0f, 0.0f), bVector2(3.0f, -1.0f), bVector2(6.0f, -2.049999952316284f),
+    bVector2(9.0f, -3.5f), bVector2(12.0f, -4.940000057220459f), bVector2(15.0f, -6.139999866485596f),
+    bVector2(18.0f, -7.349999904632568f), bVector2(21.0f, -8.550000190734863f), bVector2(24.0f, -9.399999618530273f),
+    bVector2(27.0f, -10.0f),
+};
+Graph HeadingErrorModelGraph(vHeadingErrorModelData, 10);
+
+bVector2 vVelocityErrorModelData[] = {
+    bVector2(-20.0f, 100.0f), bVector2(-10.0f, 10.0f), bVector2(-5.0f, 7.0f),
+    bVector2(-2.0f, 3.0f), bVector2(0.0f, 0.0f), bVector2(2.0f, 0.0f),
+    bVector2(10.0f, -3.0f), bVector2(20.0f, -10.0f), bVector2(30.0f, -100.0f),
+};
+Graph VelocityErrorModelGraph(vVelocityErrorModelData, 9);
+
+float PidProportionalData[10] = {0.328000009059906f, 0.2199999988079071f, 0.14800000190734863f, 0.11500000208616257f,
+                                 0.09000000357627869f, 0.07400000095367432f, 0.05700000002980232f, 0.04899999871850014f,
+                                 0.0430000014603138f, 0.03999999910593033f};
+Table PidProportionalTable(PidProportionalData, 10, 0.0f, 160.0f);
+float PidDerivativeData[10] = {0.0f, 0.07582899928092957f, 0.07582899928092957f, 0.07382600009441376f,
+                               0.0604030005633831f, 0.04698000103235245f, 0.04698000103235245f, 0.04026800021529198f,
+                               0.04026800021529198f, 0.04026800021529198f};
+Table PidDerivativeTable(PidDerivativeData, 10, 0.0f, 160.0f);
+float PidIntegralData[10] = {0.20999999344348907f, 0.24400000274181366f, 0.2669999897480011f, 0.28999999165534973f,
+                             0.3050000071525574f, 0.32100000977516174f, 0.328000009059906f, 0.335999995470047f,
+                             0.3409999907016754f, 0.3440000116825104f};
+Table PidIntegralTable(PidIntegralData, 10, 0.0f, 160.0f);
 
 AIVehiclePid::AIVehiclePid(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode)
     : AIVehicle(bp, update_rate, stagger, taskmode), //
@@ -139,7 +171,123 @@ void AIVehiclePid::OnGasBrake(float dT) {
     input->SetControlBrake(bClamp(-mThrottleBrake, 0.0f, 1.0f));
 }
 
-// void AIVehiclePid::OnSteering(float dT) {}
+void AIVehiclePid::OnSteering(float dT) {
+    bool drag_racing = GetVehicle()->GetDriverStyle() == STYLE_DRAG;
+    bool adaptive_pid = false;
+
+    if (GetReverseOverride()) {
+        AIVehicle::OnSteering(dT);
+        return;
+    }
+
+    if ((GetDriveFlags() & 1) == 0) {
+        return;
+    }
+
+    ISuspension *suspension = GetSuspension();
+    if (!GetInput() || !suspension) {
+        return;
+    }
+
+    GetInput()->SetControlSteering(0.0f);
+    GetInput()->SetControlSteeringVertical(0.0f);
+
+    ISimable *simable = GetSimable();
+    IRigidBody *rigid_body = simable->GetRigidBody();
+
+    float currentSpeed = rigid_body->GetSpeedXZ();
+    if (mDriveSpeed == 0.0f && currentSpeed < 1.0f) {
+        return;
+    }
+
+    UMath::Vector3 dirVector;
+    UMath::Sub(mDest, simable->GetPosition(), dirVector);
+    dirVector.y = 0.0f;
+    UMath::Unit(dirVector, dirVector);
+
+    UMath::Vector3 forwardVector;
+    rigid_body->GetForwardVector(forwardVector);
+    forwardVector.y = 0.0f;
+    UMath::Unit(forwardVector, forwardVector);
+
+    UMath::Vector3 velocity = rigid_body->GetLinearVelocity();
+    velocity.y = 0.0f;
+    if (currentSpeed > 0.01f) {
+        UMath::Unit(velocity, velocity);
+    }
+
+    UMath::Vector3 heading;
+    float velocity_blend = UMath::Clamp(currentSpeed, 0.0f, 1.0f);
+    float forward_blend = 1.0f - velocity_blend;
+    UMath::Scale(forwardVector, forward_blend, heading);
+    UMath::ScaleAdd(velocity, velocity_blend, heading, heading);
+    UMath::Unit(heading, heading);
+
+    UMath::Vector3 steerProd;
+    UMath::Vector3 headingProd;
+    float body_blend = 1.0f;
+    float heading_blend = 0.0f;
+
+    UMath::Cross(forwardVector, dirVector, steerProd);
+    pBodyError->Record(UMath::ASinr(UMath::Bound(steerProd.y, 1.0f)), dT, false, false);
+
+    UMath::Cross(heading, dirVector, headingProd);
+    pHeadingError->Record(UMath::ASinr(UMath::Bound(headingProd.y, 1.0f)), dT, false, false);
+
+    if (adaptive_pid) {
+        float body_error_squared = pBodyError->GetError() * pBodyError->GetError();
+        float heading_error_squared = pHeadingError->GetError() * pHeadingError->GetError();
+        float total_error_squared = body_error_squared + heading_error_squared;
+        if (total_error_squared > 0.0f) {
+            body_blend = body_error_squared / total_error_squared;
+            heading_blend = heading_error_squared / total_error_squared;
+        } else {
+            body_blend = 0.5f;
+            heading_blend = 0.5f;
+        }
+    }
+
+    float angle_error = pBodyError->GetError();
+    float angle_error_integral =
+        bClamp(body_blend * pBodyError->GetErrorIntegral() + heading_blend * pHeadingError->GetErrorIntegral(), -0.5f, 0.5f);
+    float angle_error_derivative =
+        bClamp(body_blend * pBodyError->GetErrorDerivative() + heading_blend * pHeadingError->GetErrorDerivative(), -10.0f, 10.0f);
+
+    bool error_growing = angle_error * angle_error_derivative >= 0.0f;
+    float angle_error_abs_derivative = error_growing ? bAbs(angle_error_derivative) : -bAbs(angle_error_derivative);
+
+    pSteeringController->SetTerm(eP_TERM, angle_error);
+    pSteeringController->SetTerm(eI_TERM, angle_error_integral);
+    pSteeringController->SetTerm(eD_TERM, angle_error_derivative);
+
+    float model_behaviour_value = HeadingErrorModelGraph.GetValue(bAbs(bRadToDeg(angle_error)));
+    float actual_behaviour_value = bRadToDeg(angle_error_abs_derivative);
+    pSteeringController->Update(model_behaviour_value, actual_behaviour_value, dT, -99999.0f);
+
+    if (currentSpeed < 10.0f) {
+        float i_coefficient = PidIntegralTable.GetValue(currentSpeed);
+        float p_coefficient = PidProportionalTable.GetValue(currentSpeed);
+        float d_coefficient = PidDerivativeTable.GetValue(currentSpeed);
+        pSteeringController->ForceCoefficient(eP_TERM, p_coefficient);
+        pSteeringController->ForceCoefficient(eI_TERM, i_coefficient);
+        pSteeringController->ForceCoefficient(eD_TERM, d_coefficient);
+    }
+
+    float steer = pSteeringController->GetOutput() / ANGLE2RAD(suspension->GetMaxSteering());
+    float steerCorrection = GetOverSteerCorrection(steer);
+
+    mSteeringBehind = false;
+    if (GetTransmission() && GetTransmission()->IsReversing()) {
+        if (GetVehicle()->GetSpeed() < 0.0f) {
+            steer = (steer < 0.0f) ? 1.0f : -1.0f;
+        } else {
+            steer = 0.0f;
+        }
+    }
+
+    steer = UMath::Clamp(steer, -1.0f, 1.0f);
+    GetInput()->SetControlSteering(steer);
+}
 
 AIVehicleRacecar::AIVehicleRacecar(const BehaviorParams &bp)
     : AIPerpVehicle(bp), //
@@ -260,13 +408,12 @@ Behavior *AIVehicleRacecar::Construct(const BehaviorParams &bp) {
     return new AIVehicleRacecar(bp);
 }
 
+BIND_BEHAVIOR_FACTORY(AIVehicleRacecar)
+
+
 // Functionally matching
 bool AIVehicleRacecar::ShouldDoSimplePhysics() const {
-    if (GetVehicle()->IsAnimating())
-        return false;
-    if (GetVehicle()->IsStaging())
-        return false;
-    if (GetOwner()->IsPlayer())
+    if (GetVehicle()->IsAnimating() || GetVehicle()->IsStaging() || GetOwner()->IsPlayer())
         return false;
     if (GetVehicle()->IsOffWorld())
         return true;

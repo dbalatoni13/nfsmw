@@ -20,13 +20,13 @@ void EventManager::Init() {
 }
 
 void EventManager::Reset() {
-    gDeletionPoint = gMemoryBuffer;
     gCreationPoint = gMemoryBuffer;
+    gDeletionPoint = gMemoryBuffer;
     gHighWaterMem = 0;
 }
 
 void EventManager::RunEvents() {
-    ProfileNode profile_node("EventManager::RunEvents", 0);
+    ProfileNode profile_node;
 
     while (EventManager::EventsQueued()) {
         EventManager::fgCurrentEvent = reinterpret_cast<Event *>(gDeletionPoint);
@@ -37,8 +37,8 @@ void EventManager::RunEvents() {
         EventManager::fgCurrentEvent = nullptr;
     }
 
-    gDeletionPoint = gMemoryBuffer;
     gCreationPoint = gMemoryBuffer;
+    gDeletionPoint = gMemoryBuffer;
 }
 
 void EventManager::FireEventList(const CARP::EventList *eventList, bool verbose) {
@@ -87,7 +87,7 @@ bool EventManager::ListHasEvent(const CARP::EventList *eventList, unsigned int e
 }
 
 bool EventManager::EventsQueued() {
-    return gCreationPoint < gDeletionPoint;
+    return gDeletionPoint < gCreationPoint;
 }
 
 template<>
@@ -98,6 +98,24 @@ unsigned int GetEmbeddedObjectSize<const char>(const char *ptr) {
 template<>
 unsigned int GetEmbeddedObjectSize<Hermes::Message>(Hermes::Message *ptr) {
     return ptr->GetSize();
+}
+
+template<typename T>
+T *EventManager::EmbedField(Event *event, T *ptr) {
+    if (ptr == nullptr) {
+        return nullptr;
+    }
+
+    char *embedded = gCreationPoint;
+    unsigned int size = GetEmbeddedObjectSize(ptr);
+
+    bMemCpy(embedded, ptr, size);
+
+    size = (size + 0xF) & ~0xF;
+    event->fEventSize += size;
+    gCreationPoint = &gCreationPoint[size];
+
+    return reinterpret_cast<T *>(embedded);
 }
 
 void *Event::operator new(size_t size) {

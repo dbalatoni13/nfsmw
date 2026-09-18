@@ -1,0 +1,32 @@
+addr     | unidad            | DWARF? | prototipo importado
+---------+-------------------+--------+--------------------
+8007c390 | zCamera           |   SI   | undefined CameraMover::Update(ICEMover * this, float dT)
+8008095c | zCamera           |   SI   | undefined __static_initialization_and_destruction_0(int __initialize_p, int __priority)
+802feab0 | zWorld2           |   SI   | undefined WRoadNav::HolePunchAvoidables(WRoadNav * this, NavCookie * cookies, int num_cookies, float current_offset, float delta_offset)
+802cb51c | zWorld            |   SI   | undefined CarRenderInfo::RenderFlaresOnCar(CarRenderInfo * this, eView * view, bVector3 * position, bMatrix4 * body_matrix, int force_light_state, int reflexion, int renderFlareFlags)
+8008f098 | zEagl4Anim        |   SI   | undefined DynamicLoader::Initialize(DynamicLoader * this, void *(char * , bool * ) * pSearchFunction)
+80109358 | zEcstasy          |   SI   | undefined epCalculateLocalDirectionalPOS16(uint * colour_table0, uint * colour_table1, int num_colour_entries, ushort * position_table_16, int * normal_table, uchar * index_buffer, int vertex_description, int num_indicies, eLightMaterial * light_material, eLightContext * light_context)
+80109bb8 | zEcstasy          |   SI   | undefined eLightMaterialPlatInterface::UpdatePlatInfo(eLightMaterialPlatInterface * this)
+8026c574 | zPlatform         |   SI   | int ActualReadJoystickData(void)
+800d80fc | zEAXSound2        |   SI   | undefined CARSFX_RoadNoise::GenerateRoadNoise(CARSFX_RoadNoise * this)
+80075c44 | zCamera           |   SI   | undefined CameraMover::Update(TrackCarCameraMover * this, float dT)
+80321474 | steering          |   NO   | (sin firma DWARF) SimThread_Step
+802c9fb8 | zWorld            |   SI   | undefined CarRenderInfo::UpdateWheelYRenderOffset(CarRenderInfo * this)
+8024b310 | zPhysicsBehaviors |   SI   | undefined Tire::UpdateLoaded(Tire * this, float lat_vel, float fwd_vel, float load, float dT)
+8030183c | zWorld2           |   SI   | undefined WRoadNav::InitAtSegment(WRoadNav * this, short segInd, char laneInd, float timeStep)
+803598fc | criticalpath      |   SI   | undefined VP6_PredictFilteredBlock(PB_INSTANCE * pbi, short * OutputPtr, anon_79933716 bp)
+802bc0a4 | zTrack            |   SI   | int TrackStreamer::GetLoadingPriority(TrackStreamer * this, TrackStreamingSection * section, StreamingPositionEntry * position_entry, bool calculating_jettison)
+802dfcac | zWorld            |   SI   | int CarLoader::DefragmentPool(CarLoader * this)
+8034bac4 | madidct           |   SI   | undefined IdctColumn(int * src, int * dest)
+802a2248 | zSpeech           |   SI   | undefined RoadblockFlow::Setup(RoadblockFlow * this)
+8031f7fc | steering          |   NO   | (sin firma DWARF) HandleTriggers
+8034bd3c | madidct           |   SI   | undefined IdctRow(int * src, int * dest)
+800a3090 | zEagl4Anim        |   SI   | bool FnAnim::EvalState(FnRawStateChan * this, float time, State * s)
+80321330 | steering          |   NO   | (sin firma DWARF) SimThread_Init
+802dd360 | zWorld            |   SI   | undefined CarLoader::SetMemoryPoolSize(CarLoader * this, int size)
+80320840 | steering          |   NO   | (sin firma DWARF) Effect_Init
+8010ac40 | zEcstasy          |   SI   | undefined eProject(float x, float y, float z, float[4] * mtx, float * pm, float * vp, float * sx, float * sy, float * sz)
+8031fa48 | steering          |   NO   | (sin firma DWARF) CookValues
+803210b8 | steering          |   NO   | (sin firma DWARF) Effect_PerformEnvelope
+
+cubiertas por DWARF: 22 de 28

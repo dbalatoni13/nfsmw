@@ -1,0 +1,582 @@
+# Splat config for Black Edition USA (PS2)
+# SLUS-21351
+
+name: Need for Speed Most Wanted SLUS-21351 PS2
+sha1: 60289f3f8b643822a302720f9649ddc4ba55034b
+
+options:
+  basename: SLUS_213.51
+  target_path: orig/SLUS-21351/SLUS_213.51
+  elf_path: build/SLUS-21351/SLUS_213.51
+  base_path: ../..
+  platform: ps2
+  compiler: EEGCC
+
+  # Output paths
+  asm_path: build/SLUS-21351/asm
+  src_path: src
+  build_path: build/SLUS-21351/obj
+
+  # Assembly options
+  generate_asm_macros_files: True
+  named_regs_for_c_funcs: False
+  find_file_boundaries: False
+  disasm_unknown: True
+
+  # Rodata options
+  rodata_string_guesser_level: 0
+  suggestion_rodata_section_start: True
+  pair_rodata_to_text: False
+  migrate_rodata_to_functions: True
+
+  # Auto-generated analysis files
+  create_undefined_funcs_auto: True
+  undefined_funcs_auto_path: config/SLUS-21351/undefined_funcs_auto.txt
+  create_undefined_syms_auto: True
+  undefined_syms_auto_path: config/SLUS-21351/undefined_syms_auto.txt
+
+  # Manual symbols; this file can be populated after the first analysis
+  symbol_addrs_path: config/SLUS-21351/symbols.txt
+  ld_script_path: build/SLUS-21351/ldscript.ld
+
+  # PS2 ELF section order
+  section_order: [".text", ".vutext", ".noover", ".rodata", ".gcc_except_table", ".over", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+  auto_link_sections: [".rodata", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+
+  # Linker script options
+  subalign: 8
+  ld_bss_is_noload: True
+  create_bss_pads: False
+
+segments:
+  - name: main
+    type: code
+    start: 0x001000
+    vram: 0x100000
+    bss_size: 0x2b250
+    subsegments:
+    # EE source boundaries transferred from A124 by ordered assembly-block matching.
+    # A124-only debug, DirtySock, Juice, and VU blocks remain anonymous.
+    - [0x001000, asmtu, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x045e48, asmtu, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x050e40, asmtu, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x05c0f0, asmtu, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x065e50, asmtu, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x083d70, asmtu, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x08a090, asmtu, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x0a3988, asmtu, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x0c8ab8, asmtu, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x0f1e00, asmtu, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x127498, asmtu, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x151940, asmtu, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x18fb28, asmtu, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x1a3228, asmtu, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x1aa948, asmtu, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x1aada8, asmtu, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x1d14c8, asmtu, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x1e9c10, asmtu, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x213248, asmtu, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x229348, asmtu, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x2295e8, asmtu, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x229618, asmtu, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x24c840, asmtu, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x2846c8, asmtu, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x290e20, asmtu, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x2a8868, asmtu, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x2d29c8, asmtu, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x2e6048, asmtu, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x312570, asmtu, Speed/Indep/SourceLists/zWorld2.cpp]
+    - [0x337100, asmtu, Speed/PSX2/Runtime/crt0.s]
+    - [0x337340, asmtu, Speed/PSX2/Runtime/superbenderasm.s]
+    - [0x3377d8, asmtu, Speed/PSX2/Runtime/bmiscasm.s]
+    - [0x337838, asmtu, Speed/PSX2/bware/sce/ee/libmc.c]
+    - [0x338ba0, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp]
+    - [0x338fd8, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_interface.cpp]
+    - [0x339788, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_interface_impl.cpp]
+    - [0x339e50, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_memvectors.cpp]
+    - [0x339ef0, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_taskmanager.cpp]
+    - [0x33bae0, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_memcard_interface_impl.cpp]
+    - [0x33eb68, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_memcard_taskmanager.cpp]
+    - [0x33ecf0, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_sjis.cpp]
+    - [0x33ee98, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_utilities.cpp]
+    - [0x33ef60, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp]
+    - [0x340d98, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_internaltasks.cpp]
+    - [0x342220, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_public.cpp]
+    - [0x343788, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_tasks.cpp]
+    - [0x3448a0, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_trctasks.cpp]
+    - [0x3496b8, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/interfaceimp.cpp]
+    - [0x349ab8, asmtu, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_blockcalculator.cpp]
+    - [0x349e20, asmtu, egami/rcmp/dev/source/av/cmn/avplayer.cpp]
+    - [0x34ae40, asmtu, egami/rcmp/dev/source/av/cmn/avsubtitle.cpp]
+    - [0x34bf70, asmtu, egami/rcmp/dev/source/av/cmn/audioplayer.cpp]
+    - [0x34c368, asmtu, egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp]
+    - [0x34c6d0, asmtu, egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp]
+    - [0x34d338, asmtu, egami/rcmp/dev/source/decoder/cmn/gethdr.cpp]
+    - [0x34e348, asmtu, egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp]
+    - [0x34ee88, asmtu, egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp]
+    - [0x34eed0, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathcontrol.cpp]
+    - [0x34f330, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathevent.cpp]
+    - [0x3500b8, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathinit.cpp]
+    - [0x350a98, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp]
+    - [0x350ba0, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal6.cpp]
+    - [0x351110, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathserv.cpp]
+    - [0x351870, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathsnd.cpp]
+    - [0x3538f8, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathtrack.cpp]
+    - [0x3543e0, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathvol.cpp]
+    - [0x356208, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathaction.cpp]
+    - [0x356a10, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathbank.cpp]
+    - [0x357260, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathdebug.cpp]
+    - [0x357328, asmtu, Speed/Indep/Libs/path/5.01.04/source/cmn/pathnode.cpp]
+    - [0x3585e0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c]
+    - [0x3586e0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/saems.c]
+    - [0x35b538, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c]
+    - [0x35b950, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c]
+    - [0x35bfe0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c]
+    - [0x35c068, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c]
+    - [0x35c520, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c]
+    - [0x35d400, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c]
+    - [0x35d860, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c]
+    - [0x35d908, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c]
+    - [0x35da20, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c]
+    - [0x35dac8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c]
+    - [0x35dcf8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c]
+    - [0x35de40, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp]
+    - [0x35df40, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c]
+    - [0x35e140, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.cpp]
+    - [0x35e308, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c]
+    - [0x35e318, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c]
+    - [0x35e758, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp]
+    - [0x35e998, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/spat2hdr.c]
+    - [0x35efb8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c]
+    - [0x35f060, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c]
+    - [0x35fd18, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c]
+    - [0x35ffa8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sresopat.c]
+    - [0x360560, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sst.c]
+    - [0x361af8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sst3dpos.c]
+    - [0x361e00, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sstautov.c]
+    - [0x3620f0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sstfxlev.c]
+    - [0x362260, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sstgetrp.c]
+    - [0x3622b8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/ssthold.c]
+    - [0x362530, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sstrstat.c]
+    - [0x362708, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sststat.c]
+    - [0x362800, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/ssttmul.c]
+    - [0x362b38, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp]
+    - [0x363e48, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c]
+    - [0x364738, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c]
+    - [0x3647f0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c]
+    - [0x364f40, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/svecreal6.cpp]
+    - [0x364fb0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/svol.c]
+    - [0x365198, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfecho.c]
+    - [0x3654a8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c]
+    - [0x3666f8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/smixer.c]
+    - [0x367d30, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/stretch.c]
+    - [0x368620, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sd3dpos.c]
+    - [0x368930, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdasync.c]
+    - [0x368c30, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdfx.c]
+    - [0x368dc8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdgetcf.c]
+    - [0x369128, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdmemman.c]
+    - [0x369408, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdoutlat.c]
+    - [0x3694c8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdpacket.c]
+    - [0x3696f8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdplapat.c]
+    - [0x369ba8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdrespat.c]
+    - [0x369be0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c]
+    - [0x36c900, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/dma.cpp]
+    - [0x36cf90, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c]
+    - [0x36d8f8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sctlfilt.c]
+    - [0x36d9b0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sgetdata.c]
+    - [0x36da40, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sgettag.c]
+    - [0x36db38, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp]
+    - [0x36de68, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/slinklst.c]
+    - [0x36dfa8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_cos.c]
+    - [0x36e078, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_mult16.c]
+    - [0x36e0a8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_sin.c]
+    - [0x36e2c0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sprofvoc.c]
+    - [0x36e330, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sreallocbuf.cpp]
+    - [0x36e3f8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/srrange.c]
+    - [0x36e480, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfamplf.c]
+    - [0x36e598, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfbpffir8.c]
+    - [0x36e6d8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sfft16.c]
+    - [0x36e7e8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfhpffir8.c]
+    - [0x36e910, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfilter.c]
+    - [0x36eab8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfir.c]
+    - [0x36ee88, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfir8.c]
+    - [0x36f100, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sflpf.c]
+    - [0x36f248, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sflpffir8.c]
+    - [0x36f360, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfmixer.c]
+    - [0x36f4e8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfreson.c]
+    - [0x36f7b8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfsplit.c]
+    - [0x36f928, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfsrc.c]
+    - [0x36faa8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/smixc.c]
+    - [0x36fc48, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/smixlowp.c]
+    - [0x36fd70, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/smixptch.c]
+    - [0x36fe68, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supf.c]
+    - [0x36ff78, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/suplf.c]
+    - [0x370078, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supmutf.c]
+    - [0x370238, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supmutlf.c]
+    - [0x370410, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supmutpf.c]
+    - [0x370718, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/suppf.c]
+    - [0x3708b0, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supxaf.cpp]
+    - [0x370a10, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supxalf.cpp]
+    - [0x370dc8, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/supxapf.cpp]
+    - [0x371018, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sx87d16.c]
+    - [0x3711d0, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdfilter.c]
+    - [0x371298, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/sdmaee.c]
+    - [0x371420, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c]
+    - [0x3714e8, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_root1x.c]
+    - [0x371588, asmtu, Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp]
+    - [0x371eb0, asmtu, Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp]
+    - [0x372c90, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/sfrsf.c]
+    - [0x3732d0, asmtu, Speed/Indep/Libs/snd/9/source/library/mix/smixfilt.c]
+    - [0x373368, asmtu, Speed/Indep/Libs/snd/9/source/library/cmn/smtflt59.s]
+    - [0x388380, asmtu, Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp]
+    - [0x389a28, asmtu, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/oldfontkern.cpp]
+    - [0x389c98, asmtu, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/allocator.cpp]
+    - [0x389f28, asmtu, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/shpcreate.cpp]
+    - [0x38b068, asmtu, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/shpelement.cpp]
+    - [0x38b220, asmtu, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/shpgsttypehelper.cpp]
+    - [0x38b4e0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp]
+    - [0x38cdb8, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp]
+    - [0x38d058, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_cc.cpp]
+    - [0x38d328, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp]
+    - [0x38fd78, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp]
+    - [0x3900e8, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp]
+    - [0x390890, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp]
+    - [0x390d30, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/host0_device.cpp]
+    - [0x390e98, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/bigfile.cpp]
+    - [0x391270, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/system/ps2/signals.cpp]
+    - [0x391410, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/system/ps2/threads.cpp]
+    - [0x391a00, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/exit.cpp]
+    - [0x391aa8, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/mutex.cpp]
+    - [0x391ec0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp]
+    - [0x391ee0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp]
+    - [0x392050, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp]
+    - [0x392060, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printstr.cpp]
+    - [0x392170, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memcopy.cpp]
+    - [0x392338, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp]
+    - [0x3924c0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memfill.cpp]
+    - [0x3925f0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/ps2/ps2_effect.cpp]
+    - [0x3928a0, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effectimp.cpp]
+    - [0x392a18, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp]
+    - [0x392b18, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp]
+    - [0x392c20, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/ps2/ps2_device.cpp]
+    - [0x394360, asmtu, Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effect.cpp]
+    - [0x394770, asmtu, Speed/PSX2/bware/sce/ee/lib/graph001.c]
+    - [0x394910, asmtu, Speed/PSX2/bware/sce/ee/lib/graph019.c]
+    - [0x3949b0, asmtu, Speed/PSX2/bware/sce/ee/lib/libdma.c]
+    - [0x395088, asmtu, Speed/PSX2/bware/sce/ee/lib/libpad.c]
+    - [0x396100, asmtu, Speed/PSX2/bware/sce/ee/lib/klib.c]
+    - [0x3969a0, asmtu, Speed/PSX2/bware/sce/ee/lib/cache.c]
+    - [0x396c00, asmtu, Speed/PSX2/bware/sce/ee/lib/intr.c]
+    - [0x396f90, asmtu, Speed/PSX2/bware/sce/ee/lib/thread.c]
+    - [0x397120, asmtu, Speed/PSX2/bware/sce/ee/lib/kprintf.c]
+    - [0x397ad8, asmtu, Speed/PSX2/bware/sce/ee/lib/sifcmd.c]
+    - [0x3984e8, asmtu, Speed/PSX2/bware/sce/ee/lib/sifrpc.c]
+    - [0x398dc0, asmtu, Speed/PSX2/bware/sce/ee/lib/filestub.c]
+    - [0x39a8f8, asmtu, Speed/PSX2/bware/sce/ee/lib/eeloadfile.c]
+    - [0x39ae38, asmtu, Speed/PSX2/bware/sce/ee/lib/iopreset.c]
+    - [0x39d100, asmtu, Speed/PSX2/bware/sce/ee/lib/tlbfunc.c]
+    - [0x39d690, asmtu, Speed/PSX2/bware/sce/ee/lib/mpeg.c]
+    - [0x39e0c0, asmtu, Speed/PSX2/bware/sce/ee/lib/init.c]
+    - [0x39ec10, asmtu, Speed/PSX2/bware/sce/ee/lib/mpc.c]
+    - [0x3a3c68, asmtu, Speed/PSX2/bware/sce/ee/lib/csc.c]
+    - [0x3a45d0, asmtu, Speed/PSX2/bware/sce/ee/lib/libipu.c]
+    - [0x3a4dd0, asmtu, Speed/PSX2/bware/sce/ee/lib/cdvd000.c]
+    - [0x3a65e0, asmtu, Speed/PSX2/lib/liblgdev.c]
+    - [0x3a71f0, asmtu, Speed/PSX2/bware/sce/ee/libscf.c]
+    - [0x3a72f8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/memcmp.c]
+    - [0x3a738c, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/memcpy.c]
+    - [0x3a7438, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/memmove.c]
+    - [0x3a7534, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/memset.c]
+    - [0x3a75ec, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/setjmp.c]
+    - [0x3a76c8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strcat.c]
+    - [0x3a77f8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strchr.c]
+    - [0x3a7998, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strcmp.c]
+    - [0x3a7ae4, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strcpy.c]
+    - [0x3a7bfc, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strlen.c]
+    - [0x3a7d40, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strncat.c]
+    - [0x3a7ef8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strncmp.c]
+    - [0x3a80c0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strncpy.c]
+    - [0x3a8288, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fclose.c]
+    - [0x3a8340, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fflush.c]
+    - [0x3a84a8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/findfp.c]
+    - [0x3a8690, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fopen.c]
+    - [0x3a87c8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fprintf.c]
+    - [0x3a8810, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fread.c]
+    - [0x3a8818, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fseek.c]
+    - [0x3a8c28, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fwalk.c]
+    - [0x3a8cc0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/makebuf.c]
+    - [0x3a8d88, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/puts.c]
+    - [0x3a8e58, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/refill.c]
+    - [0x3a9040, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/stdio.c]
+    - [0x3a9288, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/wprintf.c]
+    - [0x3a9340, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/bsearch.c]
+    - [0x3a95e8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/qsort.c]
+    - [0x3a9ff8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strtod.c]
+    - [0x3aaf28, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strcasecmp.c]
+    - [0x3aafc8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strcspn.c]
+    - [0x3ab3d8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strncasecmp.c]
+    - [0x3ab4a0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strrchr.c]
+    - [0x3ab4a8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strstr.c]
+    - [0x3ab520, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/u_strerr.c]
+    - [0x3ab528, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c]
+    - [0x3ad010, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c]
+    - [0x3ae020, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c]
+    - [0x3b1598, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/freer.c]
+    - [0x3b1a00, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/strtol.c]
+    - [0x3b1c98, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/locale.c]
+    - [0x3b1cc8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/memchr.c]
+    - [0x3b1db8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/math_support.c]
+    - [0x3b2c38, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fstatr.c]
+    - [0x3b2c98, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/lseekr.c]
+    - [0x3b2cf8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/openr.c]
+    - [0x3b2d58, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/readr.c]
+    - [0x3b2e18, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/writer.c]
+    - [0x3b2e78, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/flags.c]
+    - [0x3b2f20, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/fvwrite.c]
+    - [0x3b32e8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/wsetup.c]
+    - [0x3b3720, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/mprec.c]
+    - [0x3b46c0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/wcscpy.c]
+    - [0x3b4720, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/wcslen.c]
+    - [0x3b4760, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/wmemchr.c]
+    - [0x3b4848, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/callocr.c]
+    - [0x3b4d70, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/sf_fabs.c]
+    - [0x3b4e78, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/sf_isnan.c]
+    - [0x3b4ea0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/sf_sin.c]
+    - [0x3b9e00, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/s_fabs.c]
+    - [0x3b9e08, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/s_finite.c]
+    - [0x3b9e28, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/s_isnan.c]
+    - [0x3ba448, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/sf_finite.c]
+    - [0x3ba5d0, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/s_copysign.c]
+    - [0x3ba5d8, asmtu, Speed/PSX2/bware/sce/ee/gcc/ee/sf_copysign.c]
+    - [0x3badd0, asmtu, Speed/PSX2/bware/sce/ee/gcc/_fixdfdi.c]
+    - [0x3bae30, asmtu, Speed/PSX2/bware/sce/ee/gcc/_fixsfdi.c]
+    - [0x3bae70, asmtu, Speed/PSX2/bware/sce/ee/gcc/_fixunsdfdi.c]
+    - [0x3bb058, asmtu, Speed/PSX2/bware/sce/ee/gcc/_floatdidf.c]
+    - [0x3bb0f0, asmtu, Speed/PSX2/bware/sce/ee/gcc/_floatdisf.c]
+    - [0x3bb838, asmtu, Speed/PSX2/bware/sce/ee/gcc/_muldi3.c]
+    - [0x3bc3b0, asmtu, Speed/PSX2/bware/sce/ee/gcc/dp-bit.c]
+    - [0x3bd070, asmtu, Speed/PSX2/bware/sce/ee/gcc/fp-bit.c]
+    - [0x3bd438, asmtu, Speed/PSX2/bware/sce/ee/gcc/_eh.c]
+    - [0x3be340, asmtu, Speed/PSX2/bware/sce/ee/gcc/frame.c]
+    - [0x3bf2c8, asmtu, Packages/eathread/1.1.0/source/eathread_semaphore.cpp]
+    - [0x3bf618, asmtu, Packages/eathread/1.1.0/source/eathread.cpp]
+    - [0x3bf738, asmtu, Packages/eathread/1.1.0/source/eathread_thread.cpp]
+    # The VU microcode is kept out of the initial EE analysis.
+    - [0x3bf880, pad]
+    - [0x3c3300, .rodata, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x3c8650, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x3c9cd0, .rodata, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x3ca250, .rodata, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x3cad10, .rodata, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x3cc820, .rodata, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x3cc990, .rodata, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x3cca80, .rodata, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x3ce330, .rodata, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x3d1090, .rodata, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x3d51f0, .rodata, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x3d73a0, .rodata, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x3dc9f0, .rodata, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x3e39b0, .rodata, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x3e4540, .rodata, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x3e4ed0, .rodata, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x3e52a0, .rodata, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x3e6550, .rodata, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x3e8d80, .rodata, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x3ee3d0, .rodata, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x3f0580, .rodata, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x3f0708, .rodata, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x3f0770, .rodata, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x3f4170, .rodata, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x3fab20, .rodata, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x3fbe30, .rodata, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x3fc2c0, .rodata, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x3fe080, .rodata, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x4011e0, .rodata, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x401ce0, .rodata, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x4061b0, .rodata, Speed/Indep/SourceLists/zWorld2.cpp]
+    - [0x41137a, pad]
+    - start: 0x411380
+      type: asm
+      name: .over
+      linker_section_order: .over
+      linker_section: .over
+    - start: 0x411410
+      type: asmtu
+      name: Speed/Indep/SourceLists/zFeOverlay.cpp
+      linker_section_order: .over
+      linker_section: .over
+    - [0x437718, pad]
+    # Data TU boundaries transferred from A124 and resolved against the
+    # corresponding SLUS function references. This includes the surviving
+    # Speed/Indep/Libs objects; omitted A124-only debug/network/VU objects
+    # remain covered by the surrounding anonymous ranges.
+    - [0x437780, .data, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x438c50, .data, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x439360, .data, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x4393e0, .data, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x43d4e0, .data, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x43e6a4, .data, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x43e6d0, .data, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x43ed48, .data, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x4421a0, .data, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x445840, .data, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x46e77c, .data, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x46f0e8, .data, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x4718c0, .data, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x471ae0, .data, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x471c0c, .data, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x471cc0, .data, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x4720c0, .data, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x472348, .data, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x4743a0, .data, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x475498, .data, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x475698, .data, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x475698, .data, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x47a270, .data, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x480430, .data, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x487ea0, .data, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x487f48, .data, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x48a068, .data, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x48c120, .data, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x4a0474, .data, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x4a45f8, .data, Speed/Indep/SourceLists/zWorld2.cpp]
+    - [0x4a4a6c, .data, Speed/Indep/SourceLists/zFeOverlay.cpp]
+    - [0x4a54f8, .data, Speed/PSX2/bware/sce/ee/libmc.c]
+    - [0x4a5548, .data, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp]
+    - [0x4a5550, .data, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_interface.cpp]
+    - [0x4a5554, .data, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_memvectors.cpp]
+    - [0x4a5558, .data, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_memcard_interface_impl.cpp]
+    - [0x4a5568, .data, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_sjis.cpp]
+    - [0x4a5600, .data, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/memcard_utilities.cpp]
+    - [0x4a5a00, .data, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp]
+    - [0x4a5a20, .data, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_trctasks.cpp]
+    - [0x4a5a3c, .data, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/interfaceimp.cpp]
+    - [0x4a5a40, .data, egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp]
+    - [0x4a5ba0, .data, egami/rcmp/dev/source/decoder/cmn/gethdr.cpp]
+    - [0x4a5c00, .data, Speed/Indep/Libs/path/5.01.04/source/cmn/pathinit.cpp]
+    - [0x4a5c5c, .data, Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp]
+    - [0x4a5cbc, .data, Speed/Indep/Libs/path/5.01.04/source/cmn/pathaction.cpp]
+    - [0x4a5cd8, .data, Speed/Indep/Libs/snd/9/source/library/cmn/saems.c]
+    - [0x4a5e2c, .data, Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c]
+    - [0x4a5e30, .data, Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c]
+    - [0x4a5e38, .data, Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c]
+    - [0x4a6078, .data, Speed/Indep/Libs/snd/9/source/library/cmn/sst.c]
+    - [0x4a609c, .data, Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp]
+    - [0x4a60c0, .data, Speed/Indep/Libs/snd/9/source/library/cmn/svecreal6.cpp]
+    - [0x4a60c4, .data, Speed/Indep/Libs/snd/9/source/library/mix/sfecho.c]
+    - [0x4a60d0, .data, Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c]
+    - [0x4a6710, .data, Speed/Indep/Libs/snd/9/source/library/cmn/sdfx.c]
+    - [0x4a6748, .data, Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c]
+    - [0x4a69c0, .data, Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp]
+    - [0x4a69e0, .data, Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp]
+    - [0x4a7ad8, .data, Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp]
+    - [0x4a7af8, .data, Speed/Indep/Libs/realgraph/6.09.01/source/ps2/allocator.cpp]
+    - [0x4a7b70, .data, Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp]
+    - [0x4a7b78, .data, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp]
+    - [0x4a7b80, .data, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp]
+    - [0x4a7bf0, .data, Speed/Indep/Libs/realcore/6.24.00/source/system/ps2/threads.cpp]
+    - [0x4a7c00, .data, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/exit.cpp]
+    - [0x4a7d58, .data, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp]
+    - [0x4a7d70, .data, Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printstr.cpp]
+    - [0x4a80dc, .data, Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp]
+    - [0x4a8120, .data, Speed/PSX2/bware/sce/ee/lib/graph001.c]
+    - [0x4a8140, .data, Speed/PSX2/bware/sce/ee/lib/libdma.c]
+    - [0x4a8178, .data, Speed/PSX2/bware/sce/ee/lib/libpad.c]
+    - [0x4a81bc, .data, Speed/PSX2/bware/sce/ee/lib/klib.c]
+    - [0x4a81cc, .data, Speed/PSX2/bware/sce/ee/lib/thread.c]
+    - [0x4a81d0, .data, Speed/PSX2/bware/sce/ee/lib/kprintf.c]
+    - [0x4a81d8, .data, Speed/PSX2/bware/sce/ee/lib/sifcmd.c]
+    - [0x4a81e0, .data, Speed/PSX2/bware/sce/ee/lib/filestub.c]
+    - [0x4a8270, .data, Speed/PSX2/bware/sce/ee/lib/sifrpc.c]
+    - [0x4a9248, .data, Speed/PSX2/bware/sce/ee/lib/tlbfunc.c]
+    - [0x4a9898, .data, Speed/PSX2/bware/sce/ee/lib/mpeg.c]
+    - [0x4a9940, .data, Speed/PSX2/bware/sce/ee/lib/mpc.c]
+    - [0x4a9a80, .data, Speed/PSX2/bware/sce/ee/lib/cdvd000.c]
+    - [0x4ab640, .data, Speed/PSX2/lib/liblgdev.c]
+    - [0x4ab900, .data, Speed/PSX2/bware/sce/ee/libscf.c]
+    - [0x4abc20, .data, Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c]
+    - [0x4abc50, .data, Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c]
+    - [0x4abc58, .data, Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c]
+    - [0x4ac108, .data, Speed/PSX2/bware/sce/ee/gcc/ee/locale.c]
+    - [0x4ac484, .data, Speed/PSX2/bware/sce/ee/gcc/_eh.c]
+    - [0x4acbd4, .data, Packages/eathread/1.1.0/source/eathread.cpp]
+    - [0x4acc00, .sbss]
+    # BSS TU boundaries transferred from SLES and resolved against SLUS
+    # references. Missing SLES-only units remain anonymous between splits.
+    - {start: 0x4acc24, type: .bss, vram: 0x5abc80, name: Speed/Indep/SourceLists/zAI.cpp}
+    - {start: 0x4ace58, type: .bss, vram: 0x5abeb4, name: Speed/Indep/SourceLists/zAnim.cpp}
+    - {start: 0x4ace88, type: .bss, vram: 0x5abee4, name: Speed/Indep/SourceLists/zAttribSys.cpp}
+    - {start: 0x4ace9c, type: .bss, vram: 0x5abef8, name: Speed/Indep/SourceLists/zBWare.cpp}
+    - {start: 0x4ad084, type: .bss, vram: 0x5ac0e0, name: Speed/Indep/SourceLists/zCamera.cpp}
+    - {start: 0x4ad38c, type: .bss, vram: 0x5ac3e8, name: Speed/Indep/SourceLists/zDynamics.cpp}
+    - {start: 0x4ad99c, type: .bss, vram: 0x5ac9f8, name: Speed/Indep/SourceLists/zEagl4Anim.cpp}
+    - {start: 0x4ada44, type: .bss, vram: 0x5acaa0, name: Speed/Indep/SourceLists/zEAXSound.cpp}
+    - {start: 0x4adb1c, type: .bss, vram: 0x5acb78, name: Speed/Indep/SourceLists/zEAXSound2.cpp}
+    - {start: 0x4adc24, type: .bss, vram: 0x5acc80, name: Speed/Indep/SourceLists/zEcstasy.cpp}
+    - {start: 0x4adf24, type: .bss, vram: 0x5acf80, name: Speed/Indep/SourceLists/zFe.cpp}
+    - {start: 0x4ae45c, type: .bss, vram: 0x5ad4b8, name: Speed/Indep/SourceLists/zFe2.cpp}
+    - {start: 0x4ae72c, type: .bss, vram: 0x5ad788, name: Speed/Indep/SourceLists/zFEng.cpp}
+    - {start: 0x4ae954, type: .bss, vram: 0x5ad9b0, name: Speed/Indep/SourceLists/zFoundation.cpp}
+    - {start: 0x4aea24, type: .bss, vram: 0x5ada80, name: Speed/Indep/SourceLists/zGameModes.cpp}
+    - {start: 0x4aea34, type: .bss, vram: 0x5ada90, name: Speed/Indep/SourceLists/zGameplay.cpp}
+    - {start: 0x4aebdc, type: .bss, vram: 0x5adc38, name: Speed/Indep/SourceLists/zLua.cpp}
+    - {start: 0x4aecfc, type: .bss, vram: 0x5add58, name: Speed/Indep/SourceLists/zMain.cpp}
+    - {start: 0x4b18e4, type: .bss, vram: 0x5b0940, name: Speed/Indep/SourceLists/zMisc.cpp}
+    - {start: 0x4b19ec, type: .bss, vram: 0x5b0a48, name: Speed/Indep/SourceLists/zMiscSmall.cpp}
+    - {start: 0x4b19f4, type: .bss, vram: 0x5b0a50, name: Speed/Indep/SourceLists/zMission.cpp}
+    - {start: 0x4b1a24, type: .bss, vram: 0x5b0a80, name: Speed/Indep/SourceLists/zPhysics.cpp}
+    - {start: 0x4b1ea4, type: .bss, vram: 0x5b0f00, name: Speed/Indep/SourceLists/zPhysicsBehaviors.cpp}
+    - {start: 0x4b3b14, type: .bss, vram: 0x5b2b70, name: Speed/Indep/SourceLists/zPlatform.cpp}
+    - {start: 0x4b3d1c, type: .bss, vram: 0x5b2d78, name: Speed/Indep/SourceLists/zSim.cpp}
+    - {start: 0x4b46b4, type: .bss, vram: 0x5b3710, name: Speed/Indep/SourceLists/zSpeech.cpp}
+    - {start: 0x4b4a14, type: .bss, vram: 0x5b3a70, name: Speed/Indep/SourceLists/zTrack.cpp}
+    - {start: 0x4b775c, type: .bss, vram: 0x5b67b8, name: Speed/Indep/SourceLists/zWorld.cpp}
+    - {start: 0x4ba204, type: .bss, vram: 0x5b9260, name: Speed/Indep/SourceLists/zWorld2.cpp}
+    - {start: 0x4ba5bc, type: .bss, vram: 0x5b9618, name: Speed/Indep/SourceLists/zFeOverlay.cpp}
+
+    - {start: 0x4bada4, type: .bss, vram: 0x5b9e00, name: Speed/PSX2/bware/sce/ee/libmc.c}
+    - {start: 0x4bc3b4, type: .bss, vram: 0x5bb410, name: Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp}
+    - {start: 0x4bebb4, type: .bss, vram: 0x5bdc10, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp}
+    - {start: 0x4bebcc, type: .bss, vram: 0x5bdc28, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_public.cpp}
+    - {start: 0x4bec4c, type: .bss, vram: 0x5bdca8, name: egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp}
+    - {start: 0x4bec64, type: .bss, vram: 0x5bdcc0, name: egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp}
+    - {start: 0x4bf8c4, type: .bss, vram: 0x5be920, name: egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp}
+    - {start: 0x4bf8e4, type: .bss, vram: 0x5be940, name: Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp}
+    - {start: 0x4bf8f4, type: .bss, vram: 0x5be950, name: Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c}
+    - {start: 0x4bf98c, type: .bss, vram: 0x5be9e8, name: Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c}
+    - {start: 0x4bfbfc, type: .bss, vram: 0x5bec58, name: Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c}
+    - {start: 0x4bffac, type: .bss, vram: 0x5bf008, name: Speed/Indep/Libs/snd/9/source/library/cmn/sst.c}
+    - {start: 0x4c0074, type: .bss, vram: 0x5bf0d0, name: Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp}
+    - {start: 0x4c00a4, type: .bss, vram: 0x5bf100, name: Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c}
+    - {start: 0x4c00bc, type: .bss, vram: 0x5bf118, name: Speed/Indep/Libs/snd/9/source/library/mix/smixer.c}
+    - {start: 0x4c0384, type: .bss, vram: 0x5bf3e0, name: Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c}
+    - {start: 0x4caf34, type: .bss, vram: 0x5c9f90, name: Speed/Indep/Libs/snd/9/source/library/cmn/dma.cpp}
+    - {start: 0x4caf6c, type: .bss, vram: 0x5c9fc8, name: Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c}
+    - {start: 0x4cc05c, type: .bss, vram: 0x5cb0b8, name: Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp}
+    - {start: 0x4cc0a4, type: .bss, vram: 0x5cb100, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp}
+    - {start: 0x4cca6c, type: .bss, vram: 0x5cbac8, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp}
+    - {start: 0x4cca84, type: .bss, vram: 0x5cbae0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp}
+    - {start: 0x4cca94, type: .bss, vram: 0x5cbaf0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp}
+    - {start: 0x4ccabc, type: .bss, vram: 0x5cbb18, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/host0_device.cpp}
+    - {start: 0x4cdf24, type: .bss, vram: 0x5ccf80, name: Speed/PSX2/bware/sce/ee/lib/libdma.c}
+    - {start: 0x4cdf64, type: .bss, vram: 0x5ccfc0, name: Speed/PSX2/bware/sce/ee/lib/libpad.c}
+    - {start: 0x4ce624, type: .bss, vram: 0x5cd680, name: Speed/PSX2/bware/sce/ee/lib/thread.c}
+    - {start: 0x4cea34, type: .bss, vram: 0x5cda90, name: Speed/PSX2/bware/sce/ee/lib/kprintf.c}
+    - {start: 0x4ceae4, type: .bss, vram: 0x5cdb40, name: Speed/PSX2/bware/sce/ee/lib/sifcmd.c}
+    - {start: 0x4d05e4, type: .bss, vram: 0x5cf640, name: Speed/PSX2/bware/sce/ee/lib/sifrpc.c}
+    - {start: 0x4d0624, type: .bss, vram: 0x5cf680, name: Speed/PSX2/bware/sce/ee/lib/filestub.c}
+    - {start: 0x4d202c, type: .bss, vram: 0x5d1088, name: Speed/PSX2/bware/sce/ee/lib/eeloadfile.c}
+    - {start: 0x4d2264, type: .bss, vram: 0x5d12c0, name: Speed/PSX2/bware/sce/ee/lib/iopreset.c}
+    - {start: 0x4d5f24, type: .bss, vram: 0x5d4f80, name: Speed/PSX2/bware/sce/ee/lib/mpc.c}
+    - {start: 0x4d613c, type: .bss, vram: 0x5d5198, name: Speed/PSX2/bware/sce/ee/lib/cdvd000.c}
+    - {start: 0x4d63e4, type: .bss, vram: 0x5d5440, name: Speed/PSX2/lib/liblgdev.c}
+    - {start: 0x4d6824, type: .bss, vram: 0x5d5880, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c}
+    - {start: 0x4d694c, type: .bss, vram: 0x5d59a8, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c}
+    - {start: 0x4d69cc, type: .bss, vram: 0x5d5a28, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c}
+    - {start: 0x4d6ba4, type: .bss, vram: 0x5d5c00, name: Speed/PSX2/bware/sce/ee/gcc/dp-bit.c}
+    - {start: 0x4d6bcc, type: .bss, vram: 0x5d5c28, name: Speed/PSX2/bware/sce/ee/gcc/_eh.c}
+    - {start: 0x4d6bec, type: .bss, vram: 0x5d5c48, name: Speed/PSX2/bware/sce/ee/gcc/frame.c}
+    - {start: 0x4d70f4, type: .bss, vram: 0x5d6150, name: Packages/eathread/1.1.0/source/eathread_thread.cpp}
+
+  # End of the loaded image plus EE BSS, derived from the ELF program header.
+  - [0x5d6ecf]

@@ -19,7 +19,7 @@ class ERestartRace : public Event {
 
     ~ERestartRace() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void ERestartRace_MakeEvent_Callback(const void *staticData);

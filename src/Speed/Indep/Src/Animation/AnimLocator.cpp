@@ -7,7 +7,7 @@
 #include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 
-bVector3 gNISSceneOrigin;
+bVector3 gNISSceneOrigin(0.0f, 0.0f, 0.0f);
 bAngle gNISSceneAngle = 0;
 
 bool ANIM_GetWorldHeight(const UMath::Vector3 &pt, float &height, UMath::Vector3 &norm);
@@ -50,6 +50,7 @@ bool CAnimLocator::GetInitialAnimMatricies(bMatrix4 *scene_rotation_matrix, bMat
 
     float ground_elevation = start_line_position.z;
     UMath::Vector3 planeNormal = {0.0f, 1.0f, 0.0f};
+    bool point_valid;
 
     if (ANIM_GetWorldHeight(reinterpret_cast<const UMath::Vector3 &>(unswizzled_position), ground_elevation, planeNormal)) {
         start_line_position.z = ground_elevation;
@@ -61,8 +62,10 @@ bool CAnimLocator::GetInitialAnimMatricies(bMatrix4 *scene_rotation_matrix, bMat
     bIdentity(&scene_rotate_z);
 
     if (at_start_line) {
+        float sin;
+        float cos;
         UMath::Vector4 facing;
-        eRotateZ(&scene_rotate_z, &scene_rotate_z, start_line_angle - 0x4000);
+        eRotateZ(&scene_rotate_z, &scene_rotate_z, start_line_angle - bDegToAng(90.0f));
         bCopy(scene_rotation_matrix, &scene_rotate_z);
     }
 
@@ -86,19 +89,15 @@ bool ANIM_GetWorldHeight(const UMath::Vector3 &pt, float &height, UMath::Vector3
         WCollisionMgr::WorldCollisionInfo cInfo;
         WCollisionMgr(0, 3).CheckHitWorld(seg, cInfo, 1);
 
-        if (!cInfo.HitSomething()) {
-            return false;
+        if (cInfo.HitSomething() && cInfo.fType == 1) {
+            height = cInfo.fCollidePt.y;
+            norm.x = -cInfo.fNormal.x;
+            norm.y = -cInfo.fNormal.y;
+            norm.z = -cInfo.fNormal.z;
+            return true;
         }
-        if (cInfo.fType != 1) {
-            return false;
-        }
-
-        height = cInfo.fCollidePt.y;
-        norm.x = -cInfo.fNormal.x;
-        norm.y = -cInfo.fNormal.y;
-        norm.z = -cInfo.fNormal.z;
-        return true;
     }
+    return false;
 }
 
 // STRIPPED

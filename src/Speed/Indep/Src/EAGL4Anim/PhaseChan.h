@@ -6,6 +6,7 @@
 #endif
 
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -18,7 +19,7 @@ struct MatchPhaseInput {
 
 // total size: 0x4
 struct PhaseValue {
-    PhaseValue() {}
+    PhaseValue() : mAngle(0.0f) {}
 
     float mAngle; // offset 0x0, size 0x4
 };
@@ -45,27 +46,64 @@ struct PhaseChan : public AnimMemoryMap {
 
     void SetInvalid(bool s) {}
 
-    bool StartWithRight() const {}
+    bool StartWithRight() const {
+        return (mFlag & 0x1) != 0;
+    }
 
     void SetStartWithRight(bool s) {}
 
     void SetCycleAnim(bool s) {}
 
-    bool IsCycleAnim() const {}
+    bool IsCycleAnim() const {
+        return (mFlag & 0x2) != 0;
+    }
 
     static int ComputeSize(int numCycles, int numFrames, int sampleRateFlag) {}
 
     int GetSize() const {}
 
-    unsigned char *GetAngles() {}
+    unsigned char *GetAngles() {
+        int n = 2;
 
-    const unsigned char *GetAngles() const {}
+        if (mNumCycles > 1) {
+            n = mNumCycles;
+        }
+
+        return mCycles + n;
+    }
+
+    const unsigned char *GetAngles() const {
+        int n = 2;
+
+        if (mNumCycles > 1) {
+            n = mNumCycles;
+        }
+
+        return mCycles + n;
+    }
 
     void SetAngle(int i, float angle) {}
 
-    float GetAngle(int i) const {}
+    float GetAngle(int i) const {
+        return GetAngles()[i] * 1.4117647f - 180.0f;
+    }
 
-    int GetAngleSampleRate() const {}
+    int GetAngleSampleRate() const {
+        if (mFlag & 0x8) {
+            return 1;
+        }
+        if (mFlag & 0x10) {
+            return 2;
+        }
+        if (mFlag & 0x20) {
+            return 4;
+        }
+        if (mFlag & 0x40) {
+            return 8;
+        }
+
+        return 1;
+    }
 
     int GetNumAngles() const {}
 
@@ -85,7 +123,9 @@ class FnPhaseChan : public FnAnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -104,7 +144,7 @@ class FnPhaseChan : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnimSuper
-    ~FnPhaseChan() override {}
+    // NOTE: no user-declared destructor.
 
     // Overrides: FnAnim
     bool GetLength(float &timeLength) const override;
@@ -116,7 +156,9 @@ class FnPhaseChan : public FnAnimMemoryMap {
     void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    const PhaseChan *GetPhaseChan() override {}
+    const PhaseChan *GetPhaseChan() override {
+        return reinterpret_cast<const PhaseChan *>(mpAnim);
+    }
 
     // Members
     unsigned short mIdx;          // offset 0x10, size 0x2

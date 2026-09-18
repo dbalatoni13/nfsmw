@@ -21,7 +21,7 @@ class ENISConstraint : public Event {
 
     ~ENISConstraint() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fDegrees; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ENISConstraint : public Event {
 };
 
 void ENISConstraint_MakeEvent_Callback(const void *staticData);
+int ENISConstraint_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISConstraint_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

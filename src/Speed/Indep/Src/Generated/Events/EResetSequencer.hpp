@@ -19,12 +19,14 @@ class EResetSequencer : public Event {
 
     ~EResetSequencer() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fEventSeqEngine; // offset: 0xc, size 0x4
 };
 
 void EResetSequencer_MakeEvent_Callback(const void *staticData);
+int EResetSequencer_MakeEvent_LuaBinding(struct lua_State *L);
+void EResetSequencer_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

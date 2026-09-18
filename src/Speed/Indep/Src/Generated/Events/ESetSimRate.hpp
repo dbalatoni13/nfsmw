@@ -22,7 +22,7 @@ class ESetSimRate : public Event {
 
     ~ESetSimRate() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fSpeed;              // offset: 0x8, size 0x4

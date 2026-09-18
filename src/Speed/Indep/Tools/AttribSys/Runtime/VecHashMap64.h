@@ -155,6 +155,33 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return index < mTableSize && mTable[index].IsValid();
     }
 
+    std::size_t GetNextValidIndex(std::size_t startPoint) const {
+        std::size_t index = startPoint;
+        while (index < mTableSize && !mTable[index].IsValid()) {
+            index++;
+        }
+        return index;
+    }
+
+    T *GetPtrAtIndex(std::size_t index) const {
+        if (ValidIndex(index)) {
+            return mTable[index].Get();
+        }
+        return nullptr;
+    }
+
+    T *GetPtrAtValidIndex(std::size_t index) const {
+        (void)ValidIndex(index);
+        return mTable[index].Get();
+    }
+
+    void DeleteIndex(std::size_t actualIndex) {
+        T *obj = RemoveIndex(actualIndex);
+        if (obj) {
+            obj->~T();
+        }
+    }
+
     T *Find(KeyType key) const {
         if (key == 0) {
             return nullptr;
@@ -214,63 +241,61 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return true;
     }
 
-    std::size_t UpdateSearchLength(std::size_t targetIndex, std::size_t freeIndex) {
-        if (targetIndex == freeIndex) {
-            if (this->mTable[targetIndex].MaxSearch() != 0) {
-                targetIndex = freeIndex;
-            } else {
-                targetIndex = Policy::WrapIndex(targetIndex + this->mTableSize - this->mWorstCollision, this->mTableSize, 0);
+    // Tres piezas y las tres hacen falta: targetIndex es un LOCAL y no el
+    // parametro, para que el inliner no emita su copia al principio; la
+    // condicion va invertida con else explicito, que coloca el then en caida
+    // libre; y el inicializador targetIndex = startIndex deja los dos pseudos
+    // en el mismo bloque basico para que local-alloc los fusione.
+    std::size_t UpdateSearchLength(std::size_t startIndex, std::size_t freeIndex) {
+        std::size_t targetIndex = startIndex;
 
-                std::size_t distance = this->mWorstCollision;
-
-                while (this->mTable[targetIndex].MaxSearch() < distance && distance > 0) {
-                    targetIndex = Policy::WrapIndex(targetIndex + 1, this->mTableSize, 0);
-                    distance--;
-                }
-
-                if (distance == 0) {
-                    return static_cast<std::size_t>(-1);
-                }
+        if (startIndex != freeIndex) {
+            targetIndex = startIndex;
+        } else if (mTable[freeIndex].MaxSearch() != 0) {
+            targetIndex = freeIndex;
+        } else {
+            targetIndex = Policy::WrapIndex(startIndex + mTableSize - mWorstCollision, mTableSize, 0);
+            std::size_t distance = mWorstCollision;
+            while (mTable[targetIndex].MaxSearch() < distance && distance > 0) {
+                targetIndex = Policy::WrapIndex(targetIndex + 1, mTableSize, 0);
+                distance--;
+            }
+            if (distance == 0) {
+                return static_cast<std::size_t>(-1);
             }
         }
 
-        std::size_t maxSearch = this->mTable[targetIndex].MaxSearch();
-        std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, this->mTableSize, 0);
-
-        if (this->mTable[worstIndex].IsValid()) {
-            Policy::KeyIndex(this->mTable[worstIndex].Key(), this->mTableSize, 0);
+        std::size_t maxSearch = mTable[targetIndex].MaxSearch();
+        std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, mTableSize, 0);
+        if (mTable[worstIndex].IsValid()) {
+            Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
         }
 
-        if (this->mTable[freeIndex].IsValid()) {
+        // useless but necessary to match, TODO probably some debug stuff going on
+        if (mTable[freeIndex].IsValid()) {
         }
-
         if (freeIndex != worstIndex) {
-            this->mTable[freeIndex].Move(this->mTable[worstIndex]);
+            mTable[freeIndex].Move(mTable[worstIndex]);
         }
-
-        if (this->mTable[worstIndex].IsValid()) {
+        if (mTable[worstIndex].IsValid()) {
         }
 
         std::size_t newMaxSearch = 0;
-
         for (std::size_t searchLen = 1; searchLen < maxSearch; searchLen++) {
-            std::size_t index = Policy::WrapIndex(targetIndex + searchLen, this->mTableSize, 0);
-
-            if (Policy::KeyIndex(this->mTable[index].Key(), this->mTableSize, 0) == targetIndex) {
+            std::size_t index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
+            if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
                 newMaxSearch = searchLen;
             }
         }
 
-        this->mTable[targetIndex].ResetSearchLength(newMaxSearch);
+        mTable[targetIndex].ResetSearchLength(newMaxSearch);
 
-        if (maxSearch == this->mWorstCollision && this->mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
-            this->mWorstCollision = 0;
-
-            std::size_t prevWorst;
-
-            for (std::size_t i = 0; i < this->mTableSize && this->mWorstCollision < maxSearch; i++) {
-                if (this->mTable[i].MaxSearch() > this->mWorstCollision) {
-                    prevWorst = this->mWorstCollision = this->mTable[i].MaxSearch();
+        if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
+            mWorstCollision = 0;
+            std::size_t prevWorst; // unused
+            for (std::size_t i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
+                if (mTable[i].MaxSearch() > mWorstCollision) {
+                    prevWorst = mWorstCollision = mTable[i].MaxSearch();
                 }
             }
         }

@@ -68,7 +68,6 @@ void CARSFX_Siren::UpdateParams(float t) {
     }
 }
 
-// UNSOLVED
 void CARSFX_Siren::ProcessUpdate() {
     if (this->IsEnabled()) {
         this->SetDMIX_Input(5, 0x7FFF);
@@ -97,17 +96,17 @@ void CARSFX_Siren::ProcessUpdate() {
                 case Sound::SIREN_OFF:
                     this->Disable();
                     break;
-                case Sound::SIREN_WAIL:
-                case Sound::SIREN_YELP:
-                case Sound::SIREN_SCREAM:
-                    input = this->m_SirenState;
-                    this->mT_death = WorldTimer;
-                    break;
                 case Sound::SIREN_DIE:
                     input = Sound::SIREN_DIE;
                     if (this->m_PrevSirenState != Sound::SIREN_DIE) {
                         this->mT_death = WorldTimer;
                     }
+                    break;
+                case Sound::SIREN_WAIL:
+                case Sound::SIREN_YELP:
+                case Sound::SIREN_SCREAM:
+                    input = this->m_SirenState;
+                    this->mT_death = WorldTimer;
                     break;
                 default:
                     break;
@@ -130,7 +129,11 @@ void CARSFX_Siren::ProcessUpdate() {
 
 Sound::SirenState CARSFX_Siren::UpdateSirenState(float t) {
     this->tSirenState = this->tSirenState - t;
-    if (this->tSirenState < 0.0f || this->GetPhysCar()->GetSirenState() == Sound::SIREN_SCREAM) {
+    if (this->tSirenState < 0.0f
+#ifndef EA_BUILD_A124
+        || this->GetPhysCar()->GetSirenState() == Sound::SIREN_SCREAM
+#endif
+    ) {
         this->tSirenState = g_pEAXSound->Random(3.0f);
         return this->GetPhysCar()->GetSirenState();
     }

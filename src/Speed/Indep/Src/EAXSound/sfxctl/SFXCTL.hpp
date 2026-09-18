@@ -16,8 +16,8 @@ class SFXCTL : public SndBase {
     void InitSFX() override;
     void UpdateParams(float t) override;
 
-    float GetPhysTRQ() {}
-    float GetPhysRPM() {}
+    float GetPhysTRQ();
+    float GetPhysRPM();
 
     eAemsUpgradeLevel m_UGL; // Decl: 26
 };

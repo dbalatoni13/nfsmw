@@ -20,7 +20,7 @@ struct emitteruv : Instance {
     typedef EA::Reflection::Float TypeOf_StartV;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("emitteruv");
+    USE_ATTRIB_ALLOC("Attrib::Gen::emitteruv");
     emitteruv(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -48,10 +48,10 @@ struct emitteruv : Instance {
         return 0xe4983a7d;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xe4983a7d, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

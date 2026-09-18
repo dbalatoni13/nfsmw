@@ -4,6 +4,18 @@
 #include "./slinklist.h"
 #include <snd/sndo.h>
 
+/* Entero del tamano de un puntero.  El original hace `(int)puntero` en trece
+ * unidades: en GameCube y PS2 es correcto porque son 32 bits, pero en el port
+ * Android (LP64) trunca.  Aqui es `int` en todo lo que no sea Android, asi que
+ * el codigo generado para GameCube es IDENTICO -- un typedef no emite nada. */
+#if defined(__ANDROID__)
+typedef long sndptrint;
+typedef unsigned long sndptruint;
+#else
+typedef int sndptrint;
+typedef unsigned int sndptruint;
+#endif
+
 // total size: 0xFC
 // Decl: 470
 struct SNDIPATCHHEADER {
@@ -348,18 +360,26 @@ typedef struct VariableTimerClient {
 } VariableTimerClient;
 
 extern float gVariableTimerPeriod;
+extern int gMaxFxBuses;
 extern CListDStack gVariableTimerList;
 extern float gMasterVol;
 extern const signed char gChannelToVoiceIndexLut[6][6];
+extern unsigned char gTotalOutputChannels;
+extern float gSpeakerPositions[5];
+extern const unsigned char gAzimuthFoldDownLut[4][6][6];
 
 // total size: 0x1
 // Decl: 1268
 struct Util {
     static void ReallocBuf(void **buffer, int *curSize, int newMinSize, int sizeofDataType);
 
-    static unsigned short Az360To65536(float azimuth) {}
+    static unsigned short Az360To65536(float azimuth) {
+        return (unsigned short)(azimuth * (65536.0f / 360.0f));
+    }
 
-    static float Az65536To360(unsigned short azimuth) {}
+    static float Az65536To360(unsigned short azimuth) {
+        return (float)azimuth * (360.0f / 65536.0f);
+    }
 
     static void FastVol(struct CHANPUB *pVoice) {
         pVoice->finalvol = pVoice->programmedVol * gMasterVol;
@@ -374,6 +394,7 @@ struct Util {
     }
 
     static void *MemCpy(void *pDst, const void *pSrc, unsigned int bytes);
+    static void SetDefaultAzimuths(CHANPUB *pVoice);
 };
 
 // total size: 0x28
@@ -540,8 +561,33 @@ static inline float SNDI_clipf(float val, float minval, float maxval) {
 // sst.c
 SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
 
+// sstgetrp.c
+Snd::SNDSTREAMREQUEST *SNDSTRMI_getrequestptr(int sndrequesthandle);
+
 // salloc.c
 int SNDVOICEI_get(int handle);
+int SNDVOICEI_alloc(int voicesneeded, int priority, int *phandle, int minvoicerange, int maxvoicerange);
+void SNDVOICEI_free(int voice);
+
+// SNDI_sin.c / SNDI_cos.c
+float SNDI_sin(float x);
+float SNDI_cos(float x);
+
+// srrange.c
+int randrange(int range);
+
+// spantoaz.c
+int SNDI_pantoazimuth(int pan);
+
+// srender.c
+int SNDI_validrendermode(int *pindex, SNDIPATCHHEADER *pph);
+
+// gc/snddrv.c: la API de plataforma que las unidades cmn/ llaman
+void SNDPLATFORM_getvoicerange(int playloc, int *minvoicerange, int *maxvoicerange);
+int SNDPLATFORM_playtimbre(SNDIPATCHHEADER *pph, void *psampledata, int voice, int timemult,
+                           int lowpasscutoff, int highpasscutoff);
+int SNDPLATFORM_packetplaycreate(int packetinstancehandle, void *pmem);
+int SNDPLATFORM_packetplaydestroy(int packetinstancehandle);
 
 // sbadd.c
 void SNDBANKI_userdatacallback(SNDIPATCHHEADER *pph, int shandle, int type);
@@ -574,7 +620,30 @@ int SNDtimeremaining(int shandle);
 // srandom.c
 unsigned int iSNDrandom();
 
+// sgetdata.c
+int SNDI_getb(void *pdata, int numbytes);
+
+// sgettag.c
+// total size: 0x14
+typedef struct SNDTAGINFO {
+    unsigned char *p;      // offset 0x0
+    int tag;               // offset 0x4
+    int size;              // offset 0x8
+    unsigned char *pdata;   // offset 0xC
+    unsigned int datasize; // offset 0x10
+} SNDTAGINFO;
+int SNDI_gettag(SNDTAGINFO *pti);
+
+// spktplay.c
+extern SNDPACKETSTATE sndpps;
+
+// spktctoh.c
+int SNDPKTPLAYI_voicetopackethandle(int voice);
+
 // snddrv.c
+int SNDPLATFORM_stop(int voice);
+int SNDPLATFORM_filteradd(int voice, SNDFILTERDEF *psfd);
+int SNDPLATFORM_asyncresolvetimbre(SNDIPATCHHEADER *pph, char *pdata, int *pfirstoffset);
 int SNDPLATFORM_setpitch(int voice);
 int SNDPLATFORM_timemult(int voice, int timemult);
 int SNDPLATFORM_setfxlevel(int voice, int bus);
@@ -590,6 +659,9 @@ int SNDPLATFORM_downloadcomplete(int dlhandle);
 
 // ssine.c
 int iSNDsin(int angle);
+
+// svol.c
+void iSNDcalcvol(int chan);
 
 // ssysserv.c
 void iSNDserveraddclient(void (*pfunc)(void));
@@ -665,6 +737,12 @@ void SNDSYS_remove100hzclient(void (*client)(void));
 // sctrldry.c
 int SNDCTRL_drylevel(int shandle, int level);
 
+// sctlfilt.c
+int SNDCTRL_filteradd(int shandle, SNDFILTERDEF *psfd);
+
+// stimemul.c
+int SNDCTRL_timemult(int shandle, int timemult);
+
 // sfxlevel.c
 int SNDfxlevel(int shandle, int bus, int level);
 
@@ -691,6 +769,33 @@ int SNDvol(int shandle, int vol);
 
 // smemhigh.cpp
 int SNDMEM_gethighwater();
+
+// sover.c (enlace C)
+int SNDover(int shandle);
+
+// stream (biblioteca externa): en el ELF conviven STREAM_gettable__Fi (codigo
+// del juego, 0x800B89D4) y STREAM_gettable (la biblioteca, 0x80381814). Las de
+// aqui son las de la biblioteca, con enlace C.
+int STREAM_overhead(int maxrequests, int holdtime, int isgeneric);
+unsigned int STREAM_gettable(int streamhandle);
+
+// spktplay.c: la API publica SNDPKTPLAY_* sale sin manglar en el ELF; solo la
+// interna SNDPKTPLAYI_* lleva mangling de C++.
+int SNDPKTPLAY_overhead(int maxpackets);
+int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *),
+                      void *pclientdata, void *pmem, int memsize);
+int SNDPKTPLAY_destroy(int packetinstancehandle);
+int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa,
+                     SNDPLAYOPTS *pspo);
+int SNDPKTPLAY_stop(int packetinstancehandle);
+int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+int SNDPKTPLAY_submitspace(int packetinstancehandle);
+// OJO: el volcado DWARF de spktplay.c la define devolviendo `int`, pero la
+// DECLARACION que ve el resto de la biblioteca es `unsigned int`: sststat.c
+// hace `framesoutstanding(...) * 1000 / samplerate` y el original divide SIN
+// signo. Ponerla `int` aqui rompe sststat.c (224 B, medido).
+unsigned int SNDPKTPLAY_framesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_purge(int packetinstancehandle, int starthandle, int endhandle);
 
 #ifdef __cplusplus
 }

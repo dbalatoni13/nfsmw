@@ -19,20 +19,20 @@ class IFeedback : public UTL::COM::IUnknown {
 
     virtual ~IFeedback() {}
 
-    virtual void PauseEffects();
-    virtual void ResumeEffects();
-    virtual void ResetEffects();
-    virtual void BeginUpdate();
-    virtual void EndUpdate();
-    virtual void UpdateRoadNoise(bool front, const struct SimSurface &surface, float speed);
-    virtual void UpdateTireSkid(bool front, const struct SimSurface &surface, float speed);
-    virtual void UpdateTireSlip(bool front, const struct SimSurface &surface, float speed);
-    virtual void UpdateRPM(float powerband, float overrev, float throttle);
-    virtual void UpdateShiftPotential(ShiftPotential potential);
-    virtual void UpdateNOS(bool engaged, float NOSLevel);
-    virtual void UpdateEngineBlown(bool blown);
-    virtual void UpdateShifting(bool shifting);
-    virtual void ReportCollision(const COLLISION_INFO &cinfo, bool iamA);
+    virtual void PauseEffects() = 0;
+    virtual void ResumeEffects() = 0;
+    virtual void ResetEffects() = 0;
+    virtual void BeginUpdate() = 0;
+    virtual void EndUpdate() = 0;
+    virtual void UpdateRoadNoise(bool front, const struct SimSurface &surface, float speed) = 0;
+    virtual void UpdateTireSkid(bool front, const struct SimSurface &surface, float speed) = 0;
+    virtual void UpdateTireSlip(bool front, const struct SimSurface &surface, float speed) = 0;
+    virtual void UpdateRPM(float powerband, float overrev, float throttle) = 0;
+    virtual void UpdateShiftPotential(ShiftPotential potential) = 0;
+    virtual void UpdateNOS(bool engaged, float NOSLevel) = 0;
+    virtual void UpdateEngineBlown(bool blown) = 0;
+    virtual void UpdateShifting(bool shifting) = 0;
+    virtual void ReportCollision(const COLLISION_INFO &cinfo, bool iamA) = 0;
 };
 
 #endif

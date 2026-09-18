@@ -40,10 +40,14 @@ int SndBase::GetDMixOutput(int idx, DMX_PRESET_TYPE etype) {
             case DMX_PITCH:
                 return NFSMixShape::GetIntPitchMultFromCents((out >> shift) & 0xFFFF);
             case DMX_AZIM:
+#ifdef EA_BUILD_A124
+                return (out >> shift) & 0xFFFF;
+#else
                 if (g_pEAXSound->GetCurAudioSettings()->AudioMode != 0) {
                     return (out >> shift) & 0xFFFF;
                 }
                 break;
+#endif
             case DMX_VOL:
             case DMX_FREQ:
             case DMX_DEPTH:

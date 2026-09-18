@@ -58,17 +58,13 @@ class QueuedFile : public bTNode<QueuedFile> {
 
     // static int SortBySeekPosition(QueuedFile *before, QueuedFile *after) {}
 
-    static int SortByPriority(QueuedFile *before, QueuedFile *after) {
-        return before->Params.Priority >= after->Params.Priority;
-    }
+    static int SortByPriority(QueuedFile *before, QueuedFile *after);
 
     static int GetNumFilesDecompressing() {
         return DecompressionTableTop - DecompressionTableBot;
     }
 
-    static void ReadDoneCallback(void *param) {
-        static_cast<QueuedFile *>(param)->ReadDoneCallback();
-    }
+    static void ReadDoneCallback(void *param);
 
     int GetHandle() {
         return Handle;
@@ -193,24 +189,13 @@ class QueuedFileBundle {
         return bOMalloc(QueuedFileSlotPool);
     }
 
-    void operator delete(void *ptr) {
-        bFree(QueuedFileSlotPool, ptr);
-    }
+    void operator delete(void *ptr);
 
     const char *GetFilename() {
         return QueuedFiles[0]->GetFilename();
     }
 
-    static void ReadCallbackBridge(void *param, int error_status) {
-        QueuedFileBundle *bundle = static_cast<QueuedFileBundle *>(param);
-        bundle->ReadCallback(error_status);
-        if (bundle) {
-            if (bundle->ReadBuffer) {
-                bFree(bundle->ReadBuffer);
-            }
-            delete bundle;
-        }
-    }
+    static void ReadCallbackBridge(void *param, int error_status);
 
     bool TestAddQueuedFile(QueuedFile *q);
     void BeginRead();

@@ -22,7 +22,7 @@ class ENISLights : public Event {
 
     ~ENISLights() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fCopLights;  // offset: 0x8, size 0x4
@@ -32,5 +32,7 @@ class ENISLights : public Event {
 };
 
 void ENISLights_MakeEvent_Callback(const void *staticData);
+int ENISLights_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISLights_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

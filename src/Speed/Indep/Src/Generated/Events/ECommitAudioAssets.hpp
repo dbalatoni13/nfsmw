@@ -19,7 +19,7 @@ class ECommitAudioAssets : public Event {
 
     ~ECommitAudioAssets() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void ECommitAudioAssets_MakeEvent_Callback(const void *staticData);

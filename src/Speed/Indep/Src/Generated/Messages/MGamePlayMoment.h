@@ -21,6 +21,10 @@ class MGamePlayMoment : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MGamePlayMoment &message);
+
     MGamePlayMoment(UMath::Vector4 _Position, UMath::Vector4 _Vector, UMath::Vector4 _Velocity, unsigned int _hSimable, unsigned int _AttribKey)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fPosition(_Position), fVector(_Vector), fVelocity(_Velocity), fhSimable(_hSimable),
           fAttribKey(_AttribKey) {}
@@ -74,5 +78,41 @@ class MGamePlayMoment : public Hermes::Message {
     unsigned int fhSimable;   // offset 0x40, size 0x4
     unsigned int fAttribKey;  // offset 0x44, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MGamePlayMoment::HandleMessage_LuaBinding(const MGamePlayMoment &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MGamePlayMoment::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MGamePlayMoment *message = static_cast<const MGamePlayMoment *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Position");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Vector");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Velocity");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "hSimable");
+    lua_pushnumber(luaState, message->fhSimable);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "AttribKey");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+}
 
 #endif

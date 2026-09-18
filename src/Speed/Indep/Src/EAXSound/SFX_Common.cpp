@@ -6,8 +6,10 @@ SFX_Common::SFX_Common() {
     this->mMsgMiscSound = Hermes::Handler::Create<MMiscSound, SFX_Common, SFX_Common>(this, &SFX_Common::MsgPlayMiscSound, "Snd", 0);
     this->m_pcsisCameraShot = nullptr;
     this->m_pUves = nullptr;
+#ifndef EA_BUILD_A124
     this->m_pPursuitBreakStart = nullptr;
     this->m_pPursuitBreakEnd = nullptr;
+#endif
 }
 
 SFX_Common::~SFX_Common() {
@@ -21,18 +23,19 @@ SFX_Common::~SFX_Common() {
     delete this->m_pUves;
     this->m_pUves = nullptr;
 
+#ifndef EA_BUILD_A124
     delete this->m_pPursuitBreakStart;
     this->m_pPursuitBreakStart = nullptr;
 
     delete this->m_pPursuitBreakEnd;
     this->m_pPursuitBreakEnd = nullptr;
+#endif
 }
 
 void SFX_Common::AttachController(SFXCTL *psfxctl) {}
 
 void SFX_Common::Destroy() {}
 
-// UNSOLVED because of Csis::FX_UVES
 void SFX_Common::MsgPlayMiscSound(const MMiscSound &message) {
     this->SetDMIX_Input(message.GetSoundID(), 0x7FFF);
 
@@ -47,16 +50,18 @@ void SFX_Common::MsgPlayMiscSound(const MMiscSound &message) {
                 this->m_pcsisCameraShot = new Csis::FX_Camera(0, this->GetDMixOutput(0, DMX_VOL), 0, 0, 0, 0, 0, 0);
             }
             break;
+#ifndef EA_BUILD_A124
         case 3:
             delete this->m_pPursuitBreakStart;
-            this->m_pPursuitBreakStart = new Csis::FX_UVES(2, 0, 0, 0, 0, 0);
+            this->m_pPursuitBreakStart = new Csis::FX_UVES(2, 0, -1, 0, 0, 0);
             this->m_pPursuitBreakStart->GetRefCount();
             break;
         case 4:
             delete this->m_pPursuitBreakEnd;
-            this->m_pPursuitBreakEnd = new Csis::FX_UVES(1, 0, 0, 0, 0, 0);
+            this->m_pPursuitBreakEnd = new Csis::FX_UVES(1, 0, -1, 0, 0, 0);
             this->m_pPursuitBreakEnd->GetRefCount();
             break;
+#endif
         default:
             break;
     }
@@ -89,6 +94,7 @@ void SFX_Common::ProcessUpdate() {
         }
     }
 
+#ifndef EA_BUILD_A124
     if (this->m_pPursuitBreakStart != nullptr) {
         if (this->m_pPursuitBreakStart->GetRefCount() < 2) {
             delete this->m_pPursuitBreakStart;
@@ -112,7 +118,7 @@ void SFX_Common::ProcessUpdate() {
             this->m_pPursuitBreakEnd->CommitMemberData();
         }
     }
+#endif
 
-    // TODO 64 bit what size is that?
-    bMemSet(this->GetOutputBlockPtr(), 0, 0x14);
+    bMemSet(this->GetOutputBlockPtr(), 0, sizeof(SFX_Common) - sizeof(SFX_Base));
 }

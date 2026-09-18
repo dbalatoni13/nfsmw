@@ -20,6 +20,8 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportsympool.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4runtimetransform.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/FnAnim.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnAnimMemoryMap.cpp"
@@ -33,6 +35,8 @@
 #include "Speed/Indep/Src/EAGL4Anim/FnDeltaQFast.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnDeltaSingleQ.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnEventBlender.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseAnim.cpp"
 
@@ -49,6 +53,8 @@
 #include "Speed/Indep/Src/EAGL4Anim/FnTurnBlender.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/MemoryPoolManager.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnCycle.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/PhaseChan.cpp"
 
@@ -69,3 +75,5 @@
 #include "Speed/Indep/Src/EAGL4Anim/StatelessQ.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/system.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/SystemCmn.cpp"

@@ -35,8 +35,10 @@ class SFX_Common : public SFX_Base {
 
     Csis::FX_Camera *m_pcsisCameraShot;  // offset 0x24, size 0x4, Decl: 39
     Csis::FX_UVES *m_pUves;              // offset 0x28, size 0x4, Decl: 40
+#ifndef EA_BUILD_A124
     Csis::FX_UVES *m_pPursuitBreakStart; // offset 0x2C, size 0x4, Decl: 41
     Csis::FX_UVES *m_pPursuitBreakEnd;   // offset 0x30, size 0x4, Decl: 42
+#endif
 
     Hermes::HHANDLER mMsgMiscSound; // offset 0x34, size 0x4, Decl: 45
 };

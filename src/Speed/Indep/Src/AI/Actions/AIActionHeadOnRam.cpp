@@ -35,9 +35,6 @@ class AIActionHeadOnRam : public AIAction, public Debugable {
     void Update(float dT) override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
-    bool ShouldRestartWhenFinished() override {
-        return true;
-    }
 
   private:
     IVehicleAI *mIVehicleAI;       // offset 0x4C, size 0x4
@@ -71,6 +68,8 @@ void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
         GetOwner()->QueryInterface(&mITransmission);
     }
 }
+
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeadOnRam("AIActionHeadOnRam", AIActionHeadOnRam::Construct);
 
 AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
     return new AIActionHeadOnRam(params, 0.1f);

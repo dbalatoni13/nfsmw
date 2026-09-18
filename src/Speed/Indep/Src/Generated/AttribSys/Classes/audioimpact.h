@@ -16,7 +16,7 @@ struct audioimpact : Instance {
     typedef StitchCollisionVol TypeOf_Volumes;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("audioimpact");
+    USE_ATTRIB_ALLOC("Attrib::Gen::audioimpact");
     audioimpact(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     audioimpact(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -34,10 +34,10 @@ struct audioimpact : Instance {
         return 0xfbffb107;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xfbffb107, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

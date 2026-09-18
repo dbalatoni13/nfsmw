@@ -1,0 +1,42 @@
+diff --git a/src/main/java/com/github/rafalh/ghidra/dwarfone/model/AttributeName.java b/src/main/java/com/github/rafalh/ghidra/dwarfone/model/AttributeName.java
+index 2df3864..89424df 100644
+--- a/src/main/java/com/github/rafalh/ghidra/dwarfone/model/AttributeName.java
++++ b/src/main/java/com/github/rafalh/ghidra/dwarfone/model/AttributeName.java
+@@ -49,6 +49,14 @@ public enum AttributeName {
+ 	STRIDE_SIZE(0x02E0),
+ 	UPPER_BOUND(0x02F0),
+ 	VIRTUAL(0x0300),
++	// --- extensiones propias de GCC 2.9x (gcc/dwarf.h:184-189). NO estan en la
++	// spec DWARF-1 y caen FUERA del rango AT_lo_user..AT_hi_user (0x2000-0x3ff0).
++	GNU_SF_NAMES(0x8000),
++	GNU_SRC_INFO(0x8010),
++	GNU_MAC_INFO(0x8020),
++	GNU_SRC_COORDS(0x8030),
++	GNU_BODY_BEGIN(0x8040),
++	GNU_BODY_END(0x8050),
+ 	USER(null);
+ 
+ 	public static final int MASK = 0xFFF0;
+@@ -74,7 +82,8 @@ public enum AttributeName {
+ 		}
+ 		AttributeName at = VALUE_MAP.get(value);
+ 		if (at == null) {
+-			throw new IllegalArgumentException("invalid attribute value " + value);
++			// tolerante: un atributo desconocido no debe abortar el parseo entero
++			return USER;
+ 		}
+ 		return at;
+ 	}
+diff --git a/src/main/java/com/github/rafalh/ghidra/dwarfone/model/Tag.java b/src/main/java/com/github/rafalh/ghidra/dwarfone/model/Tag.java
+index cb0c50c..07de923 100644
+--- a/src/main/java/com/github/rafalh/ghidra/dwarfone/model/Tag.java
++++ b/src/main/java/com/github/rafalh/ghidra/dwarfone/model/Tag.java
+@@ -64,7 +64,7 @@ public enum Tag {
+ 		}
+ 		Tag tag = VALUE_MAP.get(value);
+ 		if (tag == null) {
+-			throw new IllegalArgumentException("invalid tag value " + value);
++			return USER;
+ 		}
+ 		return tag;
+ 	}

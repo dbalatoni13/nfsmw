@@ -64,16 +64,9 @@ void WRoadNetwork::Init() {
     fValidRaceFilter = false;
     fValidTrafficRoads = true;
 
-    fNumRoads = 0;
-    fNumIntersections = 0;
-    fNumSegments = 0;
-    fNumNodes = 0;
-    nTotalMemoryUsage = 0;
-    nIntersectionMemoryUsage = 0;
-    nSegmentMemoryUsage = 0;
-    nProfileMemoryUsage = 0;
-    nNodeMemoryUsage = 0;
-    nRoadMemoryUsage = 0;
+    fNumNodes = fNumSegments = fNumIntersections = fNumRoads = 0;
+    nRoadMemoryUsage = nNodeMemoryUsage = nProfileMemoryUsage = nSegmentMemoryUsage = nIntersectionMemoryUsage =
+        nTotalMemoryUsage = 0;
 
     if (WWorld::Get().GetMapGroup()) {
         const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate(MAKE_UDATA_TYPE('RN'), 'gp');
@@ -400,12 +393,13 @@ bool WRoadNetwork::GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, i
     return laneInd >= profilePtr[0]->fMiddleZone;
 }
 
-int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count) {
+int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int laneCount) {
     WRoadNetwork &roadNetwork = Get();
     const WRoadProfile *profilePtr[2];
-    int decLaneCount = lane_count;
+    int decLaneCount;
 
     roadNetwork.GetSegmentProfiles(segment, profilePtr);
+    decLaneCount = laneCount;
     for (int i = 0; i < profilePtr[0]->fNumZones; i++) {
         if (profilePtr[0]->GetLaneType(i, false) == WRoadNav::kLaneTraffic) {
             if (decLaneCount <= 0) {
@@ -526,8 +520,19 @@ void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d,
     }
 }
 
+static const bool bRoadNetworkPrints = false;
+
 float WRoadNetwork::GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound) {
     WRoadNetwork &roadNetwork = Get();
+    if (bRoadNetworkPrints) {
+        // El original reserva aqui el guard `_.tmp_11` y el thunk `__tcf_3` de un
+        // static local cuyo codigo el optimizador elimina: por eso su roadSpline de
+        // GetSegmentCurveStep acaba siendo `__tcf_4` y no `__tcf_3`. Quitarlo cuesta
+        // `__tcf_4` en GameCube (medido); en Xbox 360 es lo que separa
+        // GetSegmentPointIntersect del 100 %.
+        static USpline debugSpline;
+        roadNetwork.BuildSegmentSpline(segment, debugSpline);
+    }
     UMath::Vector3 pos = GetNode(segment.fNodeIndex[0])->fPosition;
     UMath::Vector3 pos2 = GetNode(segment.fNodeIndex[1])->fPosition;
     return GetLinePointIntersect(pos, pos2, pt, intersect, checkBound);
@@ -759,132 +764,130 @@ short WRoadNav::GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, c
         UMath::Unit(toVec, toVec);
         const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(node, fSegmentInd);
 
-        if (node->fNumSegments > 1) {
-            if (checkSegment || (segment->fFlags & kRoadSegmentDecision)) { // TODO
-                newSegInd = checkSegment->fIndex;
-                nodeInd = node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]];
-            } else {
-                unsigned int shortcut_cached = 0;
-                unsigned int shortcut_allowed = 0;
-                unsigned char shortcut_number = GetShortcutNumber();
-
-                if (shortcut_number != 0xFF) {
-                    int mask = 1 << shortcut_number;
-                    shortcut_cached |= mask;
-                    shortcut_allowed |= mask;
-                }
-
-                float closest_to_target = 2.0f;
-                float target_dot = bAiRandomTurns ? bRandom(1.0f) : 1.0f;
-
-                for (int i = 0; i < static_cast<int>(node->fNumSegments); i++) {
-                    if (node->fSegmentIndex[i] == fSegmentInd)
-                        continue;
-
-                    const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
-                    bool respect_full_barriers = RespectFullBarriers();
-                    bool respect_drive_through_barriers = RespectDriveThroughBarriers();
-
-                    float worst_gap_to_target = 0.0f;
-                    const int kMaxWalkSegments = 19;
-                    const float kMaxWalkDistance = 100.0f;
-                    float distance = kMaxWalkDistance;
-                    const WRoadNode *walkRoadNode = node;
-                    const WRoadSegment *walkRoadSegment = newRoadSegment;
-
-                    for (int w = 0; w <= kMaxWalkSegments; w++) {
-                        if ((respect_full_barriers || respect_drive_through_barriers) &&
-                            walkRoadSegment->CrossesBarrier(respect_drive_through_barriers)) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        bool walk_segment_forward = (walkRoadNode == &roadNetwork.fNodes[walkRoadSegment->fNodeIndex[0]]);
-
-                        if (bRaceFilter) {
-                            if (!walkRoadSegment->IsInRace()) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                            if (walkRoadSegment->RaceRouteForward() ^ walk_segment_forward) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                        }
-
-                        if (bTrafficFilter && !walkRoadSegment->IsTrafficAllowed()) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        if (bCopFilter && !walkRoadSegment->ShouldCopsConsider()) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        if (walkRoadSegment->IsShortcut()) {
-                            const WRoad *road = roadNetwork.GetRoad(walkRoadSegment->fRoadID);
-                            if (!MakeShortcutDecision(road->nShortcut, &shortcut_cached, &shortcut_allowed)) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                        }
-
-                        UMath::Vector3 vec;
-                        roadNetwork.GetSegmentForwardVector(*walkRoadSegment, vec);
-                        if (!walk_segment_forward) {
-                            UMath::Negate(vec);
-                        }
-                        UMath::Unit(vec, vec);
-                        float dot = UMath::Dot(vec, toVec);
-                        float gap_to_target = bAbs(dot - target_dot);
-                        if (gap_to_target > worst_gap_to_target) {
-                            worst_gap_to_target = gap_to_target;
-                        }
-                        if (worst_gap_to_target >= closest_to_target) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        distance -= walkRoadSegment->GetLength();
-                        if (w > 0 && distance <= 0.0f)
-                            break;
-
-                        const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*walkRoadSegment, walkRoadNode);
-                        const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, walkRoadSegment->fIndex);
-                        if (checkSegment == nullptr) {
-                            if (w == 0) {
-                                walkRoadSegment = nullptr;
-                            }
-                            break;
-                        }
-                        if (oppNode != &roadNetwork.fNodes[checkSegment->fNodeIndex[0]] && (checkSegment->fFlags & kRoadSegmentOneWay)) {
-                            char towards;
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-                        if (end_of_path)
-                            break;
-                        walkRoadSegment = checkSegment;
-                        walkRoadNode = oppNode;
-                    }
-
-                    if (walkRoadSegment && closest_to_target > worst_gap_to_target) {
-                        newSegInd = node->fSegmentIndex[i];
-                        const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
-                        nodeInd = (node == &roadNetwork.fNodes[newSegment->fNodeIndex[0]]);
-                        closest_to_target = worst_gap_to_target;
-                    }
-                }
-
-                if (newSegInd == GetSegmentInd()) {
-                    nodeInd ^= 1;
-                    useOldStartPos = false;
-                }
-            }
-        } else {
+        if (node->fNumSegments <= 1 || (checkSegment == nullptr && (segment->fFlags & kRoadSegmentDecision))) {
             nodeInd = nodeInd ^ 1;
             useOldStartPos = false;
+        } else if (checkSegment) {
+            newSegInd = checkSegment->fIndex;
+            nodeInd = node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]];
+        } else {
+            unsigned int shortcut_cached = 0;
+            unsigned int shortcut_allowed = 0;
+            unsigned char shortcut_number = GetShortcutNumber();
+
+            if (shortcut_number != 0xFF) {
+                int mask = 1 << shortcut_number;
+                shortcut_cached |= mask;
+                shortcut_allowed |= mask;
+            }
+
+            float closest_to_target = 2.0f;
+            float target_dot = bAiRandomTurns ? bRandom(1.0f) : 1.0f;
+
+            for (int i = 0; i < static_cast<int>(node->fNumSegments); i++) {
+                if (node->fSegmentIndex[i] == fSegmentInd)
+                    continue;
+
+                const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
+                bool respect_full_barriers = RespectFullBarriers();
+                bool respect_drive_through_barriers = RespectDriveThroughBarriers();
+
+                float worst_gap_to_target = 0.0f;
+                const int kMaxWalkSegments = 19;
+                const float kMaxWalkDistance = 100.0f;
+                float distance = kMaxWalkDistance;
+                const WRoadNode *walkRoadNode = node;
+                const WRoadSegment *walkRoadSegment = newRoadSegment;
+
+                for (int w = 0; w <= kMaxWalkSegments; w++) {
+                    if ((respect_full_barriers || respect_drive_through_barriers) &&
+                        walkRoadSegment->CrossesBarrier(respect_drive_through_barriers)) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    bool walk_segment_forward = (walkRoadNode == &roadNetwork.fNodes[walkRoadSegment->fNodeIndex[0]]);
+
+                    if (bRaceFilter) {
+                        if (!walkRoadSegment->IsInRace()) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
+                        if (walkRoadSegment->RaceRouteForward() ^ walk_segment_forward) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
+                    }
+
+                    if (bTrafficFilter && !walkRoadSegment->IsTrafficAllowed()) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    if (bCopFilter && !walkRoadSegment->ShouldCopsConsider()) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    if (walkRoadSegment->IsShortcut()) {
+                        const WRoad *road = roadNetwork.GetRoad(walkRoadSegment->fRoadID);
+                        if (!MakeShortcutDecision(road->nShortcut, &shortcut_cached, &shortcut_allowed)) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
+                    }
+
+                    UMath::Vector3 vec;
+                    roadNetwork.GetSegmentForwardVector(*walkRoadSegment, vec);
+                    if (!walk_segment_forward) {
+                        UMath::Negate(vec);
+                    }
+                    UMath::Unit(vec, vec);
+                    float dot = UMath::Dot(vec, toVec);
+                    float gap_to_target = bAbs(dot - target_dot);
+                    if (gap_to_target > worst_gap_to_target) {
+                        worst_gap_to_target = gap_to_target;
+                    }
+                    if (worst_gap_to_target >= closest_to_target) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    distance -= walkRoadSegment->GetLength();
+                    if (w > 0 && distance <= 0.0f)
+                        break;
+
+                    const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*walkRoadSegment, walkRoadNode);
+                    const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, walkRoadSegment->fIndex);
+                    if (checkSegment == nullptr) {
+                        if (w == 0) {
+                            walkRoadSegment = nullptr;
+                        }
+                        break;
+                    }
+                    if (oppNode != &roadNetwork.fNodes[checkSegment->fNodeIndex[0]] && (checkSegment->fFlags & kRoadSegmentOneWay)) {
+                        char towards;
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+                    if (end_of_path)
+                        break;
+                    walkRoadSegment = checkSegment;
+                    walkRoadNode = oppNode;
+                }
+
+                if (walkRoadSegment && closest_to_target > worst_gap_to_target) {
+                    newSegInd = node->fSegmentIndex[i];
+                    const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
+                    nodeInd = (node == &roadNetwork.fNodes[newSegment->fNodeIndex[0]]);
+                    closest_to_target = worst_gap_to_target;
+                }
+            }
+
+            if (newSegInd == GetSegmentInd()) {
+                nodeInd ^= 1;
+                useOldStartPos = false;
+            }
         }
     }
 
@@ -1098,7 +1101,10 @@ int WRoadNetwork::GetRightMostTrafficEntrance(int node_number, int onto_segment)
                 const WRoadSegment *from_segment = GetSegment(segment_number);
                 const WRoadNode *from_node = GetSegmentOppNode(segment_number, node);
                 int from_which_node = node_number != from_segment->fNodeIndex[1];
-                bool from_inverted = from_segment->IsProfileInverted(from_which_node);
+                // El original consulta `segment` (el de entrada), NO `from_segment`: es un
+                // bug suyo, y mantenerlo es lo que alarga la vida de `segment` sobre todo el
+                // bucle y fuerza el derrame de `this` a 0x78(r1). Cambiarlo cuesta la funcion.
+                bool from_inverted = segment->IsProfileInverted(from_which_node);
                 bool from_forward = from_which_node == 0;
                 const WRoadProfile *from_profile = GetProfile(from_node->fProfileIndex);
 
@@ -1210,8 +1216,8 @@ short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffse
         newSegInd = segment->fIndex;
     } else if (checkSegment != nullptr) {
         newSegInd = checkSegment->fIndex;
-        bool new_forward = (node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]]); // TODO
-        nodeInd = new_forward;
+        nodeInd = (node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]]);
+        bool new_forward = (nodeInd == 1);
         bool new_inverted = checkSegment->IsProfileInverted(nodeInd);
         const WRoadProfile *new_profile = roadNetwork.GetSegmentProfile(*checkSegment, static_cast<int>(nodeInd));
         newLaneInd = static_cast<char>(new_profile->GetNthTrafficLane(nth_lane, new_forward, new_inverted));
@@ -1763,14 +1769,9 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
         IVehicle *his_vehicle;
         avoidable_body->QueryInterface(&his_vehicle);
         const DriverClass his_class = his_vehicle ? his_vehicle->GetDriverClass() : DRIVER_NONE;
-        // const bool he_is_player;
-        // TODO const bool
-        int he_is_traffic;
-        if (!his_vehicle)
-            he_is_traffic = 0;
-        else
-            he_is_traffic = his_class == DRIVER_TRAFFIC || his_class == DRIVER_NONE;
-        // const bool he_is_airacer;
+        const bool he_is_player = his_vehicle && his_class == DRIVER_HUMAN;
+        const bool he_is_traffic = his_vehicle && (his_class == DRIVER_TRAFFIC || his_class == DRIVER_NONE);
+        const bool he_is_airacer = his_vehicle && his_class == DRIVER_RACER;
 
         if (is_racer && he_is_traffic && UMath::Abs(avoidable_right.x * my_cookie.Forward.x + avoidable_right.z * my_cookie.Forward.y) > 0.707f &&
             his_vehicle && VehicleClass::TRAILER == his_vehicle->GetVehicleClass()) {
@@ -1848,7 +1849,7 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
             continue;
 
         const float trailing_speed = his_velocity.x * my_cookie.Forward.x + his_velocity.z * my_cookie.Forward.y;
-        const float time_offset = trailing_speed * approach_time - (my_extent + his_extent);
+        const float time_offset = approach_time * trailing_speed - (my_extent + his_extent);
         UMath::Vector3 point_of_impact = avoidable_position;
         point_of_impact.x += my_cookie.Forward.x * time_offset;
         point_of_impact.z += my_cookie.Forward.y * time_offset;
@@ -1863,7 +1864,7 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
             UMath::Scale(avoidable_forward, avoidable_dimension.z, forward);
 
             bVector2 left_diagonal(forward.x - right.x, forward.z - right.z);
-            bVector2 right_diagonal(right.x + forward.x, forward.z + right.z);
+            bVector2 right_diagonal(forward.x + right.x, forward.z + right.z);
             bVector2 avoidable_velocity(his_velocity.x, his_velocity.z);
             float avoidable_delta_offset = bCross(&avoidable_velocity, reinterpret_cast<const bVector2 *>(&cookie.Forward));
 
@@ -1873,48 +1874,238 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
             }
 
             UMath::Vector3 cut_to_position = point_of_impact;
-            float offset_change = avoidable_delta_offset * bClamp(approach_time, 0.0f, 1.0f);
-            cut_to_position.x += offset_change * 0.8f * cookie.Forward.y;
+            approach_time = bClamp(approach_time, 0.0f, 1.0f);
+            float offset_change = avoidable_delta_offset * approach_time;
+            cut_to_position.x = cut_to_position.x + offset_change * 0.8f * cookie.Forward.y;
             cut_to_position.z -= offset_change * 0.8f * cookie.Forward.x;
+            // La sentencia que faltaba, localizada por el ORDEN DEL POOL: al
+            // objetivo le sobraba 0x3E4CCCCC (0.19999999), que solo sale de
+            // `1.0f - 0.8f` plegado, y creado entre el 0.8 y el 0.2.  El mapa
+            // de lineas la situa exactamente aqui (WRoadNetwork.cpp:3768 del
+            // original, entre `cut_to_position.z -=` y `cookie_to_avoidable`),
+            // y es `extra_width`, que antes estaba abajo escrito con 0.2f.
+            // Con esto el pool casa 14/14.
+            // r27, medido: la frase que decia que nosotros izabamos la constante
+            // a f14 y corriamos todos los flotantes salvados es FALSA. Las dos
+            // versiones hacen lis/addi/lfs DENTRO del bucle, el marco es el mismo
+            // (0x2f0) y el censo de f14..f29 y f31 es identico al del objetivo.
+            // Lo unico que sobra es f30: 17 referencias contra 15. Son este mismo
+            // `fmuls`, que a nosotros sched lo adelanta 17 filas (y por eso pide
+            // un flotante salvado) mientras el objetivo lo emite pegado a su uso,
+            // en f2 (fila 584, `fmuls f2,f10,f0`, con el `lfs` de la constante
+            // justo antes en la 582).
+            // Seis formas de esta sentencia dan binario identico: la palanca no
+            // esta aqui.
+            // r28 decia (base 95,455 % / 91 diffs) que `forward.x + right.x` en
+            // right_diagonal casaba las filas 522 y 523 pero rompia otras dos.
+            // r36: con la barrera selectiva de arriba la base es otra y ESA VEDA
+            // YA NO VALE -- ahora casa las dos y no rompe ninguna: 57 -> 55 diffs.
+            // r36: barrera SELECTIVA. El diagnostico de arriba es correcto --sched
+            // adelanta este fmuls 17 filas y por eso pide un flotante salvado (f30)
+            // donde el objetivo usa f2--, pero ninguna de las seis formas de la
+            // sentencia lo mueve. Un asm extendido NO volatil ata solo lo que
+            // nombra: atando offset_change aqui, el fmuls no puede subir por
+            // encima de este punto.
+            // r46: sigue siendo load-bearing sobre la base nueva (quitarla: 58 filas).
+            // r47, EL EMPATE cr2/cr3 QUEDA CUANTIFICADO, y esta barrera es su causa.
+            // `allocno_compare` (global.c) ordena por
+            //     pri = (int)(floor_log2(n_refs)*n_refs/live_length*10000)
+            // y desempata por NUMERO DE ALLOCNO (= numero de pseudo = orden de aparicion
+            // del test en el cuerpo del bucle), que nunca se puede invertir aqui.  Con
+            // n_refs=3 en las tres comparaciones izadas, pri = (int)(30000/live_length):
+            //     is_traffic  pseudo 505  live 483  pri 62  -> cr4  (bien)
+            //     is_racer    pseudo 334  live 494  pri 60  -> cr3  (el objetivo da cr2)
+            //     is_drag     pseudo 901  live 492  pri 60  -> cr2  (el objetivo da cr3)
+            // 30000/492 = 60,97 y 30000/494 = 60,72: los dos truncan a 60, EMPATAN, y gana
+            // el pseudo menor.  El objetivo necesita el orden 505, 901, 334.
+            // QUITAR ESTA BARRERA LO ARREGLA: es un insn de cero bytes en el cuerpo del
+            // bucle, o sea dentro del rango de vida de las tres, y sin ella
+            // live(901)=491 -> pri 61 > 60 y el reparto sale 505->cr4, 901->cr3, 334->cr2
+            // EXACTO (comprobado en el `.greg`).  Pero entonces sched adelanta el `fmuls`
+            // de `extra_width` y `regmap` da tres locales mal (adelta f12, offset_change
+            // f13, extra_width f30 contra f10/f10/f2): 45 filas.
+            // Las unicas longitudes que voltean el empate son live(901) = 490, 491, 499,
+            // 500, 483 o 482; con la barrera puesta valen +7 o +8 insns MAS de cero bytes
+            // en el bucle.  MEDIDO Y NEGATIVO: esta barrera repetida 7/8/9 veces da 62 /
+            // 2976 B / 95 filas; siete barreras `+f` sobre siete flotantes distintos, 40;
+            // una sola sobre `dist_to_tail` en el bucle interior, 10.  Y mover la
+            // sentencia de `extra_width` detras de cookie_to_avoidable / cookie_to_me /
+            // my_d / avoidable_ahead da objeto IDENTICO en las cuatro (mover sentencias
+            // dentro del mismo bloque basico es neutro).
+            // Lo que falta es UN insn menos en el cuerpo del bucle sin perder este ancla.
+            // r61-world, PASO 0 DE LA r60b HECHO: LOS OCHO MOVABLES, ESCRITOS.
+            // La r48 los conto y no los escribio, y sin la lista no habia palanca.
+            // Banco: 8,6 s, sin compilar zWorld2 y sin tocar el arbol --
+            //   python scripts/rtldump.py --file \
+            //     src/Speed/Indep/Src/World/Common/WRoadNetwork.cpp --like zWorld2 \
+            //     HolePunchAvoidables -dl
+            // y en el `.lreg` de la funcion buscar `(set (reg:CC N) (compare ...))`.
+            // BASE de hoy, identica a la de r47/r48: live 334=494, 901=492, 505=483.
+            // Las tres CC son comparaciones INVARIANTES que loop.c iza al
+            // preencabezado, y el orden de la cadena de insns ES este:
+            //     insn 3254   (set (reg:CC 334) (compare (reg:SI 198) 0))   <- def(334)
+            //     insn 3341   (set (reg:SF 882) (mem *$LC435))
+            //     insn 3342   (set (reg:CC 901) (compare (reg:SI 216) 0))   <- def(901)
+            //   1 insn 3325   (set (reg/v:SF 802) (mem *$LC425))     <- el literal 0,2f
+            //   2 insn 3235   (set (reg:SI 969) (plus r31 8))
+            //   3 insn 3236   (set (reg:SI 249) (plus r31 184))
+            //   4 insn 3237   (set (reg:SI 252) (plus r31 232))
+            //   5 insn 3238   (set (reg:SI 253) (plus r31 248))
+            //   6 insn 3239   (set (reg/v:SI 261) (plus r31 216))
+            //   7 insn 3253   (set (reg:SI 295) (high "_IHandle__8IVehicle"))
+            //   8 insn 3268   (set (reg:SI 372) (high "_12VehicleClass.TRAILER"))
+            //     insn 3283   (set (reg:CC 505) (compare (reg:SI 212) 0))   <- def(505)
+            // OCHO EXACTOS, que es el numero que la r48 dio: cuadra al insn (492-483=9
+            // = los 8 mas el propio def(505); y 494-492=2 = insn 3341 mas def(901)).
+            // CINCO de los ocho son `addi rN, r31, K`: la DIRECCION de cinco locales de
+            // pila cuyo puntero se toma dentro del bucle (r31+8, +184, +216, +232,
+            // +248).  Los otros tres son el literal 0,2f, `_IHandle__8IVehicle` y
+            // `_12VehicleClass.TRAILER`.
+            // LA TERCERA RAMA, todavia sin evaluar, es SACAR UNO DE LOS OCHO DE ESTA
+            // VENTANA -- no anadir insns al bucle (esa rama esta cerrada mas abajo) ni
+            // ponerlos antes del bucle (tambien cerrada).  Basta con que UNO de los
+            // ocho se cree ANTES de la comparacion que define 901, y como loop.c iza
+            // en el orden en que aparecen en el CUERPO, eso se consigue reordenando el
+            // fuente: adelantar por delante del test de 901 la sentencia que toma la
+            // direccion de una de esas cinco locales, o la que menciona IVehicle o
+            // VehicleClass::TRAILER.
+            // OBSERVABLE DE CAUSA, y antes del diff: live(901) 492 -> 491 CON live(505)
+            // QUIETO EN 483.  Entonces pri = 30000/491 = 61, 30000/483 = 62 y
+            // 30000/494 = 60, que rompe el empate 60/60 de hoy y da 505->cr4,
+            // 901->cr3, 334->cr2, el reparto del objetivo.  Si 505 tambien baja, la
+            // insn movida estaba fuera de la ventana.  CONTROL: 2980/2980 exactos.
+            // r64-world, CONTROL DE VIGENCIA (y correccion al encargo de la r64, que
+            // manda hacer el `PASO 0` como si estuviera pendiente: NO LO ESTA).
+            // Repetido hoy el volcado, la ventana sale IGUAL insn a insn: def(901) en
+            // 3342, def(505) en 3283 y los OCHO movables entre medias, con los mismos
+            // uids 3325/3235/3236/3237/3238/3239/3253/3268.  Lo unico que ha cambiado
+            // es el NUMERO del literal: el 0,2f es hoy `*$LC551`, no `*$LC425`.
+            // O sea que la lista de abajo esta viva y la rama de reordenar el fuente
+            // sigue CERRADA por la r62; no hay `PASO 0` que hacer.
+            // r62-world, LA TERCERA RAMA EVALUADA: LA ORDENACION DE FUENTE NO LA MUEVE,
+            // y la CAUSA es que el orden del preencabezado LO PONE sched1, no loop.c.
+            // El volcado `.lreg` es POSTERIOR a sched1 (-fschedule-insns corre antes
+            // del reparto), asi que la cadena de doce insns de arriba es una LISTA YA
+            // PLANIFICADA: por eso su orden no es ni el de aparicion en el cuerpo
+            // (uids de primer uso: 969@574, 249@598, 252@625, IHandle@791,
+            // TRAILER@1007, 261@1056, 253@1689, -6.0f@2507) ni el de los uids de
+            // definicion (3325 va PRIMERO y es el mas alto de los ocho).  Adelantar
+            // la sentencia en el fuente no cambia el INSN_LUID relativo con que
+            // `rank_for_schedule` desempata.  MEDIDO, y cuatro de cinco salen
+            // IDENTICAS a la base (334=494, 901=492, 505=483):
+            //   E1 GetDimension delante del test de elevation      494 / 492 / 483
+            //   E2 QueryInterface delante del test de elevation    495 / 493 / 484 (+1 insn)
+            //   E3 GetLinearVelocity detras de GetDimension        494 / 492 / 483
+            //   E4 avoidable_forward declarado antes que _right    494 / 492 / 483
+            //   E5 GetLinearVelocity delante del test de elevation 494 / 492 / 482 (d1=10)
+            // Banco: 10 s por variante con `rtldump --file ... -dl`, SIN compilar
+            // zWorld2 (scratchpad/world62/hp2.py saca las tres CC del `.lreg` solo).
+            //
+            // EL MODELO, YA CERRADO Y COMPROBADO.  Con T = live(505), d1 = live(901)-T
+            // y d2 = live(334)-live(901) (base d1=9, d2=2), el empate se rompe si y
+            // solo si int(30000/(T+d1)) > int(30000/(T+d1+d2)).  Con d1=9 y d2=2 eso
+            // da T en {473, 474, 481, 482, 490, 491}: exactamente la lista de r47.
+            // CONFIRMADO EXPERIMENTALMENTE: la variante F2 --sacar la declaracion de
+            // `his_velocity` fuera del bucle y poner `asm("" : : "r"(&his_velocity));`
+            // justo delante del `for`-- da T=482 y las prioridades salen 62 / 61 / 60,
+            // o sea EL ORDEN DEL OBJETIVO.  Pero cuesta +8 B (2988/2980) y descoloca el
+            // prologo entero (el `mfcr` y las siete `lis` del pool): es un NEGATIVO,
+            // pero un negativo que PRUEBA el modelo.  Quien mueva T a 482 por CERO
+            // bytes cierra la funcion.
+            // Lo que NO mueve T (todas identicas a la base, 494/492/483):
+            //   F1 lo mismo con avoidable_dimension        F3 con his_vehicle
+            //   F4 con tranform                            F5 con closing_speed
+            //   F2b solo sacar la declaracion, sin asm     F6 el asm con "=m"
+            //   F8 el asm "r" puesto detras de is_drag (regla r48: cae delante de
+            //      los movables y no cuenta)
+            // Y LA OTRA PALANCA DE T, tambien NEGATIVA: izar `my_extent` fuera del
+            // bucle (G1) mueve T a 479 pero CAMBIA d1 y d2 a 8 y 4, con lo que 901 y
+            // 334 vuelven a empatar (61 y 61); ademas rompe el control de tamano,
+            // 2984/2980 y 85 filas.
+            // ESTADO: la funcion esta a 99,97315 %, 2980/2980, y sus UNICAS CUATRO
+            // diferencias son este cr2/cr3 (filas 176, 178, 241 y 645).  Vale 2.980 B.
+            // La rama viva que queda es sched1: bajar el INSN_LUID de uno de los ocho
+            // movables por debajo del de la comparacion de is_drag (o subir el de esa
+            // comparacion), y eso se ataca con el volcado ANTERIOR a sched1, no con
+            // el `.lreg`.
+            // r48, LA RAMA DEL +7 QUEDA CERRADA, y con la cifra.  El modelo se leyo
+            // entero del `.lreg`:  live(x) = T + s(x), donde s(x) son los insns que van
+            // de la definicion de x al final del preencabezado.  Medido en el volcado:
+            // entre def(334) y def(901) hay 1 insn (la carga del literal 0,2f) -> 2 de
+            // diferencia, y entre def(901) y def(505) hay 8 -> 9.  Cuadra al insn.
+            //  - Un `asm("")` ANTES del bucle NO cuenta: los insns de fuente previos al
+            //    bucle caen delante de los movables, o sea delante de las tres
+            //    definiciones.  Medido: 483/494/492 identicos, objeto identico.
+            //  - Con 7 `asm("")` DENTRO del bucle el reparto CR sale EXACTO
+            //    (505->cr4, 901->cr3, 334->cr2, live 490/499/501, pri 61/60/59), pero
+            //    aparece un SEGUNDO empate de truncamiento y las filas no bajan:
+            //      en el rabo del bucle                    17 filas  (1 sola: 10;  8: 21)
+            //      en la cabeza del bucle                  14 filas (1 sola)
+            //      en el `continue` de elevation con llaves 14 filas y 2984 B
+            //      dentro del `if (cut_flags == 0) {}`      SEIS filas (con 8: 24)
+            //      7 x `asm("" : "+r"(closest_avoidable))` 140 filas y 2988 B
+            //    Las SEIS que quedan en el mejor caso son un swap f16/f17 de los dos
+            //    literales del `bClamp(elevation, -5.0f, 5.0f)`: pseudos 268 (-5,0f) y
+            //    271 (5,0f), n_refs 5, o sea pri = int(100000/live).  Sus live valen
+            //    1030+2N y 1034+2N con N = insns anadidos al bucle (SIEMPRE el DOBLE
+            //    que las CC, comprobado en seis variantes).  Para que 271 gane hace
+            //    falta live(271) en [1038,1041] o [1049,1052], o sea N = 4, 5, 10 u 11;
+            //    y las CC piden N = -1, -2, +7 u +8.  LOS DOS CONJUNTOS NO SE CORTAN,
+            //    salvo en N = -1: quitar la barrera arregla LOS DOS empates a la vez
+            //    (live 482/491/493 y 1028/1032, comprobado en el `.greg`).
+            //    O sea: el unico camino es UN INSN MENOS, no siete mas.
+            //  - Pines sobre la base SIN barrera, todos peores que sus 46 filas:
+            //    offset_change fr10 53, fr12 57, fr13 56, fr0 52; avoidable_delta_offset
+            //    fr10/fr12/fr13 48; cut_to_position.x fr12 57, fr13 48.  NINGUN pin
+            //    recupera el reparto: sin barrera el problema es la PROGRAMACION.
+            //  - `asm volatile` con cuerpo emitiendo el `fmuls` de cut_to_position.z
+            //    (ancla Y emite en UN solo insn, o sea el -1 que hace falta): el reparto
+            //    CR sale EXACTO pero el resto explota, 170 filas y 2976 B.
+            //  - extra_width detras de close_factor / avoidable_offset /
+            //    right_projection / left_projection, sin barrera: 58 filas las cuatro.
+            //    Delante de cut_to_position.x: 66 CON y SIN barrera (identicas, o sea
+            //    que ahi la barrera ya no pinta nada).  Entre cut_x y cut_z: 55 las dos.
+            //    Escribir `(1.0f - 0.8f) * offset_change`: objeto identico.
+            // r65-world, BARRERA IRREDUCIBLE, REMEDIDA: quitandola son 46 filas y
+            // 97,25638 % contra las 4 de la base. Es la barrera SELECTIVA que ata
+            // `offset_change` a un registro EN ESTE PUNTO; sin ella el pin de
+            // fr11 de arriba no sirve de nada (ya lo decia r47: 58 filas sobre la
+            // base vieja). Las dos piezas son una sola palanca.
+            // r67b (fe-world): IRREDUCIBLE, remedida SOLA con el pin fr11: zWorld2
+            // b15dd01508c59f70, 46 filas (97,25638 %). Sin forma nueva: la r48 cerro la
+            // rama con la cifra (hace falta UN insn menos en el bucle, no siete mas).
+            float extra_width = offset_change * (1.0f - 0.8f);
 
             bVector2 cookie_to_avoidable(cut_to_position.x - cookie.Centre.x, cut_to_position.z - cookie.Centre.z);
             bVector2 cookie_to_me(my_position.x - cookie.Centre.x, my_position.z - cookie.Centre.z);
-            // float TODO = offset_change * 0.19999999f; // this constant is used somewhere, but where?
             float avoidable_d = bDot(&cookie_to_avoidable, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float my_d = bDot(&cookie_to_me, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float avoidable_ahead = avoidable_d - my_d;
             float close_factor = UMath::Ramp(avoidable_ahead, -6.0f, 6.0f);
-            float extra_width = offset_change * 0.2f;
-            float avoidable_offset = bCross(reinterpret_cast<const bVector2 *>(&cookie.Forward), &cookie_to_avoidable);
-            float nav_cross = bCross(&nav_forward, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+            float avoidable_offset = bCross(&cookie_to_avoidable, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float right_projection = bCross(&right_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
             float left_projection = bCross(&left_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
-            float lateral_projection = bClamp(approach_time, 0.0f, 1.0f);
-            float new_current_offset = lateral_projection * close_factor * delta_offset * 0.2f + current_offset;
-            new_current_offset += nav_cross;
-            new_current_offset += nav_cross;
-            float avoidable_half_width = bAbs(right_projection);
-            avoidable_half_width = bMax(avoidable_half_width, bAbs(left_projection));
-            // this var doesn't exist
-            float adjusted_width = extra_width * close_factor + avoidable_half_width;
-            float hole_punch_safety_margin = close_factor;
-            if (is_drag) {
-                hole_punch_safety_margin = close_factor * 0.8f;
-            }
-            float gap_right = cookie.RightOffset - avoidable_offset - adjusted_width;
-            float gap_left = avoidable_offset - adjusted_width - cookie.LeftOffset;
+            float avoidable_half_width = bMax(bAbs(left_projection), bAbs(right_projection)) + extra_width * close_factor;
+
+            approach_time *= close_factor;
+            float new_current_offset = approach_time * 0.2f * delta_offset + current_offset;
+            new_current_offset += bCross(&nav_forward, reinterpret_cast<const bVector2 *>(&cookie.Forward)) * 2.0f;
+
+            float hole_punch_safety_margin = is_drag ? close_factor * 0.8f : close_factor;
+            float gap_right = cookie.RightOffset - avoidable_offset - avoidable_half_width;
+            float gap_left = avoidable_offset - avoidable_half_width - cookie.LeftOffset;
             float gap_required = hole_punch_safety_margin + fVehicleHalfWidth;
             bool fit_right = gap_right > gap_required;
             bool fit_left = gap_left > gap_required;
             bool pass_left = new_current_offset < avoidable_offset;
             pass_left = fit_left ^ fit_right ? fit_left : pass_left;
-            // TODO is this lateral_projection?
-            float total_width = adjusted_width + fVehicleHalfWidth + hole_punch_safety_margin;
-
             int i = closest_cookie;
+            // el DWARF declara este float DESPUES de `i`, y lo llama lateral_projection
+            float lateral_projection = avoidable_half_width + fVehicleHalfWidth + hole_punch_safety_margin;
+
             for (; i < num_cookies; i++) {
                 NavCookie &this_cookie = cookies[i];
-                if (!CookieCutter(this_cookie, cut_to_position, total_width, pass_left, cut_flags) && i == closest_cookie)
+                if (!CookieCutter(this_cookie, cut_to_position, lateral_projection, pass_left, cut_flags) && i == closest_cookie)
                     break;
 
                 UMath::Vector2 delta;
@@ -2008,7 +2199,7 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
         int next_segment_number = next_cookie.SegmentNumber;
         int current_segment_number = current_cookie.SegmentNumber;
 
-        if (next_segment_number == current_segment_number) {
+        if (current_segment_number == next_segment_number) {
             mCurrentCookie.SegmentNumber = next_segment_number;
             mCurrentCookie.SegmentNodeInd = current_cookie.SegmentNodeInd;
             mCurrentCookie.SetSegmentParameter(UMath::Lerp(current_cookie.GetSegmentParameter(), next_cookie.GetSegmentParameter(), current_blend));
@@ -2436,7 +2627,62 @@ void WRoadNav::InitLaneOffset(const UMath::Vector3 &vehicle_pos) {
     EvaluateSplines(segment);
 }
 
-// UNSOLVED, stack problems
+// UNSOLVED, 21 diffs -- SOLO REPARTO DE REGISTROS (r36c). El marco, el tamano
+// y toda la estructura YA CASAN: 816/816 B, marco 0x90, `stmw r24,0x58`,
+// psq 0x78/0x80/0x88, la conversion int->double en 0x50 y `laneInd` en r24.
+//
+// La palanca es el PIN de abajo, y de el sale una regla que vale para todo el
+// proyecto (r36c, medida paso a paso):
+//   Los «12 B de pila jamas referenciada» que las rondas 27-29 dieron por un
+//   problema APARTE del registro NO eran un problema aparte: eran el MISMO.
+//   Con siete registros preservados (r25-r31) al asignador le falta uno y
+//   reserva 8 B de marco que luego no usa; con ocho (r24-r31) el hueco
+//   desaparece y el marco cae a 0x90 solo. O sea: 8 B muertos entre la ultima
+//   local y la ranura de la conversion = UN valor de larga vida que al
+//   objetivo le cupo en registro y a nosotros no.
+//   Se comprueba en 6 s con `-S` sobre una mini-TU: `stwu 1,-N(1)` y el offset
+//   del `lfd` de la conversion dicen si sobran 8 B.
+//
+// El pin tiene DOS detalles que costaron cinco medidas cada uno:
+//   1. `register int` y NO `register char`. Con `char` el registro es QImode y
+//      GCC no sabe que ya viene extendido: mete `extsb r5,r24` en la llamada y
+//      un `extsb r24,r24` de mas antes del `slwi` (820 B, 19 diffs, 95,93 %).
+//   2. con `int` hay que ESQUIVAR SetLaneInd: su parametro es `char` y
+//      PROMOTE_MODE lo re-extiende (`extsb r7,r24; stb r7`). Escribiendo los
+//      dos campos a pelo salen los `stb r24` del objetivo. Sin eso: 39 diffs.
+// Resultado: 42 -> 21 diffs, 99,152 -> 99,412 %, tamano EXACTO.
+//
+// Lo que queda son tres ciclos de registro, sin nada que leer en la fuente:
+//   fNodes/@ha del 0.0f   objetivo r10/r11   nuestro r11/r10   (12 filas)
+//   fProfiles@ha          objetivo r27       nuestro r28       (3 filas)
+//   0x4330                objetivo r26       nuestro r27       (3 filas)
+//   GetSegment: el objetivo NO fusiona el `lwz` con el destino del `add`
+//               (`mulli r8` + `lwz r10` + `add r25,r10,r8`)               (3)
+// El objetivo deja r26 y r27 un escalon mas abajo y NO usa r28; nosotros
+// dejamos libre r26. VEDAS r36c contra eso: `asm volatile("" : : : "r28")`
+// entre los dos GetProfile (46 diffs), la misma con salida `"+r"(lane)`
+// (48 diffs), la misma antes del primer GetProfile (36), clobber de r26 en la
+// base (38 y 63 segun donde), pin `int` con SetLaneInd normal (39), pin `int`
+// dejando `laneInd` en GetSegmentTrafficLaneRightSide (46), pin `char` usado
+// solo en SetLaneInd (41) o salvo en GetRawLaneOffset (40), quitar el pin de
+// r25 (25), SetLaneOffset(0.0f) delante de fStartPos (38), fLaneInd antes que
+// fToLaneInd (23). Neutras: el pin como primera sentencia, SetLaneOffset
+// detras de los campos, quitar la escritura repetida del bloque, y escribir
+// SetLaneOffset como tres campos.
+// r27: el pin `asm("r25")` de `segment` es LOAD-BEARING: quitandolo son 25
+// diffs en vez de 21.
+// r36d: el racimo de r26/r27/r28 CERRADO con la cantidad fantasma (ver dentro).
+// Quedan 15 difs: las tres primeras filas (mulli/lwz/add, coste del pin de r25)
+// y el racimo de doce del par fNodes<->@ha del 0,0f (r10<->r11).  Ese ultimo NO
+// se arregla bloqueando registros --los dos rangos se solapan, cualquier bloqueo
+// se los come a los dos--: hace falta invertir la PRIORIDAD de local_alloc entre
+// los dos. VEDAS r36d contra el: barrera `asm("" : "+f"(zero))` con
+// SetLaneOffset(zero) al final (28 difs), `asm("" : "+r"(segment))` detras del
+// pin (neutro, 15), y ampliar el rango de la cantidad fantasma hasta antes de
+// fStartPos (neutro, 15).  El permutador CIEGO si lo cierra --mover
+// SetLaneOffset(0.0f) tres sentencias arriba deja 14 difs-- pero se RECHAZA:
+// `lmap` situa los tres `stfs` del objetivo detras de los dos `stb` (h:525 antes
+// que h:530), asi que esa variante falsea el orden del original.
 void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
 
@@ -2462,11 +2708,11 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     fStartPos = roadNetwork.GetNode(segment->fNodeIndex[fNodeInd == 0])->fPosition;
     fEndPos = roadNetwork.GetNode(segment->fNodeIndex[fNodeInd])->fPosition;
 
-    SetLaneInd(laneInd);
+    SetLaneInd((char)laneInd);
     SetLaneOffset(0.0f);
 
     {
-        SetLaneInd(laneInd);
+        SetLaneInd((char)laneInd);
         const WRoadNode *nodePtr[2];
         roadNetwork.GetSegmentNodes(*segment, nodePtr);
 
@@ -3286,27 +3532,29 @@ float WRoadNav::CookieTrailCurvature(const UMath::Vector3 &car_position, const U
                     apex_to_nav.y = 0.0f;
                     UMath::Normalize(apex_to_nav);
 
-                    float sina =
-                        UMath::Abs(UMath::ASinr(UMath::Clamp(apex_to_nav.x * current_to_apex.z - current_to_apex.x * apex_to_nav.z, -1.0f, 1.0f)));
+                    float sina = apex_to_nav.x * current_to_apex.z - current_to_apex.x * apex_to_nav.z;
+                    apex = UMath::Abs(UMath::ASinr(UMath::Clamp(sina, -1.0f, 1.0f)));
 
                     if (current_to_apex.x * apex_to_nav.x + current_to_apex.z * apex_to_nav.z < 0.0f) {
-                        sina = static_cast<float>(M_PI) - sina;
+                        apex = static_cast<float>(M_PI) - apex;
                     }
 
-                    float div = UMath::Max(1.0f, apex_width);
-                    apex = sina * UMath::Sinr(UMath::Min(sina, static_cast<float>(M_PI_2)));
+                    dist_to_apex = UMath::Max(apex_width, 1.0f);
+                    apex = apex * UMath::Sinr(UMath::Min(apex, static_cast<float>(M_PI_2)));
 
                     if (nAvoidableOcclusion != 0) {
                         float my_trailingspeed = UMath::Dot(car_velocity, current_to_apex);
                         float closing_speed = (my_trailingspeed - fOccludingTrailSpeed);
-                        float ratio = 0.0f;
+                        float ratio;
                         if (my_trailingspeed > 1e-6f) {
                             ratio = UMath::Ramp(closing_speed / my_trailingspeed, 0.0f, 1.0f);
+                        } else {
+                            ratio = 0.0f;
                         }
                         apex *= ratio * ratio;
                     }
 
-                    apex = UMath::Clamp(apex, 0.0f, static_cast<float>(M_PI)) / div;
+                    apex = UMath::Clamp(apex, 0.0f, static_cast<float>(M_PI)) / dist_to_apex;
                 }
             }
         }
@@ -3333,7 +3581,7 @@ float WRoadNav::CookieTrailCurvature(const UMath::Vector3 &car_position, const U
             }
         }
 
-        return UMath::Max(apex, road_curvature);
+        return UMath::Max(road_curvature, apex);
     }
     return 0.0f;
 }

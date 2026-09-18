@@ -213,6 +213,10 @@ class GenericAccessor : private Instance {
         ATTRIB_CODEGEN_GETVALIDATTRIB(StringKey, 0x09925106, index, val);
     }
 
+    const StringKey &DESCRIPTION(unsigned int index) const {
+        ATTRIB_CODEGEN_GETVALUEINDEXED(StringKey, 0x09925106, index);
+    }
+
     unsigned int Num_DESCRIPTION() const {
         ATTRIB_CODEGEN_GETLENGTH(0x09925106);
     }
@@ -375,6 +379,10 @@ class GenericAccessor : private Instance {
 
     unsigned int Num_MAX_SPEED_MPS() const {
         ATTRIB_CODEGEN_GETLENGTH(0x9bbdb702);
+    }
+
+    const StringKey &MODEL(unsigned int index) const {
+        ATTRIB_CODEGEN_GETVALUEINDEXED(StringKey, 0x9047c9e0, index);
     }
 
     bool MODEL(StringKey &val, unsigned int index) const {

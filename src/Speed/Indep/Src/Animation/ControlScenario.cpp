@@ -16,7 +16,7 @@ void InitAnimControlScenarios(IControlScenario **arr_ptrs) {
     for (int i = 0; i < eCST_NUM_TYPES; i++) {
         if (i != eCST_ERROR) {
             if (i == eCST_NIS_Generic) {
-                arr_ptrs[eCST_NIS_Generic] = BNEW GenericNISControlScenario();
+                arr_ptrs[eCST_NIS_Generic] = new ("GenericNISControlScenario", 0) GenericNISControlScenario();
             }
         }
     }
@@ -24,9 +24,8 @@ void InitAnimControlScenarios(IControlScenario **arr_ptrs) {
 
 void CleanControlScenarios(IControlScenario **arr_ptrs) {
     for (int i = 0; i < eCST_NUM_TYPES; i++) {
-        IControlScenario *p = arr_ptrs[i];
-        if (p) {
-            delete p;
+        if (arr_ptrs[i]) {
+            delete arr_ptrs[i];
         }
         arr_ptrs[i] = nullptr;
     }

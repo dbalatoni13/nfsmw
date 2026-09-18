@@ -3,6 +3,8 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+
+
 int SpecialCarList1[] = {0x9537ACB7, 0x5D6E3E54, 0x5D6E3E54, 0xE6D4BEE9, 0xA3A1D182, 0x3E8EA090, 0x43CE4BC3, 0xD601789E};
 
 int SpecialCarList2[] = {

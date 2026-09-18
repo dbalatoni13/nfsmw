@@ -8,6 +8,17 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+static const unsigned int WAM_START_TRIGGER = bStringHash("WAM_START_TRIGGER");
+static const unsigned int WAM_STOP_TRIGGER = bStringHash("WAM_STOP_TRIGGER");
+static const unsigned int WAM_FIRST_FRAME = bStringHash("WAM_FIRST_FRAME");
+static const unsigned int WAM_LAST_FRAME = bStringHash("WAM_LAST_FRAME");
+static const unsigned int WAM_SOUND_TRIGGER_START = bStringHash("WAM_SOUND_TRIGGER_START");
+static const unsigned int WAM_SOUND_TRIGGER_STOP = bStringHash("WAM_SOUND_TRIGGER_STOP");
+
+static const unsigned int WAM_NIS_GENERIC_CONTROL_MSG = bStringHash("WAM_NIS_GENERIC_CONTROL_MSG");
+
+static const unsigned int WAM_FWD_REV_TRACK_CONTROL_MSG = bStringHash("WAM_FWD_REV_TRACK_CONTROL_MSG");
+
 enum eControlScenarioType {
     eCST_ERROR = -1,
     eCST_TriggerZone = 0,

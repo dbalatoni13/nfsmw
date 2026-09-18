@@ -1102,7 +1102,7 @@ static Table SteerInputRemapTables[] = {Table(JoystickInputToSteerRemap1, 21, -1
 
 Table SteeringRangeTable(SteeringRangeData, 10, 0.0f, MAX_SPEED);
 Table SteeringWheelRangeTable(SteeringWheelRangeData, 10, 0.0f, MAX_SPEED);
-Table SteeringRangeCoeffTable(SteeringInputData, 6, 0.0f, 1.0f);
+Table SteeringRangeCoeffTable(SteeringInputRangeData, 6, 0.0f, 1.0f);
 Table SteeringSpeedTable(SteeringSpeedData, 10, 0.0f, MAX_SPEED);
 Table SteeringInputSpeedCoeffTable(SteeringInputSpeedData, 6, 0.0f, 10.0f);
 Table SteeringInputCoeffTable(SteeringInputData, 6, 0.0f, 1.0f);
@@ -1191,7 +1191,8 @@ float SuspensionRacer::DoHumanSteering(Chassis::State &state) {
 
     if (steer_type == ISteeringWheel::kGamePad) {
         int steer_remapping = SteerInputRemapping;
-        steer_input = SteerInputRemapTables[steer_remapping].GetValue(steer_input);
+        // the remap selector is 1-based: 0 means "no remapping", so the table index is value - 1
+        steer_input = SteerInputRemapTables[steer_remapping - 1].GetValue(steer_input);
         float steering_speed = (this->CalculateSteeringSpeed(state) * steering_coeff) * state.time;
         float max_diff = steer + steering_speed;
         newsteer = bClamp(newsteer, steer - steering_speed, max_diff);
@@ -1452,8 +1453,8 @@ float SuspensionRacer::CalcYawControlLimit(float speed) const {
     return this->mTireInfo.YAW_CONTROL(0);
 }
 
-GraphEntry<float> DriftStabilizerData[] = {{0.0f, 0.0f},        {0.2617994f, 0.1f},  {0.52359879f, 0.45f}, {0.78539819f, 0.85f},
-                                           {1.0471976f, 0.95f}, {1.5533431f, 1.15f}, {1.5707964f, 0.0f}};
+GraphEntry<float> DriftStabilizerData[] = {{bDegToRad(0.0f), 0.0f},   {bDegToRad(15.0f), 0.1f},  {bDegToRad(30.0f), 0.45f}, {bDegToRad(45.0f), 0.85f},
+                                           {bDegToRad(60.0f), 0.95f}, {bDegToRad(89.0f), 1.15f}, {bDegToRad(90.0f), 0.0f}};
 float DriftRearFrictionData[] = {1.1f, 0.95f, 0.87f, 0.77f, 0.67f, 0.6f, 0.51f, 0.43f, 0.37f, 0.34f};
 tGraph<float> DriftStabilizerTable(DriftStabilizerData, NUM_SLIP_ANGLE_TABLES); // TODO is that macro usage right?
 Table DriftRearFrictionTable(DriftRearFrictionData, 10, 0.0f, 1.0f);
@@ -1885,7 +1886,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
         UVector3 lateralNormal;
         UMath::UnitCross(groundNormal, forwardNormal, lateralNormal);
 
-        float penetration = wheel.GetNormal().w;
+        const float penetration = wheel.GetNormal().w;
         // how angled the wheel is relative to the ground
         float upness = UMath::Clamp(UMath::Dot(groundNormal, vUp), 0.0f, 1.0f);
         const float oldCompression = wheel.GetCompression();
@@ -1927,7 +1928,8 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
                 damp = 0.0f;
             }
 
-            float springForce = UMath::Max(damp + spring + sway_stiffness[i], 0.0f);
+            float springForce = damp + spring + sway_stiffness[i];
+            springForce = UMath::Max(springForce, 0.0f);
 
             UVector3 verticalForce(vUp * springForce);
 

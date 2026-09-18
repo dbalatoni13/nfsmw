@@ -5,6 +5,10 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
+
+// En la .bss del original va justo antes de gEasterEggs.
+Timer tRenderEggTimer;
 
 EasterEggs gEasterEggs;
 
@@ -79,15 +83,15 @@ void EasterEggs::ActivateEasterEgg(int egg) {
             MikeMannBuild = 0;
         } else if (EasterEggsTable[egg].type == EASTER_EGG_BURGER_KING) {
             // TODO magic
-            cFEng::Get()->QueueGameMessage(0x98257537, nullptr, 0xff);
+            cFEng::Get()->QueueGameMessage(FEHASH_BK_UNLOCK, nullptr, 0xff);
         } else if (EasterEggsTable[egg].type == EASTER_EGG_CASTROL) {
             // TODO magic
-            cFEng::Get()->QueueGameMessage(0x6521e5c2, nullptr, 0xff);
+            cFEng::Get()->QueueGameMessage(FEHASH_CASTROL_UNLOCK, nullptr, 0xff);
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
             stable->AwardBonusCars();
         } else if (EasterEggsTable[egg].type == EASTER_EGG_DEMO_CHEAT) {
             // TODO magic
-            cFEng::Get()->QueueGameMessage(0xa6813b08, nullptr, 0xff);
+            cFEng::Get()->QueueGameMessage(FEHASH_DEMO_CHEAT, nullptr, 0xff);
             FEDatabase->GetCareerSettings()->TryAwardDemoMarker();
         }
     }

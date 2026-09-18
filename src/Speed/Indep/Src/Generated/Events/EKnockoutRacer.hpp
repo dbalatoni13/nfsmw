@@ -12,19 +12,19 @@ class EKnockoutRacer : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        GRacerInfo *fRacer; // offset: 0x4, size 0x4
+        struct GRacerInfo *fRacer; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EKnockoutRacer(GRacerInfo *pRacer);
+    EKnockoutRacer(struct GRacerInfo *pRacer);
 
     ~EKnockoutRacer() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
-    GRacerInfo *fRacer; // offset: 0x8, size 0x4
+    struct GRacerInfo *fRacer; // offset: 0x8, size 0x4
 };
 
 void EKnockoutRacer_MakeEvent_Callback(const void *staticData);

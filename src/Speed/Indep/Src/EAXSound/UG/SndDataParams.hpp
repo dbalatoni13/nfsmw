@@ -141,11 +141,11 @@ class stSndDataLoadParams;
 // total size: 0x24
 // Decl: 286
 struct stBankSlot {
-    stBankSlot() {} // Decl: 287
+    stBankSlot() { Clear(); } // Decl: 287
 
-    ~stBankSlot() {} // Decl: 292
+    ~stBankSlot() { Clear(); }
 
-    void Clear() {} // Decl: 298
+    void Clear(); // Decl: 298
 
     eBANK_SLOT_TYPE Type;              // offset 0x0, size 0x4, Decl: 312
     int BANKmemLocation;               // offset 0x4, size 0x4, Decl: 313
@@ -158,15 +158,60 @@ struct stBankSlot {
     stSndDataLoadParams *pAssetParams; // offset 0x20, size 0x4, Decl: 322
 };
 
+
 // total size: 0x68
 // Decl: 328
 class stSndDataLoadParams {
   public:
-    stSndDataLoadParams() {} // Decl: 330
+    stSndDataLoadParams() { // Decl: 330
+        Clear();
+    }
 
-    void Clear() {} // Decl: 335
+    void Clear() { // Decl: 335
+        this->AssetDescription.Clear();
+        this->MemLocation = TMP_ALLOC_NONE;
+        this->mBankSlot = nullptr;
+        this->pmem = nullptr;
+        this->plocmem = nullptr;
+        this->nSize = 0;
+        this->Handle = -1;
+        this->bResolvedAsync = false;
+        this->bResolvedSync = false;
+        this->resallocs.clear();
+        this->RefCount.clear();
+        this->t_req = Timer(0);
+        this->t_load = Timer(0);
+    }
 
-    stSndDataLoadParams &operator=(stSndDataLoadParams &copy) {} // Decl: 361
+    stSndDataLoadParams &operator=(stSndDataLoadParams &copy) { // Decl: 361
+        this->AssetDescription = copy.AssetDescription;
+        this->MemLocation = copy.MemLocation;
+        this->mBankSlot = copy.mBankSlot;
+        if (this->mBankSlot != nullptr && this->mBankSlot->pAssetParams == &copy) {
+            this->mBankSlot->pAssetParams = this;
+        }
+        this->pmem = copy.pmem;
+        this->plocmem = copy.plocmem;
+        this->nSize = copy.nSize;
+        this->Handle = copy.Handle;
+        this->bResolvedAsync = copy.bResolvedAsync;
+        this->bResolvedSync = copy.bResolvedSync;
+        this->resallocs.clear();
+        this->resallocs.reserve(copy.resallocs.size());
+        for (ResAllocList::iterator ir = copy.resallocs.begin(); ir != copy.resallocs.end(); ir++) {
+            this->resallocs.push_back(*ir);
+        }
+        copy.resallocs.clear();
+        this->RefCount.clear();
+        this->RefCount.reserve(copy.RefCount.size());
+        for (RefCountList::iterator ic = copy.RefCount.begin(); ic != copy.RefCount.end(); ic++) {
+            this->RefCount.push_back(*ic);
+        }
+        copy.RefCount.clear();
+        this->t_req = copy.t_req;
+        this->t_load = copy.t_load;
+        return *this;
+    }
 
     stAssetDescription AssetDescription; // offset 0x0, size 0x20, Decl: 415
     eTEMPALLOCLOCATION MemLocation;      // offset 0x20, size 0x4, Decl: 416

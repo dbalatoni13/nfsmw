@@ -109,7 +109,6 @@ int DepthRegion(GenericRegion *before, GenericRegion *after) {
     return distB <= distA;
 }
 
-// UNSOLVED, just a scheduling issue I think
 int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InFE) {
     static unsigned int oldDistFogColour = 0x000003E7;
     static float oldDistFogPower = 999.0f;

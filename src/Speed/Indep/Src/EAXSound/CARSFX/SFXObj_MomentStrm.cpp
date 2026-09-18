@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aud_moment_strm.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aud_moment_strm_hash.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -38,7 +39,9 @@ int DEBUG_MOMENT_STRM = 0;    // size: 0x4, address: 0xFFFFFFFF, Decl: 50
 bool SFXObj_MomentStrm::bHoldStream = false;           // size: 0x1, Decl: 52
 float SFXObj_MomentStrm::m_TimeBeforeRetrigger = 0.0f; // size: 0x1, Decl: 53
 
+#ifndef EA_BUILD_A124
 SFXObj_MomentStrm *g_MomentStream = nullptr; // size: 0x4, address: 0x80418370, Decl: 55
+#endif
 
 SFXObj_MomentStrm::SFXObj_MomentStrm()
     : CARSFX(), //
@@ -56,13 +59,17 @@ SFXObj_MomentStrm::SFXObj_MomentStrm()
     this->UseUserPos = false;
     this->mHeldMoment = nullptr;
     this->bHoldStream = false;
+#ifndef EA_BUILD_A124
     g_MomentStream = this;
     this->mCarsID = 0;
     this->mbUseTRafficsID = false;
+#endif
 }
 
 SFXObj_MomentStrm::~SFXObj_MomentStrm() {
+#ifndef EA_BUILD_A124
     g_MomentStream = nullptr;
+#endif
     this->Destroy();
 
     if (this->mMsgReceiveMoment != nullptr) {
@@ -119,7 +126,11 @@ void SFXObj_MomentStrm::InitSFX() {
 }
 
 int SFXObj_MomentStrm::GetController(int Index) {
+#ifdef EA_BUILD_A124
+    return Index == 0 ? 2 : -1;
+#else
     return Index != 0 ? -1 : 2;
+#endif
 }
 
 void SFXObj_MomentStrm::AttachController(SFXCTL *psfxctl) {
@@ -148,11 +159,7 @@ bool SFXObj_MomentStrm::ShouldStreamPlay(Attrib::Key key, bool IsQueueing, float
         }
     }
 
-    if (!GRaceStatus::Exists()) {
-        return false;
-    }
-
-    if (GRaceStatus::Get().GetRaceParameters() != nullptr && !GRaceStatus::Get().GetActivelyRacing()) {
+    if (!GRaceStatus::Exists() || (GRaceStatus::Get().GetRaceParameters() != nullptr && !GRaceStatus::Get().GetActivelyRacing())) {
         return false;
     }
 
@@ -189,7 +196,9 @@ void SFXObj_MomentStrm::CommitStreamReq(UMath::Vector4 pos4, unsigned int collec
     Speech::SED_NISSFX *nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
 
     this->m_CurMoment = collectionkey;
+#ifndef EA_BUILD_A124
     this->mCarsID = 0;
+#endif
     this->fPosition.x = pos4.z;
     this->fPosition.y = -pos4.x;
     this->fPosition.z = pos4.y;
@@ -245,11 +254,13 @@ void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
     } else if (this->ShouldStreamPlay(collectionkey, false, 0.0f)) {
         this->CommitStreamReq(message.GetPosition(), collectionkey);
 
+#ifndef EA_BUILD_A124
         if (collectionkey == Attrib::Hash::aud_moment_strm::key_car2car || collectionkey == Attrib::Hash::aud_moment_strm::key_collision) {
             this->mCarsID = message.GethSimable();
         } else {
             this->mCarsID = 0;
         }
+#endif
 
         this->bHoldStream = false;
         this->mHeldMoment = nullptr;
@@ -258,6 +269,7 @@ void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
 
 void SFXObj_MomentStrm::CBPlayMomentStream() {
     if (!bHoldStream) {
+#ifndef EA_BUILD_A124
         if (g_MomentStream != nullptr) {
             Attrib::Gen::aud_moment_strm momentstrm(g_MomentStream->m_CurMoment, 0, nullptr);
 
@@ -265,6 +277,7 @@ void SFXObj_MomentStrm::CBPlayMomentStream() {
                 g_MomentStream->SetDMIX_Input(5, 0x7FFF);
             }
         }
+#endif
 
         bool bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
         Speech::Manager::GetSpeechModule(0)->UnPause();
@@ -289,6 +302,7 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
         this->fPosition = *SndCamera::GetWorldCarPos3(0);
     }
 
+#ifndef EA_BUILD_A124
     if (this->mCarsID != 0) {
         EAX_CarState *pcar = EAX_CarState::Find(this->mCarsID);
 
@@ -296,6 +310,7 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
             this->fPosition = *pcar->GetPosition();
         }
     }
+#endif
 
     Speech::SED_NISSFX *nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
 
@@ -317,16 +332,22 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
                 nismgr->GetStreamChannel()->PurgeStream();
                 this->m_CurMoment = 0;
                 this->mHeldMoment = nullptr;
+#ifndef EA_BUILD_A124
                 this->mCarsID = 0;
+#endif
             }
         }
 
         if (nismgr->GetStreamType() == STRM_SFX_MOMENT && !nismgr->GetStreamChannel()->IsPlaying()) {
             this->m_CurMoment = 0;
+#ifndef EA_BUILD_A124
             this->mCarsID = 0;
+#endif
         } else if (nismgr->GetStreamType() != STRM_SFX_MOMENT) {
             this->m_CurMoment = 0;
+#ifndef EA_BUILD_A124
             this->mCarsID = 0;
+#endif
         }
 
         if (!this->UseUserPos) {
@@ -357,19 +378,29 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
 }
 
 void SFXObj_MomentStrm::ProcessUpdate() {
+#ifndef EA_BUILD_A124
     SndBase::ProcessUpdate();
     SetDMIX_Input(5, 0);
+#endif
 }
 
 void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
+#ifdef EA_BUILD_A124
+    bool IsWorldDataStreaming(unsigned int strmhandle);
+    if (IsWorldDataStreaming(0) == 1) {
+        return;
+    }
+#endif
     int id = 0x40010010; // TODO magic
     SFXObj_PFEATrax *peatrax = static_cast<SFXObj_PFEATrax *>(g_pEAXSound->GetSFXBase_Object(id));
     eMUSIC_TYPE etype = peatrax->GetMusicType();
 
     if (message.GetStartBreaker()) {
+#ifndef EA_BUILD_A124
         bool IsWorldDataStreaming(unsigned int strmhandle);
 
         if (!IsWorldDataStreaming(0)) {
+#endif
             if (etype == eMUSIC_TYPE_INTERACTIVE) {
                 MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0,
                                 Attrib::Hash::aud_moment_strm::key_purs_break_start_music)
@@ -379,7 +410,9 @@ void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
                                 Attrib::Hash::aud_moment_strm::key_purs_break_start_fx)
                     .Send(UCrc32("MomentStrm"));
             }
+#ifndef EA_BUILD_A124
         }
+#endif
 
         MMiscSound(3).Send(UCrc32("Snd"));
     } else {

@@ -37,7 +37,7 @@ public:
             return "";
         return mQueueName;
     }
-    bool IsRequired() const { return mRequired; }
+    bool IsRequired() const { return mRequired && mPort >= 0; }
     void SetRequired(bool b) { mRequired = b; }
 
 
@@ -88,12 +88,12 @@ public:
 
     USE_FASTALLOC(ActionQueue)
 
-private:
-    UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268
-
     void IO_SetConnected(bool plugged);
     void IO_Flush();
     void IO_UpdateFromDevice();
+
+private:
+    UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268
 
 
     void Init(int port, unsigned int config);

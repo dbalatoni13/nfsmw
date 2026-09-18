@@ -51,7 +51,7 @@ void SNDBANKI_asyncresolve() {
         firstoffset = i;
         for (; i < pb->numpatches; i++) {
             if (pb->patch[i] != NULL) {
-                SNDBANKI_asyncresolvepatch(0x200, reinterpret_cast<TAGGEDPATCH *>((int)&pb->patch[i] + (int)pb->patch[i]), (char *)pbl->pspuram,
+                SNDBANKI_asyncresolvepatch(0x200, reinterpret_cast<TAGGEDPATCH *>((sndptrint)&pb->patch[i] + (sndptrint)pb->patch[i]), (char *)pbl->pspuram,
                                            &firstoffset);
             }
         }
@@ -353,7 +353,7 @@ int SNDBANK_asyncloadi(char *filename, int fileoffset, void *pmem, int memsize, 
         psalb = &sndbas.pi->salb[i];
         psalb->dlhandle = -1;
         psalb->state = 0;
-        psalb->ploadbuf = (char *)(((sndbas.pi->loadbufsize + 0x40) * i + (int)pmem + 0x10C) & ~0x3F);
+        psalb->ploadbuf = (char *)(((sndbas.pi->loadbufsize + 0x40) * i + (sndptrint)pmem + 0x10C) & ~0x3F);
     }
 
     for (i = 0; i < sndgs.sso.set.maxbanks; i++) {

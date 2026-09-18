@@ -263,7 +263,14 @@ class CAnimCandidateData {
         }
     }
 
-    int GetSpecialCarList(uint32 sceneHash) {}
+    int GetSpecialCarList(uint32 sceneHash) {
+        for (int i = 0; i < (int)mSpecialCarListCount; i++) {
+            if (sceneHash == mSpecialCarListAnim[i].mSceneHash) {
+                return mSpecialCarListAnim[i].mSpecialCarList;
+            }
+        }
+        return -1;
+    }
 
     int GetSceneMomentMarkerType(uint32 sceneHash);
 

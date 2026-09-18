@@ -105,7 +105,106 @@ block_relocations:
 - source: .data:0x8044C120
   end: .data:0x8044C320
 
+# --- falsos nop de dtk -------------------------------------------------
+# dtk leyo pares lis/ori de constantes de 32 bits (IDs de chunk, CRCs) como
+# punteros y emitio reubicaciones @h/@l. El objeto de referencia guarda el
+# inmediato a cero, con lo que el `ori` sale como `nop` y objdiff cuenta dos
+# instrucciones mal para siempre. Bloqueando la reubicacion vuelve el literal.
+# 15 pares en el arbol; valen 8 funciones y 1676 B de matched_code.
+# metrotrk fn_80310E40: constante 0x80439788
+- source: .text:0x80310E60
+  end: .text:0x80310E64
+- source: .text:0x80310E64
+  end: .text:0x80310E68
+# LoaderAnimSceneData: ID de chunk 0x80037020
+- source: .text:0x8004BAB8
+  end: .text:0x8004BABC
+- source: .text:0x8004BAC0
+  end: .text:0x8004BAC4
+# UnloaderAnimSceneData: ID de chunk 0x80037020
+- source: .text:0x8004BB94
+  end: .text:0x8004BB98
+- source: .text:0x8004BB9C
+  end: .text:0x8004BBA0
+# ICEManager::LoadCameraSet: ID de chunk 0x8003B200
+- source: .text:0x8007ECC4
+  end: .text:0x8007ECC8
+- source: .text:0x8007ECC8
+  end: .text:0x8007ECCC
+# ICEManager::UnloadCameraSet: ID de chunk 0x8003B200
+- source: .text:0x8007EE24
+  end: .text:0x8007EE28
+- source: .text:0x8007EE28
+  end: .text:0x8007EE2C
+# LoaderICECameras: ID de chunk 0x8003B200
+- source: .text:0x8007F114
+  end: .text:0x8007F118
+- source: .text:0x8007F118
+  end: .text:0x8007F11C
+# UnloaderICECameras: ID de chunk 0x8003B200
+- source: .text:0x8007F19C
+  end: .text:0x8007F1A0
+- source: .text:0x8007F1A0
+  end: .text:0x8007F1A4
+# LoaderSoundStichs: ID de chunk 0x8003B500
+- source: .text:0x800B2C5C
+  end: .text:0x800B2C60
+- source: .text:0x800B2C64
+  end: .text:0x800B2C68
+# UnloaderSoundStichs: ID de chunk 0x8003B500
+- source: .text:0x800B2DE4
+  end: .text:0x800B2DE8
+- source: .text:0x800B2DE8
+  end: .text:0x800B2DEC
+# LoaderEventSequence: ID de chunk 0x8003B810
+- source: .text:0x801ED598
+  end: .text:0x801ED59C
+- source: .text:0x801ED59C
+  end: .text:0x801ED5A0
+# UnloaderEventSequence: ID de chunk 0x8003B810
+- source: .text:0x801ED670
+  end: .text:0x801ED674
+- source: .text:0x801ED674
+  end: .text:0x801ED678
+# LoaderBounds: ID de chunk 0x8003B900
+- source: .text:0x8021EAA8
+  end: .text:0x8021EAAC
+- source: .text:0x8021EAB0
+  end: .text:0x8021EAB4
+# UnloaderBounds: ID de chunk 0x8003B900
+- source: .text:0x8021EB34
+  end: .text:0x8021EB38
+- source: .text:0x8021EB3C
+  end: .text:0x8021EB40
+# HeirarchyModel::HeirarchyModel: CRC 0x804C146E
+- source: .text:0x8021F0B0
+  end: .text:0x8021F0B4
+- source: .text:0x8021F0C0
+  end: .text:0x8021F0C4
+# HeirarchyModel::OnBeginSimulation: CRC 0x804C146E
+- source: .text:0x8021FE78
+  end: .text:0x8021FE7C
+- source: .text:0x8021FE80
+  end: .text:0x8021FE84
+# zMain __static_initialization_and_destruction_0: BCHUNK_CARP_EVENT_SEQUENCES
+# 0x8003B810. Ultimo par del arbol: el barrido de scripts/relocfantasma.py deja
+# 0 sin bloquear fuera de metrotrk, que no esta escrito.
+- source: .text:0x801F1FC8
+  end: .text:0x801F1FCC
+- source: .text:0x801F1FD0
+  end: .text:0x801F1FD4
+
 add_relocations:
+- source: .text:0x803654C0
+  type: ha
+  target: _3Snd.gAzimuthFoldDownLut
+  addend: -6
+
+- source: .text:0x803654C4
+  type: l
+  target: _3Snd.gAzimuthFoldDownLut
+  addend: -6
+
 - source: .text:0x800d5318
   type: ha
   target: gAudioMemoryManager

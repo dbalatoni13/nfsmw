@@ -142,6 +142,18 @@ typedef struct {
     int filter_Effects_Wet_FX; // offset 0x54, size 0x4
 } FX_SKIDStruct;
 
+extern InterfaceId FX_Hydr_BounceId;      // size: 0x8
+extern ClassHandle gFX_Hydr_BounceHandle; // size: 0x8
+
+// total size: 0x10
+// Decl: 196
+typedef struct {
+    int hYD_ID;           // offset 0x0, size 0x4, Decl: 199
+    int hYD_PITCH_OFFSET; // offset 0x4, size 0x4, Decl: 202
+    int hYD_volume;       // offset 0x8, size 0x4, Decl: 205
+    int hYD_azimuth;      // offset 0xC, size 0x4, Decl: 208
+} FX_Hydr_BounceStruct;
+
 extern InterfaceId FX_WeatherId;      // size: 0x8, Decl: 211
 extern ClassHandle gFX_WeatherHandle; // size: 0x8, Decl: 212
 
@@ -1204,6 +1216,109 @@ class FX_SKID {
     FX_SKIDStruct mData; // offset 0x4, size 0x58
 };
 
+// Decl: 1586
+class FX_Hydr_Bounce {
+  public:
+    void SetHYD_ID(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.hYD_ID = x;
+    }
+
+    int GetHYD_ID() {
+        return this->mData.hYD_ID;
+    }
+
+    void SetHYD_PITCH_OFFSET(int x) {
+        if (x < -0x2000) {
+            x = -0x2000;
+        } else if (x > 0x2000) {
+            x = 0x2000;
+        }
+        this->mData.hYD_PITCH_OFFSET = x;
+    }
+
+    int GetHYD_PITCH_OFFSET() {
+        return this->mData.hYD_PITCH_OFFSET;
+    }
+
+    void SetHYD_volume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.hYD_volume = x;
+    }
+
+    int GetHYD_volume() {
+        return this->mData.hYD_volume;
+    }
+
+    void SetHYD_azimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        this->mData.hYD_azimuth = x;
+    }
+
+    int GetHYD_azimuth() {
+        return this->mData.hYD_azimuth;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    FX_Hydr_Bounce(int hYD_ID, int hYD_PITCH_OFFSET, int hYD_volume, int hYD_azimuth) {
+        this->SetHYD_ID(hYD_ID);
+        this->SetHYD_PITCH_OFFSET(hYD_PITCH_OFFSET);
+        this->SetHYD_volume(hYD_volume);
+        this->SetHYD_azimuth(hYD_azimuth);
+
+        Result result = Class::CreateInstance(&gFX_Hydr_BounceHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gFX_Hydr_BounceHandle.Set(&FX_Hydr_BounceId);
+            Class::CreateInstance(&gFX_Hydr_BounceHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~FX_Hydr_Bounce() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    FX_Hydr_BounceStruct mData;
+};
+
 // Decl: 1715
 class FX_Weather {
   public:
@@ -1661,6 +1776,11 @@ class FX_UVES {
 class FX_Radar {
   public:
     void SetID(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2) {
+            x = 2;
+        }
         this->mData.iD = x;
     }
 
@@ -1682,6 +1802,11 @@ class FX_Radar {
     }
 
     void SetPitch_Offset(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
         this->mData.pitch_Offset = x;
     }
 
@@ -1690,6 +1815,11 @@ class FX_Radar {
     }
 
     void SetIntensity(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x410) {
+            x = 0x410;
+        }
         this->mData.intensity = x;
     }
 
@@ -1698,6 +1828,11 @@ class FX_Radar {
     }
 
     void SetStop(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
         this->mData.stop = x;
     }
 
@@ -1726,9 +1861,9 @@ class FX_Radar {
     FX_Radar(int iD, int volume, int pitch_Offset, int intensity, int stop) {
         this->SetID(iD);
         this->SetVolume(volume);
-        this->SetStop(stop);
         this->SetPitch_Offset(pitch_Offset);
         this->SetIntensity(intensity);
+        this->SetStop(stop);
 
         Result result = Class::CreateInstance(&gFX_RadarHandle, &this->mData, &this->mpClass);
         if (result < RESULT_OK) {

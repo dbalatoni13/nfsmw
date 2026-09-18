@@ -1,3 +1,14 @@
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
+#include "Speed/Indep/Src/Interfaces/IServiceable.h"
+#include "Speed/Indep/Src/Interfaces/ITaskable.h"
+#include "Speed/Indep/Src/Sim/SimObject.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Sim/SimEntity.h"
+#include "Speed/Indep/Src/Sim/SimModel.h"
+
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -43,6 +54,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "Speed/Indep/Src/World/WorldConn.h"
+
 DECLARE_CONTAINER_TYPE(CollisionListener);
 DECLARE_CONTAINER_TYPE(CollisionParticipant);
 
@@ -64,8 +77,8 @@ static float mFrameTime = 0.0f;
 static float mTime;
 static void *mWorkspace = nullptr;
 static void *mStackFrame = nullptr;
+
 static SimSystem *mSystem;
-static eUserMode mUserMode = USER_SINGLE;
 
 void InitTimers() {
     mFrameTime = 0.0f;
@@ -73,122 +86,6 @@ void InitTimers() {
     mTime = 0;
     mTick = 0;
 }
-
-// TODO right place? or more down in the file?
-// total size: 0x24
-struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
-    // total size: 0x10
-    struct Node {
-        // total size: 0x8
-        struct Timing {
-            Timing(const char *who) : ID(who), HWM(0.0f) {}
-
-            const char *ID; // offset 0x0, size 0x4
-            float HWM;      // offset 0x4, size 0x4
-        };
-
-        Node(HSIMABLE participant, Collision::IListener *listener, const char *who)
-            : Participant(participant), //
-              Listener(listener),       //
-              mTiming(who) {}
-
-        bool operator<(const Node &rhs) const {
-            return Participant < rhs.Participant;
-        }
-
-        void Respond(const COLLISION_INFO &cinfo) {
-            Listener->OnCollision(cinfo);
-        }
-
-        HSIMABLE Participant;           // offset 0x0, size 0x4
-        Collision::IListener *Listener; // offset 0x4, size 0x4
-        Timing mTiming;                 // offset 0x8, size 0x8
-    };
-    // total size: 0x8
-    struct Finder {
-        Finder(HSIMABLE participant, Collision::IListener *listener)
-            : Participant(participant), //
-              Listener(listener) {}
-
-        bool operator()(const Node &h) const {
-            return (!Listener || Listener == h.Listener) && (!Participant || Participant == h.Participant);
-        }
-
-        HSIMABLE Participant;           // offset 0x0, size 0x4
-        Collision::IListener *Listener; // offset 0x4, size 0x4
-    };
-
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    CDispatcher() {
-        mParticpants.reserve(160); // TODO magic
-        mList.reserve(256);        // TODO magic
-    }
-
-    ~CDispatcher() {}
-
-    void Profile() {}
-
-    void Respond(HSIMABLE participant, const COLLISION_INFO &cinfo) {
-        Node pair(participant, nullptr, nullptr);
-        List::iterator iter = std::lower_bound(mList.begin(), mList.end(), pair);
-        for (; iter != mList.end(); ++iter) {
-            Node &node = *iter;
-            if (node.Participant != participant) {
-                break;
-            }
-            node.Respond(cinfo);
-        }
-    }
-
-    bool FindListener(Collision::IListener *listener, HSIMABLE participant) const {
-        List::const_iterator iter = std::find_if(mList.begin(), mList.end(), Finder(participant, listener));
-        return iter != mList.end();
-    }
-
-    void AddListener(Collision::IListener *listener, HSIMABLE participant, const char *who) {
-        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
-        if (!FindListener(listener, participant)) {
-            Node pair(participant, listener, who);
-            mList.insert(std::upper_bound(mList.begin(), mList.end(), pair), pair);
-        }
-    }
-
-    void RemoveListener(Collision::IListener *listener, HSIMABLE participant) {
-        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, listener));
-        if (newend != mList.end()) {
-            mList.erase(newend, mList.end());
-        }
-    }
-
-    void RemoveParticipant(HSIMABLE participant) {
-        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
-        mParticpants.erase(piter);
-
-        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, nullptr));
-        if (newend != mList.end()) {
-            mList.erase(newend, mList.end());
-        }
-    }
-
-    void AddParticipant(HSIMABLE participant) {
-        mParticpants.insert(std::upper_bound(mParticpants.begin(), mParticpants.end(), participant), participant);
-    }
-
-    typedef UTL::Std::vector<Node, _type_CollisionListener> List;
-    typedef UTL::Std::vector<HSIMABLE, _type_CollisionParticipant> Participants;
-
-    Participants mParticpants; // offset 0x4, size 0x10
-    List mList;                // offset 0x14, size 0x10
-};
 
 }; // namespace Internal
 
@@ -287,39 +184,56 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
     HSIMPROFILE mProfile;     // offset 0x28, size 0x4
 };
 
+IMPLEMENT_COUNTABLE(SimTask)
+
+unsigned int SimTask::mNextHandle = 1;
+Sim::SubSystem *Sim::SubSystem::mHead = nullptr;
+
+namespace Sim {
+namespace Internal {
+
+static eUserMode mUserMode = USER_SINGLE;
+
+}; // namespace Internal
+}; // namespace Sim
+
 // UNSOLVED
 SimTask::SimTask(unsigned int priority, float rate, Sim::ITaskable *handler, float start_offset, Sim::TaskMode mode)
-    : mRate(UMath::Min(rate, 1.0f)), mHandle((HSIMTASK)SimTask::mNextHandle), mHandler(handler), mUpdate(-start_offset), mPriority(priority),
+    : mRate(UMath::Min(rate, 1.0f)), mHandle((HSIMTASK)SimTask::mNextHandle++), mHandler(handler), mUpdate(-start_offset), mPriority(priority),
       mFlags(mode & ModeFlags), mTimeBank(0.0f), mHead(nullptr), mTail(nullptr), mProfile(nullptr) {
-    SimTask::mNextHandle++;
+
     Link();
 }
 
-// UNSOLVED, probably wrong functionally, the branching is annoying
 void SimTask::Link() {
     if (!mRoot) {
         mRoot = this;
         return;
     }
-    SimTask *p = mRoot;
-    while (mPriority > p->mPriority) {
-        p = p->mTail;
-        mTail = p;
-        mHead = p->mHead;
-        if (p == mRoot) {
-            mRoot = this;
-        }
-        if (mHead) {
-            mHead->mTail = this;
-        }
-        if (mTail) {
-            mTail->mHead = this;
+    SimTask *p;
+    goto search;
+append:
+    mHead = p;
+    p->mTail = this;
+    return;
+search:
+    for (p = mRoot;; p = p->mTail) {
+        if (p->mPriority > mPriority) {
+            mTail = p;
+            mHead = p->mHead;
+            if (p == mRoot) {
+                mRoot = this;
+            }
+            if (mHead) {
+                mHead->mTail = this;
+            }
+            if (mTail) {
+                mTail->mHead = this;
+            }
             return;
         }
         if (!p->mTail) {
-            mHead = p;
-            p->mTail = this;
-            return;
+            goto append;
         }
     }
 }
@@ -346,7 +260,7 @@ void SimTask::Run(float dT_sim, float dT_render) {
     if (IsDirty() || mRate <= 0.0f) {
         return;
     }
-    ProfileNode profile_node("TODO", 1);
+    ProfileNode profile_node;
     Sim::TaskMode mode = GetMode();
 
     if (mode == Sim::TASK_FRAME_FIXED) {
@@ -358,7 +272,10 @@ void SimTask::Run(float dT_sim, float dT_render) {
         bool handled = mHandler->OnTask(GetInstanceHandle(), dT_sim / mRate);
         mUpdate -= 1.0f;
     } else {
-        if (mode != Sim::TASK_FRAME_VARIABLE || dT_render <= 0.0f) {
+        if (mode != Sim::TASK_FRAME_VARIABLE) {
+            return;
+        }
+        if (dT_render <= 0.0f) {
             return;
         }
         mUpdate += mRate;
@@ -367,9 +284,9 @@ void SimTask::Run(float dT_sim, float dT_render) {
             return;
         }
         Sim::Profile::Scope profile(mProfile);
-        bool handled = mHandler->OnTask(GetInstanceHandle(), mUpdate);
-        mTimeBank = 0.0f;
+        bool handled = mHandler->OnTask(GetInstanceHandle(), mTimeBank);
         mUpdate -= 1.0f;
+        mTimeBank = 0.0f;
     }
 }
 
@@ -581,7 +498,7 @@ bool SimSystem::OnTask(HSIMTASK htask, float dT) {
 }
 
 void SimSystem::CollectGarbage() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     PhysicsObject::GetGC().Collect();
     Sim::Activity::GetGC().Collect();
@@ -743,6 +660,126 @@ class IRigidBody *SimCollisionMap::GetOrderedBody(int index) const {
         return SimCollisionMap::GetSRB(index - Sim::MaxRigidBodies);
     }
 }
+
+namespace Sim {
+namespace Internal {
+
+struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
+    // total size: 0x10
+    struct Node {
+        // total size: 0x8
+        struct Timing {
+            Timing(const char *who) : ID(who), HWM(0.0f) {}
+
+            const char *ID; // offset 0x0, size 0x4
+            float HWM;      // offset 0x4, size 0x4
+        };
+
+        Node(HSIMABLE participant, Collision::IListener *listener, const char *who)
+            : Participant(participant), //
+              Listener(listener),       //
+              mTiming(who) {}
+
+        bool operator<(const Node &rhs) const {
+            return Participant < rhs.Participant;
+        }
+
+        void Respond(const COLLISION_INFO &cinfo) {
+            Listener->OnCollision(cinfo);
+        }
+
+        HSIMABLE Participant;           // offset 0x0, size 0x4
+        Collision::IListener *Listener; // offset 0x4, size 0x4
+        Timing mTiming;                 // offset 0x8, size 0x8
+    };
+    // total size: 0x8
+    struct Finder {
+        Finder(HSIMABLE participant, Collision::IListener *listener)
+            : Participant(participant), //
+              Listener(listener) {}
+
+        bool operator()(const Node &h) const {
+            return (!Listener || Listener == h.Listener) && (!Participant || Participant == h.Participant);
+        }
+
+        HSIMABLE Participant;           // offset 0x0, size 0x4
+        Collision::IListener *Listener; // offset 0x4, size 0x4
+    };
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
+    CDispatcher() {
+        mParticpants.reserve(160); // TODO magic
+        mList.reserve(256);        // TODO magic
+    }
+
+    ~CDispatcher() {}
+
+    void Profile() {}
+
+    void Respond(HSIMABLE participant, const COLLISION_INFO &cinfo) {
+        Node pair(participant, nullptr, nullptr);
+        List::iterator iter = std::lower_bound(mList.begin(), mList.end(), pair);
+        for (; iter != mList.end(); ++iter) {
+            Node &node = *iter;
+            if (node.Participant != participant) {
+                break;
+            }
+            node.Respond(cinfo);
+        }
+    }
+
+    bool FindListener(Collision::IListener *listener, HSIMABLE participant) const {
+        List::const_iterator iter = std::find_if(mList.begin(), mList.end(), Finder(participant, listener));
+        return iter != mList.end();
+    }
+
+    void AddListener(Collision::IListener *listener, HSIMABLE participant, const char *who) {
+        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
+        if (!FindListener(listener, participant)) {
+            Node pair(participant, listener, who);
+            mList.insert(std::upper_bound(mList.begin(), mList.end(), pair), pair);
+        }
+    }
+
+    void RemoveListener(Collision::IListener *listener, HSIMABLE participant) {
+        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, listener));
+        if (newend != mList.end()) {
+            mList.erase(newend, mList.end());
+        }
+    }
+
+    void RemoveParticipant(HSIMABLE participant) {
+        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
+        mParticpants.erase(piter);
+
+        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, nullptr));
+        if (newend != mList.end()) {
+            mList.erase(newend, mList.end());
+        }
+    }
+
+    void AddParticipant(HSIMABLE participant) {
+        mParticpants.insert(std::upper_bound(mParticpants.begin(), mParticpants.end(), participant), participant);
+    }
+
+    typedef UTL::Std::vector<Node, _type_CollisionListener> List;
+    typedef UTL::Std::vector<HSIMABLE, _type_CollisionParticipant> Participants;
+
+    Participants mParticpants; // offset 0x4, size 0x10
+    List mList;                // offset 0x14, size 0x10
+};
+
+}; // namespace Internal
+}; // namespace Sim
 
 namespace Sim {
 namespace Collision {
@@ -990,3 +1027,5 @@ unsigned int GetTick() {
 }
 
 }; // namespace Sim
+
+IMPLEMENT_SINGLETON(Sim::Internal::CDispatcher)

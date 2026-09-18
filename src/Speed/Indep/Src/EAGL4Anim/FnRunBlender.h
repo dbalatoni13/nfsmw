@@ -7,7 +7,9 @@
 
 #include "AnimMemoryMap.h"
 #include "FnAnim.h"
+#include "PhaseChan.h"
 #include "Skeleton.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -18,7 +20,9 @@ class FnRunBlender : public FnAnim {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -30,7 +34,9 @@ class FnRunBlender : public FnAnim {
         return ptr;
     }
 
-    inline float GetOffset() const {}
+    inline float GetOffset() const {
+        return mOffset;
+    }
 
     inline void GetAnims(int &numAnims, const AnimMemoryMap **&anims, const PhaseChan **&phases, const AnimMemoryMap **&vels) const {}
 
@@ -52,7 +58,7 @@ class FnRunBlender : public FnAnim {
     void SetAnims(Skeleton *s, int numAnims, const AnimMemoryMap **anims, const AnimMemoryMap **phases, const AnimMemoryMap **vels);
 
     // Overrides: FnAnim
-    bool EvalPhase(float) override;
+    bool EvalPhase(float currentTime, PhaseValue &phase) override;
 
     // Overrides: FnAnim
     bool EvalVel2D(float currTime, float *vel) override;

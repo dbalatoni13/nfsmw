@@ -6,6 +6,15 @@ namespace BuildRegion {
 #define EA_REGION_EUROPE
 #endif
 
+// STRIPPED
+eBuildRegion GetBuildRegion();
+
+// STRIPPED
+const char *GetName() {}
+
+// STRIPPED
+const char *GetAbbreviation() {}
+
 bool IsAmerica() {
 #ifdef EA_REGION_AMERICA
     return true;
@@ -61,5 +70,26 @@ bool IsPal() {
 bool ShowLanguageSelect() {
     return false;
 }
+
+// STRIPPED
+const char *GetSlusCode() {}
+
+// STRIPPED
+void GetExeFilename(char *filename) {}
+
+// STRIPPED
+const char *GetLanguageISOCode() {}
+
+// STRIPPED
+const char *GetCountryISOCode() {}
+
+// STRIPPED
+const char *GetSkuCode() {}
+
+// STRIPPED
+bool ShowESRBNotice();
+
+// STRIPPED
+const char *GetAdvertString() {}
 
 }; // namespace BuildRegion

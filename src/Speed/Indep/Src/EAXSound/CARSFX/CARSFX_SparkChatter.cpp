@@ -14,10 +14,10 @@ CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {
 
     this->SparkChatOutputClients.m_pThis = this;
     this->SparkChatOutputClients.CreateClient.pClientData = &this->SparkChatOutputClients;
-    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.UpdateClient.pClientData = &this->SparkChatOutputClients;
-    this->SparkChatOutputClients.CreateClient.pClientFunc = this->SparkChatCreateCallBack;
-    this->SparkChatOutputClients.DestroyClient.pClientFunc = this->SparkChatDestroyCallBack;
+    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
+    this->SparkChatOutputClients.CreateClient.pClientFunc = &CARSFX_SparkChatter::SparkChatCreateCallBack;
+    this->SparkChatOutputClients.DestroyClient.pClientFunc = &CARSFX_SparkChatter::SparkChatDestroyCallBack;
     this->m_pSweetnersData = nullptr;
     this->BlipVol = 0;
 }
@@ -150,7 +150,12 @@ void CARSFX_SparkChatter::ProcessUpdate() {
         this->m_pSparkChatterControl->SetTORQUE(static_cast<int>(this->m_pEAXCar->GetPhysTRQ() * 10.24f));
         this->m_pSparkChatterControl->SetVOL(TmpVol);
         this->m_pSparkChatterControl->SetAccel_true(static_cast<int>(this->m_pEAXCar->IsAccelerating()));
+#ifdef EA_BUILD_A124
+        this->m_pSparkChatterControl->SetShifting_true(
+            static_cast<int>(this->m_pShiftingCTL->eShiftState == SHFT_UP_LFO || this->m_pShiftingCTL->IsActive()));
+#else
         this->m_pSparkChatterControl->SetShifting_true(static_cast<int>(this->m_pShiftingCTL->IsActive()));
+#endif
         this->m_pSparkChatterControl->CommitMemberData();
     }
 }

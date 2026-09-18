@@ -8,7 +8,7 @@ FunctionHandle gSputter_MessageHandle;                               // size: 0x
 InterfaceId CARId = {"CAR", 0x383F, 0x198B}; // size: 0x8, Decl: 15
 ClassHandle gCARHandle;                      // size: 0x10, Decl: 16
 
-InterfaceId CAR_SWTNId = {"CAR_SWT", 0x383F, 0x7859}; // size: 0x8, Decl: 24
+InterfaceId CAR_SWTNId = {"CAR_SWTN", 0x383F, 0x7859}; // size: 0x8, Decl: 24
 ClassHandle gCAR_SWTNHandle;                          // size: 0x10, Decl: 25
 
 InterfaceId CAR_WHINEId = {"CAR_WHINE", 0x383F, 0x603F}; // size: 0x8, Decl: 27

@@ -19,9 +19,11 @@ class EReloadHud : public Event {
 
     ~EReloadHud() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EReloadHud_MakeEvent_Callback(const void *staticData);
+int EReloadHud_MakeEvent_LuaBinding(struct lua_State *L);
+void EReloadHud_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

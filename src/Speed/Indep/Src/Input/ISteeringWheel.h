@@ -24,10 +24,10 @@ class ISteeringWheel : public UTL::COM::IUnknown {
 
     virtual ~ISteeringWheel() {}
 
-    virtual void UpdateForces(struct IPlayer *player);
-    virtual void ReadInput(float *inputBuffer);
-    virtual bool IsConnected();
-    virtual SteeringType GetSteeringType();
+    virtual void UpdateForces(struct IPlayer *player) = 0;
+    virtual void ReadInput(float *inputBuffer) = 0;
+    virtual bool IsConnected() = 0;
+    virtual SteeringType GetSteeringType() = 0;
 };
 
 #endif

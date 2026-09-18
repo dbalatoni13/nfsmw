@@ -16,7 +16,7 @@ struct presetride : Instance {
     typedef EA::Reflection::Int32 TypeOf_transmission;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("presetride");
+    USE_ATTRIB_ALLOC("Attrib::Gen::presetride");
     presetride(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     presetride(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -34,10 +34,10 @@ struct presetride : Instance {
         return 0x27e73952;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x27e73952, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

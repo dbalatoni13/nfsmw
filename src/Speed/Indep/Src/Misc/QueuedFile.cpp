@@ -17,6 +17,33 @@ bool QueuedFileJoylogEnabled = true;
 float QueuedFileDebugTimeStart = 0.0f;
 SlotPool *QueuedFileSlotPool = nullptr;
 
+// c34ord3 m6: los cuatro cuerpos que el original tiene en ESTE fichero
+// (debug_lines: :123, :131, :339 y :349), en el orden en que los declara la
+// clase. Es POSICION, no optimizacion: sin ellos aqui, las cuatro salen en el
+// bloque diferido en el sitio de Main.cpp (fichero 3) y no en el 16.
+inline int QueuedFile::SortByPriority(QueuedFile *before, QueuedFile *after) {
+    return before->Params.Priority >= after->Params.Priority;
+}
+
+inline void QueuedFile::ReadDoneCallback(void *param) {
+    static_cast<QueuedFile *>(param)->ReadDoneCallback();
+}
+
+inline void QueuedFileBundle::operator delete(void *ptr) {
+    bFree(QueuedFileSlotPool, ptr);
+}
+
+inline void QueuedFileBundle::ReadCallbackBridge(void *param, int error_status) {
+    QueuedFileBundle *bundle = static_cast<QueuedFileBundle *>(param);
+    bundle->ReadCallback(error_status);
+    if (bundle) {
+        if (bundle->ReadBuffer) {
+            bFree(bundle->ReadBuffer);
+        }
+        delete bundle;
+    }
+}
+
 int QueuedFile::CurrentHandle = 1;
 int QueuedFile::DecompressionTableBot = 0;
 int QueuedFile::DecompressionTableTop = 0;
@@ -66,7 +93,7 @@ QueuedFile::QueuedFile(void *buf, const char *filename, int file_pos, int num_by
     this->CallbackModeUseParam2 = 0;
     this->Handle = QueuedFile::CurrentHandle;
     this->Status = QWAITING;
-    this->StartReadTime = 0.0f;
+    this->StartReadTime = 0.0f; // scaf-data r71: bloque +0x16E8
     if (++QueuedFile::CurrentHandle > 100000) {
         QueuedFile::CurrentHandle = 1;
     }
@@ -91,7 +118,7 @@ QueuedFile::~QueuedFile() {
 }
 
 void QueuedFile::BeginRead() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     StartReadTime = GetQueuedFileDebugTime();
     if (NumBytes == 0) {
         Status = QDONE;
@@ -227,7 +254,7 @@ void CheckQueuedFileCallbacks() {
             if (Joylog::IsReplaying()) {
                 status = static_cast<QueuedFileStatus>(Joylog::GetData(4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS));
                 if (status != QREADING) {
-                    ProfileNode profile_node("TODO", 0);
+                    ProfileNode profile_node;
                     while (q->GetStatus() == QREADING) {
                         bThreadYield(8);
                         bServiceFileSystem();
@@ -242,7 +269,7 @@ void CheckQueuedFileCallbacks() {
             ReadingQueuedFileList.Remove(q);
             QueuedFileNumReadsInProgress--;
             if (q->IsFinishedAllReading()) {
-                ProfileNode profile_node("TODO", 0);
+                ProfileNode profile_node;
                 q->CallDoneCallback(0);
             } else {
                 q->SetStatus(QWAITING);
@@ -322,7 +349,7 @@ void StartQueuedFileReading() {
 }
 
 void ServiceQueuedFiles() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     CheckQueuedFileCallbacks();
     StartQueuedFileReading();
 }

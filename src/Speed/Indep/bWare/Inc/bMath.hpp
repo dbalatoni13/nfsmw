@@ -12,6 +12,11 @@
 #include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eetypes.h"
+#elif defined(EA_PLATFORM_WIN32)
+// TODO
+#elif defined(__ANDROID__)
+// Port Android: sin SDK de consola; los shims viven en port/.../platform/
+#include "dolphin/mtx.h"
 #else
 #error Choose a platform
 #endif
@@ -27,7 +32,7 @@ struct bPolar {
     bAngle a;
 };
 
-extern unsigned int bDefaultSeed;
+extern unsigned int bDefaultSeed; // Decl: 179
 
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
@@ -55,7 +60,11 @@ inline float bTan(bAngle angle) {
 inline float bSqrt(float x) {
     const float bSqrtEPS = 5e-11f;
 
-    float y0;
+    float y0
+#ifdef _MSC_VER
+        = 0.0f
+#endif
+        ;
     float y1;
     float t0;
     float t1;
@@ -91,6 +100,10 @@ inline float bSqrt(float x) {
 // TODO
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
+#elif defined(EA_PLATFORM_WIN32)
+// TODO
+#elif defined(__ANDROID__)
+// Port Android: misma matematica portable que PS2/X360
 #else
 #error Choose a platform
 #endif
@@ -151,7 +164,7 @@ inline int bMult(int a, int b) {
 
 inline float bAbs(float a) {
 #ifdef EA_PLATFORM_GAMECUBE
-    float f_abs;
+    float f_abs = 0.0f;
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
     return f_abs;
@@ -211,14 +224,16 @@ inline float bDegToRad(float degrees) {
 }
 
 inline float bAngToDeg(bAngle angle) {
-    return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
+    return static_cast<unsigned int>(angle) * (360.0f / 65536.0f);
 }
 
 inline float bCos(float angle) {
     return bSin(angle + bDegToRad(90.0f));
 }
 
-inline float bRadToDeg(float radians) {}
+inline float bRadToDeg(float radians) {
+    return radians * (360.0f / (2 * PI));
+}
 
 inline float bAngToRad(short angle) {}
 
@@ -247,7 +262,10 @@ struct bVector2 {
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
 
+    // Orden de declaracion del volcado DWARF del original.
     bVector2() {}
+
+    bVector2 operator+() const;
 
     bVector2(float _x, float _y);
 
@@ -267,7 +285,7 @@ struct bVector2 {
 
     bVector2 &operator/=(float inv_scale);
 
-    int operator==(const bVector2 &v);
+    int operator==(const bVector2 &v) const;
 
     bVector2 &operator=(const bVector2 &v);
 
@@ -278,9 +296,29 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length);
 bVector2 *bScaleAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2, float scale);
 
+inline bVector2 bVector2::operator+() const {
+    return *this;
+}
+
 inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
     dest->y = y;
+    return dest;
+}
+
+inline bVector2 *bAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+
+    bFill(dest, x1 + x2, y1 + y2);
+    return dest;
+}
+
+inline bVector2 bAdd(const bVector2 &v1, const bVector2 &v2) {
+    bVector2 dest;
+    bAdd(&dest, &v1, &v2);
     return dest;
 }
 
@@ -297,6 +335,11 @@ inline bVector2::bVector2(float _x, float _y) {
 
 inline bVector2 &bVector2::operator=(const bVector2 &v) {
     bCopy(this, &v);
+    return *this;
+}
+
+inline bVector2 &bVector2::operator+=(const bVector2 &v) {
+    bAdd(this, this, &v);
     return *this;
 }
 
@@ -336,6 +379,11 @@ inline bVector2 bSub(const bVector2 &v1, const bVector2 &v2) {
     bVector2 dest;
     bSub(&dest, &v1, &v2);
     return dest;
+}
+
+inline bVector2 &bVector2::operator-=(const bVector2 &v) {
+    bSub(this, this, &v);
+    return *this;
 }
 
 inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
@@ -398,6 +446,10 @@ static inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
     return bSqrt(x * x + y * y);
 }
 
+inline float bDistBetween(const bVector2 &v1, const bVector2 &v2) {
+    return bDistBetween(&v1, &v2);
+}
+
 // total size: 0x10
 struct ALIGN_16 bVector3 {
     float x;   // offset 0x0, size 0x4
@@ -405,26 +457,26 @@ struct ALIGN_16 bVector3 {
     float z;   // offset 0x8, size 0x4
     float pad; // offset 0xC, size 0x4
 
+    // Orden de declaracion tomado del volcado DWARF del original. En GCC 2.9
+    // los cuerpos se compilan en ese orden, asi que mover un miembro cambia
+    // que se expande dentro de que.
     bVector3() {}
 
-    bVector3 operator+() {}
+    bVector3 operator+() const {}
 
     bVector3(float _x, float _y, float _z);
     bVector3(const bVector3 &v);
+    bVector3 &operator=(const bVector3 &v);
     bVector3 &operator*=(float scale);
     bVector3 &operator/=(float inv_scale);
-    bVector3 &operator+=(const bVector3 &v);
+    int operator==(const bVector3 &v) const;
+    float &operator[](int index);
     bVector3 operator+(const bVector3 &v) const;
-    bVector3 &operator=(const bVector3 &v);
     bVector3 operator-(const bVector3 &v) const;
+    bVector3 operator-() const;
     bVector3 operator*(float f) const;
     bVector3 &operator-=(const bVector3 &v);
-
-    int operator==(const bVector3 &v) {}
-
-    float &operator[](int index) {}
-
-    bVector3 operator-() {}
+    bVector3 &operator+=(const bVector3 &v);
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
@@ -508,53 +560,12 @@ inline bVector3 bSub(const bVector3 &v1, const bVector3 &v2) {
     return dest;
 }
 
-inline bVector3::bVector3(float _x, float _y, float _z) {
-    bFill(this, _x, _y, _z);
-}
-
-inline bVector3 &bVector3::operator*=(float scale) {
-    bScale(this, this, scale);
-    return *this;
-}
-
-inline bVector3 &bVector3::operator/=(float inv_scale) {
-    bScale(this, this, 1.0f / inv_scale);
-    return *this;
-}
-
-inline bVector3 &bVector3::operator+=(const bVector3 &v) {
-    bAdd(this, this, &v);
-    return *this;
-}
-
-inline bVector3 bVector3::operator+(const bVector3 &v) const {
-    return bAdd(*this, v);
-}
-
-inline bVector3 bVector3::operator-(const bVector3 &v) const {
-    return bSub(*this, v);
-}
-
-inline bVector3 bVector3::operator*(float f) const {
-    return bScale(*this, f);
-}
-
-inline bVector3 &bVector3::operator=(const bVector3 &v) {
-    bCopy(this, &v);
-    return *this;
-}
-
-inline bVector3 &bVector3::operator-=(const bVector3 &v) {
-    bSub(this, this, &v);
-    return *this;
-}
-
 inline bVector3 *bNeg(bVector3 *dest, const bVector3 *v) {
-    float x = -v->x;
-    float y = -v->y;
-    float z = -v->z;
+    float x = v->x;
+    float y = v->y;
+    float z = v->z;
 
-    bFill(dest, x, y, z);
+    bFill(dest, -x, -y, -z);
     return dest;
 }
 
@@ -567,9 +578,14 @@ inline float bLength(const bVector3 *v) {
 }
 
 inline bVector3 *bScale(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
-    float x;
-    float y;
-    float z;
+    float x = v1->x * v2->x;
+    float y = v1->y * v2->y;
+    float z = v1->z * v2->z;
+
+    dest->x = x;
+    dest->y = y;
+    dest->z = z;
+    return dest;
 }
 
 inline bVector3 *bMin(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {}
@@ -578,6 +594,9 @@ inline bVector3 *bMax(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {}
 
 inline bVector3 bNeg(const bVector3 &v) {
     bVector3 dest;
+
+    bNeg(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {
@@ -609,6 +628,9 @@ inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+
+    bScale(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
@@ -629,16 +651,71 @@ inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
 }
 
-inline bVector3::bVector3(const bVector3 &v) {
-    bCopy(this, &v);
-}
-
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
 }
 
 inline bVector3 bMax(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+}
+
+// Los 13 miembros de bVector3 se definen aqui, detras de los ayudantes libres
+// y en el orden exacto en que los lista el volcado DWARF del original.
+inline bVector3::bVector3(float _x, float _y, float _z) {
+    bFill(this, _x, _y, _z);
+}
+
+inline bVector3::bVector3(const bVector3 &v) {
+    bCopy(this, &v);
+}
+
+inline bVector3 &bVector3::operator=(const bVector3 &v) {
+    bCopy(this, &v);
+    return *this;
+}
+
+inline bVector3 &bVector3::operator*=(float scale) {
+    bScale(this, this, scale);
+    return *this;
+}
+
+inline bVector3 &bVector3::operator/=(float inv_scale) {
+    bScale(this, this, 1.0f / inv_scale);
+    return *this;
+}
+
+inline int bVector3::operator==(const bVector3 &v) const {
+    return x == v.x && y == v.y && z == v.z;
+}
+
+inline float &bVector3::operator[](int index) {
+    return (&x)[index];
+}
+
+inline bVector3 bVector3::operator+(const bVector3 &v) const {
+    return bAdd(*this, v);
+}
+
+inline bVector3 bVector3::operator-(const bVector3 &v) const {
+    return bSub(*this, v);
+}
+
+inline bVector3 bVector3::operator-() const {
+    return bNeg(*this);
+}
+
+inline bVector3 bVector3::operator*(float f) const {
+    return bScale(*this, f);
+}
+
+inline bVector3 &bVector3::operator-=(const bVector3 &v) {
+    bSub(this, this, &v);
+    return *this;
+}
+
+inline bVector3 &bVector3::operator+=(const bVector3 &v) {
+    bAdd(this, this, &v);
+    return *this;
 }
 
 // total size: 0x10
@@ -648,9 +725,12 @@ struct ALIGN_16 bVector4 {
     float z; // offset 0x8, size 0x4
     float w; // offset 0xC, size 0x4
 
+    // Orden de declaracion del volcado DWARF del original. Las sobrecargas
+    // no-const de operator+/operator- eran duplicados nuestros: el original
+    // solo tiene las const.
     bVector4() {}
 
-    bVector4 operator+() {}
+    bVector4 operator+() const {}
 
     bVector4(float _x, float _y, float _z, float _w);
 
@@ -658,17 +738,15 @@ struct ALIGN_16 bVector4 {
 
     bVector4 &operator=(const bVector4 &v);
 
-    bVector4 operator-(const bVector4 &v);
-
     bVector4 &operator-=(const bVector4 &v) {}
 
-    inline bVector4 &operator+=(const bVector4 &v);
+    bVector4 &operator+=(const bVector4 &v);
 
     bVector4 &operator*=(float scale);
 
     bVector4 &operator/=(float inv_scale) {}
 
-    int operator==(const bVector4 &v) {}
+    int operator==(const bVector4 &v) const {}
 
     float &operator[](int index) {
         return reinterpret_cast<float *>(this)[index];
@@ -678,20 +756,18 @@ struct ALIGN_16 bVector4 {
         return reinterpret_cast<const float *>(this)[index];
     }
 
-    inline struct bVector4 operator+(const struct bVector4 &v) const;
+    bVector4 operator+(const bVector4 &v) const;
 
-    inline struct bVector4 operator-(const struct bVector4 &v) const;
+    bVector4 operator-(const bVector4 &v) const;
 
-    bVector4 operator+(const bVector4 &v);
-
-    bVector4 operator-() {
+    bVector4 operator-() const {
         float x1;
         float y1;
         float z1;
         float w1;
     }
 
-    bVector4 operator*(const float f) {
+    bVector4 operator*(const float f) const {
         bVector4 t;
     }
 };
@@ -727,9 +803,12 @@ inline bVector4 *bCopy(bVector4 *dest, const bVector4 *v) {
 }
 
 inline bVector4 *bCopy(bVector4 *dest, const bVector3 *v) {
-    float x;
-    float y;
-    float z;
+    float x = v->x;
+    float y = v->y;
+    float z = v->z;
+
+    bFill(dest, x, y, z, 0.0f);
+    return dest;
 }
 
 inline bVector4 *bCopy(bVector4 *dest, const bVector3 *v, float w) {
@@ -878,26 +957,6 @@ inline bVector4::bVector4(float _x, float _y, float _z, float _w) {
     bFill(this, _x, _y, _z, _w);
 }
 
-inline bVector4 bVector4::operator+(const bVector4 &v) {
-    bVector4 *pv = const_cast<bVector4 *>(&v);
-    float x1 = this->x;
-    float y1 = this->y;
-    float z1 = this->z;
-    float w1 = this->w;
-
-    float x2 = pv->x;
-    float y2 = pv->y;
-    float z2 = pv->z;
-    float w2 = pv->w;
-
-    float _x = x1 + x2;
-    float _y = y1 + y2;
-    float _z = z1 + z2;
-    float _w = w1 + w2;
-
-    return bVector4(_x, _y, _z, _w);
-}
-
 inline bVector4 &bVector4::operator+=(const bVector4 &v) {
     bAdd(this, this, &v);
 
@@ -912,26 +971,6 @@ inline bVector4 &bVector4::operator=(const bVector4 &v) {
 inline bVector4 &bVector4::operator*=(float scale) {
     bScale(this, this, scale);
     return *this;
-}
-
-inline bVector4 bVector4::operator-(const bVector4 &v) {
-    bVector4 *pv = const_cast<bVector4 *>(&v);
-    float x1 = this->x;
-    float y1 = this->y;
-    float z1 = this->z;
-    float w1 = this->w;
-
-    float x2 = pv->x;
-    float y2 = pv->y;
-    float z2 = pv->z;
-    float w2 = pv->w;
-
-    float _x = x1 - x2;
-    float _y = y1 - y2;
-    float _z = z1 - z2;
-    float _w = w1 - w2;
-
-    return bVector4(_x, _y, _z, _w);
 }
 
 inline bVector4 bVector4::operator+(const bVector4 &v) const {
@@ -1060,6 +1099,12 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
         : "=o"(dest->v0), "=o"(dest->v1), "=o"(dest->v2), "=o"(dest->v3)
         : "o"(v->v0), "o"(v->v1), "o"(v->v2), "o"(v->v3)
         : "memory");
+#elif defined(EA_PLATFORM_WIN32) || defined(__ANDROID__)
+    // Portable copy, without platform intrinsics.
+    const float *src = reinterpret_cast<const float *>(v);
+    float *dst = reinterpret_cast<float *>(dest);
+    for (int i = 0; i < 16; i++)
+        dst[i] = src[i];
 #else
 #error Choose a platform
 #endif
@@ -1085,6 +1130,11 @@ inline void bIdentity(bMatrix4 *a) {
     asm("sq   %1, %0" : "=o"(a->v1) : "r"(t));
     asm("pextlw %0, %0, $0" : "+r"(t));
     asm("sq   %1, %0" : "=o"(a->v3) : "r"(t));
+#elif defined(EA_PLATFORM_WIN32) || defined(__ANDROID__)
+    // Portable identity, without platform intrinsics.
+    float *m = reinterpret_cast<float *>(a);
+    for (int i = 0; i < 16; i++)
+        m[i] = (i % 5 == 0) ? 1.0f : 0.0f;
 #else
 #error Choose a platform
 #endif
@@ -1125,6 +1175,7 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const bVector3 *positi
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
 void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
+void bMulMatrix(bVector4 *dest, const bMatrix4 *a, const bVector4 *b);
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
@@ -1152,13 +1203,49 @@ struct bQuaternion {
         return this->GetMatrix(*mat);
     }
 
-    void GetMatrix(bMatrix4 &mat) const {}
+    void GetMatrix(bMatrix4 &mat) const;
 
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
     float w; // offset 0xC, size 0x4
 };
+
+inline void bQuaternion::GetMatrix(bMatrix4 &mat) const {
+    float x2 = x + x;
+    float y2 = y + y;
+    float z2 = z + z;
+
+    float xx2 = x * x2;
+    float yy2 = y * y2;
+    float xy2 = x * y2;
+    float xz2 = x * z2;
+    float yz2 = y * z2;
+    float zz2 = z * z2;
+    float wx2 = w * x2;
+    float wy2 = w * y2;
+    float wz2 = w * z2;
+
+    mat.v0.x = 1.0f - yy2 - zz2;
+    mat.v1.x = xy2 - wz2;
+    mat.v2.x = xz2 + wy2;
+    mat.v3.x = 0.0f;
+
+    mat.v0.y = xy2 + wz2;
+    mat.v1.y = 1.0f - xx2 - zz2;
+    mat.v2.y = yz2 - wx2;
+    mat.v3.y = 0.0f;
+
+    mat.v0.z = xz2 - wy2;
+    mat.v1.z = yz2 + wx2;
+    mat.v2.z = 1.0f - xx2 - yy2;
+    mat.v3.z = 0.0f;
+
+    mat.v0.w = 0.0f;
+    mat.v1.w = 0.0f;
+    mat.v2.w = 0.0f;
+    mat.v3.w = 1.0f;
+}
 
 void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m);
 
@@ -1186,9 +1273,7 @@ class bBitTable {
         NumBits = num_bits;
     }
 
-    void ClearTable() {
-        bMemZero(Bits, NumBits >> 3);
-    }
+    void ClearTable();
 
     void Set(int bit) {
         unsigned char *p = &Bits[bit >> 3];

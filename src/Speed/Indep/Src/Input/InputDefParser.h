@@ -3,6 +3,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Input/Action.h"
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -27,7 +28,7 @@ struct InputMapEntry {
     float CurrentValue;         // offset 0x18, size 0x4
 
     bool HasChanged() const {
-        return this->CurrentValue < 0; // ?
+        return UMath::Abs(this->CurrentValue - this->PreviousValue) > 0.000001f;
     }
 };
 

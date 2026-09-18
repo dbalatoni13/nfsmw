@@ -12,6 +12,13 @@ namespace EA {
 // total size: 0xC
 // Decl: 25
 struct TagValuePair {
+    TagValuePair() {}
+    TagValuePair(unsigned int tag, int value);
+    TagValuePair(unsigned int tag, unsigned int value);
+    TagValuePair(unsigned int tag, float value);
+    TagValuePair(unsigned int tag, const void *value);
+    const TagValuePair &operator+(const TagValuePair &rhs) const;
+
     unsigned int mTag; // offset 0x0, size 0x4
     union {
         int mInt;              // offset 0x0, size 0x4
@@ -21,6 +28,50 @@ struct TagValuePair {
     } mValue;                  // offset 0x4, size 0x4
     const TagValuePair *mNext; // offset 0x8, size 0x4
 };
+
+inline TagValuePair::TagValuePair(unsigned int tag, int value) {
+    this->mTag = tag;
+    this->mValue.mInt = value;
+    this->mNext = NULL;
+}
+
+inline TagValuePair::TagValuePair(unsigned int tag, unsigned int value) {
+    this->mTag = tag;
+    this->mValue.mSize = value;
+    this->mNext = NULL;
+}
+
+inline TagValuePair::TagValuePair(unsigned int tag, float value) {
+    this->mTag = tag;
+    this->mValue.mFloat = value;
+    this->mNext = NULL;
+}
+
+inline TagValuePair::TagValuePair(unsigned int tag, const void *value) {
+    this->mTag = tag;
+    this->mValue.mPointer = value;
+    this->mNext = NULL;
+}
+
+inline const TagValuePair &TagValuePair::operator+(const TagValuePair &rhs) const {
+    const_cast<TagValuePair &>(rhs).mNext = this;
+    return rhs;
+}
+
+namespace Allocator {
+
+enum AllocTvpTag {
+    ATT_NULL = 0,
+    ATT_NAME = 1,
+    ATT_ALIGNMENT = 2,
+    ATT_ALIGNMENT_OFFSET = 3,
+    ATT_ALLOC_HIGH = 4,
+    ATT_FILE = 5,
+    ATT_LINE = 6,
+    ATT_USER = 65536
+};
+
+} // namespace Allocator
 
 #define NULLALLOCTVP EA::TagValuePair(EA::Allocator::ATT_NULL, 0) // Decl: 98
 
@@ -36,6 +87,7 @@ class IAllocator {
 
   protected:
     virtual ~IAllocator() {}
+    IAllocator() {}
 };
 
 // total size: 0x4

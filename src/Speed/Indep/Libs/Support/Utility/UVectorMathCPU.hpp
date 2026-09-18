@@ -109,6 +109,11 @@ inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2
     return VU0_sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.z - p1.z) * (p2.z - p1.z));
 }
 
+// Decl: Carbon: UVectorMathCPU.hpp: 348, GC MW: UVectorMathGC.hpp: TODO, PS2 MW: UVectorMath.hpp: TODO
+inline float VU0_v4distancexz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
+    return VU0_sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.z - p2.z) * (p1.z - p2.z));
+}
+
 // Decl: Carbon: UVectorMathCPU.hpp: 354, GC MW: UVectorMathGC.hpp: 274, PS2 MW: UVectorMath.hpp: 1014
 inline float VU0_v3length(const UMath::Vector3 &a) {
     return VU0_sqrt(VU0_v3lengthsquare(a));
@@ -153,8 +158,11 @@ inline float VU0_v4lengthsquarexyz(const UMath::Vector4 &a) {
 inline float VU0_sqrt(const float a) {
 #ifdef EA_PLATFORM_XENON
     return __fsqrts(a);
+#elif defined(__ANDROID__)
+    // Port Android
+    return __builtin_sqrtf(a);
 #else
-    // TODO
+    return static_cast<float>(sqrt(a));
 #endif
 }
 
@@ -231,6 +239,45 @@ inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy
     dest[0][3] = 0.0f;
     dest[0][2] = 0.0f;
     dest[0][1] = 0.0f;
+}
+
+// Las tres siguientes existian solo en UVectorMathGC.hpp. UMath.h las llama desde
+// codigo comun --Init(Matrix4&), Init(Vector4&) y UnitCrossxyz--, asi que sin
+// ellas la ruta portable (Android y cualquier host que no sea GC ni PS2) no
+// compila. Este fichero NO entra en el build de GameCube, comprobado contra
+// build/GOWE69/dep: aqui no se puede mover el DOL.
+
+// Decl: GC MW: UVectorMathGC.hpp: 96
+inline void VU0_v4Init(UMath::Vector4 &a) {
+    a.x = a.y = a.z = 0.0f;
+    a.w = 1.0f;
+}
+
+// Decl: GC MW: UVectorMathGC.hpp: 102
+inline void VU0_MATRIX4Init(UMath::Matrix4 &dest) {
+    dest[0][0] =
+    dest[1][1] =
+    dest[2][2] =
+    dest[3][3] = 1.0f;
+
+    dest[0][1] =
+    dest[0][2] =
+    dest[0][3] =
+    dest[1][0] =
+    dest[1][2] =
+    dest[1][3] =
+    dest[2][0] =
+    dest[2][1] =
+    dest[2][3] =
+    dest[3][0] =
+    dest[3][1] =
+    dest[3][2] = 0.0f;
+}
+
+// Decl: GC MW: UVectorMathGC.hpp: 10
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {
+    VU0_v3crossprod(reinterpret_cast<const UMath::Vector3 &>(a), reinterpret_cast<const UMath::Vector3 &>(b), reinterpret_cast<UMath::Vector3 &>(dest));
+    VU0_v3unit(reinterpret_cast<const UMath::Vector3 &>(dest), reinterpret_cast<UMath::Vector3 &>(dest));
 }
 
 // Decl: Carbon: UVectorMathCPU.hpp: 607, GC MW: UVectorMathGC.hpp: 193, PS2 MW: UVectorMath.hpp: 2234

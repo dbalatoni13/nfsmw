@@ -1,94 +1,208 @@
-#ifndef SOUND_CONN_H
-#define SOUND_CONN_H
+#ifndef EAXSOUND_SOUNDCONN_H
+#define EAXSOUND_SOUNDCONN_H
 
-#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
-#include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
 #include "Speed/Indep/Src/Sim/SimConn.h"
-#include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/World/WorldTypes.h"
+#include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
-#define SOUND_SERVICE UCrc32(UCRC32_EAXSOUND)
-#define DECLARE_SOUNDPACKET(_PKT_, _HANDLER_)                                                                                                        \
-    friend class ::_HANDLER_;                                                                                                                        \
-    UCrc32 ConnectionClass() override {                                                                                                              \
-        static UCrc32 hash(#_HANDLER_);                                                                                                              \
-        return hash;                                                                                                                                 \
-    }                                                                                                                                                \
-    DECLARE_SIMPACKET(_PKT_, #_PKT_)
+struct EAX_HeliState;
 
-struct HeliSoundConn;
-
-// Decl: 28
 class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
   public:
-    static Connection *Construct(const struct ConnectionData &data);
+    bool mConnected;                // offset 0x14, size 0x1
+    EAX_CarState *mState;           // offset 0x18, size 0x4
+    WorldConn::Reference mTarget;   // offset 0x1C, size 0x10
 
-    // Overrides: Connection
+    CarSoundConn(const Sim::ConnectionData &data);
     ~CarSoundConn() override;
-
-    virtual void OnReceive(Sim::Packet *pkt) {} // Decl: 35
-
-    // Overrides: Connection
-    void OnClose() override {} // Decl: 37
-
-    // Overrides: Connection
+    virtual void OnReceive(Sim::Packet *pkt) override {}
+    void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
-
     void UpdateState(float dT);
-
-    // Decl: 43
-    EAX_CarState *GetState() {
-        return this->mState;
-    }
-    WUID GetWorldID() const {} // Decl: 44
-
-    // Decl: 46
+    EAX_CarState *GetState() { return this->mState; }
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
     static void SetAssetsLoaded(CarSoundConn *conn) {
-        if (conn->mConnected && conn->mState != nullptr) {
+        if (conn->mConnected && conn->mState) {
             conn->mState->mAssetsLoaded = true;
         }
     }
+};
 
-    CarSoundConn(const struct ConnectionData &data);
+class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
+  public:
+    EAX_HeliState *mState;          // offset 0x14, size 0x4
+    WorldConn::Reference mTarget;   // offset 0x18, size 0x10
 
-    bool mConnected; // offset 0x14, size 0x1, Decl: 52
-
-  private:
-    EAX_CarState *mState;         // offset 0x18, size 0x4, Decl: 56
-    WorldConn::Reference mTarget; // offset 0x1C, size 0x10, Decl: 57
+    HeliSoundConn(const Sim::ConnectionData &data);
+    ~HeliSoundConn() override;
+    virtual void OnReceive(Sim::Packet *pkt) override {}
+    void OnClose() override { delete this; }
+    Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
+    void UpdateState(float dT);
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
 
 namespace SoundConn {
 
+// total size: 0x10
+class Pkt_Heli_Open : public Sim::Packet {
+  public:
+    Pkt_Heli_Open(const Attrib::Collection *spec, WUID worldid) : m_VehicleSpec(spec), mWorldID(worldid) {}
+
+    // Virtual overrides
+    // Packet
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "HeliSoundConn";
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Heli_Open";
+        return hash.GetValue();
+    }
+
+    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
+    WUID mWorldID;                           // offset 0x8, size 0x4
+};
+
 // total size: 0x18
 class Pkt_Car_Open : public Sim::Packet {
   public:
-    ~Pkt_Car_Open() override {} // TODO is this required?
+    Pkt_Car_Open(const Attrib::Collection *spec, WUID worldid, Sound::Context ctx, bool spool_load, HSIMABLE__ *handle)
+        : m_VehicleSpec(spec) //
+        , mWorldID(worldid) //
+        , mCarContext(ctx) //
+        , mSpoolLoad(spool_load) //
+        , mHandle(handle) {}
 
-    DECLARE_SOUNDPACKET(Pkt_Car_Open, CarSoundConn);
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "CarSoundConn";
+        return hash;
+    }
 
-    Pkt_Car_Open(const Attrib::Collection *spec, WUID worldid, Sound::Context ctx, bool spool_load, HSIMABLE handle)
-        : m_VehicleSpec(spec),    //
-          mWorldID(worldid),      //
-          mCarContext(ctx),       //
-          mSpoolLoad(spool_load), //
-          mHandle(handle) {}
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
 
-  private:
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Car_Open";
+        return hash.GetValue();
+    }
+
     const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
     WUID mWorldID;                           // offset 0x8, size 0x4
     Sound::Context mCarContext;              // offset 0xC, size 0x4
     bool mSpoolLoad;                         // offset 0x10, size 0x1
-    HSIMABLE mHandle;                        // offset 0x14, size 0x4
+    HSIMABLE__ *mHandle;                     // offset 0x14, size 0x4
 };
 
 // total size: 0x108
 class Pkt_Car_Service : public Sim::Packet {
   public:
-    ~Pkt_Car_Service() override; // TODO is this required?
+    explicit Pkt_Car_Service(float audible_rpm)
+        : mRPMPercent(0.0f) //
+        , mThrottlePercent(0.0f) //
+        , mBrakePercent(0.0f) //
+        , mEBrakePercent(0.0f) //
+        , mSteering(0.0f) //
+        , mGear(1) //
+        , mSirenState(Sound::SIREN_OFF) //
+        , mHotPursuit(false) //
+        , mOversteer(0.0f) //
+        , mUndersteer(0.0f) //
+        , mSlipAngle(0.0f) //
+        , mHealth(1.0f) //
+        , mAudibleRPMPct(audible_rpm) //
+        , mEngineBlown(0) //
+        , mNOSFlag(false) //
+        , mNOSCapacity(0.0f) //
+        , mTrailer(0) //
+        , mTimeSinceSeen(0.0f) //
+        , mDesiredSpeed(0.0f) //
+        , mControlSource(Sound::CONTROL_NONE) {
+        this->mBlownTires[3] = 0;
+        this->mBlownTires[2] = 0;
+        this->mBlownTires[1] = 0;
+        this->mBlownTires[0] = 0;
 
-    DECLARE_SOUNDPACKET(Pkt_Car_Service, CarSoundConn);
+        this->mTractionPct[3] = 1.0f;
+        this->mTractionPct[2] = 1.0f;
+        this->mTractionPct[1] = 1.0f;
+        this->mTractionPct[0] = 1.0f;
 
+        bVector2 zeroWheelSlip(0.0f, 0.0f);
+        this->mWheelSlip[0] = this->mWheelSlip[1] = this->mWheelSlip[2] = this->mWheelSlip[3] = zeroWheelSlip;
+
+        this->mEngineBlown = 0;
+        this->mWheelOnGround[2] = false;
+        this->mWheelOnGround[1] = false;
+        this->mWheelOnGround[0] = false;
+
+        this->mWheelLoad[3] = 0.0f;
+        this->mWheelLoad[2] = 0.0f;
+        this->mWheelLoad[1] = 0.0f;
+        this->mWheelLoad[0] = 0.0f;
+
+        this->mWheelZforce[3] = 0.0f;
+        this->mWheelZforce[2] = 0.0f;
+        this->mWheelZforce[1] = 0.0f;
+        this->mWheelZforce[0] = 0.0f;
+    }
+    UCrc32 ConnectionClass() override;
+    unsigned int Size() override;
+    unsigned int Type() override;
+    static unsigned int SType();
+
+    float mRPMPercent;             // offset 0x4, size 0x4
+    float mThrottlePercent;        // offset 0x8, size 0x4
+    float mBrakePercent;           // offset 0xC, size 0x4
+    float mEBrakePercent;          // offset 0x10, size 0x4
+    float mSteering;               // offset 0x14, size 0x4
+    int mGear;                     // offset 0x18, size 0x4
+    float mTractionPct[4];         // offset 0x1C, size 0x10
+    Sound::SirenState mSirenState;        // offset 0x2C, size 0x4
+    bool mHotPursuit;              // offset 0x30, size 0x1
+    float mOversteer;              // offset 0x34, size 0x4
+    float mUndersteer;             // offset 0x38, size 0x4
+    float mSlipAngle;              // offset 0x3C, size 0x4
+    float mHealth;                 // offset 0x40, size 0x4
+    SimSurface mWheelTerrain[4];   // offset 0x44, size 0x50
+    float mAudibleRPMPct;          // offset 0x94, size 0x4
+    bVector2 mWheelSlip[4];        // offset 0x98, size 0x20
+    float mWheelLoad[4];           // offset 0xB8, size 0x10
+    float mWheelZforce[4];         // offset 0xC8, size 0x10
+    bool mWheelOnGround[4];        // offset 0xD8, size 0x4
+    int mEngineBlown;              // offset 0xE8, size 0x4
+    bool mNOSFlag;                 // offset 0xEC, size 0x1
+    float mNOSCapacity;            // offset 0xF0, size 0x4
+    unsigned int mTrailer;         // offset 0xF4, size 0x4
+    unsigned char mBlownTires[4];  // offset 0xF8, size 0x4
+    float mTimeSinceSeen;          // offset 0xFC, size 0x4
+    float mDesiredSpeed;           // offset 0x100, size 0x4
+    Sound::ControlSource mControlSource; // offset 0x104, size 0x4
+
+    // Accesores que usa SoundCar.cpp (zPhysicsBehaviors). La cabecera de
+    // eaxsound-clean no los trae y sin ellos esa unidad no compila.
     float GetAudibleRPMPercent() const {
         return this->mAudibleRPMPct;
     }
@@ -96,6 +210,13 @@ class Pkt_Car_Service : public Sim::Packet {
     void SetNOSFlag(bool b) {
         this->mNOSFlag = b;
     }
+
+    void SetRPMPercent(float pct) {
+        this->mRPMPercent = pct;
+    }
+
+    // Accesores que usan SoundCar.cpp y otros de zPhysicsBehaviors y que la
+    // cabecera de eaxsound-clean no trae.
 
     void SetEngineBlown(int b) {
         this->mEngineBlown = b;
@@ -128,10 +249,6 @@ class Pkt_Car_Service : public Sim::Packet {
 
     void SetThrottlePercent(float pct) {
         this->mThrottlePercent = pct;
-    }
-
-    void SetRPMPercent(float pct) {
-        this->mRPMPercent = pct;
     }
 
     void SetBrakePercent(float pct) {
@@ -194,71 +311,40 @@ class Pkt_Car_Service : public Sim::Packet {
     void SetDesiredSpeed(float speed) {
         this->mDesiredSpeed = speed;
     }
-
-  private:
-    Pkt_Car_Service(float audible_rpm) : mAudibleRPMPct(audible_rpm) {}
-
-    float mRPMPercent;                   // offset 0x4, size 0x4
-    float mThrottlePercent;              // offset 0x8, size 0x4
-    float mBrakePercent;                 // offset 0xC, size 0x4
-    float mEBrakePercent;                // offset 0x10, size 0x4
-    float mSteering;                     // offset 0x14, size 0x4
-    int mGear;                           // offset 0x18, size 0x4
-    float mTractionPct[4];               // offset 0x1C, size 0x10
-    Sound::SirenState mSirenState;       // offset 0x2C, size 0x4
-    bool mHotPursuit;                    // offset 0x30, size 0x1
-    float mOversteer;                    // offset 0x34, size 0x4
-    float mUndersteer;                   // offset 0x38, size 0x4
-    float mSlipAngle;                    // offset 0x3C, size 0x4
-    float mHealth;                       // offset 0x40, size 0x4
-    SimSurface mWheelTerrain[4];         // offset 0x44, size 0x50
-    float mAudibleRPMPct;                // offset 0x94, size 0x4
-    bVector2 mWheelSlip[4];              // offset 0x98, size 0x20
-    float mWheelLoad[4];                 // offset 0xB8, size 0x10
-    float mWheelZforce[4];               // offset 0xC8, size 0x10
-    bool mWheelOnGround[4];              // offset 0xD8, size 0x4
-    int mEngineBlown;                    // offset 0xE8, size 0x4
-    bool mNOSFlag;                       // offset 0xEC, size 0x1
-    float mNOSCapacity;                  // offset 0xF0, size 0x4
-    WUID mTrailer;                       // offset 0xF4, size 0x4
-    uint8 mBlownTires[4];                // offset 0xF8, size 0x4
-    float mTimeSinceSeen;                // offset 0xFC, size 0x4
-    float mDesiredSpeed;                 // offset 0x100, size 0x4
-    Sound::ControlSource mControlSource; // offset 0x104, size 0x4
 };
-
-// total size: 0x10
-class Pkt_Heli_Open : public Sim::Packet {
-  public:
-    ~Pkt_Heli_Open() override {} // TODO is this required?
-
-    DECLARE_SOUNDPACKET(Pkt_Heli_Open, HeliSoundConn);
-
-    Pkt_Heli_Open(const Attrib::Collection *spec, WUID worldid) : m_VehicleSpec(spec), mWorldID(worldid) {}
-
-  private:
-    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
-    WUID mWorldID;                           // offset 0x8, size 0x4
-};
-
-// total size: 0xC
 
 class Pkt_Heli_Service : public Sim::Packet {
   public:
-    ~Pkt_Heli_Service() override {} // TODO is this required?
-    DECLARE_SOUNDPACKET(Pkt_Heli_Service, HeliSoundConn);
+    Pkt_Heli_Service()
+        : mVelocity(0.0f) //
+        , mAcceleration(0.0f) {}
+    UCrc32 ConnectionClass() override;
+    unsigned int Size() override;
+    unsigned int Type() override;
+    static unsigned int SType();
 
   private:
-    Pkt_Heli_Service() {}
-
-    float mVelocity;     // offset 0x4, size 0x4
-    float mAcceleration; // offset 0x8, size 0x4
+    float mVelocity;
+    float mAcceleration;
 };
 
+void UpdateServices(float dT);
+
+
+// Funciones libres que usa GameFlow.cpp (zMisc) y que la cabecera de
+// eaxsound-clean no declara.
 void InitServices();
 void RestoreServices();
 void UpdateServices(float dT);
 
 }; // namespace SoundConn
+
+#define DECLARE_SOUNDPACKET(_PKT_, _HANDLER_)                                                                                                        \
+    friend class ::_HANDLER_;                                                                                                                        \
+    UCrc32 ConnectionClass() override {                                                                                                              \
+        static UCrc32 hash(#_HANDLER_);                                                                                                              \
+        return hash;                                                                                                                                 \
+    }                                                                                                                                                \
+    DECLARE_SIMPACKET(_PKT_, #_PKT_)
 
 #endif

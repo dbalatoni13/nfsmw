@@ -14,7 +14,9 @@ namespace EAGL4Anim {
 // total size: 0x4
 class MemoryPoolManager {
   public:
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
     // void *operator new(size_t size, const char *msg) {}
 
@@ -34,11 +36,15 @@ class MemoryPoolManager {
 
     virtual ~MemoryPoolManager() {}
 
-    static void Startup() {}
+    static void Startup() {
+        gDefaultMemoryManager = gMemoryManager = new MemoryPoolManager;
+    }
 
     static void Shutdown() {}
 
-    static void Init(unsigned int poolSize) {}
+    static void Init(unsigned int poolSize) {
+        gMemoryManager->InitAux(poolSize);
+    }
 
     static void Cleanup() {}
 

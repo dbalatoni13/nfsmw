@@ -7,7 +7,7 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     float scale1;
     float scale2;
 
-    if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
+    if ((1.0f - bAbs(cos_theta)) > 0.05f) {
         unsigned short theta = bACos(bAbs(cos_theta));
         float sin_theta = bSin(theta);
         unsigned short a1 = static_cast<unsigned short>(static_cast<int>((1.0f - t) * static_cast<float>(theta)) & 0xffff);
@@ -70,11 +70,19 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
 // STRIPPED
 bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {}
 
-// STRIPPED
-float bLength(bQuaternion *q) {}
+// El enlazador la descarta (nadie la referencia), pero -strip-unused-data
+// CONSERVA su pool: los {5e-11, 0.5f, 1.0f} de bSqrt que el objetivo tiene y a
+// nosotros nos faltaban. Escribir el cuerpo no puede mover el .text.
+float bLength(bQuaternion *q) {
+    return bSqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+}
 
+// MEDIDO r36 contra el ENLACE: el objetivo NO tiene pool aqui. Su cuadruplete
+// {5e-11, 0.5f, 1.0f, 0.0f} cae DETRAS de la cadena de bSlotPool, o sea que es
+// de bDistBetween(bVector4), no de esta. Escribirle cuerpo la adelantaba 28 B.
 // STRIPPED
 bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {}
+
 
 // STRIPPED
 bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {}

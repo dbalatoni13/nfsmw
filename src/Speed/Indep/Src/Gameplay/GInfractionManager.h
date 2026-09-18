@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+extern const float TWEAK_RecklessDrivingLimit;
+extern const float TWEAK_SpeedingLimit;
+extern const float TWEAK_RacingLimit;
+
 // total size: 0x14
 class GInfractionManager {
   public:
@@ -39,33 +43,70 @@ class GInfractionManager {
         return *mObj;
     }
 
-    // static bool Exists() {}
+    static bool Exists() {
+        return mObj != NULL;
+    }
 
-    // void ClearInfractions() {}
+    void ClearInfractions() {
+        mInfractions = 0;
+        mNumThisPursuit = 0;
+        mSpeeding = false;
+        mDrivingRecklessly = false;
+        mRacing = false;
+    }
 
-    // void ReportResistingArrest() {}
+    void ReportResistingArrest() {
+        ReportInfraction(kInfraction_Resist);
+    }
 
-    // void ReportSpeeding(bool speeding) {}
+    void ReportSpeeding(bool speeding) {
+        if (speeding && !mSpeeding) {
+            ReportInfraction(kInfraction_Speeding);
+        }
+        mSpeeding = speeding;
+    }
 
-    // void ReportRecklessDriving(bool reckless) {}
+    void ReportRecklessDriving(bool reckless) {
+        if (reckless && !mDrivingRecklessly) {
+            ReportInfraction(kInfraction_Reckless);
+        }
+        mDrivingRecklessly = reckless;
+    }
 
-    // void ReportRacing(bool racing) {}
+    void ReportRacing(bool racing) {
+        if (racing && !mRacing) {
+            ReportInfraction(kInfraction_Racing);
+        }
+        mRacing = racing;
+    }
 
-    // void ReportAssaultingPoliceOfficer() {}
+    void ReportAssaultingPoliceOfficer() {
+        ReportInfraction(kInfraction_Assault);
+    }
 
-    // void ReportHitAndRun() {}
+    void ReportHitAndRun() {
+        ReportInfraction(kInfraction_HitAndRun);
+    }
 
-    // void ReportDamageToProperty() {}
+    void ReportDamageToProperty() {
+        ReportInfraction(kInfraction_Damage);
+    }
 
     void ReportDrivingOffRoadWay() {
         ReportInfraction(kInfraction_OffRoad);
     }
 
-    // float GetRecklessSpeedThreshold() {}
+    float GetRecklessSpeedThreshold() {
+        return TWEAK_RecklessDrivingLimit;
+    }
 
-    // float GetSpeedLimit() {}
+    float GetSpeedLimit() {
+        return TWEAK_SpeedingLimit;
+    }
 
-    // float GetRacingSpeedLimit() {}
+    float GetRacingSpeedLimit() {
+        return TWEAK_RacingLimit;
+    }
 
     unsigned int GetInfractions() {
         return mInfractions;

@@ -1,5 +1,3 @@
-#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Helicopter.cpp"
-
 #include "Speed/Indep/Src/EAXSound/EAXCar.cpp"
 
 #include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
@@ -126,8 +124,6 @@
 
 #include "Speed/Indep/Src/EAXSound/SND_GEN/TURBO.cpp"
 
-#include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.cpp"
-
 #include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMap.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMapState.cpp"
@@ -135,3 +131,5 @@
 #include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMaster.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixShape.cpp"
+
+#include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.cpp"

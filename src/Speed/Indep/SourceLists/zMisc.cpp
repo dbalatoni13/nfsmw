@@ -10,7 +10,7 @@
 
 #include "Speed/Indep/Src/Misc/AttribAlloc.cpp"
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/MWExtension.cpp"
 
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/MWScripting.cpp"
@@ -20,11 +20,17 @@
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceStatsDB.cpp"
 
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceDirtyNet.cpp"
-#endif
 
+#endif
 #include "Speed/Indep/Src/Misc/GameFlow.cpp"
 
 #include "Speed/Indep/Src/Misc/SpeedChunks.cpp"
+
+#include "Speed/Indep/Src/Misc/ISOCodes.cpp"
+
+#include "Speed/Indep/Src/Misc/VersionNumber.cpp"
+
+#include "Speed/Indep/Src/Misc/DemoDisc.cpp"
 
 #include "Speed/Indep/Src/Misc/Rumble.cpp"
 

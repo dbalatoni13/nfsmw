@@ -506,19 +506,19 @@ CarPartAttribute *CarPart::GetAttribute(uint32 namehash, CarPartAttribute *prev_
 }
 
 CarPartAttribute *CarPart::GetFirstAppliedAttribute(unsigned int namehash) {
-    return GetNextAppliedAttribute(namehash, nullptr);
+    return this->GetNextAppliedAttribute(namehash, nullptr);
 }
 
 CarPartAttribute *CarPart::GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute) {
-    return GetAttribute(namehash, prev_attribute);
+    return this->GetAttribute(namehash, prev_attribute);
 }
 
 int CarPart::HasAppliedAttribute(unsigned int namehash) {
-    return static_cast<int>(GetFirstAppliedAttribute(namehash) != nullptr);
+    return static_cast<int>(this->GetFirstAppliedAttribute(namehash) != nullptr);
 }
 
 const char *CarPart::GetAppliedAttributeString(unsigned int namehash, const char *default_string) {
-    CarPartAttribute *attribute = GetFirstAppliedAttribute(namehash);
+    CarPartAttribute *attribute = this->GetFirstAppliedAttribute(namehash);
     return attribute != nullptr ? CarPartStringTable + attribute->GetUParam() * 4 : default_string;
 }
 
@@ -926,7 +926,7 @@ void RideInfo::SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level) {
 }
 
 void RideInfo::SetStockParts() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     for (int car_slot_id = 0; car_slot_id <= CARSLOTID_MISC; car_slot_id++) {
         if ((this->Type == CARTYPE_COPHELI && car_slot_id == CARSLOTID_ATTACHMENT6) || car_slot_id == CARSLOTID_VINYL_LAYER0 ||

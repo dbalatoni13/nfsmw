@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
@@ -55,13 +56,17 @@
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "ResourceLoader.hpp"
 #include "bFile.hpp"
+#include "Speed/Indep/Src/World/CarRender.hpp"
+#include "Speed/Indep/Src/World/Track.hpp"
+#include "Speed/Indep/Src/Misc/Main.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
 // TODO why do these two end up below in .bss?
 RegionLoader TheRegionLoader;
 TrackLoader TheTrackLoader;
 
 GameFlowManager TheGameFlowManager;
-static Timer last_any_joy;
 
 // Forward declarations
 void BeginGameFlowLoadTrack();
@@ -91,17 +96,12 @@ extern int DisableSoundUpdate;
 // External functions
 void eInitFEEnvMapPlat();
 void eRemoveFEEnvMapPlat();
-void InitCarEffects();
-void CloseCarEffects();
 void LoadAemsFrontEnd(void (*)(int), int);
 void UnloadAemsFrontEnd();
 void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking);
 void NotifySkyUnloader();
 const char *GetLoadingScreenPackageName();
-void EstablishRemoteCaffeineConnection();
 void StartWorldAnimations();
-void MiniMainLoop();
-void eWaitUntilRenderingDone();
 void CloseAllGarageDoors();
 void DisableAllSceneryGroups();
 void SoundPause(bool, eSNDPAUSE_REASON);
@@ -122,7 +122,6 @@ void UnloadAemsInGame();
 void InitSkyHash(void (*)(intptr_t), intptr_t);
 void UnloadSkyTextures();
 void bCacheCodeineDirs(char *, int, int);
-void ResetCapturedLoadingTimes();
 void CodeOverlayUnloadingGame();
 
 // TODO move
@@ -165,7 +164,7 @@ Sim::eUserMode CalculateSimMode() {
 void GetBuildVersionName(char *build_version_name) {
 #ifdef DEBUG_OPT
     *build_version_name = '\0';
-#elif defined(MILESTONE_OPT)
+#elif defined(MILESTONE_BUILD)
     bStrCpy(build_version_name, "Milestone");
 #else
     bStrCpy(build_version_name, "Release");
@@ -204,7 +203,7 @@ void CodeOverlayLoadingFrontend(void (*callback)(int), int param) {
         char filename[64];
 
         GetBuildVersionName(build_version_name);
-        bSPrintf(filename, "%s.ovl", build_version_name);
+        bSPrintf(filename, "Frontend\\CodeOverlay%s.bin", build_version_name);
         if (CodeOverlayFirstTime) {
             int file_size = 0;
             void *file_buf = nullptr;
@@ -327,6 +326,9 @@ void SetLeakDetector() {
     LeakDetectorLargestAlloc = bLargestMalloc(0);
 }
 
+// STRIPPED
+void LeakDetectorFailed() {}
+
 void CheckLeakDetector(const char *debug_name) {}
 
 // TODO memory profile stuff stripped from here
@@ -383,8 +385,14 @@ void GetTODFilename(eTimeOfDay tod, const char *filename_in, char *filename_out,
     if (NeedsSeperateTODStreamingFile(bGetPlatformName())) {
         char *extension_in = bStrStr(filename_in, ".");
         char *extension_out = bStrStr(filename_out, ".");
-        bSPrintf(extension_out, "_%s%s", GetTimeOfDaySuffix(tod), extension_in);
+        bSPrintf(extension_out, "%s%s", GetTimeOfDaySuffix(tod), extension_in);
     }
+}
+
+// c34ord3 m8: cuerpo del LoadHandler estatico, que el original tiene aqui y no
+// en la clase (debug_lines: GameFlow.cpp:1978). Es POSICION, no optimizacion.
+inline void RegionLoader::LoadHandler(intptr_t object) {
+    reinterpret_cast<RegionLoader *>(object)->LoadHandler();
 }
 
 void RegionLoader::LoadHandler() {
@@ -439,28 +447,34 @@ void RegionLoader::FinishedLoading() {
     char region_filename[64];
     bSPrintf(baseregion_filename, "TRACKS\\STREAM%s.BUN", TrackInfo::GetLoadedTrackInfo()->RegionName);
     GetTODFilename(GetCurrentTimeOfDay(), baseregion_filename, region_filename, sizeof(region_filename));
+
+    void EstablishRemoteCaffeineConnection(); // Decl: 1609
     EstablishRemoteCaffeineConnection();
     TheTrackStreamer.InitRegion(region_filename, FEDatabase->IsSplitScreenMode());
-    TheGameFlowManager.SetSingleFunction(BeginGameFlowLoadTrack, "LoadTrack");
+
+    void BeginGameFlowLoadTrack(); // Decl: 1610
+    TheGameFlowManager.SetSingleFunction(BeginGameFlowLoadTrack, "BeginGameFlowLoadTrack");
 }
 
-const char *WheelsModelPackFilename = "CARS\\WHEELS\\GEOMETRY.BIN";
-const char *SpoilerModelPackFilename = "CARS\\SPOILER\\GEOMETRY.BIN";
-const char *SpoilerCarreraModelPackFilename = "CARS\\SPOILER_CARRERA\\GEOMETRY.BIN";
-const char *SpoilerHatchModelPackFilename = "CARS\\SPOILER_HATCH\\GEOMETRY.BIN";
-const char *SpoilerPorschesModelPackFilename = "CARS\\SPOILER_PORSCHES\\GEOMETRY.BIN";
-const char *RoofScoopModelPackFilename = "CARS\\ROOF\\GEOMETRY.BIN";
-const char *BrakesModelPackFilename = "CARS\\BRAKES\\GEOMETRY.BIN";
-const char *BrakesTexturePackFilename = "CARS\\BRAKES\\TEXTURES.BIN";
-const char *CarTexturePackFilename = "CARS\\TEXTURES.BIN";
-const char *WheelsTexturePackFilename = "CARS\\WHEELS\\TEXTURES.BIN";
-const char *DynamicTexturePackFilename = "GLOBAL\\DYNTEX.BIN";
-const char *HudDragTexturePackFilename = "GLOBAL\\HUDTEXDRAG.BIN";
-const char *HudSingleRaceTexturePackFilename = "GLOBAL\\HUDTEXRACE.BIN";
-const char *HudSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXSPLIT.BIN";
-const char *HudDragSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXDRAGSPLIT.BIN";
-const char *LoadingBootName = "loading_boot.fng";
-const char *LoadingControllerScreenPackageName = "Loading_Controller.fng";
+// The streaming pack filename globals live in the SourceList TU verbatim data
+// pool so the string pool relocations match the shipped object.
+extern const char *WheelsModelPackFilename;
+extern const char *SpoilerModelPackFilename;
+extern const char *SpoilerCarreraModelPackFilename;
+extern const char *SpoilerHatchModelPackFilename;
+extern const char *SpoilerPorschesModelPackFilename;
+extern const char *RoofScoopModelPackFilename;
+extern const char *BrakesModelPackFilename;
+extern const char *BrakesTexturePackFilename;
+extern const char *CarTexturePackFilename;
+extern const char *WheelsTexturePackFilename;
+extern const char *DynamicTexturePackFilename;
+extern const char *HudDragTexturePackFilename;
+extern const char *HudSingleRaceTexturePackFilename;
+extern const char *HudSplitScreenTexturePackFilename;
+extern const char *HudDragSplitScreenTexturePackFilename;
+extern const char *LoadingBootName;
+extern const char *LoadingControllerScreenPackageName;
 
 void RegionLoader::Unload() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_REGION);
@@ -810,6 +824,29 @@ Attrib::Vault *InitializeSingleAttributeVault(void *buf, const char *name, unsig
     return vault;
 }
 
+// El original define esta clase AQUI, no en AttribAlloc.h: el mapa de lineas
+// pone Allocate en gameflow.cpp:3521 y Free en gameflow.cpp:3526, y es lo que
+// coloca sus dos metodos en el bloque diferido justo detras de
+// RegionLoader::LoadHandler. Nadie mas la usa (r33-ord2 m1).
+class HighAttribAlloc : public IAttribAllocator {
+  public:
+    void *Allocate(std::size_t bytes, const char *name) override {
+        if (bytes < 0x401) {
+            return gFastMem.Alloc(bytes, name);
+        } else {
+            return bMalloc(bytes, name, 0, 0x40);
+        }
+    }
+
+    void Free(void *ptr, std::size_t bytes, const char *name) override {
+        if (bytes < 0x401) {
+            gFastMem.Free(ptr, bytes, name);
+        } else {
+            bFree(ptr);
+        }
+    }
+};
+
 void LoadFrontEndVault(bool allocHigh) {
     if (sFrontEndVault != nullptr)
         return;
@@ -889,16 +926,15 @@ bool GameFlowManager::IsPaused() {
     return TheOnlineManager.IsOnlineRace() ? false : Sim::GetState() == Sim::STATE_IDLE;
 }
 
-// TODO
-extern unsigned char bin_globala_bun[];
+extern "C" unsigned char bin_globala_bun[];
 
 void LoadGlobalAChunks() {
 #define ALIGN(n, align) ((n + align) & ~(align - 1))
     int alignment = 0x80;
-    unsigned char *dest = reinterpret_cast<unsigned char *>(ALIGN(reinterpret_cast<uintptr_t>(bin_globala_bun), alignment));
+    unsigned char *dest = reinterpret_cast<unsigned char *>(ALIGN(reinterpret_cast<uintptr_t>(bin_globala_bun - 1), alignment));
 #undef ALIGN
     // TODO hardcoded size?
-    bOverlappedMemCpy(dest, &bin_globala_bun[1], 0x15df4);
+    bOverlappedMemCpy(dest, bin_globala_bun, 0x15df4);
     LoadEmbeddedChunks(reinterpret_cast<bChunk *>(dest), 0x15df4, "Embedded GlobalA.bun");
     WaitForResourceLoadingComplete();
 }
@@ -1058,6 +1094,8 @@ void BeginGameFlowUnloadingFrontEnd() {
     eRemoveFEEnvMapPlat();
     CleanUpGarageCarLoaders();
     TheCarLoader.UnloadEverything();
+#ifndef EA_BUILD_A124
+    // la alpha 124 no tiene esta funcion: su declaracion ya va bajo la misma guarda.
     if (TheTrackStreamer.IsPermFileLoading()) {
         new EFadeScreenOn(true);
         while (TheTrackStreamer.IsPermFileLoading()) {
@@ -1067,6 +1105,7 @@ void BeginGameFlowUnloadingFrontEnd() {
             cFEng::Get()->PopNoControlPackage("FadeScreen.fng");
         }
     }
+#endif
     if (IsQueuedFileBusy()) {
         BlockWhileQueuedFileBusy();
     }

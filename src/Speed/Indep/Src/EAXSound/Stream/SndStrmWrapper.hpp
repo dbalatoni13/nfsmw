@@ -91,10 +91,10 @@ class SndStrmWrapper {
     void Resume(); // Decl: 138
 
     int PurgeStream();                                // Decl: 140
-    int GetStrmHandle() {}                            // Decl: 141
-    char *GetBuffer() {}                              // Decl: 142
-    int GetRealStrmHandle() {}                        // Decl: 143
-    int GetBufferSize() {}                            // Decl: 144
+    int GetStrmHandle() { return m_handle; }                // Decl: 141
+    char *GetBuffer() { return m_buffer; }                  // Decl: 142
+    int GetRealStrmHandle() { return m_RealStrmHandle; }    // Decl: 143
+    int GetBufferSize() { return m_BufferSize; }            // Decl: 144
     void AssignSTRMHANDLE(unsigned int strmhandle) {} // Decl: 145
     int m_StreamID;                                   // offset 0x0, size 0x4, Decl: 146
 

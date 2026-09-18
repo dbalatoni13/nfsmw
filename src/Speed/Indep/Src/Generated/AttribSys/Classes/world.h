@@ -42,7 +42,7 @@ struct world : Instance {
     typedef Attrib::StringKey TypeOf_WORLD_TYPE;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("world");
+    USE_ATTRIB_ALLOC("Attrib::Gen::world");
     world(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     world(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
     world(const Instance &src) : Instance(src) {}
@@ -59,10 +59,10 @@ struct world : Instance {
         return 0x6d90da55;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x6d90da55, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

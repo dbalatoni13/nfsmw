@@ -19,9 +19,11 @@ class EAutoSave : public Event {
 
     ~EAutoSave() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EAutoSave_MakeEvent_Callback(const void *staticData);
+int EAutoSave_MakeEvent_LuaBinding(struct lua_State *L);
+void EAutoSave_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

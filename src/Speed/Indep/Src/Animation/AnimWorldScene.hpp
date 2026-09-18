@@ -35,6 +35,4 @@ class CAnimWorldScene : public bTNode<CAnimWorldScene> {
     bTList<CWorldAnimEntityTree> mInstancedAnimTreeList; // offset 0xC, size 0x8
 };
 
-void ResetWorldAnimations();
-
 #endif

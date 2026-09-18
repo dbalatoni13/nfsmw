@@ -20,16 +20,24 @@
 
 #include <algorithm>
 
+// El ELF carga aqui 1/2.237f (0x3EE4E0C2), no el 0.44703001f de
+// ConversionUtil.hpp: el volcado DWARF nombra un segundo inline MPH2MPS(float x)
+// -sin const- que divide entre 2.237f (es el que CarBasics.hpp trae comentado).
+// Local a esta TU para no tocar el resto del juego, que si usa 0.44703001f.
+static inline float TrackMPH2MPS(float mph) {
+    return mph / 2.237f;
+}
+
 // TODO move
 extern BOOL bMemoryTracing;
 extern int SeeulatorToolActive;
 extern int ScenerySectionToBlink;
 extern bool PostLoadFixupDisabled;
-extern int ForceHoleFillerMethod;
 extern int ShowSectionBoarder;
 void NotifySkyLoader();
 
 int TrackStreamerRemoteCaffeinating = 0;
+int ForceHoleFillerMethod = (int)0xFFFFFFFF;
 
 int LoaderTrackStreamer(bChunk *chunk);
 int UnloaderTrackStreamer(bChunk *chunk);
@@ -441,7 +449,6 @@ void RefreshTrackStreamer() {
     TheTrackStreamer.RefreshLoading();
 }
 
-// UNSOLVED, ClearTable shouldn't inline
 TrackStreamer::TrackStreamer() {
     pTrackStreamingSections = nullptr;
     NumTrackStreamingSections = 0;
@@ -454,10 +461,12 @@ TrackStreamer::TrackStreamer() {
     NumSectionsMoved = 0;
     bMemSet(StreamFilenames, 0, sizeof(StreamFilenames));
     SplitScreen = false;
+#ifndef EA_BUILD_A124
     PermFileLoading = false;
     PermFilename = nullptr;
     PermFileChunks = nullptr;
     PermFileSize = 0;
+#endif
     NumBarriers = 0;
     pBarriers = nullptr;
     NumCurrentStreamingSections = 0;
@@ -477,7 +486,6 @@ TrackStreamer::TrackStreamer() {
     pMemoryPool = nullptr;
 
     CurrentVisibleSectionTable.Init(CurrentVisibleSectionTableMem, 0xAF0);
-    // TODO why doesn't this inline?
     CurrentVisibleSectionTable.ClearTable();
     bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
     pCallback = nullptr;
@@ -487,6 +495,12 @@ TrackStreamer::TrackStreamer() {
     MakeSpaceInPoolSize = 0;
 }
 
+// Definida detras del constructor: el constructor todavia no ha visto el cuerpo
+// y la llama fuera de linea; las funciones de despues la inlinean.
+inline void bBitTable::ClearTable() {
+    bMemZero(Bits, NumBits >> 3);
+}
+
 int TrackStreamer::Loader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_STRAMING_SECTIONS) {
         int n;
@@ -494,6 +508,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
         NumTrackStreamingSections = chunk->GetSize() / sizeof(TrackStreamingSection);
         for (n = 0; n < NumTrackStreamingSections; n++) {
             TrackStreamingSection *section = &pTrackStreamingSections[n];
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&section->SectionNumber);
             bPlatEndianSwap(reinterpret_cast<int *>(&section->FileType));
             bPlatEndianSwap(reinterpret_cast<int *>(&section->Status));
@@ -505,6 +520,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
             bPlatEndianSwap(&section->Centre);
             bPlatEndianSwap(&section->Radius);
             bPlatEndianSwap(&section->Checksum);
+#endif
         }
 
         for (n = 0; n < NumHibernatingSections; n++) {
@@ -600,7 +616,9 @@ void TrackStreamer::ClearCurrentZones() {
     CurrentZoneOutOfMemory = false;
     CurrentZoneAllocatedButIncomplete = false;
     CurrentZoneNonReplayLoad = false;
+#ifndef EA_BUILD_A124
     CurrentZoneFarLoad = true;
+#endif
     StartLoadingTime = 0.0f;
     CurrentZoneName[0] = 0;
     MemorySafetyMargin = 0;
@@ -705,9 +723,11 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
     if (flush_hibernating_sections) {
         FlushHibernatingSections();
     }
+#ifndef EA_BUILD_A124
     if (PermFileLoading) {
         BlockWhileQueuedFileBusy();
     }
+#endif
 
     ClearCurrentZones();
     ClearStreamingPositions();
@@ -750,13 +770,9 @@ void TrackStreamer::HibernateStreamingSections() {
     GetScenerySectionNumber('E', 4);
 
     for (int n = 0; n < 5 && false; n++) {
-        int section_number = sections_to_hibernate[n];
-        {
-            TrackStreamingSection *section;
-            {
-                TrackStreamingSection *hibernating_section;
-            }
-        }
+        char debug_name[24];
+        debug_name[0] = static_cast<char>(sections_to_hibernate[n]);
+        static_cast<void>(debug_name);
     }
 
     return;
@@ -812,6 +828,10 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
     NumSectionsLoading++;
     section->Status = TrackStreamingSection::LOADING;
 
+#ifdef EA_BUILD_A124
+    AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->Size, SectionLoadedCallback,
+                  reinterpret_cast<intptr_t>(section), nullptr);
+#else
     if (section->CompressedSize == section->Size) {
         AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
                       reinterpret_cast<intptr_t>(section), nullptr);
@@ -822,10 +842,11 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
         AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize, SectionLoadedCallback,
                       reinterpret_cast<intptr_t>(section), &params);
     }
+#endif
 }
 
 void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int allocation_params = 0x2087;
     NumSectionsActivated++;
     eAllowDuplicateSolids(true);
@@ -844,7 +865,7 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
 }
 
 void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     section->UnactivatedFrameCount = 0;
     DisableWaitUntilRenderingDone();
     section->UnactivatedFrameCount = eGetFrameCounter();
@@ -864,7 +885,7 @@ bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
 }
 
 void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     if (section->Status == TrackStreamingSection::ACTIVATED) {
         UnactivateSection(section);
     }
@@ -1081,7 +1102,7 @@ struct HoleMovement {
 // UNSOLVED, TODO this is pretty wrong
 int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free, int *pamount_moved,
                                       int max_amount_to_move) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int ticks = bGetTicker();
     unsigned int checksum = pMemoryPool->GetPoolChecksum();
     bool failed;
@@ -1090,10 +1111,10 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
     int total_needing_allocation;
 
     pMemoryPool->EnableTracing(false);
-    total_needing_allocation = -1;
     failed = false;
     num_movements = 0;
     amount_moved = 0;
+    total_needing_allocation = -1;
     while (true) {
         if (largest_free != 0) {
             if (pMemoryPool->GetLargestFreeBlock() >= largest_free) {
@@ -1146,8 +1167,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             TSMemoryNode *next_node = free_node;
 
             while ((next_node = pMemoryPool->GetNextAllocatedNode(start_from_top, next_node)) != nullptr) {
-                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, next_node);
-                if (next_free == nullptr) {
+                if (pMemoryPool->GetNextFreeNode(start_from_top, next_node) == nullptr) {
                     continue;
                 }
                 if (first || next_node->Size <= free_node->Size) {
@@ -1170,17 +1190,21 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                 }
             }
         } else if (filler_method == HOLE_FILLER_METHOD_SUPER_SCOOPER) {
-            bool done = false;
-            bool found_one = false;
-            bool first_pass = true;
-            bool largest_flag = false;
+            bool start_from_top = true;
+            bool done;
+            bool found_one;
+            bool skip_flag;
+            bool first_pass;
+            bool largest_flag;
             bool found_big_enough = false;
             TSMemoryNode *top_free_top;
             TSMemoryNode *bottom_free_top;
             TSMemoryNode *top_allocated;
+            TSMemoryNode *bottom_allocated;
             TSMemoryNode *largest_allocated;
             TSMemoryNode *cursor;
             TSMemoryNode *evaluated_top_free;
+            TSMemoryNode *evaluated_bottom_free;
             TSMemoryNode *evaluated_largest_allocated;
             int top_free_memory;
             int middle_allocated_memory;
@@ -1188,6 +1212,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             int total_free_memory;
             int current_best = 0;
             int position;
+            int best_nodes_to_move;
             int largest_moves_here = 0;
             int evaluated_largest_moves_here = 0;
             int size_checking[32];
@@ -1195,41 +1220,41 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             int nodes_to_move;
             int current_best_middle_memory = 0x3E8000;
 
+            done = false;
+            first_pass = true;
+            found_one = false;
+
             do {
                 if (first_pass) {
                     first_pass = false;
-                    top_free_top = pMemoryPool->GetFirstNode(true);
+                    top_free_top = pMemoryPool->GetFirstNode(start_from_top);
                 } else {
-                    top_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
+                    top_free_top = pMemoryPool->GetNextFreeNode(start_from_top, top_free_top);
                 }
 
-                if (!top_free_top) {
-                    done = true;
-                } else {
+                if (top_free_top) {
                     top_free_memory = top_free_top->Size;
-                    bottom_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
-                    if (!bottom_free_top) {
-                        done = true;
-                    } else {
+                    bottom_free_top = pMemoryPool->GetNextFreeNode(start_from_top, top_free_top);
+                    if (bottom_free_top) {
                         bottom_free_memory = bottom_free_top->Size;
                         total_free_memory = top_free_memory + bottom_free_memory;
-                        top_allocated = pMemoryPool->GetNextNode(true, top_free_top);
-                        pMemoryPool->GetNextNode(false, bottom_free_top);
+                        top_allocated = pMemoryPool->GetNextNode(start_from_top, top_free_top);
+                        bottom_allocated = pMemoryPool->GetNextNode(!start_from_top, bottom_free_top);
+                        cursor = top_allocated;
 
                         middle_allocated_memory = top_allocated->Size;
                         for (int i = 0; i < 32; i++) {
                             size_checking[i] = 0;
                         }
 
-                        size_checking[0] = top_allocated->Size;
+                        found_nodes = 0;
+                        size_checking[found_nodes++] = top_allocated->Size;
                         largest_allocated = top_allocated;
-                        cursor = top_allocated;
-                        found_nodes = 1;
-                        while (pMemoryPool->GetNextNode(true, cursor) != bottom_free_top && cursor && found_nodes < 32) {
-                            cursor = pMemoryPool->GetNextNode(true, cursor);
+                        while (pMemoryPool->GetNextNode(start_from_top, cursor) != bottom_free_top && cursor && found_nodes < 32) {
+                            cursor = pMemoryPool->GetNextNode(start_from_top, cursor);
                             if (cursor != nullptr) {
-                                size_checking[found_nodes] = cursor->Size;
                                 middle_allocated_memory += cursor->Size;
+                                size_checking[found_nodes] = cursor->Size;
                                 found_nodes++;
                                 if (cursor->Size > largest_allocated->Size) {
                                     largest_allocated = cursor;
@@ -1240,55 +1265,61 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                         if ((!found_big_enough && total_free_memory - middle_allocated_memory > current_best) ||
                             (found_big_enough && total_free_memory + middle_allocated_memory >= total_needing_allocation &&
                              middle_allocated_memory < current_best_middle_memory)) {
-                            nodes_to_move = 0;
                             std::sort(size_checking, size_checking + found_nodes + 1);
-                            largest_flag = false;
-                            evaluated_top_free = pMemoryPool->GetFirstFreeNode(true);
                             position = 0;
+                            nodes_to_move = 0;
+                            largest_flag = false;
+                            cursor = pMemoryPool->GetFirstFreeNode(start_from_top);
 
-                            while (found_nodes > nodes_to_move && evaluated_top_free) {
-                                bool skip_flag = false;
-                                int target_index = found_nodes - nodes_to_move;
+                            while (found_nodes - nodes_to_move > 0 && cursor) {
+                                skip_flag = false;
                                 for (int i = 0; i < found_nodes; i++) {
-                                    if (size_checking[target_index] == position) {
+                                    if (size_checking[found_nodes - nodes_to_move] == position) {
                                         skip_flag = true;
                                     }
                                 }
-                                if (evaluated_top_free == top_free_top || evaluated_top_free == bottom_free_top) {
+                                if (cursor == top_free_top || cursor == bottom_free_top) {
                                     skip_flag = true;
                                 }
-                                if (!skip_flag && evaluated_top_free->Size >= size_checking[target_index]) {
-                                    size_checking[target_index] = position;
+                                if (!skip_flag && cursor->Size >= size_checking[found_nodes - nodes_to_move]) {
+                                    size_checking[found_nodes - nodes_to_move] = position;
                                     nodes_to_move++;
                                     if (!largest_flag) {
-                                        largest_moves_here = evaluated_top_free->Address;
                                         largest_flag = true;
+                                        largest_moves_here = cursor->Address;
                                     }
-                                    evaluated_top_free = pMemoryPool->GetNextFreeNode(true, nullptr);
+                                    cursor = pMemoryPool->GetFirstFreeNode(start_from_top);
                                 }
-                                evaluated_top_free = pMemoryPool->GetNextFreeNode(true, evaluated_top_free);
                                 position++;
+                                cursor = pMemoryPool->GetNextFreeNode(start_from_top, cursor);
                             }
 
                             if (nodes_to_move >= found_nodes) {
+                                evaluated_largest_allocated = largest_allocated;
                                 current_best = total_free_memory - middle_allocated_memory;
                                 evaluated_largest_moves_here = largest_moves_here;
                                 found_one = true;
-                                evaluated_largest_allocated = largest_allocated;
-                                if (total_needing_allocation <= total_free_memory + middle_allocated_memory) {
+                                if (total_free_memory + middle_allocated_memory >= total_needing_allocation) {
                                     found_big_enough = true;
                                     current_best_middle_memory = middle_allocated_memory;
                                 }
                             }
                         }
+                    } else {
+                        done = true;
                     }
+                } else {
+                    done = true;
                 }
             } while (!done);
 
-            if (found_one && evaluated_largest_allocated && FindSectionByAddress(evaluated_largest_allocated->Address)) {
-                movement->Size = evaluated_largest_allocated->Size;
-                movement->Address = evaluated_largest_allocated->Address;
-                movement->NewAddress = evaluated_largest_moves_here;
+            if (found_one) {
+                TrackStreamingSection *section = FindSectionByAddress(evaluated_largest_allocated->Address);
+                if (section) {
+                    movement->Size = evaluated_largest_allocated->Size;
+                    movement->Address = evaluated_largest_allocated->Address;
+                    movement->NewAddress = evaluated_largest_moves_here;
+                }
             }
         }
 
@@ -1297,11 +1328,11 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             break;
         }
 
-        num_movements++;
         movement->Checksum = pMemoryPool->GetPoolChecksum();
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
         pMemoryPool->Malloc(movement->Size, "HoleMovement", false, false, movement->NewAddress);
         amount_moved += movement->Size;
+        num_movements++;
         if (amount_moved > max_amount_to_move) {
             failed = true;
             break;
@@ -1330,14 +1361,14 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 }
 
 int TrackStreamer::DoHoleFilling(int largest_free) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     const char *fragmented_user_allocation;
     HoleMovement hole_movement_table[128];
 
     CountUserAllocations(&fragmented_user_allocation);
     if (fragmented_user_allocation) {
         pMemoryPool->DebugPrint();
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         bReleasePrintf("WARNING:  TrackStreamer::DoHoleFilling() is aborting due to fragmented user alloc ation %s\n");
 #endif
         return 0;
@@ -1368,7 +1399,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
 
     int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
     for (int n = 0; n < num_hole_movements; n++) {
-        ProfileNode profile_node("TODO", 0);
+        ProfileNode profile_node;
         HoleMovement *movement = &hole_movement_table[n];
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
         if (LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
@@ -1453,7 +1484,6 @@ void TrackStreamer::PredictStreamingPosition(int position_number, const bVector3
     }
 }
 
-// UNSOLVED regswap, branching and it uses a different MPH2MPS function...
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
     int predict_zone_number = 0;
     bVector2 predict_position;
@@ -1464,14 +1494,12 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
 
     while ((zone = TheTrackPathManager.FindZone(&position_entry->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, zone))) {
         float elevation = zone->GetElevation();
-        // TODO branch targets
-        if (((elevation <= 0.0f) || (position_entry->Elevation >= elevation)) &&
-            (elevation >= 0.0f || (position_entry->Elevation > bAbs(elevation)))) {
+        if ((elevation > 0.0f && position_entry->Elevation < elevation) ||
+            (elevation < 0.0f && position_entry->Elevation > bAbs(elevation))) {
             continue;
         }
 
-        // TODO this MPH2MPS inline is in CarBasics.hpp
-        float max_speed = MPH2MPS(400.0f);
+        float max_speed = TrackMPH2MPS(400.0f);
         float distance = speed * 1.5f;
         DrivableScenerySection *scenery_section;
         if (speed > max_speed) {
@@ -1489,8 +1517,8 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
                     break;
                 }
                 if (scenery_section->SectionNumber == zone->Data[n]) {
-                    predict_position_used = true;
                     predict_zone_number = scenery_section->SectionNumber;
+                    predict_position_used = true;
                     break;
                 }
             }
@@ -1597,52 +1625,49 @@ void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num
 void TrackStreamer::DetermineStreamingSections() {
     const int max_sections_to_load = 0x180;
     short sections_to_load[384];
-    int num_sections_to_load = 3;
+    int num_sections_to_load = 0;
+    short section_number;
 
     RemoveCurrentStreamingSections();
-    sections_to_load[0] = GetScenerySectionNumber('Y', 0);
-    sections_to_load[1] = GetScenerySectionNumber('X', 0);
-    sections_to_load[2] = GetScenerySectionNumber('Z', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('Y', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('X', 0);
+    sections_to_load[num_sections_to_load++] = GetScenerySectionNumber('Z', 0);
 
     if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
-        num_sections_to_load = 4;
-        sections_to_load[3] = static_cast<short>(ScenerySectionToBlink);
+        sections_to_load[num_sections_to_load++] = ScenerySectionToBlink;
     }
 
-    short section_number;
     for (int n = 0; n < 4; n++) {
-        section_number = KeepSectionTable[n];
-        if (section_number != 0) {
-            sections_to_load[num_sections_to_load] = section_number;
-            num_sections_to_load++;
+        if (KeepSectionTable[n] != 0) {
+            sections_to_load[num_sections_to_load++] = KeepSectionTable[n];
         }
     }
 
     AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 0);
     AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 1);
+    num_sections_to_load = 0;
     for (int position_number = 0; position_number < 2; position_number++) {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
         if (position_entry->CurrentZone > 0) {
             LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
             if (!loading_section) {
                 DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(position_entry->CurrentZone);
-                num_sections_to_load = 0;
                 for (int i = 0; i < drivable_section->GetNumVisibleSections(); i++) {
-                    int section_number = drivable_section->GetVisibleSection(i);
-                    sections_to_load[num_sections_to_load] = section_number;
-                    num_sections_to_load++;
+                    section_number = drivable_section->GetVisibleSection(i);
+                    sections_to_load[num_sections_to_load++] = section_number;
                 }
             } else {
-                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, max_sections_to_load);
+                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, &sections_to_load[num_sections_to_load], max_sections_to_load);
             }
 
             AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
+            num_sections_to_load = 0;
         }
     }
 }
 
 int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int out_of_memory_size = 0;
     int total_needing_allocation = 0;
     int num_sections_allocated = 0;
@@ -1945,7 +1970,7 @@ void TrackStreamer::ServiceGameState() {
 }
 
 void TrackStreamer::ServiceNonGameState() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     float start_time = GetDebugRealTime();
     HandleLoading();
     float time = GetDebugRealTime();
@@ -1995,7 +2020,7 @@ void TrackStreamer::RefreshLoading() {
 }
 
 void TrackStreamer::HandleZoneSwitching() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     short current_zones[2];
     bool current_zones_different;
     if (!ZoneSwitchingDisabled && pMemoryPoolMem) {
@@ -2016,6 +2041,7 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         if (position_entry->CurrentZone != zone_number) {
             PlotLoadingMarker(position_entry);
 
+#ifndef EA_BUILD_A124
             VisibleSectionBoundary *boundary1 = TheVisibleSectionManager.FindBoundary(position_entry->CurrentZone);
             VisibleSectionBoundary *boundary2 = TheVisibleSectionManager.FindBoundary(zone_number);
             float best_distance = 10000.0f;
@@ -2026,9 +2052,10 @@ void TrackStreamer::SwitchZones(short *current_zones) {
                 }
             }
 
-            if (0.1f < best_distance) {
+            if (30.0f < best_distance) {
                 CurrentZoneFarLoad = true;
             }
+#endif
 
             position_entry->CurrentZone = zone_number;
             position_entry->BeginLoadingPosition = position_entry->Position;
@@ -2109,9 +2136,10 @@ void TrackStreamer::HandleLoading() {
         for (int n = 0; n < NumTrackStreamingSections; n++) {
             TrackStreamingSection *section = &pTrackStreamingSections[n];
             if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
-                // TODO writing this as two different branches switches byteswaps, but messes with the instructions
-                if ((LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsTextureSection(section->SectionNumber)) ||
-                    (LoadingPhase == ALLOCATING_REGULAR_SECTIONS && IsLibrarySection(section->SectionNumber))) {
+                if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsTextureSection(section->SectionNumber)) {
+                    UnactivateSection(section);
+                    num_sections_unactivated++;
+                } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS && IsLibrarySection(section->SectionNumber)) {
                     UnactivateSection(section);
                     num_sections_unactivated++;
                 }
@@ -2169,11 +2197,11 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 
     bVector2 v = section->Centre - predict_pos;
     v = bNormalize(v);
-    float dot = bDot(&direction, &v);
+    float dot = bDot(&v, &direction);
     float speed_factor = bMin(speed * 0.016666668f, 1.0f);
     float angle = bAngToDeg(bACos(dot));
-    float angle_factor = bClamp(angle, 20.0f, 90.0f);
-    float adjusted_distance = distance * (1.0f - (90.0f - angle_factor) * 0.014285714f * speed_factor * 0.66999996f);
+    float angle_factor = (90.0f - bClamp(angle, 20.0f, 90.0f)) * 0.014285714f;
+    float adjusted_distance = distance * (1.0f - angle_factor * speed_factor * 0.66999996f);
     int priority = bClamp(static_cast<int>(adjusted_distance * 0.013333334f), 0, 2);
 
     // TODO
@@ -2185,14 +2213,12 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
             bSPrintf(layer_name, "LoadingPriorityLoaded");
         }
 
-        FloatVector pos;
-        pos.x = section->Centre.x;
-        pos.y = section->Centre.y;
-        pos.z = 0.0f;
+        FloatVector pos = {section->Centre.x, section->Centre.y, 0.0f};
         espCreateObjectAsync(layer_name, "LoadingPriorityPoint", &pos);
         espSetAttributeString(1, "Section", section->SectionName);
         espCreateUserMesh(1, boundary->GetNumPoints());
 
+        FloatVector face[4];
         for (int n = 0; n < boundary->GetNumPoints(); n++) {
             bVector2 *point1 = boundary->GetPoint(0);
             bVector2 *point2 = boundary->GetPoint(n % boundary->GetNumPoints());
@@ -2215,7 +2241,6 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 
             espSetUserMeshFace(1, n, face);
         }
-        FloatVector face[4];
         // TODO
         // face[0].x = v32;
         // face[0].y = v33;
@@ -2342,7 +2367,9 @@ void TrackStreamer::FinishedLoading() {
 
     LoadingPhase = LOADING_IDLE;
     CurrentZoneNonReplayLoad = false;
+#ifndef EA_BUILD_A124
     CurrentZoneFarLoad = false;
+#endif
     NotifySkyLoader();
 
     for (int position_number = 0; position_number < 2; position_number++) {
@@ -2377,9 +2404,8 @@ void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position
 #ifdef EA_BUILD_A124
 void TrackStreamer::CheckLoadingBar() {}
 #else
-// UNSOLVED regswap
 bool TrackStreamer::CheckLoadingBar() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     float closest_distance = 999.0f;
     TrackStreamingSection *closest_section;
     StreamingPositionEntry *closest_position_entry;
@@ -2398,7 +2424,7 @@ bool TrackStreamer::CheckLoadingBar() {
         }
 
         speed = bLength(&position_entry->Velocity);
-        max_speed = MPH2MPS(400.0f);
+        max_speed = TrackMPH2MPS(400.0f);
         if (speed > max_speed) {
             break;
         }
@@ -2407,28 +2433,30 @@ bool TrackStreamer::CheckLoadingBar() {
             TrackStreamingSection *section = CurrentStreamingSections[n];
             VisibleSectionBoundary *boundary = section->pBoundary;
 
-            if (boundary != nullptr) {
-                bool may_contain_road = false;
-                if (IsRegularScenerySection(section->SectionNumber)) {
-                    if (IsScenerySectionDrivable(section->SectionNumber) || IsLODScenerySectionNumber(section->SectionNumber)) {
-                        may_contain_road = true;
-                    }
-                }
+            if (boundary == nullptr) {
+                continue;
+            }
 
-                if (may_contain_road && section->Status != TrackStreamingSection::ACTIVATED) {
-                    // TODO make const somehow
-                    float small_test_time = 0.2f;
-                    bVector2 test_pos = position_entry->Position + position_entry->Velocity * 0.01f;
-                    float distance1 = boundary->GetDistanceOutside(&position_entry->Position, 999.0f);
-                    float distance2 = boundary->GetDistanceOutside(&test_pos, 999.0f);
-                    float approach_speed = small_test_time * (distance1 - distance2) * 100.0f;
-                    float distance = distance1 - approach_speed;
-                    if (distance < closest_distance) {
-                        closest_distance = distance;
-                        closest_section = section;
-                        closest_position_entry = position_entry;
-                        closest_approach_speed = approach_speed;
-                    }
+            bool may_contain_road = false;
+
+            if (IsRegularScenerySection(section->SectionNumber)) {
+                if (IsScenerySectionDrivable(section->SectionNumber) || IsLODScenerySectionNumber(section->SectionNumber)) {
+                    may_contain_road = true;
+                }
+            }
+
+            if (may_contain_road && section->Status != TrackStreamingSection::ACTIVATED) {
+                const float small_test_time = 0.2f;
+                bVector2 test_pos = position_entry->Position + position_entry->Velocity * 0.01f;
+                float distance1 = boundary->GetDistanceOutside(&position_entry->Position, 999.0f);
+                float distance2 = boundary->GetDistanceOutside(&test_pos, 999.0f);
+                float approach_speed = (distance1 - distance2) * 100.0f;
+                float distance = distance1 - approach_speed * small_test_time;
+                if (distance < closest_distance) {
+                    closest_distance = distance;
+                    closest_section = section;
+                    closest_position_entry = position_entry;
+                    closest_approach_speed = approach_speed;
                 }
             }
         }
@@ -2458,7 +2486,7 @@ int TrackStreamer::GetSectionToActivate(int activation_delay) {
 }
 
 void TrackStreamer::HandleSectionActivation() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int activation_delay;
     short section_to_activate = static_cast<short>(GetSectionToActivate(0));
     if (section_to_activate != 0) {

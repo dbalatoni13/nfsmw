@@ -1,4 +1,5 @@
 #include "FnAnimMemoryMap.h"
+#include "FnCsisEventChannel.h"
 
 namespace EAGL4Anim {
 

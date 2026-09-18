@@ -12,25 +12,27 @@ class EFireEventList : public Event {
   public:
     // total size: 0x10
     struct StaticData : public Event::StaticData {
-        EventList *fEventList; // offset: 0x4, size 0x4
+        CARP::EventList *fEventList; // offset: 0x4, size 0x4
         int fDelayed;          // offset: 0x8, size 0x4
         int fVerbose;          // offset: 0xc, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EFireEventList(EventList *pEventList, int pDelayed, int pVerbose);
+    EFireEventList(CARP::EventList *pEventList, int pDelayed, int pVerbose);
 
     ~EFireEventList() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
-    EventList *fEventList; // offset: 0x8, size 0x4
+    CARP::EventList *fEventList; // offset: 0x8, size 0x4
     int fDelayed;          // offset: 0xc, size 0x4
     int fVerbose;          // offset: 0x10, size 0x4
 };
 
 void EFireEventList_MakeEvent_Callback(const void *staticData);
+int EFireEventList_MakeEvent_LuaBinding(struct lua_State *L);
+void EFireEventList_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

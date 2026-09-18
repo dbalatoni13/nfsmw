@@ -18,6 +18,10 @@ class AudioMemBase {
   public:
     virtual ~AudioMemBase() {}
 
+    void *operator new(size_t size, void *ptr) {
+        return ptr;
+    }
+
     void *operator new(size_t size, const char *debug_name) {
         return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
     }

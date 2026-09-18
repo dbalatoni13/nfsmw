@@ -15,8 +15,25 @@ namespace COM {
 class IUnknown;
 
 // total size: 0x10
-class Object {
+// PS2ALIGN16, igual que IUnknown: en el PS2 original Object esta alineada a 16. Se ve en
+// CameraAI::Action (Object + Factory + vtable), que en el volcado de tipos del ELF mide 0x30 con la
+// vtable en 0x20; sin la alineacion la nuestra media 0x18, y todos los CDAction* leian sus miembros
+// 16 bytes antes (0x58 donde el original lee 0x68). Medido con una sonda compilada con los flags de
+// PS2: con esto Action pasa a 0x30 y el primer miembro de CDActionDrive a 0x60, como el original.
+// Alinear tambien Factory no cambia nada, asi que no se toca.
+class PS2ALIGN16 Object {
     struct _IPair {
+        struct _Finder {
+            const IUnknown *ref;
+
+            _Finder(const IUnknown *pUnk)
+                : ref(pUnk) {}
+
+            bool operator()(const _IPair &rhs) const {
+                return ref == rhs.ref;
+            }
+        };
+
         void *handle;
         IUnknown *ref;
 
@@ -24,7 +41,10 @@ class Object {
             this->handle = h;
             this->ref = r;
         }
-        // bool operator<(const _IPair &rhs) {}
+
+        bool operator<(const _IPair &rhs) const {
+            return handle < rhs.handle;
+        }
     };
 
     class _IList : public UTL::Std::vector<_IPair, _type_UComObject> {
@@ -56,7 +76,7 @@ class Object {
 };
 
 // total size: 0x8
-class ALIGN_16 IUnknown {
+class PS2ALIGN16 IUnknown {
   public:
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();
@@ -177,16 +197,20 @@ template <typename T, typename U, typename V> class Factory {
     ~Factory() {}
 
     static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
-    // TODO
-    //  {
-    //     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
-    //         if (f->mSignature == sig) {
-    //             return f->mConstructor(params);
-    //         }
-    //     }
-    //     return nullptr;
-    // }
 };
+
+// NOTE: defined out of class on purpose. An in-class body would be implicitly
+// inline and GCC 2.9 would expand it into every caller, so the standalone
+// Factory<...>::CreateInstance symbols the original ships would never be
+// emitted.
+template <typename T, typename U, typename V> U *Factory<T, U, V>::CreateInstance(V sig, T params) {
+    for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
+        if (f->mSignature == sig) {
+            return f->mConstructor(params);
+        }
+    }
+    return nullptr;
+}
 
 #define IMPLEMENT_FACTORY(_Factory_) template <> _Factory_::Prototype *_Factory_::Prototype::mHead = NULL;
 

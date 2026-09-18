@@ -12,21 +12,21 @@ class EFireTriggerSpeedCondition : public Event {
   public:
     // total size: 0x10
     struct StaticData : public Event::StaticData {
-        Trigger *fTrigger;        // offset: 0x4, size 0x4
+        CARP::Trigger *fTrigger;        // offset: 0x4, size 0x4
         float fSpeed;             // offset: 0x8, size 0x4
         int fTriggerIfSpeedBelow; // offset: 0xc, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EFireTriggerSpeedCondition(Trigger *pTrigger, float pSpeed, int pTriggerIfSpeedBelow, unsigned int phSimable);
+    EFireTriggerSpeedCondition(CARP::Trigger *pTrigger, float pSpeed, int pTriggerIfSpeedBelow, unsigned int phSimable);
 
     ~EFireTriggerSpeedCondition() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
-    Trigger *fTrigger;        // offset: 0x8, size 0x4
+    CARP::Trigger *fTrigger;        // offset: 0x8, size 0x4
     float fSpeed;             // offset: 0xc, size 0x4
     int fTriggerIfSpeedBelow; // offset: 0x10, size 0x4
 
@@ -34,5 +34,7 @@ class EFireTriggerSpeedCondition : public Event {
 };
 
 void EFireTriggerSpeedCondition_MakeEvent_Callback(const void *staticData);
+int EFireTriggerSpeedCondition_MakeEvent_LuaBinding(struct lua_State *L);
+void EFireTriggerSpeedCondition_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

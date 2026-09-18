@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+class GMilestone;
+
 // total size: 0xc
 class EReportMilestoneAtStake : public Event {
   public:
@@ -21,12 +23,14 @@ class EReportMilestoneAtStake : public Event {
 
     ~EReportMilestoneAtStake() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     GMilestone *fMilestonePtr; // offset: 0x8, size 0x4
 };
 
 void EReportMilestoneAtStake_MakeEvent_Callback(const void *staticData);
+int EReportMilestoneAtStake_MakeEvent_LuaBinding(struct lua_State *L);
+void EReportMilestoneAtStake_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

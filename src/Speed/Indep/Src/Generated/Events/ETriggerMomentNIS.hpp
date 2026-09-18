@@ -21,7 +21,7 @@ class ETriggerMomentNIS : public Event {
 
     ~ETriggerMomentNIS() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     const char *fSceneName; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ETriggerMomentNIS : public Event {
 };
 
 void ETriggerMomentNIS_MakeEvent_Callback(const void *staticData);
+int ETriggerMomentNIS_MakeEvent_LuaBinding(struct lua_State *L);
+void ETriggerMomentNIS_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -15,6 +15,16 @@ class WWorldPos {
   public:
     USE_FASTALLOC(WWorldPos);
 
+    WWorldPos() {
+        fFaceValid = 0;
+        fMissCount = 0;
+        fUsageCount = 0;
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
+        fSurface = nullptr;
+    }
+
     WWorldPos(float yOffset) {
         fYOffset = yOffset;
         fFaceValid = 0;
@@ -70,7 +80,7 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector4 *norm) const {
-        UNormal(&UMath::Vector4To3(*norm));
+        UNormal(UMath::Vector4To3(norm));
         norm->w = 0.0f;
     }
 

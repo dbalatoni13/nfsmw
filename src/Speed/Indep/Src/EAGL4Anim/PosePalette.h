@@ -14,11 +14,17 @@ namespace EAGL4Anim {
 // total size: 0xC
 class PosePalette {
   public:
-    int GetNumPoses() const {}
+    int GetNumPoses() const {
+        return mNumPoses;
+    }
 
-    int GetNumQs() const {}
+    int GetNumQs() const {
+        return mNumQs;
+    }
 
-    int GetNumTs() const {}
+    int GetNumTs() const {
+        return mNumTs;
+    }
 
     void SetNumPoses(int n) {}
 
@@ -26,9 +32,13 @@ class PosePalette {
 
     void SetNumTs(int n) {}
 
-    float *GetPoseData() const {}
+    float *GetPoseData() const {
+        return mPoseData;
+    }
 
-    unsigned short *GetDofIndices() const {}
+    unsigned short *GetDofIndices() const {
+        return mDofIndices;
+    }
 
   private:
     float *mPoseData;                // offset 0x0, size 0x4
@@ -54,7 +64,9 @@ class PosePaletteBank {
 
     void SetCheckSum(unsigned short cs) {}
 
-    unsigned short GetNumPalettes() const {}
+    unsigned short GetNumPalettes() const {
+        return mNumPalettes;
+    }
 
     void SetNumPalettes(unsigned short np) {}
 
@@ -62,7 +74,9 @@ class PosePaletteBank {
 
     static int ComputeSize(int numPalettes) {}
 
-    const PosePalette **GetPalettes() const {}
+    const PosePalette **GetPalettes() const {
+        return reinterpret_cast<const PosePalette **>(const_cast<PosePaletteBank *>(this) + 1);
+    }
 
   private:
     CheckSum mSkelCheckSum;          // offset 0x0, size 0x2

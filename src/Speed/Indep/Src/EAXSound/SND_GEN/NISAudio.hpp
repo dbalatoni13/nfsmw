@@ -17,6 +17,16 @@ enum Type_NIS_Scene_Start {
     Type_NIS_Scene_Start_IntroNis10 = 512,
     Type_NIS_Scene_Start_IntroNis11 = 1024,
     Type_NIS_Scene_Start_dummy = 2048,
+#ifdef EA_BUILD_A124
+    Type_NIS_Scene_Start_flythrough = 16777216,
+    Type_NIS_Scene_Start_safehouse = 33554432,
+    Type_NIS_Scene_Start_dday = 67108864,
+    Type_NIS_Scene_Start_e3 = 134217728,
+    Type_NIS_Scene_Start_opm = 268435456,
+    Type_NIS_Scene_Start_toll = 536870912,
+    Type_NIS_Scene_Start_generic = 1073741824,
+    Type_NIS_Scene_Start_ddayend = Type_NIS_Scene_Start_dday,
+#else
     Type_NIS_Scene_Start_flythrough = 4096,
     Type_NIS_Scene_Start_safehouse = 8192,
     Type_NIS_Scene_Start_dday = 16384,
@@ -25,6 +35,7 @@ enum Type_NIS_Scene_Start {
     Type_NIS_Scene_Start_toll = 131072,
     Type_NIS_Scene_Start_generic = 262144,
     Type_NIS_Scene_Start_ddayend = 524288,
+#endif
 };
 
 enum Type_NIS_Track {
@@ -146,8 +157,13 @@ enum Type_NIS_Blacklist {
     Type_NIS_Blacklist_Black14 = 8192,
     Type_NIS_Blacklist_Black15 = 16384,
     Type_NIS_Blacklist_Black16 = 32768,
-    Type_NIS_Blacklist_Black06end = 65536,
-    Type_NIS_Blacklist_Black07end = 131072,
+#ifdef EA_BUILD_A124
+    Type_NIS_Blacklist_Black06end = 8388608,
+    Type_NIS_Blacklist_Black07end = 33554432,
+#else
+    Type_NIS_Blacklist_Black06end = Type_NIS_Blacklist_Black06,
+    Type_NIS_Blacklist_Black07end = Type_NIS_Blacklist_Black07,
+#endif
     Type_NIS_Blacklist_generic = 262144,
 };
 

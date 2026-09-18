@@ -22,15 +22,17 @@ class EResetSystem : public Event {
 
     ~EResetSystem() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     UCrc32 fSystemName; // offset: 0x8, size 0x4
 
-    unsigned int fEventSeqEngine; // offset: 0x10, size 0x4
-    unsigned int fEventSeqSystem; // offset: 0x14, size 0x4
+    unsigned int fEventSeqEngine; // offset: 0xc, size 0x4
+    unsigned int fEventSeqSystem; // offset: 0x10, size 0x4
 };
 
 void EResetSystem_MakeEvent_Callback(const void *staticData);
+int EResetSystem_MakeEvent_LuaBinding(struct lua_State *L);
+void EResetSystem_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

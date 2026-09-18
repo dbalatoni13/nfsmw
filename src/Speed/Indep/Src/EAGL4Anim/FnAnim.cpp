@@ -3,12 +3,12 @@
 
 namespace EAGL4Anim {
 
-bool FnAnim::gReverseDeltaSumEnabled = true;
-
-FnAnimFactory *FnAnimFactory::mpFactory = nullptr;
-
 const AttributeBlock *FnAnim::GetAttributes() const {
     return nullptr;
 }
+
+bool FnAnim::gReverseDeltaSumEnabled = true;
+
+FnAnimFactory *FnAnimFactory::mpFactory = nullptr;
 
 }; // namespace EAGL4Anim

@@ -6,7 +6,12 @@
 #endif
 
 #include "FEMenuScreen.hpp"
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "feWidget.hpp"
+
+class FEImage;
 #include "feScrollerina.hpp"
 
 // total size: 0x14
@@ -105,6 +110,16 @@ class ArrayDatum : public bTNode<ArrayDatum> {
         checked = b;
     }
 
+    ArrayDatum()
+        : hash(0) //
+        , desc(0) //
+        , enabled(true) //
+        , greyedOut(false) //
+        , locked(false) //
+        , checked(false) {}
+
+    ArrayDatum(uint32 hash, uint32 desc);
+
     virtual ~ArrayDatum() {}
 
     virtual void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {}
@@ -161,9 +176,9 @@ class ArrayScroller {
 
     int ForceSelectionOnScreen(int new_datum, int start);
 
-    // void ScrollHor(enum eScrollDir dir);
+    void ScrollHor(enum eScrollDir dir);
 
-    // void ScrollVer(enum eScrollDir dir);
+    void ScrollVer(enum eScrollDir dir);
 
     void UpdateScrollbar();
 
@@ -177,33 +192,33 @@ class ArrayScroller {
 
     void ClearData();
 
-    void SetDescLabel(uint32 hash) {}
+    void SetDescLabel(uint32 hash) { descLabel = hash; }
 
-    void SetDimensions(int w, int h) {}
+    void SetDimensions(int w, int h) { width = w; height = h; }
 
-    int GetWidth() {}
+    int GetWidth() { return width; }
 
-    int GetHeight() {}
+    int GetHeight() { return height; }
 
-    void ScrollLeft() {}
+    void ScrollLeft() { ScrollHor(eSD_PREV); }
 
-    void ScrollRight() {}
+    void ScrollRight() { ScrollHor(eSD_NEXT); }
 
-    void ScrollUp() {}
+    void ScrollUp() { ScrollVer(eSD_PREV); }
 
-    void ScrollDown() {}
+    void ScrollDown() { ScrollVer(eSD_NEXT); }
 
-    void SetMouseDownMsg(uint32 msg) {}
+    void SetMouseDownMsg(uint32 msg) { mouseDownMsg = msg; }
 
-    void SetClickToSelectMode(bool flag) {}
+    void SetClickToSelectMode(bool flag) { bInClickToSelectMode = flag; }
 
-    int GetNumSlots() {}
+    int GetNumSlots() { return slots.CountElements(); }
 
-    int GetStartDatumNum() {}
+    int GetStartDatumNum() { return startDatum; }
 
-    int GetCurrentDatumNum() {}
+    int GetCurrentDatumNum() { return data.GetNodeNumber(currentDatum); }
 
-    int GetNumDatum() {}
+    int GetNumDatum() { return data.CountElements(); }
 
     ArrayDatum *GetCurrentDatum() {
         return currentDatum;
@@ -229,7 +244,7 @@ class ArrayScroller {
         return &scripts;
     }
 
-  private:
+  protected:
     bool bShouldPlaySound;     // offset 0x0, size 0x1
     bTList<ArraySlot> slots;   // offset 0x4, size 0x8
     bTList<ArrayDatum> data;   // offset 0xC, size 0x8
@@ -264,6 +279,15 @@ class ArrayScrollerMenu : public MenuScreen, public ArrayScroller {
 
     // Overrides: ArrayScroller
     void RefreshHeader() override;
+};
+
+// total size: 0x14
+class ImageArraySlot : public ArraySlot {
+  public:
+    ImageArraySlot(FEImage *img);
+    ~ImageArraySlot() override {}
+    void Update(ArrayDatum *datum, bool isSelected) override;
+    void SetTexture(unsigned int tex_hash);
 };
 
 #endif

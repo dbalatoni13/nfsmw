@@ -7,8 +7,8 @@
 
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 
+// total size: 0x40
 struct eRenderTarget {
-    // total size: 0x40
     TARGET_ID ID;             // offset 0x0, size 0x4
     const char *Name;         // offset 0x4, size 0x4
     int Active;               // offset 0x8, size 0x4
@@ -16,7 +16,7 @@ struct eRenderTarget {
     int ScissorY;             // offset 0x10, size 0x4
     int ScissorW;             // offset 0x14, size 0x4
     int ScissorH;             // offset 0x18, size 0x4
-    int FrameAddress;         // offset 0x1C, size 0x4
+    intptr_t FrameAddress;    // offset 0x1C, size 0x4
     int FrameWidth;           // offset 0x20, size 0x4
     int FrameHeight;          // offset 0x24, size 0x4
     FILTER_ID CopyFilterID;   // offset 0x28, size 0x4
@@ -28,6 +28,34 @@ struct eRenderTarget {
 
     FILTER_ID GetCopyFilter() {
         return CopyFilterID;
+    }
+
+    int GetID() {
+        return ID;
+    }
+
+    void SetID(int id) {
+        ID = static_cast<TARGET_ID>(id);
+    }
+
+    void SetName(const char *name) {
+        Name = name;
+    }
+
+    void SetActive(int active) {
+        Active = active;
+    }
+
+    int IsActive() {
+        return Active;
+    }
+
+    void SetCopyFilterID(FILTER_ID filter_index) {
+        CopyFilterID = filter_index;
+    }
+
+    void SetBackgroundColour(GXColor clr) {
+        BackgroundColour = clr;
     }
 
     TextureInfo *GetTextureInfo();

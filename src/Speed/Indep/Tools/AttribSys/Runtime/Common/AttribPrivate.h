@@ -237,104 +237,13 @@ class ClassPrivate : public Class {
     const char *mNamePtr;           // offset 0x38, size 0x4
 };
 
-// total size: 0x10
-class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {
-  public:
-    ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
-
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::ClassTable");
-    }
-};
-
-class DatabaseLoadData {
-  public:
-    const unsigned int *GetTypeSizes() const {
-        return (const unsigned int *)(&this[1]);
-    }
-
-    uint32_t mNumClasses;      // offset 0x0, size 0x4
-    uint32_t mDefaultDataSize; // offset 0x4, size 0x4
-    uint32_t mNumTypes;        // offset 0x8, size 0x4
-    const char *mTypenames;    // offset 0xC, size 0x4
-};
-
-// total size: 0x4C
-class DatabasePrivate : public Database {
-  public:
-    USE_ATTRIB_ALLOC(Attrib::DatabasePrivate);
-
-    static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
-        obj->IsReferenced();
-        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
-            bag.push_back(obj);
-        }
-    }
-
-    static void QueueForDelete(const Class *obj, std::list<const Class *> &bag) {
-        obj->IsReferenced();
-        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
-            bag.push_back(obj);
-        }
-    }
-
-    static void CollectGarbageBag(std::list<const Collection *> &bag) {
-        std::list<const Collection *>::iterator iter = bag.begin();
-
-        while (iter != bag.end()) {
-            const Collection *obj = *iter;
-            if (!obj->IsReferenced()) {
-                obj->Delete();
-            }
-            bag.pop_front();
-            iter = bag.begin();
-        }
-    }
-
-    static void CollectGarbageBag(std::list<const Class *> &bag) {
-        std::list<const Class *>::iterator iter = bag.begin();
-
-        while (iter != bag.end()) {
-            const Class *obj = *iter;
-            if (!obj->IsReferenced()) {
-                obj->Delete();
-            }
-            bag.pop_front();
-            iter = bag.begin();
-        }
-    }
-
-    DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
-        mClasses.Reserve(loadData.mNumClasses);
-        mNumCompiledTypes = loadData.mNumTypes + 1;
-        mCompiledTypes.reserve(mNumCompiledTypes);
-        DefaultDataArea(loadData.mDefaultDataSize);
-        mCompiledTypes.push_back(&*mTypes.insert(TypeDesc()).first);
-
-        const unsigned int *sizes = loadData.GetTypeSizes();
-        const char *name = loadData.mTypenames;
-
-        for (unsigned int i = 0; i < loadData.mNumTypes; i++) {
-            TypeTable::iterator iter = mTypes.insert(TypeDesc(name, sizes[i], mCompiledTypes.size())).first;
-            mCompiledTypes.push_back(&*iter);
-            name += strlen(name) + 1;
-        }
-    }
-
-    ~DatabasePrivate() {
-        mClasses.Size();
-        mTypes.clear();
-        mCompiledTypes.clear();
-    }
-
-    ClassTable mClasses;                // offset 0x8, size 0x10
-    unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4
-    TypeDescPtrVec mCompiledTypes;      // offset 0x1C, size 0x10
-    TypeTable mTypes;                   // offset 0x2C, size 0x10
-    CollectionList mGarbageCollections; // offset 0x3C, size 0x8
-    ClassList mGarbageClasses;          // offset 0x44, size 0x8
-};
-
+// c36attx e2: `ClassTable`, `DatabaseLoadData` y `DatabasePrivate` VIVEN EN
+// AttribDatabase.cpp en el original: debug_lines situa ~DatabasePrivate en
+// attribdatabase.cpp:62 y los dtores de TypeTable/ClassTable en :36, y de
+// attribprivate.h no usa ni una linea por encima de la 252 (ScanForValidKey
+// es la :247). Aqui basta la declaracion adelantada.
+class ClassTable;
+class DatabasePrivate;
 template <typename T> Key ScanForValidKey(const T &v, unsigned int index) {
     index = v.GetNextValidIndex(index);
     // (void)v.ValidIndex(index); // TODO how to get it to be here instead of in GetKeyAtIndex?

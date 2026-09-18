@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Main/Event.h"
+#include "Speed/Indep/Src/Misc/DemoDisc.hpp"
 
 // total size: 0xc
 class EQuitDemo : public Event {
@@ -21,7 +22,7 @@ class EQuitDemo : public Event {
 
     ~EQuitDemo() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     DemoDiscEndReason fEndDemoReason; // offset: 0x8, size 0x4

@@ -54,3 +54,40 @@ undefined_syms_auto.txt
 
 # NGCCC temp files
 *.TMP
+
+# binarios del juego, nunca al repo
+*.7z
+*.7z.crdownload
+*.iso
+*.elf
+*.dol
+
+# Volcados de disco del juego: 4,6 GB de datos con copyright que no van al
+# repo. Se quitaron del historial con filter-branch; este patron evita que
+# vuelvan a colarse en un git add -A.
+Need for Speed - Most Wanted (Oct 21, 2005 prototype)/
+Need for Speed - Most Wanted (USA)/
+*.BIN
+.claude/settings.local.json
+.tmpwork/
+tmp_*.js
+tmp_*.py
+tools/scratch/__pycache__/
+tools/scratch/*.cpp
+tools/scratch/*.txt
+tools/scratch/*.s
+tools/scratch/edit*.py
+tools/scratch/zsim/
+
+build/GOWE69/dwarf_index.pkl
+
+# Proyecto Ghidra (340 MB de base de datos regenerable, no versionable)
+ghidra_project/
+
+# Trabajo temporal de agentes y rondas (nunca debe entrar en git)
+scratch/
+scratchpad/
+
+# Herramientas de terceros descargadas (no son codigo del proyecto)
+DS/
+DS.rar

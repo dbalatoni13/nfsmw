@@ -309,7 +309,7 @@ LoadedCar::LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player) {
 }
 
 int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     CARPART_LOD minLodLevel = ride_info->GetMinLodLevel();
     CARPART_LOD maxLodLevel = ride_info->GetMaxLodLevel();
 
@@ -340,7 +340,7 @@ int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_h
 }
 
 int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     bMemSet(model_hashes, 0, max_model_hashes << 2);
 
@@ -393,7 +393,7 @@ int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) 
     }
 
     bMemSet(bitfield, 0, sizeof(bitfield));
-    profile_node.Begin("TODO", 0);
+    profile_node.Begin("Remove Duplicates", 0);
 
     int num_hits = 0;
 
@@ -508,19 +508,64 @@ void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
     this->TwoPlayerFlag = two_player_flag;
 }
 
-// UNSOLVED, scheduling
+// UNSOLVED, scheduling.  304/304, 97,895 %, DOS filas: el objetivo emite
+// `lis r6,@ha | addi r6,r6,@l | stw r0,CarLoaderMemoryPoolNumber@l(r29)` y
+// nosotros `lis | stw | addi`.
+//
+// r36e, DIAGNOSTICO CERRADO con el volcado `.sched2` de cc1plus (mini-TU:
+// zWorld.cpp truncado detras del `#include` de CarLoader.cpp, 16 s por vuelta;
+// `ngccc` no pasa las `-d`, hay que llamar a cc1plus sobre el `.ii`).  La
+// visualizacion del bloque dice:
+//
+//    ;; Ready list (t = 15):   256  232  250      <- peor primero, mejor ULTIMO
+//    ;; 15   lsu: 232 [stw]        iu2: 250 [mr r3,r0]
+//    ;; 16                         iu2: 256 [addi @l]
+//
+// El bloque emite DOS por ciclo, en el ciclo 15 hay TRES listos y el `addi`
+// (256) se queda fuera.  Reconstruyendo el orden de las listas (`rank_for_
+// schedule` con prioridades iguales desempata por INSN_LUID, el mas bajo el
+// mejor) el orden de LUID antes de sched2 es
+//     228 mr r0,r3 < 254 lwz r5 < 252 lwz r4 < 247 lis < 250 mr r3,r0
+//                  < 232 stw < 256 addi @l
+// o sea que **el `lo_sum` es la ULTIMA insn del bloque en el RTL**, detras del
+// store: eso ya lo decidio sched1, no sched2.  Para casar hace falta que el
+// `addi` tenga LUID menor que el `stw`, y ninguna forma de la fuente lo mueve.
+//
+// De paso, un hallazgo reutilizable: la insn 250 `(set (reg 3) (reg 0))` ESTA
+// en el RTL post-sched2 y OCUPA la ranura iu2 del ciclo 15, pero NO se emite
+// (la funcion mide 304 B = 76 insns y no hay ningun `mr 3,0`).  Es una insn
+// fantasma que cuesta una ranura y cero bytes; cuando una barrera la vuelve
+// real aparecen los 4 B de mas.
+//
+// VEDAS MEDIDAS r36e (once, todas sobre la unidad completa con `fndiff`):
+//   temporal + `asm("":"+r"(n))` antes del store            308 B, 97,895 %
+//   idem con copia explicita `int stored = n`               308 B, 97,895 %
+//   idem con el `pool_num` original como 1er argumento      304 B, IDENTICA a la base
+//   `const char *nm="Cars"; asm("":"+r"(nm))` tras el store 304 B, 4 filas
+//   idem con la barrera ANTES del store                     304 B, 4 filas
+//   idem con el puntero declarado antes de la llamada       308 B, 6 filas
+//   `asm("":"+m"(CarLoaderMemoryPoolNumber))` antes         IDENTICA a la base
+//   idem con clobber de r0 (barrera de ranura)              IDENTICA a la base
+//   la asignacion DENTRO de la lista de argumentos          IDENTICA a la base
+// El mapa de lineas del original (`lmap`) da 789 al `bl bGetFreeMemoryPoolNum`,
+// al `mr r0,r3` y al `stw`, y 790 a los tres argumentos y al `bl`: la forma de
+// fuente que tenemos ya es la del original.
 // TODO dwarf
 void CarLoader::SetMemoryPoolSize(int size) {
+    bool success;
     if (this->MemoryPoolSize != size) {
         if (this->MemoryPoolSize != 0) {
-            for (int i = 0; i < this->NumSpongeAllocations; i++) {
-                bFree(this->SpongeAllocations[i]);
+            {
+                int n;
+                for (n = 0; n < this->NumSpongeAllocations; n++) {
+                    bFree(this->SpongeAllocations[n]);
+                }
             }
 
             this->NumSpongeAllocations = 0;
             this->UnloadUnallocatedRideInfos(0);
 
-            if (this->LoadedRideInfoList.GetHead() != this->LoadedRideInfoList.EndOfList()) {
+            if (!this->LoadedRideInfoList.IsEmpty()) {
                 return;
             }
 
@@ -532,7 +577,7 @@ void CarLoader::SetMemoryPoolSize(int size) {
 
         if (size != 0) {
             TheTrackStreamer.FlushHibernatingSections();
-            TheTrackStreamer.MakeSpaceInPool(size, true);
+            success = TheTrackStreamer.MakeSpaceInPool(size, true);
 
             this->MemoryPoolMem = bMalloc(size, "CarLoaderPool", 0, 7);
             this->MemoryPoolSize = size;
@@ -541,7 +586,13 @@ void CarLoader::SetMemoryPoolSize(int size) {
             bInitMemoryPool(CarLoaderMemoryPoolNumber, this->MemoryPoolMem, this->MemoryPoolSize, "Cars");
             bSetMemoryPoolDebugFill(CarLoaderMemoryPoolNumber, false);
             bSetMemoryPoolTopDirection(CarLoaderMemoryPoolNumber, true);
-            this->NumSpongeAllocations = 0;
+            // DWARF conserva este segundo bucle y su bMalloc inline aunque
+            // CarLoaderMemorySpongeNumAllocs == 0 elimina sus instrucciones.
+            this->NumSpongeAllocations = CarLoaderMemorySpongeNumAllocs;
+            for (int n = 0; n < this->NumSpongeAllocations; n++) {
+                this->SpongeAllocations[n] = bMalloc(CarLoaderMemorySpongeAllocSize, "SpongeAllocation", 0,
+                                                   (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+            }
         }
     }
 }
@@ -790,7 +841,7 @@ int CarLoader::LoadCar(LoadedCar *loaded_car) {
         loaded_car->LoadState = CARLOADSTATE_LOADED;
         return 0;
     } else {
-        ProfileNode profile_node("TODO", 0);
+        ProfileNode profile_node;
         unsigned int model_hashes[800];
         int num_model_hashes = loaded_car->GetModelHashes(model_hashes, 800);
 
@@ -985,7 +1036,7 @@ int CarLoader::GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries
 }
 
 int CarLoader::LoadAllTexturesFromPack(const char *filename, int load_perm_layers) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     unsigned int texture_hashes[128];
     unsigned int name_hash_table[512];
 
@@ -1044,7 +1095,7 @@ void CarLoader::LoadedAllTexturesFromPackCallback() {
 }
 
 int CarLoader::LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     unsigned int name_hash_table[87];
     int num_name_hashes;
 
@@ -1105,11 +1156,12 @@ void CarLoader::CompositeSkin(LoadedSkin *loaded_skin) {
             int required_size = CarInfo_GetMaxCompositingBufferSize();
 
             if (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
-                do {
-                    if (!this->RemoveSomethingFromCarMemoryPool(false)) {
+                while (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
+                    bool force_unload = false;
+                    if (!this->RemoveSomethingFromCarMemoryPool(force_unload)) {
                         break;
                     }
-                } while (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber));
+                }
 
                 this->DefragmentPool();
             }
@@ -1198,7 +1250,7 @@ int CarLoader::GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, 
 
 int CarLoader::AllocateSkinLayers(unsigned int *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
                                   int max_loaded_skin_layers, const char *filename) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     eStreamingPack *streaming_pack = nullptr;
     if (filename != nullptr) {
@@ -1236,7 +1288,7 @@ int CarLoader::AllocateSkinLayers(unsigned int *name_hash_table, int num_name_ha
 }
 
 void CarLoader::UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     for (int n = 0; n < num_loaded_skin_layers; n++) {
         LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[n];
 
@@ -1504,7 +1556,7 @@ int CarLoader::UnallocateRideInfo(LoadedRideInfo *loaded_ride_info) {
 }
 
 int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     if (loaded_ride_info->NumInstances > 0) {
         return 0;
@@ -1741,7 +1793,7 @@ struct _DefragmentParams {
 _DefragmentParams DefragmentParams;
 
 void *MoveDefragmentAllocation(void *allocation) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int allocation_size = bGetMallocSize(allocation);
 
     if (allocation_size > DefragmentParams.LargestAllocationSize) {
@@ -1810,7 +1862,7 @@ void *MoveDefragmentAllocation(void *allocation) {
 }
 
 bool CarLoader::DefragmentAllocation(void *allocation) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     static bool last_result_was_textures = false;
 
     for (int n = 0; n < this->NumSpongeAllocations; n++) {
@@ -1827,7 +1879,7 @@ bool CarLoader::DefragmentAllocation(void *allocation) {
         if (loaded_solid_pack->pResourceFile != nullptr && loaded_solid_pack->pResourceFile->GetMemory() == allocation) {
             loaded_solid_pack->pResourceFile->ManualUnload();
 
-            ProfileNode profile_node("TODO", 0);
+            ProfileNode profile_node;
             bChunk *new_chunks = reinterpret_cast<bChunk *>(MoveDefragmentAllocation(allocation));
 
             loaded_solid_pack->pResourceFile->ManualReload(new_chunks);
@@ -1838,18 +1890,18 @@ bool CarLoader::DefragmentAllocation(void *allocation) {
 
     ProfileNode profile_node2;
 
-    profile_node2.Begin("TODO", 0);
+    profile_node2.Begin("Defragment Textures", 0);
     if (last_result_was_textures && StreamingTexturePackLoader.DefragmentAllocation(allocation)) {
         return true;
     }
 
-    profile_node2.Begin("TODO", 0);
+    profile_node2.Begin("Defragment Solids", 0);
     if (StreamingSolidPackLoader.DefragmentAllocation(allocation)) {
         last_result_was_textures = false;
         return true;
     }
 
-    profile_node2.Begin("TODO", 0);
+    profile_node2.Begin("Defragment Textures", 0);
     if (StreamingTexturePackLoader.DefragmentAllocation(allocation)) {
         last_result_was_textures = true;
         return true;
@@ -1913,19 +1965,105 @@ void CarLoader::FreeDefragmentStorage() {
 }
 
 // UNSOLVED
+// UNSOLVED, 684/684 al 99,269 %: 23 filas y las 23 son ARG_MISMATCH, o sea
+// PERMUTACION PURA de registros preservados.  Con el orden de reparto de rs6000
+// (r31, r30, r29, r28, r27, r26, r25, r24, r23, r22, r21, r20, r19, r18, r17,
+// r16) las siete cantidades que bailan son TRES intercambios INDEPENDIENTES
+// entre vecinos de ese orden:
+//
+//    num_hole_filling_allocations   nuestro r25 -> objetivo r27  (pos 6 -> 4)
+//    ChunkMovementOffset@ha         nuestro r27 -> objetivo r25  (pos 4 -> 6)
+//    temporal `addi rX,r30,1`       nuestro r21 -> objetivo r22  (pos 10 -> 9)
+//    `this`                         nuestro r22 -> objetivo r21  (pos 9 -> 10)
+//    zero                           nuestro r18 -> objetivo r16  (pos 13 -> 15)
+//    table                          nuestro r17 -> objetivo r18  (pos 14 -> 13)
+//    CarLoaderMemoryPoolNumber@ha   nuestro r16 -> objetivo r17  (pos 15 -> 14)
+//
+// `regmap` avisa de que `params` (r26), `table` (r17) y `zero` (r18) son locales
+// que el DWARF del original NO tiene.  NO son quitables: las tres estan puestas
+// a proposito y quitarlas empeora.
+//
+// VEDAS MEDIDAS r36e (ocho, todas con `build_direct` + `fndiff`):
+//   quitar las tres locales a la vez            692 B, 92,474 %, 47 filas
+//   quitar solo `zero`                          684 B, 97,953 %, 29 filas
+//   quitar solo `table`                         684 B, 98,626 %, 23 filas (peor %)
+//   quitar solo `params`                        692 B, 94,140 %, 43 filas
+//   `register int num_hole... asm("r27")`       684 B, 99,094 %, 29 filas
+//   `register int zero asm("r16")`              684 B, 97,865 %, 30 filas
+//   `register void **table asm("r18")`          684 B, 94,760 %, 69 filas
+//   `zero` declarado ANTES del bucle            684 B, 96,550 %, 27 filas
+//   `params`+`table` antes del bucle            684 B, 95,731 %, 30 filas
+//   `asm("":"+r"(num_hole...))` tras el ++      684 B, 98,158 %, 24 filas
+//   `asm("":"+r"(movement):"r"(num_hole...))`   684 B, 99,123 %, 28 filas
+// r49, LAS 23 FILAS SON TRES CICLOS DE REGISTRO Y CERO INSTRUCCIONES (684/684).
+// Con el `.greg` delante, el reparto es puro `allocno_compare`:
+//   ciclo A  pseudo  82 -> r22 (nuestro) / r21 (objetivo)   n_refs 9  live 162  pri 1666
+//            pseudo 222 -> r21 / r22                        n_refs 4  live  51  pri 1568
+//   ciclo B  pseudo 223 -> r27 / r25 (ChunkMovementOffset@ha) n_refs 8 live  54  pri 4444
+//            pseudo 139 -> r25 / r27 (el contador)          n_refs 14 live 184  pri 2282
+//            (entre los dos, pseudo 141 -> r26 en los dos,  n_refs 11 live 120  pri 2750)
+//   ciclo C  pseudo 145 -> r18 / r16                        n_refs 4  live 118  pri  677
+//            pseudo 144 -> r17 / r18                        n_refs 3  live  61  pri  491
+//            pseudo 225 -> r16 / r17 (CarLoaderMemoryPoolNumber@ha) n_refs 4 live 246 pri 325
+// El ciclo C esta EXACTAMENTE AL REVES: el objetivo reparte 144, luego 225 y luego 145,
+// y nosotros 145, 144, 225 (REG_ALLOC_ORDER da r31,r30,... asi que el primero se lleva
+// el numero mas alto).  Para el ciclo A basta bajar `live(222)` de 51 a 47 o subir
+// `live(82)` de 162 a 163.  Para el B hace falta mucho mas: `live(139)` de 184 a 62, o
+// `live(223)` de 54 a 121.  Los tres pseudos del ciclo C son las tres locales que r46
+// llamaba "solo nuestras" (params, table, zero): NO hay que quitarlas --eso costaba 47
+// filas y +8 B-- sino cambiarles el rango de vida.
+// Los pines y el eje «a quien» empeoran los tres intercambios a la vez: hace
+// falta invertir el ORDEN de reparto de `local_alloc`, no bloquear registros.
+// r61-world, EL CICLO A SE INVIERTE Y EL MODELO DE r49 ES CORRECTO -- pero
+// todavia no paga. Banco nuevo, 4 s por variante y SIN compilar zWorld:
+//     python scripts/rtldump.py --file src/Speed/Indep/Src/World/CarLoader.cpp \
+//            --like zWorld DefragmentPool -dl
+// y leer del `.lreg` las ocho columnas `Register N used R times across L insns`.
+// BASE medida hoy (identica a la de r49, o sea que el arbol no se ha movido):
+//     82=162  139=184  141=120  144=61  145=118  222=51  223=54  225=246
+// UMBRAL de r49/r60b para invertir el ciclo A: live(222) <= 47 o live(82) >= 173.
+// BARRIDO (9 variantes, 40 s en total):
+//   R1 `movement` antes de `allocation_size` ........ IDENTICA a la base -> se tira
+//   R2 `movement` la primera del cuerpo ............. IDENTICA -> se tira
+//   R3 `table` antes de `params` .................... 141 120->61 y 144 desaparece;
+//                                                     compilada: 23 filas, 99,269 %,
+//                                                     684 B = LA BASE EXACTA -> se tira
+//   R4 `loop_number++` antes de `allocation_num++` .. IDENTICA -> se tira
+//   P1 asm("") antes de `allocation = table[...]` ... 222=52  no llega
+//   P5 asm("") antes de `allocation_size` ........... 222=50  no llega
+//   P6 asm("") detras de `int zero = 0;` ............ 222=52  no llega
+//   P7 asm("") antes de `ChunkMovementOffset = zero` 222=52, 223 54->56  no llega
+//   P3 asm("") antes de `gDefragFixer.Add` .......... 222=52  no llega
+//   P2 asm("") ANTES de `int movement = 0;` ......... 222=47  <-- LLEGA
+//   P8 asm("") antes del `if (allocation > first_hole)` 222=46 <-- LLEGA
+// COMPILADAS las dos que llegan, y las dos CONFIRMAN la causa y EMPEORAN el total:
+//   P2  684/684 B, 96,78362 %, 32 filas (base 23): el ciclo A (r21<->r22, 9 filas)
+//       DESAPARECE -- ya no hay una sola fila de r21/r22 -- pero aparece un ciclo
+//       r29<->r30 NUEVO de 12 filas y ademas `addi r22,r30,1` y `li r31,0` bajan
+//       cinco ranuras (4 filas de INSERT/DELETE que se compensan).
+//   P8  684/684 B, 97,60234 %, 30 filas. Mismo efecto, mismo precio.
+// CONCLUSION, y es lo que hay que heredar: el modelo de allocno_compare de r49 es
+// EXACTO -- basta live(222)<=47 para que 222 se reparta antes que 82 y se lleve r22
+// --, pero las DOS unicas formas que lo consiguen lo hacen METIENDO UNA INSN en el
+// cuerpo del bucle, y esa insn alarga +2 la vida de TODOS los demas pseudos
+// (82 162->163, 139 184->186, 141 120->122, 144 61->62, 145 118->120, 225 246->248)
+// y rompe un reparto que ya estaba bien.  Lo que falta es una forma que acorte 222
+// SIN anadir insns: las CUATRO reordenaciones puras que he probado son neutras al
+// byte.  222 es el `allocation_num + 1` que loop.c iza (`addi r22,r30,1` de la fila
+// 84, usado en la 132): hay que atacar SU rango, no el del bucle entero.
 int CarLoader::DefragmentPool() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node(0, 0x40);
     if (this->MayNeedDefragmentation == 0) {
         return 0;
     }
 
     int ticks = bGetTicker();
     void *allocation_table[1152];
-    int allocation_num = 0;
     int num_allocations = bMemoryGetAllocations(CarLoaderMemoryPoolNumber, allocation_table, NUM_ELEMENTS(allocation_table));
 
     bMemSet(&DefragmentParams, 0, sizeof(DefragmentParams));
     DefragmentParams.LargestAllocationSize = 0;
+    int allocation_num = 0;
 
     while (allocation_num < num_allocations) {
         void *allocation = allocation_table[allocation_num];
@@ -1943,7 +2081,7 @@ int CarLoader::DefragmentPool() {
     eWaitUntilRenderingDone();
     gDefragFixer.Init();
 
-    void *first_hole = bMalloc(128, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+    void *first_hole = bMalloc(128, "CarLoaderDefrag but with a really long debug name!!", 0, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
     int num_hole_filling_allocations = 0;
 
     bFree(first_hole);
@@ -1954,31 +2092,40 @@ int CarLoader::DefragmentPool() {
     static int loop_number = 0;
 
     while (allocation_num < num_allocations) {
-        void *allocation = allocation_table[allocation_num];
+        _DefragmentParams *params = &DefragmentParams;
+        void **table = allocation_table;
+        int zero = 0;
+        void *allocation = table[allocation_num];
         int allocation_size = bGetMallocSize(allocation);
         int movement = 0;
 
         if (reinterpret_cast<intptr_t>(allocation) > reinterpret_cast<intptr_t>(first_hole)) {
-            DefragmentParams.pAllocation = allocation;
-            bStrNCpy(DefragmentParams.AllocationName, bGetMallocName(allocation), 0x3F);
+            // La lectura completa del DWARF corrige la conclusion de r36b:
+            // este bloque NO estaba vacio. El DIE 0x443f731 declara aqui
+            // ChunkMovementOffset (int, global_variable sin location).
+            // El extern restaura esa declaracion y sustituye el enum artificial
+            // kHoleProbeSize sin cambiar instrucciones, simbolos ni relocs.
+            extern int ChunkMovementOffset;
+            params->pAllocation = allocation;
+            bStrNCpy(params->AllocationName, bGetMallocName(allocation), 0x3F);
 
-            while (true) {
-                void *hole = bMalloc(1, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+            for (;;) {
+                void *hole = bMalloc(1, 0, 0, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
 
                 if (reinterpret_cast<intptr_t>(hole) < reinterpret_cast<intptr_t>(first_hole) - 128) {
                     hole_filling_allocations[num_hole_filling_allocations] = hole;
                     num_hole_filling_allocations++;
                 } else {
                     bFree(hole);
-                    DefragmentParams.pNewAllocation = hole;
-                    movement = reinterpret_cast<intptr_t>(hole) - reinterpret_cast<intptr_t>(DefragmentParams.pAllocation);
+                    params->pNewAllocation = hole;
+                    movement = reinterpret_cast<intptr_t>(hole) - reinterpret_cast<intptr_t>(params->pAllocation);
                     ChunkMovementOffset = movement;
 
                     if (!this->DefragmentAllocation(allocation)) {
                         movement = 0;
                     }
 
-                    ChunkMovementOffset = 0;
+                    ChunkMovementOffset = zero;
                     break;
                 }
             }
@@ -2025,7 +2172,7 @@ void CarLoader::BeginLoading(void (*callback)(uintptr_t), uintptr_t param) {
 int CarLoaderServiceLoadingDepth = 0;
 
 void CarLoader::ServiceLoading() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     int num_can_unload = this->NumLoadedRideInfos - this->NumAllocatedRideInfos;
 
     if (num_can_unload > 0) {

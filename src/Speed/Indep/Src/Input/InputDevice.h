@@ -65,9 +65,13 @@ public:
     // Virtual functions
     virtual ~InputDevice();
 
-    virtual bool IsConnected() {}
+    virtual bool IsConnected() {
+        return false;
+    }
 
-    virtual bool IsWheel() {}
+    virtual bool IsWheel() {
+        return false;
+    }
 
     virtual void Initialize() = 0;
     virtual void PollDevice() = 0;
@@ -75,9 +79,13 @@ public:
     virtual void StartVibration() = 0;
     virtual void StopVibration() = 0;
 
-    virtual UTL::COM::IUnknown *GetInterfaces() {}
+    virtual UTL::COM::IUnknown *GetInterfaces() {
+        return nullptr;
+    }
 
-    virtual UTL::COM::IUnknown *GetSecondaryDevice() {}
+    virtual UTL::COM::IUnknown *GetSecondaryDevice() {
+        return nullptr;
+    }
 
     virtual bool DeviceHasChanged();
     virtual bool DeviceHasAnyActivity();
@@ -90,6 +98,10 @@ public:
         }
         return nullptr;
     };
+
+    int GetDeviceIndex() {
+        return this->fDeviceIndex;
+    }
 
 protected:
     DeviceScalar *fDeviceScalar; // offset 0x14, size 0x4

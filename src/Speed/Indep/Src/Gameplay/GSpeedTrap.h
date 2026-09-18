@@ -5,8 +5,94 @@
 #pragma once
 #endif
 
+class GTrigger;
+
 // total size: 0x14
 class GSpeedTrap {
+  public:
+    void DebugForceComplete();
+
+    enum Flags {
+        kFlag_Unlocked = 1,
+        kFlag_Active = 2,
+        kFlag_Completed = 4,
+        kFlag_KnockedOver = 8,
+    };
+
+    GSpeedTrap();
+
+    void Init(unsigned int trapKey);
+
+    void Reset();
+
+    void NotifyTriggered(float value);
+
+    float GetBounty() const;
+
+    GTrigger *GetTrapTrigger() const;
+
+    unsigned int GetJumpMarkerKey() const;
+
+    void Unlock();
+
+    void Activate();
+
+    bool GetIsLocked() const {
+        return IsFlagClear(kFlag_Unlocked);
+    }
+
+    bool GetIsUnlocked() const {
+        return IsFlagSet(kFlag_Unlocked);
+    }
+
+    bool GetIsCompleted() const {
+        return IsFlagSet(kFlag_Completed);
+    }
+
+    bool GetIsKnockedOver() const {
+        return IsFlagSet(kFlag_KnockedOver);
+    }
+
+    bool GetIsActive() const {
+        return IsFlagSet(kFlag_Active);
+    }
+
+    unsigned int GetSpeedTrapKey() const {
+        return mSpeedTrapKey;
+    }
+
+    unsigned int GetCameraMarkerKey() const {
+        return mCameraMarkerKey;
+    }
+
+    unsigned short GetBinNumber() const {
+        return mBinNumber;
+    }
+
+    float GetTriggerSpeed() const {
+        return mRequiredValue;
+    }
+
+    float GetRecordedPassSpeed() const {
+        return mRecordedValue;
+    }
+
+    bool operator<(const GSpeedTrap &rhs) const {
+        return mBinNumber < rhs.mBinNumber;
+    }
+
+    void SetFlag(unsigned int mask) {
+        mFlags |= mask;
+    }
+
+    void ClearFlag(unsigned int mask) {
+        mFlags &= ~mask;
+    }
+
+    bool IsFlagSet(unsigned int mask) const;
+
+    bool IsFlagClear(unsigned int mask) const;
+
   private:
     unsigned short mFlags;         // offset 0x0, size 0x2
     unsigned short mBinNumber;     // offset 0x2, size 0x2

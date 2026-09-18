@@ -17,7 +17,7 @@ class ECollision : public Event {
 
     ~ECollision() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     COLLISION_INFO fInfo; // offset: 0xc, size 0x80

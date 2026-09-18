@@ -11,6 +11,9 @@
 
 // total size: 0x10
 struct BehaviorParams {
+    BehaviorParams(const Sim::Param &params, PhysicsObject *owner, const UCrc32 &sig, const UCrc32 &mechanic)
+        : fparams(params), fowner(owner), fSig(sig), fMechanic(mechanic) {}
+
     const Sim::Param &fparams; // offset 0x0, size 0x4
     PhysicsObject *fowner;     // offset 0x4, size 0x4
     const UCrc32 &fSig;        // offset 0x8, size 0x4
@@ -23,6 +26,16 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     USE_FASTALLOC(Behavior);
 
     Behavior(const BehaviorParams &params, unsigned int num_interfaces);
+
+    void Pause(bool pause);
+
+    void SimulateTask(float dT) {
+        Sim::Profile::Scope profile(mProfile);
+
+        if (!mPaused) {
+            OnTaskSimulate(dT);
+        }
+    }
 
     const UCrc32 &GetMechanic() {
         return mMechanic;
@@ -57,18 +70,25 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         // TODO right place?
     }
 
+    friend struct PhysicsObject::Behaviors;
+
   protected:
-    virtual void OnTaskSimulate(float dT);
+    virtual void OnTaskSimulate(float dT) {}
 
     virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
 
-    virtual void OnPause();
-    virtual void OnUnPause();
+    virtual void OnPause() {}
 
+    virtual void OnUnPause() {}
+
+  public:
+    // deleted through UTL::Collections::Container<Behavior, _type_UContainer>
     virtual ~Behavior() {
         // TODO
         Sim::Profile::Release(nullptr);
     }
+
+  private:
 
   private:
     bool mPaused;                 // offset 0x30, size 0x1
@@ -84,9 +104,7 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
   public:
     BehaviorSpecsPtr(Behavior *behavior, int index) : AttributeStructPtr<T>(LookupKey(behavior->GetOwner(), index)) {}
 
-    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(0) {
-        // TODO
-    }
+    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(LookupKey(owner, index)) {}
 
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();
@@ -110,5 +128,35 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
 #define REDIRECT_BEHAVIOR_FACTORY(_TYPE_, _FACTORYNAME_) Behavior::Prototype __##_TYPE_##_FACTORYNAME_(UCrc32(#_FACTORYNAME_), _TYPE_::Construct);
 
 #define BIND_BEHAVIOR_SPECS BIND_ATTRIBUTE_STRUCT
+
+inline void PhysicsObject::Behaviors::OnTaskSimulate(float dT) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+        (*iter)->SimulateTask(dT);
+    }
+}
+
+inline void PhysicsObject::Behaviors::OnBehaviorChange(const UCrc32 &mechanic) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+        (*iter)->OnBehaviorChange(mechanic);
+    }
+}
+
+inline void PhysicsObject::Behaviors::Reset() {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+        (*iter)->Reset();
+    }
+}
+
+inline void PhysicsObject::Behaviors::OnOwnerAttached(IAttachable *iother) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+        (*iter)->OnOwnerAttached(iother);
+    }
+}
+
+inline void PhysicsObject::Behaviors::OnOwnerDetached(IAttachable *iother) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+        (*iter)->OnOwnerDetached(iother);
+    }
+}
 
 #endif

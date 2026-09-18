@@ -574,11 +574,11 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 // UNSOLVED
 int VisibleSectionManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_MANAGER) {
-        pInfo = nullptr;
+        DrivableBoundaryList.InitList();
         NonDrivableBoundaryList.InitList();
         LoadingSectionList.InitList();
         DrivableSectionList.InitList();
-        DrivableBoundaryList.InitList();
+        pInfo = nullptr;
         return 1;
     }
 

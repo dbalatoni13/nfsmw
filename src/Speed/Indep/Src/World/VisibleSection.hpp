@@ -94,12 +94,16 @@ class VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     }
 
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&SectionNumber);
         bPlatEndianSwap(&NumPoints);
         bPlatEndianSwap(&BBoxMin);
         bPlatEndianSwap(&BBoxMax);
+#endif
         for (int i = 0; i < NumPoints; i++) {
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&Points[i]);
+#endif
         }
     }
 
@@ -457,6 +461,10 @@ class VisibleSectionManager {
 
     void DisableAllGroups() {
         bMemSet(EnabledGroups, 0, 0x400);
+    }
+
+    bool IsLoaded() {
+        return pInfo != nullptr;
     }
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {

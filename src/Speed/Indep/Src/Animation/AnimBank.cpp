@@ -10,8 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
-SlotPool *AnimBankSlotPool = nullptr;
-bool AnimBankSlotPoolInitialized = false;
 
 CAnimBank::CAnimBank() {
     m_internalDynLoader = 0;
@@ -28,6 +26,9 @@ CAnimBank::CAnimBank() {
 }
 
 CAnimBank::~CAnimBank() {}
+
+SlotPool *AnimBankSlotPool = nullptr;
+bool AnimBankSlotPoolInitialized = false;
 
 EAGL4Anim::AnimBank *GetNextAnimBank(const EAGL4::DynamicLoader *loader, int &index) {
     void *addr;
@@ -104,7 +105,7 @@ void CloseAnimBankSlotPool() {
 
 bTList<CNFSAnimBank> g_loadedAnimBankList;
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 int NumAnimBanks = 0;
 int MaxNumAnimBanks = 0;
 
@@ -119,7 +120,7 @@ void *CNFSAnimBank::operator new(size_t size, const char *debug_name) {
         InitAnimBankSlotPool();
     }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimBanks++;
     if (MaxNumAnimBanks < NumAnimBanks) {
         MaxNumAnimBanks = NumAnimBanks;
@@ -130,7 +131,7 @@ void *CNFSAnimBank::operator new(size_t size, const char *debug_name) {
 }
 
 void CNFSAnimBank::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimBanks--;
 #endif
 

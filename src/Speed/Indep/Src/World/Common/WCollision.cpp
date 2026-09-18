@@ -1,8 +1,8 @@
 #include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 #include "Speed/Indep/Src/World/WWorldMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 
-void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 
 void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
     const unsigned int *src = reinterpret_cast<const unsigned int *>(&fMat);

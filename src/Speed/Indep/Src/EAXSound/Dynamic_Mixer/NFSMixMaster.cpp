@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMaster.hpp"
 
+extern char *szMixMapFiles[4];
+
 NFSMixMaster::NFSMixMaster() {
     this->m_pMainMixMap = nullptr;
     this->m_pSecondaryMixMap = nullptr;

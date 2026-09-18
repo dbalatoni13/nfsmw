@@ -40,9 +40,6 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
         // void operator delete(void *mem, size_t size, const char *name) {}
     };
 
-    AIAction(AIActionParams *params, float score);
-    ~AIAction() override {}
-
     void *operator new(size_t size) {
         return gFastMem.Alloc(size, nullptr);
     }
@@ -53,13 +50,16 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
         }
     }
 
+    AIAction(AIActionParams *params, float score);
+    ~AIAction() override {}
+
     // Virtual functions
-    virtual bool CanBeAttempted(float dT);
-    virtual bool IsFinished();
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual void BeginAction(float dT);
-    virtual void FinishAction(float dT);
-    virtual void Update(float dT);
+    virtual bool CanBeAttempted(float dT) = 0;
+    virtual bool IsFinished() = 0;
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) = 0;
+    virtual void BeginAction(float dT) = 0;
+    virtual void FinishAction(float dT) = 0;
+    virtual void Update(float dT) = 0;
 
     ISimable *GetOwner() const {
         return mActionParams.mOwner;

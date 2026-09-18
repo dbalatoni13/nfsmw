@@ -156,9 +156,6 @@ class BoxInFormation : public PursuitFormation {
     void Update(float dT, IPursuit *pursuit) override;
 
     // Overrides: PursuitFormation
-    ~BoxInFormation() override {}
-
-    // Overrides: PursuitFormation
     float GetFinisherTime() override {
         return finishertime;
     }
@@ -179,9 +176,6 @@ class RollingBlockFormation : public PursuitFormation {
     void Update(float dT, IPursuit *pursuit) override;
 
     // Overrides: PursuitFormation
-    ~RollingBlockFormation() override {}
-
-    // Overrides: PursuitFormation
     float GetFinisherTime() override {
         return finishertime;
     }
@@ -200,17 +194,12 @@ class FollowFormation : public PursuitFormation {
   public:
     FollowFormation(int copcount);
 
-    // Overrides: PursuitFormation
-    ~FollowFormation() override {}
 };
 
 // total size: 0x20
 class PitFormation : public PursuitFormation {
   public:
     PitFormation(int copcount);
-
-    // Overrides: PursuitFormation
-    ~PitFormation() override {}
 
     // Overrides: PursuitFormation
     float GetTimeToFinisher() override {
@@ -230,9 +219,6 @@ class HerdFormation : public PursuitFormation {
 
     // Overrides: PursuitFormation
     void Update(float dT, struct IPursuit *pursuit) override;
-
-    // Overrides: PursuitFormation
-    ~HerdFormation() override {}
 };
 
 // total size: 0xC
@@ -507,8 +493,14 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
+    // En clase: el objetivo la emite en el bloque de finish_file (obj#809),
+    // no en orden de fichero. Ver docs/analisis/r53-cerca3.md.
     bool AttemptingToReAquire() const override {
-        return !mIsPerpInSight && !mIsPerpBusted ? !mIsPursuitBailed : false;
+        bool ret = false;
+        if (!mIsPerpInSight && !mIsPerpBusted) {
+            ret = mIsPursuitBailed == false;
+        }
+        return ret;
     }
 
     // Overrides: IPursuit

@@ -24,13 +24,16 @@
 //   #undef  NO_DEBUG_BMEMORY
 //   #define   NULL 0
 #define MUL 0
-// TODO
 #define bPrintf (1) ? ((void)0) : bNullPrintf
 #define bMilestonePutString bReleasePutString
 #define bMilestonePrintf bReleasePrintf
 #define bAssert(exp)
 #define bAssertMsg(exp, msg)
 #define bAssertMsg1(exp, msg, arg1)
+
+inline void bNullPrintf(const char *format, ...) {}
+
+inline void bNullPrintf(char terminal_channel, const char *format, ...) {}
 #define bAssertMsg2(exp, msg, arg1, arg2)
 #define bAssertMsg3(exp, msg, arg1, arg2, arg3)
 #define bAssertMsg4(exp, msg, arg1, arg2, arg3, arg4)
@@ -41,9 +44,13 @@
 #define ASSERT_NOTRENDERTHREAD()
 #define ASSERT_ISMAINTHREAD()
 #define ASSERT_ISRENDERTHREAD()
-// #define bMemCpy(dest, src, numbytes) memcpy(dest, src, numbytes)
-// #define bMemSet(dest, pattern, size) memset(dest, pattern, size)
-// #define bMemCmp(s1, s2, numbytes) memcmp(s1, s2, numbytes)
+#if defined(EA_PLATFORM_WIN32)
+// Only here: on GameCube bPrintf.cpp calls memset without a prototype, as the original does.
+#include <cstring>
+#define bMemCpy(dest, src, numbytes) memcpy(dest, src, numbytes)
+#define bMemSet(dest, pattern, size) memset(dest, pattern, size)
+#define bMemCmp(s1, s2, numbytes) memcmp(s1, s2, numbytes)
+#endif
 #define BMEMORY_TOP_BIT (1 << 6)
 #define BMEMORY_MAX_POOLS 16
 #define BMEMORY_POOL_MASK (BMEMORY_MAX_POOLS - 1)
@@ -80,14 +87,14 @@
 #define ENABLE_IN_DEBUG false
 #endif
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 #define ENABLE_IN_MILESTONE true
 #else
 #define ENABLE_IN_MILESTONE false
 #endif
 
 void *bMalloc(int size, int allocation_params);
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 #else
 
@@ -106,13 +113,16 @@ int bGetMallocPool(void *ptr);
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations);
 
 extern "C" {
+#if !defined(EA_PLATFORM_WIN32)
 void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 int bMemCmp(const void *s1, const void *s2, unsigned int numbytes);
+#endif
 void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 }
 
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
+bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
 void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);
 
 // TODO
@@ -122,14 +132,15 @@ inline void *Alloc(unsigned int bytes, int memtype, const char *name) {
     return bMalloc(bytes, name, 0, memtype);
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *operator new(size_t size, const char *file, int line);
+void *operator new[](size_t size, const char *file, int line);
 #else
 // TODO move the milestone path into a cpp file?
 inline void *operator new(size_t size, const char *file, int line) {
 #ifdef EA_BUILD_A124
     return bMalloc(size, 0);
-#elif MILESTONE_OPT
+#elif MILESTONE_BUILD
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -137,13 +148,11 @@ inline void *operator new(size_t size, const char *file, int line) {
 }
 #endif
 
+#ifndef MILESTONE_BUILD
 inline void *operator new[](size_t size, const char *file, int line) {
-#if MILESTONE_OPT
-    return bWareMalloc(size, file, line, 0);
-#else
     return new char[size];
-#endif
 }
+#endif
 
 inline char *bGetPlatformName() {
 #ifdef EA_PLATFORM_GAMECUBE
@@ -152,6 +161,8 @@ inline char *bGetPlatformName() {
     return "PSX2";
 #elif defined(EA_PLATFORM_XENON)
     return "XENON";
+#elif defined(EA_PLATFORM_WIN32)
+    return "PC";
 #else
 #error "Platform not specified";
 #endif
@@ -169,31 +180,31 @@ void bInitSharedStringPool(int size);
 void bCloseSharedStringPool();
 
 inline void bPlatEndianSwap(uint64 *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap64(value);
 #endif
 }
 
 inline void bPlatEndianSwap(int32 *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }
 
 inline void bPlatEndianSwap(uint32 *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }
 
 inline void bPlatEndianSwap(int16 *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap16(value);
 #endif
 }
 
 inline void bPlatEndianSwap(uint16 *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap16(value);
 #endif
 }
@@ -203,7 +214,7 @@ inline void bPlatEndianSwap(uint8 *value) {}
 inline void bPlatEndianSwap(int8 *value) {}
 
 inline void bPlatEndianSwap(float *value) {
-#ifndef EA_BUILD_A124
+#ifdef NATIVE_ENDIAN_BIG
     bEndianSwap32(value);
 #endif
 }
@@ -214,10 +225,6 @@ inline void bPlatEndianSwap(UCrc32 *c) {
     *c = UCrc32(val);
 }
 
-inline void bNullPrintf(const char *format, ...) {}
-
-inline void bNullPrintf(char terminal_channel, const char *format, ...) {}
-
 inline bool bIsDigit(char c) {
     return c >= '0' && c <= '9';
 }
@@ -226,12 +233,12 @@ inline bool bStrEqual(const char *s1, const char *s2) {
     return bStrICmp(s1, s2) == 0;
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 extern float bCodeineVersion;
 #endif
 
 inline int bIsCodeineConnected() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     return bCodeineVersion > 0.0f;
 #else
     return 0;
@@ -265,5 +272,11 @@ inline int bMemoryGetTopBit(int allocation_params) {
 inline int bMemoryGetAlignmentOffset(int allocation_params) {
     return (allocation_params >> 17) & 0x1ffc;
 }
+
+inline void bEndianSwap(short *value) {
+    bEndianSwap16(value);
+}
+
+void bAssertFailMsg(char *fmt, const char *filename, int line_number, ...);
 
 #endif

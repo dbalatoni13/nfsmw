@@ -20,9 +20,27 @@ class MNotifyCellCallComplete : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNotifyCellCallComplete &message);
+
     MNotifyCellCallComplete() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 
     ~MNotifyCellCallComplete() {}
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNotifyCellCallComplete::HandleMessage_LuaBinding(const MNotifyCellCallComplete &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNotifyCellCallComplete::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    lua_newtable(luaState);
+}
 
 #endif

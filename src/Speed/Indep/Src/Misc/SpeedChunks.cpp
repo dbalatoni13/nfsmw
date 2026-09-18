@@ -6,7 +6,8 @@ struct ChunkName {
     char *Name; // offset 0x4, size 0x4
 };
 
-ChunkName ChunkNameTable[1] = {{0, "BCHUNK_NULL"}};
+// ChunkNameTable lives in the SourceList TU verbatim data pool.
+extern ChunkName ChunkNameTable[1];
 
 const char *GetChunkName(int bchunk_id) {
     static int buffer_num = 0;

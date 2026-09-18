@@ -3,7 +3,7 @@
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportdlopen.h"
 
 EAGL4::DynamicLoader *AnimBridgeNewDynamicLoader(char *name, char *data, int size) {
-    return new ("TODO") EAGL4::DynamicLoader(data, size, nullptr);
+    return new (name) EAGL4::DynamicLoader(data, size, nullptr);
 }
 
 void AnimBridgeDeleteDynamicLoader(EAGL4::DynamicLoader *pDynLoader) {

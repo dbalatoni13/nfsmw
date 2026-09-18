@@ -7,6 +7,7 @@
 
 #include "BoneMask.h"
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 
 #include <types.h>
 
@@ -19,7 +20,9 @@ class FnStatelessQ : public FnAnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -29,7 +32,11 @@ class FnStatelessQ : public FnAnimMemoryMap {
 
     // void *operator new(size_t, void *ptr) {}
 
-    void PatchVtbl(FnStatelessQ *statelessQ) {}
+    static void PatchVtbl(FnStatelessQ *statelessQ) {
+        FnStatelessQ tmp;
+
+        *reinterpret_cast<void **>(statelessQ) = *reinterpret_cast<void **>(&tmp);
+    }
 
     FnStatelessQ();
 
@@ -53,10 +60,12 @@ class FnStatelessQ : public FnAnimMemoryMap {
     unsigned char GetFPS() const;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override {
+        return mpAnim->GetTargetCheckSum();
+    }
 
     // Overrides: FnAnim
-    const AttributeBlock *GetAttributes() const override {}
+    const AttributeBlock *GetAttributes() const override;
 
   protected:
     // Overrides: FnAnim

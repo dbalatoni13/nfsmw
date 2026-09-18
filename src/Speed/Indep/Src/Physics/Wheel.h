@@ -114,21 +114,21 @@ class Wheel {
     }
 
   protected:
-    WWorldPos mWorldPos;      // offset 0x0, size 0x3C
-    UMath::Vector4 mNormal;   // offset 0x3C, size 0x10
-    UMath::Vector3 mPosition; // offset 0x4C, size 0xC
-    unsigned int mFlags;      // offset 0x58, size 0x4
-    UMath::Vector3 mForce;    // offset 0x5C, size 0xC
-    float mAirTime;           // offset 0x68, size 0x4
-    UMath::Vector3 mLocalArm; // offset 0x6C, size 0xC
-    float mCompression;       // offset 0x78, size 0x4
-    UMath::Vector3 mWorldArm; // offset 0x7C, size 0xC
-    int pad;                  // offset 0x88, size 0x4
-    UMath::Vector3 mVelocity; // offset 0x8C, size 0xC
-    int pad2;                 // offset 0x98, size 0x4
-    SimSurface mSurface;      // offset 0x9C, size 0x14
-    float mSurfaceStick;      // offset 0xB0, size 0x4
-    UMath::Vector4 mIntegral; // offset 0xB4, size 0x10
+    WWorldPos mWorldPos;               // offset 0x0, size 0x3C
+    ALIGNVEC UMath::Vector4 mNormal;   // offset 0x3C, size 0x10
+    UMath::Vector3 mPosition;          // offset 0x4C, size 0xC
+    unsigned int mFlags;               // offset 0x58, size 0x4
+    UMath::Vector3 mForce;             // offset 0x5C, size 0xC
+    float mAirTime;                    // offset 0x68, size 0x4
+    UMath::Vector3 mLocalArm;          // offset 0x6C, size 0xC
+    float mCompression;                // offset 0x78, size 0x4
+    UMath::Vector3 mWorldArm;          // offset 0x7C, size 0xC
+    int pad;                           // offset 0x88, size 0x4
+    UMath::Vector3 mVelocity;          // offset 0x8C, size 0xC
+    int pad2;                          // offset 0x98, size 0x4
+    SimSurface mSurface;               // offset 0x9C, size 0x14
+    float mSurfaceStick;               // offset 0xB0, size 0x4
+    ALIGNVEC UMath::Vector4 mIntegral; // offset 0xB4, size 0x10
 };
 
 #endif

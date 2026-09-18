@@ -7,6 +7,15 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
+// Las banderas de VehicleParams. El DWARF las trae con estos mismos valores.
+enum eVehicleParamFlags {
+    VPF_SPOOL_RESOURCES = 1,
+    VPF_SNAP_TO_GROUND = 2,
+    VPF_REMOVE_NOS = 4,
+    VPF_COMPUTE_PERFORMANCE = 8,
+    VPF_FORCE_NOS = 16,
+};
+
 namespace VehicleClass {
 
 extern const UCrc32 CAR;

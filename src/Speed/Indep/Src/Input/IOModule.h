@@ -45,7 +45,9 @@ class IOModule {
 
     // bool IsUnplugged(int port) {}
 
-    // int GetNumDevices() {}
+    int GetNumDevices() {
+        return fNumDevices;
+    }
 
     InputDevice *GetDevice(int i) {
         return fDevices[i];

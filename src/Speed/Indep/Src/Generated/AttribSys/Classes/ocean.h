@@ -14,7 +14,7 @@ struct ocean : Instance {
     typedef EA::Reflection::Float TypeOf_reflection_amount;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("ocean");
+    USE_ATTRIB_ALLOC("Attrib::Gen::ocean");
     ocean(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     ocean(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
     ocean(const Instance &src) : Instance(src) {}
@@ -31,10 +31,10 @@ struct ocean : Instance {
         return 0x093d7c56;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x093d7c56, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

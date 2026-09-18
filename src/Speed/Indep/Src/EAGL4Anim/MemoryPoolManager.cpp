@@ -3,19 +3,19 @@
 #include "DeltaChan.h"
 #include "FnAnimMemoryMap.h"
 #include "FnCsisEventChannel.h"
-#include "FnCycle.h"
 #include "FnDeltaF1.h"
 #include "FnDeltaF3.h"
 #include "FnDeltaQ.h"
 #include "FnDeltaQFast.h"
 #include "FnDeltaSingleQ.h"
 #include "FnEventBlender.h"
+#include "FnRawEventChannel.h"
+#include "FnRawLinearChannel.h"
 #include "FnGraft.h"
 #include "FnPoseAnim.h"
 #include "FnPoseBlender.h"
 #include "FnPoseMirror.h"
-#include "FnRawEventChannel.h"
-#include "FnRawLinearChannel.h"
+#include "FnCycle.h"
 #include "FnRawPoseChannel.h"
 #include "FnRunBlender.h"
 #include "FnStatelessF3.h"
@@ -39,7 +39,20 @@ unsigned short MemoryPoolManager::gFreeListSize[] = {
     0x24, 0x1C, 0x1C, 0x14, 0x30, 0x40, 0x30, 0x30, 0x30, 0x18, 0x18, 0x18,
 };
 
-// TODO why is there MatrixMultiply here?
+// El .data del original pone aqui --entre gFreeListSize y gMemoryPool-- el
+// puntero EAGL4Anim::MatrixMultiply (_9EAGL4Anim.MatrixMultiply, .data:0x80417160,
+// 4 B, scope global), inicializado a MtxMult: los cuatro bytes del ELF valen
+// 0x800A3D78, que es MtxMult__FPQ25EAGL49TransformPCQ25EAGL49TransformT1.
+// Estaba declarado `extern` en Skeleton.cpp y sin definir en todo el arbol, y
+// era el UNICO simbolo que impedia enlazar zEagl4Anim (113.016 B).
+// MtxMult vive a ambito global en system.cpp, que la SourceList mete DESPUES
+// que este .cpp: hay que declararla, y fuera del namespace.
+} // namespace EAGL4Anim
+void MtxMult(EAGL4::Transform *result, const EAGL4::Transform *first, const EAGL4::Transform *second);
+namespace EAGL4Anim {
+
+typedef void (*MatrixMultiplier)(EAGL4::Transform *, const EAGL4::Transform *, const EAGL4::Transform *);
+MatrixMultiplier MatrixMultiply = MtxMult;
 
 char *MemoryPoolManager::gMemoryPool = nullptr;
 char *MemoryPoolManager::gMemoryPoolFree = nullptr;
@@ -226,60 +239,41 @@ void MemoryPoolManager::InitAnimMemoryMapAux(AnimMemoryMap *memMap) {
             RawPoseChannel::InitAnimMemoryMap(memMap);
             break;
         case AnimTypeId::ANIM_RAWEVENT:
-            break;
         case AnimTypeId::ANIM_RAWLINEAR:
-            break;
+            return;
         case AnimTypeId::ANIM_CYCLE:
+        case AnimTypeId::ANIM_EVENTBLENDER:
+        case AnimTypeId::ANIM_GRAFT:
+        case AnimTypeId::ANIM_POSEBLENDER:
+        case AnimTypeId::ANIM_POSEMIRROR:
+        case AnimTypeId::ANIM_RUNBLENDER:
+        case AnimTypeId::ANIM_TURNBLENDER:
+        case AnimTypeId::ANIM_DELTALERP:
+        case AnimTypeId::ANIM_DELTAQUAT:
+        case AnimTypeId::ANIM_KEYLERP:
+        case AnimTypeId::ANIM_KEYQUAT:
+        case AnimTypeId::ANIM_PHASE:
             break;
-        // case AnimTypeId::ANIM_EVENTBLENDER:
-        //     break;
-        // case AnimTypeId::ANIM_GRAFT:
-        //     break;
-        // case AnimTypeId::ANIM_POSEBLENDER:
-        //     break;
-        // case AnimTypeId::ANIM_POSEMIRROR:
-        //     break;
-        // case AnimTypeId::ANIM_RUNBLENDER:
-        //     break;
-        // case AnimTypeId::ANIM_TURNBLENDER:
-        //     break;
-        // case AnimTypeId::ANIM_DELTALERP:
-        //     break;
-        // case AnimTypeId::ANIM_DELTAQUAT:
-        //     break;
-        // case AnimTypeId::ANIM_KEYLERP:
-        //     break;
-        // case AnimTypeId::ANIM_KEYQUAT:
-        //     break;
-        // case AnimTypeId::ANIM_PHASE:
-        //     break;
         case AnimTypeId::ANIM_COMPOUND:
             CompoundChannel::InitAnimMemoryMap(memMap);
             break;
-        // case AnimTypeId::ANIM_RAWSTATE:
-        //     break;
-        // case AnimTypeId::ANIM_DELTAQ:
-        //     break;
-        // case AnimTypeId::ANIM_DELTAQFAST:
-        //     break;
-        // case AnimTypeId::ANIM_DELTASINGLEQ:
-        //     break;
-        // case AnimTypeId::ANIM_DELTAF3:
-        //     break;
-        // case AnimTypeId::ANIM_DELTAF1:
-        //     break;
+        case AnimTypeId::ANIM_RAWSTATE:
+        case AnimTypeId::ANIM_DELTAQ:
+        case AnimTypeId::ANIM_DELTAQFAST:
+        case AnimTypeId::ANIM_DELTASINGLEQ:
+        case AnimTypeId::ANIM_DELTAF3:
+        case AnimTypeId::ANIM_DELTAF1:
+            break;
         case AnimTypeId::ANIM_STATELESSQ:
             StatelessQ::InitAnimMemoryMap(memMap);
             break;
         case AnimTypeId::ANIM_STATELESSF3:
             StatelessF3::InitAnimMemoryMap(memMap);
             break;
-        // case AnimTypeId::ANIM_CSISEVENT:
-        //     break;
+        case AnimTypeId::ANIM_CSISEVENT:
+            break;
         case AnimTypeId::ANIM_POSEANIM:
             PoseAnim::InitAnimMemoryMap(memMap);
-            break;
-        default:
             break;
     }
 }

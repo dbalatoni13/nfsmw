@@ -1,6 +1,8 @@
 #ifndef __IPATHREALH__
 #define __IPATHREALH__ // Decl: 2
 
+#pragma interface
+
 #include "path/path.h"
 
 #include <cstddef>
@@ -23,38 +25,53 @@ class IPathToReal {
     static char *abortfilename;  // size: 0x4, address: 0xFFFFFFFF
     static int abortfileline;    // size: 0x4, address: 0xFFFFFFFF
 
-    IPathToReal() {} // Decl: 48
+    inline IPathToReal() {
+        this->pathabortmsg = 0;
+        this->pathprintf = 0;
+        this->pathlogf = 0;
+    }
 
-    virtual ~IPathToReal() {} // Decl: 54
+    inline virtual ~IPathToReal() {} // Decl: 54
 
-    virtual void SetAbortMessageFunc(PATHAbortMsgFunc f) {} // Decl: 68
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetAbortMessageFunc(PATHAbortMsgFunc f); // Decl: 68
+#else
+    inline virtual void SetAbortMessageFunc(PATHAbortMsgFunc f) { this->pathabortmsg = f; } // Decl: 68
+#endif
 
-    virtual void SetDebugPrintFunc(PATHDebugPrintFunc f) {} // Decl: 84
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetDebugPrintFunc(PATHDebugPrintFunc f); // Decl: 84
+#else
+    inline virtual void SetDebugPrintFunc(PATHDebugPrintFunc f) { this->pathprintf = f; } // Decl: 84
+#endif
 
-    virtual void SetLogPrintFunc(PATHDebugPrintFunc f) {} // Decl: 120
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetLogPrintFunc(PATHDebugPrintFunc f); // Decl: 120
+#else
+    inline virtual void SetLogPrintFunc(PATHDebugPrintFunc f) { this->pathlogf = f; } // Decl: 120
+#endif
 
-    void AbortMessage(char *msg) {} // Decl: 122
+    virtual unsigned int GetMilliseconds() = 0; // Decl: 160
 
-    void PrintMessage(char *msg) {} // Decl: 127
+    virtual int GetMinStreamBufferSize(int requests) = 0; // Decl: 176
 
-    void LogMessage(char *msg, char *code) {} // Decl: 132
+    virtual char *LoadFile(const char *filepath, int &fileop, int filesize) = 0; // Decl: 201
 
-    virtual unsigned int GetMilliseconds(); // Decl: 160
+    virtual int LoadFileDone(int fileop, char *&filedata) = 0; // Decl: 218
 
-    virtual int GetMinStreamBufferSize(int requests); // Decl: 176
+    virtual char *LoadFileSync(const char *filepath, int filesize) = 0; // Decl: 239
 
-    virtual char *LoadFile(const char *filepath, int &fileop, int filesize); // Decl: 201
+    virtual int FileExists(const char *filename) = 0; // Decl: 249
 
-    virtual int LoadFileDone(int fileop, char *&filedata); // Decl: 218
+    virtual int FileSize(const char *filename) = 0; // Decl: 259
 
-    virtual char *LoadFileSync(const char *filepath, int filesize); // Decl: 239
-
-    virtual int FileExists(const char *filename); // Decl: 249
-
-    virtual int FileSize(const char *filename); // Decl: 259
-
-    virtual void SetSynchMode(SynchMode mode) {} // Decl: 265
-    virtual SynchMode GetSynchMode() {}          // Decl: 266
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetSynchMode(SynchMode mode); // Decl: 265
+    virtual SynchMode GetSynchMode(); // Decl: 266
+#else
+    inline virtual void SetSynchMode(SynchMode mode) { this->synchmode = mode; } // Decl: 265
+    inline virtual SynchMode GetSynchMode() { return this->synchmode; } // Decl: 266
+#endif
 
   private:
     PATHAbortMsgFunc pathabortmsg; // offset 0x0, size 0x4, Decl: 269

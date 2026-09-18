@@ -1,32 +1,51 @@
-//
-#ifndef SFXCTL_NISREVVING_HPP
-#define SFXCTL_NISREVVING_HPP
+#ifndef EAXSOUND_SFXCTL_SFXCTL_NISREVING_H
+#define EAXSOUND_SFXCTL_SFXCTL_NISREVING_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 
-#define MAX_NUM_REV_DATA_POINTS 4096                                             // Decl: 8
-#define SIZE_REV_BUFFER (MAX_NUM_REV_DATA_POINTS * (int)sizeof(EngRevDataPoint)) // Decl: 9
-
 // total size: 0xC
-// Decl: 12
 struct EngRevDataPoint {
     float time; // offset 0x0, size 0x4
     int RPM;    // offset 0x4, size 0x4
     int Trq;    // offset 0x8, size 0x4
+
+    EngRevDataPoint() {}
+    EngRevDataPoint(float _time, int _RPM, int _trq)
+        : time(_time) //
+        , RPM(_RPM)
+        , Trq(_trq) {}
 };
 
 // total size: 0x8
-// Decl: 35
 struct EngRevDataSet {
     int NumPoints;               // offset 0x0, size 0x4
     EngRevDataPoint *DataPoints; // offset 0x4, size 0x4
+
+    EngRevDataSet()
+        : NumPoints(0) //
+        , DataPoints(nullptr) {}
 };
 
 // total size: 0x98
-// Decl: 48
 class NIS_RevManager : public AudioMemBase {
   public:
+    void StartRecording(uint32 anim_id, float flength);
+
+    void EndRecording(float time);
+
+    NIS_RevManager();
+    ~NIS_RevManager() override;
+    void *operator new(unsigned int size, const char *debug_name);
+    void *operator new(size_t, void *p) { return p; }
     void OpenNISRevData(unsigned int anim_id);
+    void StartNISReving();
+    void Start321Reving();
+    void CloseNIS();
+    void Update(float t);
 
     int *pRevData;                     // offset 0x4, size 0x4
     EngRevDataSet m_EngineDataSet[16]; // offset 0x8, size 0x80

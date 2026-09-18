@@ -21,12 +21,14 @@ class ENISDetail : public Event {
 
     ~ENISDetail() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fSceneryDetail; // offset: 0x8, size 0x4
 };
 
 void ENISDetail_MakeEvent_Callback(const void *staticData);
+int ENISDetail_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISDetail_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

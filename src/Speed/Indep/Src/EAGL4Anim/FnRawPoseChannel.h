@@ -6,6 +6,7 @@
 #endif
 
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 #include "RawPoseChannel.h"
 
 namespace EAGL4Anim {
@@ -20,11 +21,13 @@ class FnRawPoseChannel : public FnAnimMemoryMap {
     // Overrides: FnAnimSuper
     ~FnRawPoseChannel() override {}
 
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
+
     // void *operator new(size_t size) {}
 
     // void *operator new(size_t size, const char *msg) {}
-
-    // void operator delete(void *ptr, size_t size) {}
 
     // void *operator new[](size_t size) {}
 
@@ -36,16 +39,23 @@ class FnRawPoseChannel : public FnAnimMemoryMap {
         return ptr;
     }
 
-    RawPoseChannel *GetRawPoseChannel() {}
+    RawPoseChannel *GetRawPoseChannel() {
+        return reinterpret_cast<RawPoseChannel *>(mpAnim);
+    }
 
-    const RawPoseChannel *GetRawPoseChannel() const {}
+    const RawPoseChannel *GetRawPoseChannel() const {
+        return reinterpret_cast<const RawPoseChannel *>(mpAnim);
+    }
 
     void SetInterp(bool state) {}
 
     bool IsInterp() const {}
 
     // Overrides: FnAnim
-    bool GetLength(float &l) const override {}
+    bool GetLength(float &l) const override {
+        l = static_cast<float>(GetRawPoseChannel()->GetNumFrames());
+        return true;
+    }
 
     int GetNumFrames() const {}
 

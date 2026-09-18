@@ -35,6 +35,10 @@ class CSTATEMGR_Base : public AudioMemBase {
     virtual void ProcessUpdate();
     virtual void ExitWorld();
 
+    int GetStateObjCount() {
+        return this->m_CurNumStates;
+    }
+
     CSTATE_Base *GetStateObj(int nInstance);
     CSTATE_Base *GetStateObj(void *testattachment);
     int GetAttachedStateCount(void);

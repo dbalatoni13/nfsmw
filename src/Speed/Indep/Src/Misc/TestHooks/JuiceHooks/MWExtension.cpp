@@ -1,0 +1,475 @@
+#include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceHooks.h"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/AI/aireflectedtypes.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/threads.h"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/systask.h"
+
+extern int BuildVersionChangelistNumber;
+extern int ForceJuiceConnect;
+extern char *ForceJuiceConnectIP;
+extern int gJuiceEnabled;
+extern int GetJoylogChannelRepeatCount(int channel);
+extern int ASYNCFILE_getstatus(int handle);
+extern int bStrCmp(const char *a, const char *b);
+extern void LoadNetworkIRXModulesPart2();
+extern bool bIsDebuggerConnected();
+extern void WriteJoylogFileHeader();
+extern float PreviousGpuFrameRate;
+extern float fpsTolerateValue;
+extern int logCountDownMax;
+extern int countDown;
+
+bool JuicePutStringFunction(int terminal_channel, const char *s) {
+    Juice::GameHook *gameHook =
+        reinterpret_cast<Juice::GameHook *(*)(int, const char *)>(Juice::GameHook::Instance)(terminal_channel, s);
+    gameHook->LogText(s);
+    return true;
+}
+
+void InitJuice() {
+    LoadNetworkIRXModulesPart2();
+    bool debuggerConnected = bIsDebuggerConnected();
+    if (debuggerConnected && ForceJuiceConnect == 0) {
+        return;
+    }
+    gJuiceEnabled = 1;
+    Juice::MWExtension::Instance();
+    Juice::JuiceDirtyNet::Instance();
+    reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->Initialize();
+    reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->InitTrapHandler();
+    WriteJoylogFileHeader();
+}
+
+int DoPolyCount() {
+    int total = GetPolyCount(POLY_COUNT_MAIN_CAR);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_CAR);
+    total += GetPolyCount(POLY_COUNT_RVM_CAR);
+    total += GetPolyCount(POLY_COUNT_ENVMAP_SCENERY);
+    total += GetPolyCount(POLY_COUNT_MAIN_SCENERY);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_SCENERY);
+    total += GetPolyCount(POLY_COUNT_RVM_SCENERY);
+    total += GetPolyCount(POLY_COUNT_MAIN_WORLDMODEL);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_WORLDMODEL);
+    total += GetPolyCount(POLY_COUNT_RVM_WORLDMODEL);
+    return total;
+}
+
+namespace Juice {
+
+char MWExtension::mFileName[256];
+char MWExtension::mJuiceBuildName[32];
+
+static char changeList[32];
+static char name[255];
+
+MWExtension *MWExtension::Instance() {
+    static MWExtension mwExt;
+    return &mwExt;
+}
+
+MWExtension::MWExtension()
+    : mHasExecutedRPC(0)
+    , mScreenShotHandle(0) {
+    bMemSet(mFileName, '\0', 0x100);
+}
+
+void MWExtension::ThreadYield(int dur) {
+    THREAD_yield(dur);
+}
+
+char *MWExtension::GetTitleName() {
+    return "NFS Most Wanted";
+}
+
+char *MWExtension::GetBuildDate() {
+    return "Sep 20 2005";
+}
+
+char *MWExtension::GetChangeList() {
+    bSPrintf(changeList, "%d", BuildVersionChangelistNumber);
+    return changeList;
+}
+
+char *MWExtension::GetConsoleName() {
+    bMemSet(name, '\0', 0xff);
+    return "Default PS2";
+}
+
+int MWExtension::GetServerPort() {
+    return 0x7919;
+}
+
+int MWExtension::GetReadyToReset() {
+    g_pEAXSound->RestoreDriver();
+    return 0;
+}
+
+int MWExtension::IsOkToConnect() {
+    return bStrCmp(JuiceDirtyNet::Instance()->GetLocalIpAddress(), "0.0.0.0") != 0;
+}
+
+void MWExtension::FileSyncUpdate() {
+    SYNCTASK_run();
+}
+
+int MWExtension::HasFileLoaded(const void *fileHandle) {
+    return static_cast<int>(ASYNCFILE_getstatus(reinterpret_cast<int>(fileHandle)) == 1);
+}
+
+char *MWExtension::GetServerIP() {
+    char *result;
+    if ((ForceJuiceConnect == 0) ||
+        (result = ForceJuiceConnectIP, *ForceJuiceConnectIP == '\0')) {
+        result = "10.10.229.117";
+    }
+    return result;
+}
+
+int MWExtension::GetBackupServerPort() {
+    return 0x7919;
+}
+
+char *MWExtension::GetBackupServerIP() {
+    return "10.10.229.117";
+}
+
+char *MWExtension::GetXboxPath() {
+    return "xe:\\CDMW\\";
+}
+
+char *MWExtension::GetXboxExeName() {
+    return "nfsMWMilestone.exe";
+}
+
+char *MWExtension::GetConsoleTarget() {
+    return "nfsMWMilestone.elf";
+}
+
+unsigned int MWExtension::GetIntializationTimeOut() {
+    return 30000;
+}
+
+unsigned int MWExtension::GetHeartBeatTimeOut() {
+    return 20000;
+}
+
+float MWExtension::GetGameTime() {
+    return 0.0f;
+}
+
+void MWExtension::InstantiateScriptExt() {}
+
+int MWExtension::NetworkInitRetries() {
+    return 100;
+}
+
+int MWExtension::InitialConnectionRetries() {
+    return 100;
+}
+
+int MWExtension::WaitBetweenInitialConnectionRretries() {
+    return 200;
+}
+
+int MWExtension::WaitBetweenNetworkInitRetries() {
+    return 0x96;
+}
+
+char *MWExtension::GetPopupName() {
+    return "null";
+}
+
+char *MWExtension::GetPopupCheck() {
+    return "false";
+}
+
+int MWExtension::GetJuiceUpdateProcessor() {
+    return 0;
+}
+
+void MWExtension::ResetGamePad() {
+    MWJuicePad::Instance()->ResetGamePad();
+}
+
+void MWExtension::GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput) {
+    MWJuicePad::Instance()->PollInput();
+}
+
+void MWExtension::JuicePadToGamePad(tJuicePad *juiceInput, void *gameInput) {
+    if (mHasExecutedRPC == 1) {
+        MWJuicePad::Instance()->ReleaseAllButtons(JUICE_NORMAL);
+        mHasExecutedRPC = 0;
+    }
+    if (JuicePad::Instance()->DidInputHappen() == 1) {
+        mHasExecutedRPC = 1;
+        if (JuicePad::Instance()->IsButtonPressed(1) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_UP);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(2) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_DOWN);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(3) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_LEFT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(4) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_RIGHT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(5) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_ACCEPT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(6) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_CANCEL);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(8) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_Y);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(7) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_X);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(9) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_L1);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(10) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_WHITE);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(11) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_LSTICKBUTTON);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(12) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_R1);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(13) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_BLACK);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(14) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_RSTICKBUTTON);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(15) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_START);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(16) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_BACK);
+            return;
+        }
+    }
+}
+
+void MWExtension::UpdatePad(void *input) {
+    MWJuicePad::Instance()->ReleaseSegmentPresses();
+    tJuicePad *juicePad = JuicePad::Instance()->GetMasterPad();
+    JuicePad::Instance()->UpdateJuicePad();
+
+    IExtension::sCurrentExtension->JuicePadToGamePad(juicePad, input);
+    IExtension::sCurrentExtension->GamePadToJuicePad(input, juicePad);
+
+    static int oldFrame;
+    if (PadConfigManager::Instance()->IsFENavCapturing() &&
+        JuicePad::Instance()->DidInputHappen() == 1) {
+        int currentFrame = GameHook::Instance()->GetFrame();
+        int frameDelta = currentFrame - oldFrame;
+        if (juicePad->mButtons != 0 && frameDelta > 0xe) {
+            oldFrame = currentFrame;
+            PadConfigManager::Instance()->CaptureKeyAndState(juicePad->mButtons);
+        }
+    }
+    JuicePad::Instance()->UpdateJuicePad();
+    JuicePad::Instance()->ResetButtons();
+}
+
+int MWExtension::NumberOfRepeatedReplayEntries(int channel) {
+    return GetJoylogChannelRepeatCount(channel);
+}
+
+char *MWExtension::GetBuildName() {
+    return GetJuiceBuildName();
+}
+
+char *MWExtension::GetImageName() {
+    return "NFS_MW_Map";
+}
+
+int MWExtension::HangTimeoutLength() {
+    return 65000;
+}
+
+char *MWExtension::GetJuiceBuildName() {
+    if (ForceJuiceConnect != 0) {
+        return "TestBuild";
+    }
+    if (BuildRegion::IsPal()) {
+        bSPrintf(mJuiceBuildName, "%d-PAL", BuildVersionChangelistNumber);
+    } else {
+        bSPrintf(mJuiceBuildName, "%d", BuildVersionChangelistNumber);
+    }
+    return mJuiceBuildName;
+}
+
+char *MWExtension::GetScreenName() {
+    static char screenName[128];
+    bMemSet(screenName, '\0', 0x80);
+    FEPackage *package = cFEng::Get()->FindPackageWithControl();
+    if (package != nullptr) {
+        package = cFEng::Get()->FindPackageWithControl();
+        bStrCpy(screenName, *reinterpret_cast<char **>(reinterpret_cast<char *>(package) + 0xc));
+    }
+    return screenName;
+}
+
+char *MWExtension::GetCursorPos() {
+    static char cursorPos[32];
+    bMemSet(cursorPos, '\0', 0x20);
+    FEPackage *package = cFEng::Get()->FindPackageWithControl();
+    FEObject *button;
+    if (package == nullptr) {
+        goto no_button;
+    }
+    button = *reinterpret_cast<FEObject **>(reinterpret_cast<char *>(package) + 0x98);
+    if (button == nullptr) {
+        goto no_button;
+    }
+    bSPrintf(cursorPos, "%d", *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(button) + 0x10));
+    return cursorPos;
+no_button:
+    return "null";
+}
+
+char *MWExtension::GetPlayerPosition() {
+    return GetPlayerPosition(IPlayer::First(PLAYER_LOCAL));
+}
+
+char *MWExtension::GetPlayerPosition(IPlayer *player) {
+    if (player != nullptr) {
+        static char coords[128];
+        UMath::Vector3 vecCoords = player->GetPosition();
+        bSPrintf(coords, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
+        return coords;
+    }
+    if (IPlayer::First(PLAYER_LOCAL) != nullptr) {
+        static char coords[128];
+        UMath::Vector3 vecCoords = IPlayer::First(PLAYER_LOCAL)->GetPosition();
+        bSPrintf(coords, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
+        return coords;
+    }
+    return "0.0;0.0;0.0";
+}
+
+char *MWExtension::GetFormationStr(const FormationType &formation) {
+    switch (formation) {
+    case PIT:
+        return "PIT";
+    case BOX_IN:
+        return "BOX_IN";
+    case ROLLING_BLOCK:
+        return "ROLLING_BLOCK";
+    case FOLLOW:
+        return "FOLLOW";
+    case HELI_PURSUIT:
+        return "HELI_PURSUIT";
+    case HERD:
+        return "HERD";
+    default:
+        return "NONE";
+    }
+}
+
+char *MWExtension::GetCurrentRaceType() {
+    GRace::Type raceType = GRaceStatus::Get().GetRaceType();
+    switch (raceType + GRace::kRaceType_Circuit) {
+    case 0:
+        return "None";
+    case 1:
+        return "P2P";
+    case 2:
+        return "Circuit";
+    case 3:
+        return "Drag";
+    case 4:
+        return "Knockout";
+    case 5:
+        return "Tollbooth";
+    case 6:
+        return "SpeedTrap";
+    case 7:
+        return "Checkpoint";
+    case 8:
+        return "CashGrab";
+    case 9:
+        return "Challenge";
+    default:
+        return "Unknown";
+    }
+}
+
+char *MWExtension::GetCurrentZoneName() {
+    return TheTrackStreamer.GetCurrentZoneName();
+}
+
+void MWExtension::JuiceLowFrameRateLog(const float &fps) {
+    if (fps < fpsTolerateValue) {
+        char *zoneName = TheTrackStreamer.GetCurrentZoneName();
+        char *tempImgName = GetImageName();
+        char *tempPlayerPos = GetPlayerPosition();
+        int rigidBodyCount = IRigidBody::GetList().size();
+        char outcomeString[32];
+
+        if (countDown == logCountDownMax) {
+            bSPrintf(outcomeString, "INST_%.0f", fps);
+            bReleasePrintf("FRAME RATE: (%s) %s", zoneName, outcomeString);
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS", outcomeString, static_cast<int>(fps), fps, zoneName, tempImgName, tempPlayerPos);
+
+            int polyCount = DoPolyCount();
+            if (polyCount != 0) {
+                bSPrintf(outcomeString, "INS_%.0f {G_%.0f - S_%d - P_%d}", fps, PreviousGpuFrameRate,
+                        rigidBodyCount, polyCount);
+            } else {
+                bSPrintf(outcomeString, "INS_%.0f {G_%.0f - S_%d", fps, PreviousGpuFrameRate,
+                        rigidBodyCount);
+            }
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS_D", outcomeString, rigidBodyCount, fps, zoneName, tempImgName, tempPlayerPos);
+        }
+
+        if (countDown <= 0) {
+            countDown = logCountDownMax - 1;
+            bSPrintf(outcomeString, "SUST_%.0f", fpsTolerateValue);
+            bReleasePrintf("FRAME RATE: (%s) %s for %d frames", zoneName, outcomeString, logCountDownMax);
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS", outcomeString, static_cast<int>(fpsTolerateValue), fpsTolerateValue,
+                zoneName, tempImgName, tempPlayerPos);
+
+            int polyCount = DoPolyCount();
+            if (polyCount != 0) {
+                bSPrintf(outcomeString, "SUS_%.0f {G_%.0f - S_%d - P_%d}", fps, PreviousGpuFrameRate,
+                        rigidBodyCount, polyCount);
+            } else {
+                bSPrintf(outcomeString, "SUS_%.0f {G_%.0f - S_%d", fps, PreviousGpuFrameRate,
+                        rigidBodyCount);
+            }
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS_D", outcomeString, rigidBodyCount, fps, zoneName, tempImgName, tempPlayerPos);
+        } else {
+            countDown--;
+        }
+    } else {
+        countDown = logCountDownMax;
+    }
+}
+
+void MWExtension::JuiceScreenshot(char *fileName) {
+    reinterpret_cast<GameHook *(*)(void *, char *)>(GameHook::Instance)(this, fileName)
+        ->LogText("[MW SS] - Calling Juice screenshot");
+}
+
+}

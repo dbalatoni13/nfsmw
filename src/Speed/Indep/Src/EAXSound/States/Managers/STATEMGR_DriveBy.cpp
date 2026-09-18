@@ -11,13 +11,15 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/Src/World/WTriggerList.h"
 
+#define WOOSHCHECK_FRAME_FREQ 4 // Decl: 21
+
 static const bool debug_SmackableWooshs_ALL = true; // size: 0x1, Decl: 23
 static const bool debug_SmackableWooshs_CAM = true; // size: 0x1, Decl: 24
 static const bool debug_SmackableWooshs_CAR = true; // size: 0x1, Decl: 25
 static const bool debug_EventWooshs = true;         // size: 0x1, Decl: 26
 
 CSTATEMGR_DriveBy::CSTATEMGR_DriveBy() : CSTATEMGR_Base() {
-    this->WooshCheckFrameCntr = 4;
+    this->WooshCheckFrameCntr = WOOSHCHECK_FRAME_FREQ;
 }
 
 CSTATEMGR_DriveBy::~CSTATEMGR_DriveBy() {}
@@ -92,7 +94,11 @@ void TestSmackableForWoosh(IModel *model, int carid) {
             return;
         }
 
+#ifndef EA_BUILD_A124
         bytype = DRIVE_BY_CAMERA_BY;
+#else
+        bytype = DRIVE_BY_BRIDGE;
+#endif
     }
 
 CreateWoosh:
@@ -139,7 +145,7 @@ void TestAllSmackablesForWhoosh() {
 }
 
 void CSTATEMGR_DriveBy::UpdateParams(float t) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     IPlayer *player;
     int player_idx;
 
@@ -199,13 +205,15 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
 
     this->WooshCheckFrameCntr--;
     if (this->WooshCheckFrameCntr < 0) {
-        this->WooshCheckFrameCntr = 4;
+        this->WooshCheckFrameCntr = WOOSHCHECK_FRAME_FREQ;
     }
 
     CSTATEMGR_Base::UpdateParams(t);
 }
 
+#ifndef EA_BUILD_A124
 void CSTATEMGR_DriveBy::UpdateSmackables(float t) {}
+#endif
 
 void CSTATEMGR_DriveBy::EnterWorld(eSndGameMode esgm) {
     int SFXID = 0;

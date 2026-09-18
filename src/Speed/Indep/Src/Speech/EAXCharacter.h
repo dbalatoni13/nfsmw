@@ -6,30 +6,13 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/copspeech.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
-
-// TODO figure out where this is, it has smth to do with AnytimeEvents
-enum Type_heat_level {
-    Type_heat_level_2 = 1,
-    Type_heat_level_3 = 2,
-    Type_heat_level_4 = 4,
-    Type_heat_level_5 = 8,
-    Type_heat_level_6 = 16,
-    Type_heat_level_7 = 32,
-    Type_heat_level_8 = 64,
-    Type_heat_level_9 = 128,
-    Type_heat_level_10 = 256,
-};
-
-enum Type_code {
-    Type_code_Use_10_code = 1,
-    Type_code_dont_use_10_code = 2,
-};
 
 // TODO where to put this?
 // total size: 0x8
 struct Battalion {
-    Battalion(int nam, int num) {}
+    Battalion(int nam, int num) : name(nam), number(num) {}
 
     int name;   // offset 0x0, size 0x4
     int number; // offset 0x4, size 0x4
@@ -40,59 +23,63 @@ class EAXCharacter : public AudioMemBase {
   public:
     EAXCharacter(int sID, HSIMABLE wID, int bID, int cID);
 
+    static void *operator new(unsigned int obj_size);
+    static void operator delete(void *ptr);
+
+    virtual ~EAXCharacter();
+
     // Virtual functions
     virtual void Ack();
     virtual void Deny();
     virtual void InterruptStatic();
     virtual void InterruptExpletive();
+    virtual void InterruptViolent();
     virtual void InterruptComposedLow();
     virtual void InterruptComposedHigh();
     virtual void DriverHistory();
-    virtual void HeatJump(Type_heat_level heat);
+    virtual void HeatJump(Csis::Type_heat_level heat);
 
-    virtual HSIMABLE GetHandle() {}
+    virtual HSIMABLE GetHandle() { return mHandle; }
 
-    virtual void SetHandle(HSIMABLE handle) {}
+    virtual void SetHandle(HSIMABLE handle) { mHandle = handle; }
 
-    virtual int GetSpeakerID() {}
+    virtual int GetSpeakerID() { return mSpeakerID; }
 
-    virtual int GetCallsign() {}
+    virtual int GetCallsign() { return mCallsign.name; }
 
-    virtual int GetUnitNumber() {}
+    virtual int GetUnitNumber() { return mCallsign.number; }
 
-    virtual void SetCallsign(int callsign) {}
+    virtual void SetCallsign(int callsign) { mCallsign.name = callsign; }
 
-    virtual void SetUnitNumber(int unitnum) {}
+    virtual void SetUnitNumber(int unitnum) { mCallsign.number = unitnum; }
 
-    virtual void SetSpeakerID(int spkrID) {}
+    virtual void SetSpeakerID(int spkrID) { mSpeakerID = spkrID; }
 
-    virtual void SetPosition(const UMath::Vector3 &v) {}
+    virtual void SetPosition(const UMath::Vector3 &v) { mPos = v; }
 
-    virtual const UMath::Vector3 GetPosition() {}
+    virtual const UMath::Vector3 GetPosition() { return mPos; }
 
-    virtual void SetSpeed(const float speed) {}
+    virtual void SetSpeed(const float speed) { mSpeed = speed; }
 
     virtual void Update();
 
-    virtual float GetDistance() {}
+    virtual float GetDistance() { return mDistance; }
 
-    virtual float GetHealth() {}
+    virtual float GetHealth() { return mHealth; }
 
-    virtual void InterruptViolent();
+    virtual bool IsActive() { return mActive; }
 
-    virtual bool IsActive() {}
+    virtual void SetActive(bool active) { mActive = active; }
 
-    virtual void SetActive(bool active) {}
+    virtual float GetSpeed() { return mSpeed; }
 
-    virtual float GetSpeed() {}
+    virtual bool IsDead() { return mDestroyed; }
 
-    virtual bool IsDead() {}
+    virtual bool HasLOS() { return mSuspectLOS; }
 
-    virtual bool HasLOS() {}
+    virtual void SetLOS(bool yes) { mSuspectLOS = yes; }
 
-    virtual void SetLOS(bool yes) {}
-
-    virtual Type_code GetRandomizedCode() {}
+    virtual Csis::Type_code GetRandomizedCode() { return Csis::Type_code_dont_use_10_code; }
 
     virtual void Reset();
 

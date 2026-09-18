@@ -28,6 +28,8 @@ class AIActionSpline : public AIAction {
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
 };
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionSpline("AIActionSpline", AIActionSpline::Construct);
+
 AIAction *AIActionSpline::Construct(AIActionParams *params) {
     return new AIActionSpline(params, 0.0f);
 }

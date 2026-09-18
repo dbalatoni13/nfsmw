@@ -26,7 +26,7 @@ struct induction : Instance {
     typedef EA::Reflection::Float TypeOf_VACUUM;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("induction");
+    USE_ATTRIB_ALLOC("Attrib::Gen::induction");
     induction(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -54,10 +54,10 @@ struct induction : Instance {
         return 0xc92a0142;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xc92a0142, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

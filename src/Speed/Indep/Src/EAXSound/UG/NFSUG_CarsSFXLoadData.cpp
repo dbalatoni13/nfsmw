@@ -8,16 +8,25 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.hpp"
 
 void CARSFX_Nitrous::SetupLoadData() {
-    // TODO switch?
     eNFSSndNOSClass nbankindex = AEMS_NOS_00;
-    if (this->m_UGL != AEMS_LEVEL1) {
-        if (this->m_UGL > AEMS_LEVEL1) {
-            if (this->m_UGL == AEMS_LEVEL2) {
-                nbankindex = AEMS_NOS_01;
-            } else if (this->m_UGL == AEMS_LEVEL3) {
-                nbankindex = AEMS_NOS_01;
-            }
+    switch (this->m_UGL) {
+    case AEMS_LEVEL1:
+        break;
+    default:
+        if (this->m_UGL < AEMS_LEVEL2) {
+            break;
         }
+        switch (this->m_UGL) {
+        case AEMS_LEVEL2:
+            nbankindex = AEMS_NOS_01;
+            break;
+        case AEMS_LEVEL3:
+            nbankindex = AEMS_NOS_01;
+            break;
+        default:
+            break;
+        }
+        break;
     }
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
@@ -61,17 +70,36 @@ void CARSFX_AEMSEngine::SetupLoadData() {
     if (m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0).GetString() != "") {
         this->SPU_or_EE = 0;
         type = eBANK_SLOT_NONE;
+#ifdef EA_BUILD_A124
+        if (GetPhysCar()->IsAICar()) {
+            type = eBANK_SLOT_AI_AEMS_ENGINE;
+        } else if (GetPhysCar()->IsCopCar()) {
+            type = eBANK_SLOT_AI_AEMS_ENGINE;
+            this->SPU_or_EE = 0;
+        }
+#else
         if (GetPhysCar()->IsAICar() || GetPhysCar()->IsCopCar()) {
             type = eBANK_SLOT_AI_AEMS_ENGINE;
         }
         this->SPU_or_EE = 1;
+#endif
+#ifdef EA_BUILD_A124
+        this->SPU_or_EE = 0;
+        this->LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, type, true);
+#else
         this->LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, type, true);
+#endif
     }
 }
 
 void CARSFX_SingleGinsuEng::SetupLoadData() {
+#ifdef EA_BUILD_A124
+    this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    this->SPU_or_EE = 0;
+#else
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, SDT_AEMS_AUDIOMEM, eBANK_SLOT_NONE, true);
     this->SPU_or_EE = 1;
+#endif
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().Filename_GinsuAccel(), SNDPATH_ENGINE, SDT_GENERIC_DATA, eBANK_SLOT_NONE, true);
 }
 

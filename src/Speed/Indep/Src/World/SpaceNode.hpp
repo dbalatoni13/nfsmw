@@ -136,7 +136,6 @@ class SpaceNode : public bTNode<SpaceNode> {
     uint32 pad1;                    // offset 0xEC, size 0x4
 };
 
-void ServiceSpaceNodes();
 void InitSpaceNodes();
 void CloseSpaceNodes();
 SpaceNode *CreateSpaceNode(SpaceNode *parent);

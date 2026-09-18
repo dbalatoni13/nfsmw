@@ -15,8 +15,15 @@ class EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     static EAX_HeliState *Find(WUID objectid) {} // Decl: 17
 
     EAX_HeliState(const Attrib::Collection *atr, WUID wuid)
-        : mAttributes(atr, 0, nullptr), //
-          mWorldID(wuid) {}             // Decl: 28
+        : mVel0(0.0f, 0.0f, 0.0f),         //
+          mMovementMode(PHYSICS_MOVEMENT), //
+          mPlayerZone(PLAYER_ZONE_NONE),   //
+          mAttributes(atr, 0, nullptr),    //
+          mSimUpdating(1),                 //
+          mWorldID(wuid) {                 // Decl: 28
+        this->mVel1 = this->mVel0;
+        bIdentity(&this->mMatrix);
+    }
 
     ~EAX_HeliState() {} // Decl: 41
 
@@ -30,7 +37,9 @@ class EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
         return reinterpret_cast<bVector3 *>(&this->mMatrix.v3);
     } // Decl: 47
     const bVector2 *GetPosition2D() {} // Decl: 48
-    float GetForwardSpeed() {}         // Decl: 49
+    float GetForwardSpeed() {
+        return this->mFWSpeed;
+    } // Decl: 49
 
     MovementMode GetMovementMode() {}
 
@@ -54,10 +63,10 @@ class EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
         return this->mSimUpdating;
     } // Decl: 71
 
-    bMatrix4 mMatrix;             // offset 0x4, size 0x40, Decl: 74
-    bVector3 mVel0;               // offset 0x44, size 0x10, Decl: 75
-    bVector3 mVel1;               // offset 0x54, size 0x10, Decl: 76
-    bVector3 mAccel;              // offset 0x64, size 0x10, Decl: 77
+    ALIGNVEC bMatrix4 mMatrix;     // offset 0x4, size 0x40, Decl: 74
+    ALIGNVEC bVector3 mVel0;       // offset 0x44, size 0x10, Decl: 75
+    ALIGNVEC bVector3 mVel1;       // offset 0x54, size 0x10, Decl: 76
+    ALIGNVEC bVector3 mAccel;      // offset 0x64, size 0x10, Decl: 77
     float mFWSpeed;               // offset 0x74, size 0x4, Decl: 78
     MovementMode mMovementMode;   // offset 0x78, size 0x4
     PlayerZones mPlayerZone;      // offset 0x7C, size 0x4, Decl: 82

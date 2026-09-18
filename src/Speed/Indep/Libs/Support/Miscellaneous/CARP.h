@@ -126,13 +126,21 @@ struct EventSeqResponse {
 
 struct Expression {
     // Functions
-    unsigned int *ParamNames() {}
+    unsigned int *ParamNames() {
+        return reinterpret_cast<unsigned int *>(&this[1]);
+    }
 
-    const unsigned int *ParamNames() const {}
+    const unsigned int *ParamNames() const {
+        return reinterpret_cast<const unsigned int *>(&this[1]);
+    }
 
-    unsigned char *OpCodes() {}
+    unsigned char *OpCodes() {
+        return reinterpret_cast<unsigned char *>(&this->ParamNames()[this->mNumParams]);
+    }
 
-    const unsigned char *OpCodes() const {}
+    const unsigned char *OpCodes() const {
+        return reinterpret_cast<const unsigned char *>(&this->ParamNames()[this->mNumParams]);
+    }
 
     unsigned int Size() const {}
 
@@ -160,12 +168,12 @@ struct StimulusFilter {
     }
 
     char *GetStaticData() {
-        return reinterpret_cast<char *>(&this->GetExpression()[this->mExpressionSize] + (unsigned int)&this[1]);
+        return reinterpret_cast<char *>(this->GetExpression()) + this->mExpressionSize;
     }
 
     // Decl: 547
     const char *GetStaticData() const {
-        return reinterpret_cast<const char *>(&this->GetExpression()[this->mExpressionSize]);
+        return reinterpret_cast<const char *>(this->GetExpression()) + this->mExpressionSize;
     }
 
     unsigned int mNumQueries;     // offset 0x0, size 0x4
@@ -244,13 +252,35 @@ struct EventSeqSystem {
 };
 
 struct EventSeqEngine {
-    unsigned int * GetSystemIDs() {}
+    unsigned int * GetSystemIDs() {
+        return &this->mNumSystems + 1;
+    }
 
-    EventSeqSystem **GetSystems() {}
+    EventSeqSystem **GetSystems() {
+        return reinterpret_cast<EventSeqSystem **>(&this->GetSystemIDs()[this->mNumSystems]);
+    }
 
-    const unsigned int FindSystemIndex(unsigned int ident) const {}
+    const unsigned int FindSystemIndex(unsigned int ident) const {
+        const unsigned int *systemEntry = &this->mNumSystems + 1;
+        const unsigned int *systemList = std::lower_bound(systemEntry, &systemEntry[this->mNumSystems], ident);
 
-    const EventSeqSystem *FindSystem(unsigned int ident) const {}
+        if (systemList < &systemEntry[this->mNumSystems] && *systemList == ident) {
+            return systemList - systemEntry;
+        } else {
+            return -1;
+        }
+    }
+
+    const EventSeqSystem *FindSystem(unsigned int ident) const {
+        const unsigned int *systemEntry = this->GetSystemIDs();
+        const unsigned int *systemList = std::lower_bound(systemEntry, &systemEntry[this->mNumSystems], ident);
+
+        if (systemList < &systemEntry[this->mNumSystems] && *systemList == ident) {
+            return this->GetSystems()[systemList - systemEntry];
+        } else {
+            return nullptr;
+        }
+    }
 
     const unsigned int *GetSystemIDs() const {
         return &this->mNumSystems + 1;
@@ -262,6 +292,18 @@ struct EventSeqEngine {
 
     const char *mName; // offset 0x0, size 0x4
     uint32 mNumSystems; // offset 0x4, size 0x4
+};
+
+// total size: 0x10
+class CarpResolver : public UGroup::Processor {
+  public:
+    unsigned int mDeltaAddress; // offset 0xC, size 0x4
+
+    CarpResolver(unsigned int deltaAddress) {
+        mDeltaAddress = deltaAddress;
+    }
+
+    virtual bool StartGroup(const UGroup *group);
 };
 
 // total size: 0x4
@@ -294,6 +336,14 @@ struct CollisionSurface {
 
 // total size: 0x70
 struct CollisionObject {
+    void Enable() {
+        fFlags &= ~0x20;
+    }
+
+    void Disable() {
+        fFlags |= 0x20;
+    }
+
     UMath::Vector4 fPosRadius;         // offset 0x0, size 0x10
     UMath::Vector4 fDimensions;        // offset 0x10, size 0x10
     unsigned char fType;               // offset 0x20, size 0x1
@@ -304,6 +354,14 @@ struct CollisionObject {
     float fPAD[2];                     // offset 0x28, size 0x8
     UMath::Matrix4 fMat;               // offset 0x30, size 0x40
 };
+
+// Empaquetado en GCC (bbccfcef, por el codigo de zGameplay). Los campos ya caen
+// alineados: mide 0x40 con o sin el atributo, y MSVC no lo conoce.
+#ifdef _MSC_VER
+#define CARP_PACKED
+#else
+#define CARP_PACKED __attribute__((packed))
+#endif
 
 // total size: 0x40
 struct Trigger {
@@ -320,7 +378,7 @@ struct Trigger {
     unsigned short fFingerprint;   // offset 0x1E, size 0x2
     UMath::Vector4 fMatRow2Length; // offset 0x20, size 0x10
     UMath::Vector4 fPosRadius;     // offset 0x30, size 0x10
-};
+} CARP_PACKED;
 
 union ExprValType { // 0x4
     /* 0x0 */ float f;
@@ -329,7 +387,7 @@ union ExprValType { // 0x4
     /* 0x0 */ bool b;
 };
 
-unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);
+void *ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);
 ExprValType ExpressionEvaluator(
     const Expression *expr,
     ExprValType (*lookup)(unsigned int, unsigned int, const void *, const ExprValType *),

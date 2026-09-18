@@ -267,7 +267,145 @@ void SuspensionTraffic::Tire::UpdateFree(float dT) {
 extern float BrakingTorque;
 extern float EBrakingTorque;
 
-// UNSOLVED, stack issues due to scheduling
+// UNSOLVED, 856 B al 97,21028 %: las 21 filas son UNA causa y NO es la fuente.
+// El objetivo eleva `lis r30, <1.0f>@ha` al bloque de `bl VU0_Atan2` y lo usa en
+// las DOS primeras comparaciones contra 1.0f; nosotros lo recalculamos en cada
+// una. De ahi salen el segundo GPR salvado (`stmw r30` contra `stw r31`), el
+// marco 0x30 contra 0x28 y los 4 B (860 contra 856).
+//
+// r36c, leido de los volcados RTL de cc1plus sobre una mini-TU de este .cpp
+// (11 s por prueba; `-dG -ds -dt -dl -dg`). El mecanismo, entero:
+//   1. PRE (gcse.c, `one_pre_gcse_pass`) SI hace el trabajo: elimina las CINCO
+//      apariciones redundantes de `(high (*$LC))` (bb 23/26/31/36/39) contra un
+//      solo pseudo 362 e inserta dos copias, una de ellas al FINAL del bloque
+//      basico que contiene `bl VU0_Atan2` -- exactamente donde el objetivo la
+//      tiene, porque sched1 luego la sube por delante de la llamada.
+//   2. cse2 (`-frerun-cse-after-loop`) lo DESHACE: las cinco copias
+//      `(set (reg N) (reg 362))` vuelven a ser `(set (reg N) (high (*$LC)))`.
+//      Con `-fno-rerun-cse-after-loop` el objeto cae a 848 B / 84,67 % (se
+//      conserva de mas), o sea que la bandera es la correcta.
+//   3. al pseudo 362 le queda UN solo uso, y entonces `update_equiv_regs` de
+//      local-alloc.c ("move the register initialization just before the use")
+//      lo BAJA hasta su uso; ahi ya no cruza ninguna llamada y global_alloc le
+//      da r9 en vez de un preservado.
+// O sea: la divergencia esta dentro de cse2 y no hay construccion de fuente en
+// esta funcion que la toque. Comprobado ademas que la fuente ES la del original:
+// el volcado DWARF trae las mismas tres locales (slip_speed f11, catchupfriction
+// sin registro, skid_speed f1), los mismos dos bloques anonimos con
+// brake_spec/bt y ebrake_spec/ebt, y el mismo arbol de inlines (Max, BRAKES/At/
+// FTLB2NM/ApplyTorque x2, cuatro Abs, Atan2a, Sqrt, GRIP_SCALE/At x2, Sina, Min).
+// Banderas barridas y NEGATIVAS: -fno-cse-skip-blocks (85,16 %, 892 B),
+// -fno-force-mem (96,98 %, 26 filas), -fno-schedule-insns (75,81 %),
+// -fno-omit-frame-pointer (96,05 %, 868 B); IDENTICAS: -fno-cse-follow-jumps,
+// -fno-expensive-optimizations, -fno-move-all-movables, -fno-rerun-loop-opt,
+// -fcaller-saves.
+//
+// r36d: la cuarta palanca (barrera contra un plegado de CSE) tampoco llega
+// aqui, y la razon es de fondo: lo que hay que mantener vivo NO es ninguna
+// variable de la fuente sino el pseudo del compilador que guarda
+// `high(*$LC917)` (el @ha del 1.0f), y a un pseudo del compilador no se le
+// puede poner un `asm`. Todo lo que se puede nombrar desde C es el FLOAT
+// (`const float one = 1.0f` con `"+f"`), y eso lo dejaria en un FPR
+// preservado con UN solo `lfs`, mientras que el objetivo hace `lfs` DOS
+// veces desde r30: es otra forma, no la del objetivo.
+// La condicion exacta que hay que romper esta en local-alloc.c
+// (`update_equiv_regs`): solo baja el pseudo si le queda UN uso. Si a cse2
+// se le escapasen DOS de los cinco plegados, el pseudo no se hundiria y
+// global_alloc le daria un preservado -- que es el `lis r30` de la fila 86.
+//
+// r54: CORRECCION -- cse2 NO es el frente, y no hay forma de fuente que le
+// haga escaparse un plegado. cse2 rehace SIEMPRE la copia de PRE porque en
+// `cse_insn` el candidato `src_eqv` (la nota REG_EQUAL con el `high`) vale
+// COST 0 -- rs6000.h, CONST_COSTS, `case HIGH: return 0` -- contra COST 1
+// del pseudo (cse.c:519), y 0 < 1 en todos los bloques y para toda fuente.
+// La cadena que SI produce el `lis r30` esta medida en dos funciones que
+// casan al 100 % (AddRoadNoise de zWorld y UpdateForces de zMain), y es:
+//   (1) cse1 le da al `high` de un sitio un SEGUNDO uso `lo_sum` en OTRO
+//       bloque basico  ->  (2) PRE lo iza y deja una copia  ->  (3) el
+//       `one_cprop_pass` siguiente mete el reaching_reg en ese uso lejano
+//       ("COPY-PROP: Replacing reg N in insn M with reg R") -- y eso cse2
+//       ya no lo puede deshacer  ->  (4) REG_N_REFS = 3, no se hunde,
+//       global_alloc le da un preservado.
+// Aqui el paso (1) es imposible: los dos usos que el objetivo comparte
+// (filas 101 y 120) los separa la etiqueta de union del if/else de mSlip,
+// que tiene LABEL_NUSES == 2 --los dos `bso` del `&&`, que el objetivo
+// tambien tiene-- y `cse_end_of_basic_block` corta en toda CODE_LABEL que
+// no pueda seguir (exige NUSES == 1). Y cprop de gcse.c 2.95 es SOLO
+// global (`cprop` resetea por bloque; `oprs_not_set_p` rechaza el mismo
+// bloque), asi que la copia de PRE en el bloque del uso nunca se propaga.
+// Ver docs/analisis/r54-loaded.md: 30 formas de fuente medidas, ninguna
+// mueve `lis30`.
+//
+// r61 (phys): NEGATIVO DURO, y ahora con la desigualdad EXACTA y su linea.
+// Reproducido en un mini-TU (prefijo de zPhysicsBehaviors.cpp + este .cpp,
+// 2,5 s por prueba): 860 B, 97,21028 %, 21 filas -- identico a la SourceList.
+// Volcados FRESCOS de cc1plus (-dG -ds -dt -dl -dg) sobre esa base:
+//   * PRE hace el trabajo BIEN: `PRE: redundant insn 528/694/751/860/920
+//     (expression 40) ... reaching reg is 362`, e inserta el `(set (reg 362)
+//     (high *$LC251))` DOS veces, la primera como insn 988 al final del bloque
+//     del `bl VU0_Atan2` -- que es EXACTAMENTE la ranura del `lis r30` del
+//     objetivo (fila 86). CERO lineas COPY-PROP, igual que en la r54.
+//   * DATO NUEVO que la r54 no vio: cse2 NO deshace las cinco. Deja viva la del
+//     if de la linea 372 (insn 468 usa `(lo_sum (reg 362) $LC251)` y mata el
+//     `(set (reg 218) (high))` de insn 465) porque cae en el MISMO bloque
+//     extendido `955..480`. O sea que nos falta UNA sola referencia, no cinco:
+//     `.lreg` dice `Register 362 used 2 times ... in block 17`, y por eso
+//     `update_equiv_regs` lo hunde (insn 1049) y global_alloc le da r9.
+//   * La que falta es la de la linea 379, insn 528, en el bloque extendido
+//     `965..609`. Ahi cse2 la rematerializa, y la razon es una desigualdad de
+//     tabla, no una forma de fuente: cse.c:7191 elige `src` (el pseudo) solo si
+//     `src_cost <= src_eqv_cost`; COST de un pseudo es 1 (cse.c:519-524, la
+//     rama `REGNO >= FIRST_PSEUDO_REGISTER`) y `notreg_cost` del `(high ...)`
+//     de la nota REG_EQUAL es 0 (rs6000.h:2513, CONST_COSTS `case HIGH:
+//     return 0`). 1 <= 0 es FALSO para TODO pseudo y TODA fuente.
+//   * La UNICA puerta que deja el codigo es cse.c:6837
+//     (`if (elt && src_eqv_here && src_eqv_elt) src_eqv_here = 0;`): exige que
+//     el reg 362 Y el `(high $LC251)` YA esten en la tabla de cse2 en ese insn,
+//     o sea que el uso caiga en el MISMO bloque extendido que la insercion de
+//     PRE. `cse_end_of_basic_block` (cse.c:8508) corta el bloque extendido en
+//     la primera CODE_LABEL y solo sigue un salto con `LABEL_NUSES == 1`. El
+//     bloque de la linea 379 es una UNION de dos caminos (el `&&` de la 372),
+//     luego siempre abre bloque extendido nuevo. **Y el objetivo tiene esa
+//     misma union** (sus dos `bso` a 0x19a50). No hay fuente que lo cambie.
+// Formas NUEVAS medidas esta ronda (ninguna esta en la tabla de la r54):
+//   ifs anidados con el `else` DUPLICADO (parte la etiqueta de union en dos,
+//     NUSES==1 cada una, contando con que el cross-jump final las funda):
+//     864 B, 52 filas, SIN `lis r30`. Mata la hipotesis del cross-jump.
+//   `if (!(0<mEBrake)) ... else if (!(1<Abs)) ... else ...`: 856 B EXACTOS
+//     pero 42 filas -- el `!` cambia la comparacion a `bgt` y pierde el
+//     `cror un,eq,lt; bso` del objetivo. El tamano correcto por el motivo
+//     equivocado; es la trampa de "una diferencia de tamano no es cercania".
+// CONTROL que TENIA que cambiar y cambio: `-fno-rerun-cse-after-loop` da
+//   848 B / 84,67 % y ADEMAS emite `lis r29, $LC249@ha` en un preservado con
+//   cuatro usos. O sea: la forma del objetivo la fabrica PRE y la borra cse2,
+//   confirmado en las dos direcciones.
+// CONSECUENCIA: esta funcion NO se cierra desde la fuente con estas banderas.
+//   Deja de ser DUDOSA y pasa a VEDA DURA con cita. zPhysicsBehaviors sigue a
+//   `.text +4` (linkdelta) y es su UNICO bloqueo; el dia que se abra sera por
+//   una palanca de banderas por unidad, no por una sentencia.
+// Arnes: scratchpad/phys61/{mini2.cpp,cc.py,dif.py,rtl.py} (borrado al cerrar,
+//   se rehace en dos minutos con el prefijo de zPhysicsBehaviors.cpp).
+// r63 (orden-phys): NO REABIERTA, y la razon es de AUDITORIA, no de pereza. El
+// encargo de la ronda la daba como "familia A, salio VIVA" citando una linea
+// `COPY-PROP: Replacing reg 625 in insn 1210 with reg 753` del decisor de la r61;
+// esa linea es de ActualReadJoystickData (zPlatform), no de esta funcion. El
+// volcado FRESCO de la r61 sobre ESTA funcion dice literalmente "CERO lineas
+// COPY-PROP", que es el paso (3) de la cadena y sin el no hay `lis r30`. La ficha
+// de vedas (r60b) es ANTERIOR al volcado de la r61: manda la r61. Sigue VEDA DURA.
+// Lo que SI cambia esta ronda: la unidad ya no tiene mas bloqueos de ORDEN antes
+// del bloque diferido (textorder: 50 -> 38 saltos), asi que estos 4 B son ahora el
+// UNICO obstaculo entre zPhysicsBehaviors y poder medir su DOL con dolwhere
+// (`LAS SECCIONES NO COINCIDEN: obj 803A41B8 / nue 803A41C0`, +8 por el `.text +4`).
+//
+// r64 (diferido-phys): el encargo de la r64 VUELVE a darla como "familia A que
+// salio VIVA" con la misma cita equivocada. NO la he reabierto: la correccion de
+// la r63 de aqui arriba sigue en pie y no ha aparecido dato nuevo. Lo unico que
+// he medido esta ronda sobre zPhysicsBehaviors son las tres guardas del bloque
+// diferido de zPhysics (UTL_NO_COPY_CTOR, UTL_IMPLICIT_LIST_DTOR,
+// UCOLLECTIONS_H_IMPLICIT_STORAGE_DTOR): CERO cambio aqui -- 811/1121
+// descolocadas y 38 saltos antes y despues, `linkdelta .text +4 / resto IGUAL`.
+// Esta unidad no instancia ni un Listable, asi que el frente nuevo no la toca.
+// Si alguien reabre esto, que empiece por el volcado RTL, no por la fuente.
 void SuspensionTraffic::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
     float slip_speed;
     float catchupfriction;
@@ -349,7 +487,7 @@ SuspensionTraffic::SuspensionTraffic(const BehaviorParams &bp, const SuspensionP
     this->mInput = nullptr;
     this->mNumWheelsOnGround = 0;
 
-    this->EnableProfile("TODO");
+    this->EnableProfile("SuspensionTraffic");
 
     this->GetOwner()->QueryInterface(&this->mRB);
     this->GetOwner()->QueryInterface(&this->mRBComplex);
@@ -612,17 +750,15 @@ void SuspensionTraffic::DoWheelForces(State &state) {
             float springForce;
             const float diff = newCompression - wheel.GetCompression();
             const float rise = diff / dT;
-            float spring = newCompression * spring_specs[axle];
-            float damp = rise * shock_specs[axle];
 
-            springForce = spring * (newCompression * progression[axle] + 1.0f);
+            float spring = (newCompression * spring_specs[axle]) * (newCompression * progression[axle] + 1.0f);
+            float damp = rise * shock_specs[axle];
 
             if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
-            springForce = damp + springForce;
-            springForce += sway_stiffness[i];
+            springForce = damp + spring + sway_stiffness[i];
             springForce = UMath::Max(springForce, 0.0f);
 
             UVector3 verticalForce = vUp * springForce;
@@ -634,7 +770,7 @@ void SuspensionTraffic::DoWheelForces(State &state) {
             UMath::Cross(c, forwardNormal, c);
 
             float d2 = UMath::Dot(c, groundNormal);
-            float load = UMath::Max(d2 * 4.0f - 3.0f, 0.0f) * springForce;
+            float load = UMath::Max(d2 * 4.0f - 3.0f, 0.3f) * springForce;
 
             const UMath::Vector3 &pointVelocity = wheel.GetVelocity();
             UVector3 vNorm(pointVelocity);

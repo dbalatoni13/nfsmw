@@ -22,7 +22,7 @@ struct emittergroup : Instance {
     typedef UMath::Vector2 TypeOf_IntensityRanges;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("emittergroup");
+    USE_ATTRIB_ALLOC("Attrib::Gen::emittergroup");
     emittergroup(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -50,10 +50,10 @@ struct emittergroup : Instance {
         return 0xaba86e60;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xaba86e60, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

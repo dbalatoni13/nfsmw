@@ -491,7 +491,9 @@ class RideInfo {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     }
 
-    RideInfo(CarType type, int skin_number, int has_dash, int can_be_vertex_damaged) {}
+    RideInfo(CarType type, int skin_number, int has_dash, int can_be_vertex_damaged) {
+        Init(type, static_cast<CarRenderUsage>(skin_number), has_dash, can_be_vertex_damaged);
+    }
 
     CARPART_LOD GetMinLodLevel() const {
         return this->mMinLodLevel;
@@ -777,10 +779,12 @@ inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
 
 bool CarInfo_IsSkinned(CarType type);
 unsigned int CarInfo_GetResourceCost(CarType type, bool is_player, bool split_screen);
+unsigned int CarInfo_GetResourcePool(bool needs_compositing);
 void GetUsedCarTextureInfo(UsedCarTextureInfo *info, RideInfo *ride_info, int front_end_only);
 int UsedCarTextureAddToTable(uint32 *used_textures, int num_used_textures, int max_textures, uint32 texture_name_hash);
 
 // TODO these are in CarPartNames, but parts don't have a separate header
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 int GetNumCarSlotIDNames();
 const char *GetCarSlotNameFromID(int car_slot_id);
 

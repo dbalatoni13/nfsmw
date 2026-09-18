@@ -11,7 +11,7 @@ struct aud_stitch_loop : Instance {
     typedef STICH_COLLISION_TYPE TypeOf_stitch;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("aud_stitch_loop");
+    USE_ATTRIB_ALLOC("Attrib::Gen::aud_stitch_loop");
     aud_stitch_loop(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     aud_stitch_loop(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -29,10 +29,10 @@ struct aud_stitch_loop : Instance {
         return 0x3473edcd;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x3473edcd, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

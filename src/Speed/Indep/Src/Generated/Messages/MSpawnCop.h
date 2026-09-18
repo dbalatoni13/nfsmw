@@ -21,6 +21,10 @@ class MSpawnCop : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MSpawnCop &message);
+
     MSpawnCop(UMath::Vector3 _InitialPos, UMath::Vector3 _InitialVec, const char *_VehicleName, bool _InPursuit, bool _RoadBlock)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fInitialPos(_InitialPos), fInitialVec(_InitialVec), fVehicleName(_VehicleName),
           fInPursuit(_InPursuit), fRoadBlock(_RoadBlock) {}
@@ -74,5 +78,41 @@ class MSpawnCop : public Hermes::Message {
     bool fInPursuit;            // offset 0x2c, size 0x1
     bool fRoadBlock;            // offset 0x30, size 0x1
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MSpawnCop::HandleMessage_LuaBinding(const MSpawnCop &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MSpawnCop::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MSpawnCop *message = static_cast<const MSpawnCop *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "InitialPos");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "InitialVec");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "VehicleName");
+    lua_pushstring(luaState, message->fVehicleName);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "InPursuit");
+    lua_pushboolean(luaState, message->fInPursuit);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "RoadBlock");
+    lua_pushboolean(luaState, message->fRoadBlock);
+    lua_settable(luaState, -3);
+}
 
 #endif

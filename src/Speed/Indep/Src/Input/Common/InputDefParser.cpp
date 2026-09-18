@@ -13,7 +13,7 @@ InputMapping::InputMapping(InputDevice *device, const Attrib::Collection *spec) 
     Attrib::Gen::controller atr(spec, 0, nullptr);
 
     for (int actionid = 0; actionid < MAX_ACTIONID; actionid++) {
-        actionName = getActionIdString((ActionID)actionid);
+        actionName = getActionIDString((ActionID)actionid);
         if (actionName == nullptr) continue;
 
         Attrib::Attribute attribute = atr.Get(Attrib::StringToKey(actionName));

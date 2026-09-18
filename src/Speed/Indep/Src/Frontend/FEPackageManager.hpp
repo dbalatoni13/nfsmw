@@ -21,7 +21,7 @@ class FEPackageManager {
 
     void BroadcastMessage(u32 msg);
 
-    unsigned long GetActiveScreensChecksum();
+    u32 GetActiveScreensChecksum();
 
     void NotifySoundMessage(u32 Message, FEObject *obj, u32 controller_mask, u32 pkg_ptr);
 
@@ -65,7 +65,7 @@ class FEPackageManager {
 
     FEPackageManager() {}
 
-    virtual ~FEPackageManager() {}
+    virtual ~FEPackageManager();
 
     // FEPackageData *Add(FEPackageData *screen) {}
 
@@ -75,8 +75,13 @@ class FEPackageManager {
     static FEPackageManager *mInstance; // size: 0x4, address: 0x8041CB64
 
     bTList<FEPackageData> ScreenList; // offset 0x0, size 0x8
+
+    friend class cFEngGameInterface;
 };
 
+struct FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(struct FEPackage *pkg);
+
 unsigned int FEngGetActiveScreensChecksum();
+struct MenuScreen *FEngFindScreen(const char *package_name);
 
 #endif

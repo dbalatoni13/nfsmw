@@ -74,7 +74,7 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
 
     if (jumpDist != 0) {
         short *dest = samples + sampleCount;
-        float cycle;
+        float cycle = 0.0f;
         short buff[256];
 
         if (this->mSynthData != nullptr) {
@@ -144,7 +144,12 @@ GinsuSynthesis::GinsuSynthesis(void *memblock, int size) {
     int overhead = SNDPKTPLAY_overhead(8);
     char *overheadMem;
 
-    this->mMaxPacketSize = (static_cast<unsigned int>(size - overhead) >> 2) & 0x3ffffffe;
+    this->mMaxPacketSize =
+#ifdef EA_BUILD_A124
+        (static_cast<unsigned int>(size - overhead) >> 3) << 1;
+#else
+        (static_cast<unsigned int>(size - overhead) >> 2) & 0x3ffffffe;
+#endif
 
     if (this->mMaxPacketSize > 0x4f) {
         this->mPacketData[0] = static_cast<short *>(memblock);
@@ -208,8 +213,12 @@ int GinsuSynthesis::StartSynthesis(float startFreq) {
 
     SNDSAMPLEFORMAT ssf;
     ssf.samplerate = static_cast<unsigned short>(this->mSynthData->GetSampleRate());
-    ssf.samplerep = 7;
     ssf.channels = 1;
+#ifdef EA_BUILD_A124
+    ssf.samplerep = 8;
+#else
+    ssf.samplerep = 7;
+#endif
 
     SNDSAMPLEATTR ssa;
     SND_attrsetdef(&ssa);
@@ -247,11 +256,15 @@ int GinsuSynthesis::StartSynthesis(float startFreq) {
 }
 
 bool GinsuSynthesis::UpdateFrequency(float targetFreq, float latency) {
+#ifdef EA_BUILD_A124
+    int sample = this->mSynthData->FrequencyToSample(targetFreq);
+#else
     int sample = 0;
 
     if (this->mSynthData != nullptr) {
         sample = this->mSynthData->FrequencyToSample(targetFreq);
     }
+#endif
 
     SNDSYS_entercritical();
 

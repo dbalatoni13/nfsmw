@@ -13,22 +13,24 @@ class EEnableCollisionElement : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         int fEnable;                  // offset: 0x4, size 0x4
-        CollisionObject *fColElement; // offset: 0x8, size 0x4
+        CARP::CollisionObject *fColElement; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EEnableCollisionElement(int pEnable, CollisionObject *pColElement);
+    EEnableCollisionElement(int pEnable, CARP::CollisionObject *pColElement);
 
     ~EEnableCollisionElement() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fEnable;                  // offset: 0x8, size 0x4
-    CollisionObject *fColElement; // offset: 0xc, size 0x4
+    CARP::CollisionObject *fColElement; // offset: 0xc, size 0x4
 };
 
 void EEnableCollisionElement_MakeEvent_Callback(const void *staticData);
+int EEnableCollisionElement_MakeEvent_LuaBinding(struct lua_State *L);
+void EEnableCollisionElement_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

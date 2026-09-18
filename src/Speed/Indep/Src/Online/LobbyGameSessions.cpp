@@ -1,0 +1,1012 @@
+#include "LobbyGameSessions.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
+
+extern "C" {
+void DispListFilt(DispListRef *list, int filtcon, int filtmask, int (*filtfn)(void *, int, void *));
+int DispListShown(DispListRef *list);
+void *DispListGet(DispListRef *list, int index);
+int LobbyApiListFindByName(LobbyApiRefT *lobbyRef, int selector, const char *name);
+int LobbyApiInfoInt(LobbyApiRefT *lobbyRef, int selector);
+void LobbyApiExtractUserSet(LobbyApiUserSetT *userSet, const char *record);
+void DispListChange(DispListRef *list, int change);
+void DispListOrder(DispListRef *list);
+}
+
+bool LobbyGameSessions::mHurryTimerStarted = false;
+bool LobbyGameSessions::mHurryTimerStopped = false;
+LobbyGameSessions *TheLobbyGameSessions;
+static int uniqueID;
+
+FilterGameSessionParamsT::FilterGameSessionParamsT(uint32 count, GRace::Type gameMode, YesNoAny rankedGames,
+                                                   YesNoAny collisionDetection, YesNoAny performanceMatching,
+                                                   eOnlineDisconnectPerc disconnectPerc)
+    : count(count),                               //
+      gameMode(gameMode),                         //
+      rankedGames(rankedGames),                   //
+      collisionDetection(collisionDetection),     //
+      performanceMatching(performanceMatching),   //
+      disconnectPerc(disconnectPerc) {
+    sessionNameSubstr[0] = '\0';
+}
+
+FilterGameSessionParamsT::FilterGameSessionParamsT(uint32 count, const char *sessionNameSubstring)
+    : count(count),                                   //
+      gameMode(GRace::kRaceType_NumTypes),            //
+      rankedGames(ANY),                               //
+      collisionDetection(ANY),                        //
+      performanceMatching(ANY),                      //
+      disconnectPerc(OLS_DISCONNECT_PERC_ANY) {
+    bStrNCpy(sessionNameSubstr, sessionNameSubstring, 16);
+}
+
+LobbyGameSessions::LobbyGameSessions()
+    : sessionList(nullptr),                 //
+      sessionMembers(nullptr),              //
+      sessionUpdateCB(nullptr),             //
+      updateContext(nullptr),               //
+      currentSortParams(0x80000000),        //
+      lastSearchCount(0),                   //
+      hostStartSessionTimer(0.0f),          //
+      hostHurryTimer(0.0f),                 //
+      hostInactiveTimer(0.0f) {
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    myCurrentSession.iIdent = -1;
+    TheLobbyGameSessions = this;
+}
+
+LobbyGameSessions &LobbyGameSessions::Instance() {
+    static LobbyGameSessions theLobbyGameSessions;
+    return theLobbyGameSessions;
+}
+
+int32 LobbyGameSessions::CreateSession(const char *sessionName, CommandCBFunc createSessionCB, void *context) {
+    CommandCBFunc localCreateSessionCB = createSessionCB;
+    lobbyMutex.Lock("LobbyGameSessions::CreateSession");
+    if (sessionName && sessionName[0] && myCurrentSession.iIdent == -1 &&
+        LobbyCore::Instance().FindCommandID('ujoi', nullptr, nullptr, nullptr, nullptr) == -1 &&
+        LobbyCore::Instance().FindCommandID('ucre', nullptr, nullptr, nullptr, nullptr) == -1) {
+        MenuScreen::MaybeShutdownVoIPChat();
+
+        char realSessionName[68] = "";
+        bSPrintf(realSessionName, "%d%02d.%s", uniqueID++, bRandom(99), sessionName);
+        realSessionName[32] = '\0';
+
+        char buf[1024] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", realSessionName);
+        TagFieldSetNumber(buf, sizeof(buf), "SIZE", cOnlineSettings::MaxOnlinePlayers);
+        TagFieldSetNumber(buf, sizeof(buf), "TYPE", 0);
+        TagFieldSetNumber(buf, sizeof(buf), "UPDATES", 0);
+        TagFieldSetFlags(buf, sizeof(buf), "SYSFLAGS", 0x400800);
+
+        uint32 custflags = 0;
+        UpdateSessionFlags(custflags);
+        TagFieldSetFlags(buf, sizeof(buf), "CUSTFLAGS", custflags);
+
+        char params[68] = "";
+        UpdateSessionParams(params, 64);
+        TagFieldSetString(buf, sizeof(buf), "PARAMS", params);
+
+        if (!sessionMembers) {
+            sessionMembers = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                               static_cast<LobbyRanks::RankListMapping>(0x18),
+                                               SessionMembersDispListCB, this);
+        }
+
+        int32 rc = LobbyCore::Instance().QueueCommand('ucre', buf, CreateSessionCB, this, localCreateSessionCB, context, false);
+        lobbyMutex.Unlock("LobbyGameSessions::CreateSession");
+        return rc;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::CreateSession");
+    return -1;
+}
+
+int32 LobbyGameSessions::JoinSession(const char *sessionName, const char *password, CommandCBFunc joinSessionCB,
+                                     void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::JoinSession");
+    if (myCurrentSession.iIdent == -1 &&
+        LobbyCore::Instance().FindCommandID('ujoi', nullptr, nullptr, nullptr, nullptr) == -1 &&
+        LobbyCore::Instance().FindCommandID('ucre', nullptr, nullptr, nullptr, nullptr) == -1) {
+        MenuScreen::MaybeShutdownVoIPChat();
+        if (!sessionMembers) {
+            sessionMembers = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                               static_cast<LobbyRanks::RankListMapping>(0x18),
+                                               SessionMembersDispListCB, this);
+        }
+        LobbyUsers::Instance().ClearUserOnlineRecordCache();
+
+        char buf[96] = "";
+        TagFieldSetString(buf, sizeof(buf), "USERSET0", sessionName);
+        LobbyCore::Instance().QueueCommand('sele', buf, nullptr, nullptr, nullptr, nullptr, false);
+
+        buf[0] = '\0';
+        TagFieldSetString(buf, sizeof(buf), "NAME", sessionName);
+        if (password && password[0]) {
+            TagFieldSetString(buf, sizeof(buf), "PASS", password);
+        }
+
+        int32 rc = LobbyCore::Instance().QueueCommand('ujoi', buf, JoinSessionCB, this, joinSessionCB, context, false);
+        lobbyMutex.Unlock("LobbyGameSessions::JoinSession");
+        return rc;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::JoinSession");
+    return -1;
+}
+
+void LobbyGameSessions::CreateGameInSession() {
+    lobbyMutex.Lock("LobbyGameSessions::CreateGameInSession");
+    LobbyGames::Instance().CreateGame(myCurrentSession.strOwner, FEDatabase->OnlineSettings, RecreateGameCB, this);
+    lobbyMutex.Unlock("LobbyGameSessions::CreateGameInSession");
+}
+
+int32 LobbyGameSessions::LeaveSession(CommandCBFunc leaveSessionCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::LeaveSession");
+    int32 rc = LeaveSession_HaveMutex(leaveSessionCB, context);
+    if (sessionMembers) {
+        LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x18, sessionMembers);
+        sessionMembers = nullptr;
+    }
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    hostInactiveTimer = 0.0f;
+    hostStartSessionTimer = 0.0f;
+    hostHurryTimer = 0.0f;
+    myCurrentSession.iIdent = -1;
+    lobbyMutex.Unlock("LobbyGameSessions::LeaveSession");
+    return rc;
+}
+
+inline int32 LobbyGameSessions::KickPlayer(const char *name, CommandCBFunc kickUserCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::KickPlayer");
+    if (name && name[0] && myCurrentSession.iIdent != -1) {
+        char buf[128] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentSession.strName);
+        TagFieldSetString(buf, sizeof(buf), "PERS", name);
+        int32 rc = LobbyCore::Instance().QueueCommand('ukik', buf, LobbyCore::DefaultCB, nullptr, kickUserCB,
+                                                       context, false);
+        lobbyMutex.Unlock("LobbyGameSessions::KickPlayer");
+        return rc;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::KickPlayer");
+    return -1;
+}
+
+void LobbyGameSessions::SettingsHaveChanged() {
+    lobbyMutex.Lock("LobbyGameSessions::SettingsHaveChanged");
+    UpdateSessionInfo(false);
+    lobbyMutex.Unlock("LobbyGameSessions::SettingsHaveChanged");
+}
+
+void LobbyGameSessions::StartSessionChanges() {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionChangeFlag(true);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}
+
+void LobbyGameSessions::FinishSessionChanges() {
+    lobbyMutex.Lock("LobbyGameSessions::FinishSessionChanges");
+    LobbyUsers::Instance().SetSessionChangeFlag(false);
+    lobbyMutex.Unlock("LobbyGameSessions::FinishSessionChanges");
+}
+
+bool LobbyGameSessions::IsMemberMakingChanges(int32 index) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    bool rc = IsMemberMakingChanges_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+    return rc;
+}
+
+bool LobbyGameSessions::IsMemberMakingChanges_HaveMutex(int32 index) {
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    bool makingChanges = false;
+    if (member) {
+        makingChanges = TagFieldGetNumber(TagFieldFind(member->strAux, "SCF"), 0) != 0;
+    }
+    return makingChanges;
+}
+
+void LobbyGameSessions::SetSessionLatency(int late) {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionLatency(late);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}
+
+void LobbyGameSessions::SetSessionRaceStatusInfo(int lap, int mapx, int mapy) {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionRaceStatusInfo(lap, mapx, mapy);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}
+
+int LobbyGameSessions::GetMemberLatency(int32 index) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    int rc = GetMemberLatency_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+    return rc;
+}
+
+int LobbyGameSessions::GetMemberLatency_HaveMutex(int32 index) {
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    int late = -1;
+    if (member) {
+        late = TagFieldGetNumber(TagFieldFind(member->strAux, "LT"), -1);
+    }
+    return late;
+}
+
+void LobbyGameSessions::GetMemberRaceStatus(int32 index, int &lap, int &mapx, int &mapy) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    lap = 0;
+    mapx = 0;
+    mapy = 0;
+    if (member) {
+        lap = TagFieldGetNumber(TagFieldFind(member->strAux, "LP"), 0);
+        mapx = TagFieldGetNumber(TagFieldFind(member->strAux, "MX"), 0);
+        mapy = TagFieldGetNumber(TagFieldFind(member->strAux, "MY"), 0);
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+}
+
+int8 LobbyGameSessions::GetSecsBeforeHostCanStart() {
+    lobbyMutex.Lock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+
+    float MasterSecs = TheOnlineManager.GetMasterTime() * 0.001f;
+    LobbyApiPlayT *myGame = LobbyGames::Instance().GetMyGame();
+    if (myCurrentSession.iIdent == -1 || !myGame || myGame->iCount < 2 || (myGame->uSysflags & 0x80000) ||
+        myGame->iCount < FEDatabase->OnlineSettings.MinOnlinePlayers) {
+        lobbyMutex.Unlock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+        hostInactiveTimer.UnSet();
+        hostStartSessionTimer.UnSet();
+        hostHurryTimer.UnSet();
+        return -1;
+    }
+
+    if (!hostStartSessionTimer.IsSet()) {
+        hostStartSessionTimer.SetTime(MasterSecs + 60.0f);
+    }
+
+    bool memberIsMakingChanges = false;
+    for (int i = 0; i < myCurrentSession.iCount; i++) {
+        if (IsMemberMakingChanges_HaveMutex(i)) {
+            memberIsMakingChanges = true;
+            break;
+        }
+    }
+
+    if (memberIsMakingChanges) {
+        mHurryTimerStopped = true;
+        hostInactiveTimer.UnSet();
+        hostHurryTimer.UnSet();
+    } else {
+        if (!hostInactiveTimer.IsSet()) {
+            hostInactiveTimer.SetTime(MasterSecs + 5.0f);
+        }
+        if (!hostHurryTimer.IsSet() && hostInactiveTimer.GetSeconds() - MasterSecs <= 0.0f) {
+            mHurryTimerStarted = true;
+            hostHurryTimer.SetTime(MasterSecs + 10.0f + 0.95f);
+        }
+    }
+
+    float hurryDiff = 61.0f;
+    if (hostHurryTimer.IsSet()) {
+        hurryDiff = hostHurryTimer.GetSeconds() - MasterSecs;
+        if (hurryDiff < 0.0f) {
+            hurryDiff = 0.0f;
+        }
+    }
+
+    float diff = hostStartSessionTimer.GetSeconds() - MasterSecs;
+    if (diff < 0.0f) {
+        diff = 0.0f;
+    }
+
+    lobbyMutex.Unlock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+    if (hostHurryTimer.IsSet() && (diff > 10.0f || hurryDiff <= diff)) {
+        diff = hurryDiff;
+    }
+
+    int8 result = static_cast<int8>(static_cast<int>(diff));
+    if (static_cast<int>(diff) == 0) {
+        hostInactiveTimer.UnSet();
+        hostStartSessionTimer.UnSet();
+        hostHurryTimer.UnSet();
+    }
+    return result;
+}
+
+int32 LobbyGameSessions::FindSessions(const FilterGameSessionParamsT &filterParams,
+                                      CommandCBFunc filterSessionsCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::FindSessions");
+    if (LobbyCore::Instance().FindCommandID('usea', nullptr, nullptr, nullptr, nullptr) != -1) {
+        lobbyMutex.Unlock("LobbyGameSessions::FindSessions");
+        return -1;
+    }
+
+    uint32 custflags = 0;
+    uint32 custmask = 1;
+    char buf[512] = "";
+    if (filterParams.sessionNameSubstr[0]) {
+        TagFieldSetString(buf, sizeof(buf), "NAME", filterParams.sessionNameSubstr);
+    } else {
+        if (filterParams.collisionDetection != ANY) {
+            custmask |= 0x400;
+            if (filterParams.collisionDetection == ON) {
+                custflags |= 0x400;
+            }
+        }
+        if (filterParams.performanceMatching != ANY) {
+            custmask |= 0x2000;
+            if (filterParams.performanceMatching == ON) {
+                custflags |= 0x2000;
+            }
+        }
+        switch (filterParams.gameMode) {
+        case GRace::kRaceType_Circuit:
+            custmask |= 0x80000000;
+            custflags |= 0x80000000;
+            break;
+        case GRace::kRaceType_P2P:
+            custmask |= 0x40000000;
+            custflags |= 0x40000000;
+            break;
+        case GRace::kRaceType_Drag:
+            custmask |= 0x20000000;
+            custflags |= 0x20000000;
+            break;
+        default:
+            break;
+        }
+        if (filterParams.rankedGames != ANY) {
+            custmask |= 0x200;
+            if (filterParams.rankedGames == ON) {
+                custflags |= 0x200;
+            }
+        }
+        if (filterParams.disconnectPerc > 0) {
+            custmask |= 0x100000;
+        }
+        if (filterParams.disconnectPerc > 1) {
+            custmask |= 0x200000;
+        }
+        if (filterParams.disconnectPerc > 2) {
+            custmask |= 0x400000;
+        }
+        if (filterParams.disconnectPerc > 3) {
+            custmask |= 0x800000;
+        }
+        if (filterParams.disconnectPerc > 4) {
+            custmask |= 0x1000000;
+        }
+        if (filterParams.disconnectPerc == OLS_DISCONNECT_PERC_ANY) {
+            custmask |= 0x2000000;
+        }
+    }
+
+    TagFieldSetNumber(buf, sizeof(buf), "START", 0);
+    TagFieldSetNumber(buf, sizeof(buf), "COUNT", filterParams.count);
+    TagFieldSetNumber(buf, sizeof(buf), "CUSTFLAGS", custflags);
+    TagFieldSetNumber(buf, sizeof(buf), "CUSTMASK", custmask);
+    if (sessionList) {
+        LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x17, sessionList);
+        sessionList = nullptr;
+    }
+    sessionList = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                    static_cast<LobbyRanks::RankListMapping>(0x17), SessionDispListCB, this);
+    extraSessionDataMap.clear();
+    DispListSort(sessionList, 0, currentSortParams, SortFunc);
+    DispListFilt(sessionList, 0, 0, FilterFunc);
+    int32 rc = LobbyCore::Instance().QueueCommand('usea', buf, FindSessionsCB, this, filterSessionsCB, context, false);
+    lobbyMutex.Unlock("LobbyGameSessions::FindSessions");
+    return rc;
+}
+
+void LobbyGameSessions::SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending) {
+    lobbyMutex.Lock("LobbyGameSessions::SetSortField");
+    SetSortField_HaveMutex(sortField, ascending);
+    lobbyMutex.Unlock("LobbyGameSessions::SetSortField");
+}
+
+void LobbyGameSessions::SetSortField_HaveMutex(LobbyGameSessionsN::SortField sortField, bool ascending) {
+    if (sessionList && sortField >= LobbyGameSessionsN::SORT_PING) {
+        uint32 sortParams = sortField | LobbyGameSessionsN::SORT_INVALID;
+        if (!ascending) {
+            sortParams = sortField;
+        }
+        currentSortParams = sortParams;
+        DispListSort(sessionList, 0, sortParams, SortFunc);
+    }
+}
+
+GameSession *LobbyGameSessions::GetMySession() const {
+    GameSession *session = nullptr;
+    if (myCurrentSession.iIdent != -1) {
+        session = const_cast<GameSession *>(&myCurrentSession);
+    }
+    return session;
+}
+
+char *LobbyGameSessions::GetSessionDisplayName(const GameSession *session) {
+    static char realName[36];
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    char *tmp;
+    if (theSession->iIdent == -1 || !(tmp = bStrChr(theSession->strName, '.'))) {
+        return nullptr;
+    }
+    bStrNCpy(realName, tmp + 1, 32);
+    return realName;
+}
+
+inline eOnlineDisconnectPerc LobbyGameSessions::GetSessionDisconnectPercentage(const GameSession *session) {
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    eOnlineDisconnectPerc eDisconnectPercentage = OLS_DISCONNECT_PERC_ANY;
+    if (theSession->uCustFlags & 0x2000000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_50;
+    } else if (theSession->uCustFlags & 0x1000000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_25;
+    } else if (theSession->uCustFlags & 0x800000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_20;
+    } else if (theSession->uCustFlags & 0x400000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_15;
+    } else if (theSession->uCustFlags & 0x200000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_10;
+    } else if (theSession->uCustFlags & 0x100000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_5;
+    }
+    return eDisconnectPercentage;
+}
+
+ExtraSessionData *LobbyGameSessions::GetExtraSessionDataByIdent(int32 ident) {
+    ExtraSessionData *rc = nullptr;
+    lobbyMutex.Lock("LobbyGameSessions::GetExtraSessionDataByIdent");
+    ExtraSessionDataMap::iterator esd = extraSessionDataMap.find(ident);
+    if (esd != extraSessionDataMap.end()) {
+        rc = &esd->second;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::GetExtraSessionDataByIdent");
+    return rc;
+}
+
+OnlineRaceModeE LobbyGameSessions::GetRaceMode(const GameSession *session) {
+    lobbyMutex.Lock("LobbyGameSessions::GetRaceMode");
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    if (myCurrentSession.iIdent < 0 && !session) {
+        lobbyMutex.Unlock("LobbyGameSessions::GetRaceMode");
+        return OL_RACE_MODE_INVALID;
+    }
+
+    OnlineRaceModeE theMode = OL_RACE_MODE_INVALID;
+    if (theSession->uCustFlags & 0x80000000) {
+        theMode = OL_RACE_MODE_CIRCUIT;
+    } else if (theSession->uCustFlags & 0x40000000) {
+        theMode = OL_RACE_MODE_SPRINT;
+    } else if (theSession->uCustFlags & 0x20000000) {
+        theMode = OL_RACE_MODE_DRAG;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::GetRaceMode");
+    return theMode;
+}
+
+int LobbyGameSessions::GetNumSessions() const {
+    return sessionList ? DispListShown(sessionList) : 0;
+}
+
+GameSession *LobbyGameSessions::GetSessionByName(const char *sessionName) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetSessionByName");
+    GameSession *session = static_cast<GameSession *>(
+        DispListGet(sessionList, LobbyApiListFindByName(LobbyCore::Instance().pLobbyRef, 0x17, sessionName)));
+    lobbyMutex.Unlock("LobbyGameSessions::GetSessionByName");
+    return session;
+}
+
+GameSession *LobbyGameSessions::GetSessionByIndex(int32 index) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetSessionByIndex");
+    GameSession *rc = GetSessionByIndex_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::GetSessionByIndex");
+    return rc;
+}
+
+GameSession *LobbyGameSessions::GetSessionByIndex_HaveMutex(int32 index) const {
+    return static_cast<GameSession *>(DispListIndex(sessionList, index));
+}
+
+GameSessionMember *LobbyGameSessions::GetMemberByIndex(int32 index) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetMemberByIndex");
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::GetMemberByIndex");
+    return member;
+}
+
+GameSessionMember *LobbyGameSessions::GetMemberByIndex_HaveMutex(int32 index) const {
+    GameSessionMember *member;
+    if (index == 0) {
+        member = nullptr;
+        for (int i = 0; i < myCurrentSession.iCount; i++) {
+            member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, i));
+            if (!member || bStrCmp(member->strPers, myCurrentSession.strOwner) == 0) {
+                break;
+            }
+        }
+    } else {
+        member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, index));
+        if (member && bStrCmp(member->strPers, myCurrentSession.strOwner) == 0) {
+            member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, 0));
+        }
+    }
+    return member;
+}
+
+void LobbyGameSessions::SetSessionUpdateCB(SessionUpdateCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::SetSessionUpdateCB");
+    updateContext = context;
+    sessionUpdateCB = func;
+    if (func) {
+        if (myCurrentSession.iIdent != -1) {
+            SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+        }
+        if (sessionList) {
+            SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+        }
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::SetSessionUpdateCB");
+}
+
+int32 LobbyGameSessions::Init() {
+    if (!sessionList) {
+        Resume();
+        extraSessionDataMap.clear();
+    }
+    return 0;
+}
+
+void LobbyGameSessions::Resume() {
+    LobbyCore::Instance().RegisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    sessionList = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                    static_cast<LobbyRanks::RankListMapping>(0x17), SessionDispListCB, this);
+    sessionMembers = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                       static_cast<LobbyRanks::RankListMapping>(0x18), SessionMembersDispListCB, this);
+    SetSortField_HaveMutex(LobbyGameSessionsN::SORT_PING, true);
+    DispListFilt(sessionList, 0, 0, FilterFunc);
+    hostInactiveTimer.UnSet();
+    hostStartSessionTimer.UnSet();
+    hostHurryTimer.UnSet();
+}
+
+void LobbyGameSessions::Reset() {
+    Suspend();
+    extraSessionDataMap.clear();
+    sessionUpdateCB = nullptr;
+    updateContext = nullptr;
+    createSessionCB = nullptr;
+    createSessionContext = nullptr;
+    lastSearchCount = 0;
+    hostStartSessionTimer.UnSet();
+    hostHurryTimer.UnSet();
+    hostInactiveTimer.UnSet();
+    currentSortParams = LobbyGameSessionsN::SORT_INVALID;
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    myCurrentSession.iIdent = -1;
+}
+
+void LobbyGameSessions::Suspend() {
+    LobbyCore::Instance().UnregisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    if (LobbyCore::Instance().pLobbyRef) {
+        if (sessionList) {
+            LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x17, sessionList);
+            sessionList = nullptr;
+        }
+        if (sessionMembers) {
+            LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x18, sessionMembers);
+            sessionMembers = nullptr;
+        }
+    }
+}
+
+void LobbyGameSessions::RefilterAndUpdateSessionsList() {
+    if (sessionList) {
+        DispListChange(sessionList, 1);
+        DispListOrder(sessionList);
+        SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+    }
+}
+
+void LobbyGameSessions::UpdateSessionParams(char *buf, int bufsize) {
+    TagFieldPrintf(buf, bufsize, "V=%d P=%d E=%d L=%d M=%d", BuildVersionChangelistNumber,
+                   LobbyApiInfoInt(LobbyCore::Instance().GetLobbyApiRef(), 'ping'),
+                   FEDatabase->OnlineSettings.GetRaceSettings()->EventHash,
+                   FEDatabase->OnlineSettings.GetRaceSettings()->NumLaps,
+                   FEDatabase->OnlineSettings.MinOnlinePlayers);
+}
+
+int32 LobbyGameSessions::UpdateSessionInfo(bool forceUpdate) {
+    if (myCurrentSession.iIdent != -1) {
+        char newParams[68] = "";
+        UpdateSessionParams(newParams, 64);
+
+        uint32 newCustFlags = myCurrentSession.uCustFlags;
+        UpdateSessionFlags(newCustFlags);
+
+        char newDescription[68] = "";
+        char *machineaddr = LobbyUsers::Instance().GetMyUserRecord()->MachineAddr.strMachineAddr;
+        char *xnaddr = bStrChr(machineaddr, '^');
+        if (!xnaddr) {
+            bStrNCpy(newDescription, machineaddr, 67);
+            newDescription[67] = '\0';
+        } else {
+            bStrNCpy(newDescription, machineaddr, xnaddr - machineaddr);
+            newDescription[xnaddr - machineaddr] = '\0';
+        }
+
+        if (forceUpdate || newCustFlags != myCurrentSession.uCustFlags ||
+            bStrCmp(newParams, myCurrentSession.strParams) != 0 ||
+            bStrCmp(newDescription, myCurrentSession.strDesc) != 0) {
+            char newOptions[512] = "";
+            TagFieldSetString(newOptions, sizeof(newOptions), "NAME", myCurrentSession.strName);
+            TagFieldSetString(newOptions, sizeof(newOptions), "DESC", newDescription);
+            TagFieldSetString(newOptions, sizeof(newOptions), "PARAMS", newParams);
+            TagFieldSetFlags(newOptions, sizeof(newOptions), "CUSTFLAGS", newCustFlags);
+            LobbyCore::Instance().QueueCommand('uadm', newOptions, SessionUpdateCB, this, nullptr, nullptr, false);
+        }
+        LobbyGames::Instance().UpdateGame(nullptr, nullptr);
+    }
+    return 0;
+}
+
+void LobbyGameSessions::ExtractSessionInfo() {
+    cOnlineSettings *settings = &FEDatabase->OnlineSettings;
+    settings->RankedGame = (myCurrentSession.uCustFlags >> 9) & 1;
+    settings->CollisionDetection = (myCurrentSession.uCustFlags >> 10) & 1;
+    settings->UseNOS = (myCurrentSession.uCustFlags >> 11) & 1;
+    settings->PerformanceMatching = (myCurrentSession.uCustFlags >> 13) & 1;
+
+    if (myCurrentSession.uCustFlags & 0x80000000) {
+        settings->RaceMode = GRace::kRaceType_Circuit;
+    } else if (myCurrentSession.uCustFlags & 0x40000000) {
+        settings->RaceMode = GRace::kRaceType_P2P;
+    } else if (myCurrentSession.uCustFlags & 0x20000000) {
+        settings->RaceMode = GRace::kRaceType_Drag;
+    }
+
+    settings->GetRaceSettings()->EventHash =
+        TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "E"), 0);
+    settings->GetRaceSettings()->NumLaps =
+        TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "L"), 0);
+    settings->GetRaceSettings()->TrackDirection = (myCurrentSession.uCustFlags >> 12) & 1;
+    settings->MinOnlinePlayers = TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "M"), 0);
+
+    if (myCurrentSession.uCustFlags & 0x100000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_5;
+    } else if (myCurrentSession.uCustFlags & 0x200000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_10;
+    } else if (myCurrentSession.uCustFlags & 0x400000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_15;
+    } else if (myCurrentSession.uCustFlags & 0x800000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_20;
+    } else if (myCurrentSession.uCustFlags & 0x1000000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_25;
+    } else if (myCurrentSession.uCustFlags & 0x2000000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_50;
+    } else {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_ANY;
+    }
+
+    if (!LobbyGames::Instance().GetMyGame()) {
+        char *hostName = bStrChr(myCurrentSession.strName, '.');
+        if (hostName) {
+            LobbyGames::Instance().JoinGame(hostName + 1, nullptr, nullptr, nullptr);
+        }
+    }
+}
+
+void LobbyGameSessions::UpdateSessionFlags(uint32 &sessionFlags) {
+    cOnlineSettings *settings = &FEDatabase->OnlineSettings;
+    sessionFlags &= ~0x200;
+    if (settings->RankedGame == 1) {
+        sessionFlags |= 0x200;
+    }
+    sessionFlags &= ~0x400;
+    if (settings->CollisionDetection == 1) {
+        sessionFlags |= 0x400;
+    }
+    sessionFlags &= ~0x2000;
+    if (settings->PerformanceMatching == 1) {
+        sessionFlags |= 0x2000;
+    }
+    sessionFlags &= ~0x800;
+    if (settings->UseNOS == 1) {
+        sessionFlags |= 0x800;
+    }
+    sessionFlags &= ~0x1000;
+    if (settings->GetRaceSettings()->TrackDirection == 1) {
+        sessionFlags |= 0x1000;
+    }
+
+    sessionFlags &= 0x1fffffff;
+    if (settings->RaceMode == GRace::kRaceType_Circuit) {
+        sessionFlags |= 0x80000000;
+    } else if (settings->RaceMode == GRace::kRaceType_P2P) {
+        sessionFlags |= 0x40000000;
+    } else if (settings->RaceMode == GRace::kRaceType_Drag) {
+        sessionFlags |= 0x20000000;
+    }
+    if (settings->IsPrivateRoom == 1) {
+        sessionFlags |= 1;
+    }
+
+    sessionFlags &= 0xfc0fffff;
+    if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_5) {
+        sessionFlags |= 0x100000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_10) {
+        sessionFlags |= 0x200000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_15) {
+        sessionFlags |= 0x400000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_20) {
+        sessionFlags |= 0x800000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_25) {
+        sessionFlags |= 0x1000000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_50) {
+        sessionFlags |= 0x2000000;
+    }
+}
+
+void LobbyGameSessions::SessionWasDeleted() {
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    myCurrentSession.iIdent = -1;
+    SendUpdateCallback(LobbyGameSessionsN::SESSION_DELETED);
+}
+
+void LobbyGameSessions::SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode code) {
+    if (sessionUpdateCB) {
+        bool includeSession = code != LobbyGameSessionsN::SESSION_DELETED &&
+                              code != LobbyGameSessionsN::SESSION_LIST_CHANGED;
+        sessionUpdateCB(code, includeSession ? &myCurrentSession : nullptr, updateContext);
+    }
+}
+
+int32 LobbyGameSessions::LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, void *context) {
+    if (myCurrentSession.iIdent != -1 &&
+        LobbyCore::Instance().FindCommandID('udel', nullptr, nullptr, nullptr, nullptr) == -1 &&
+        LobbyCore::Instance().FindCommandID('ulea', nullptr, nullptr, nullptr, nullptr) == -1) {
+        if (LobbyGames::Instance().GetMyGame()) {
+            LobbyGames::Instance().LeaveGame(nullptr, nullptr);
+        }
+
+        char buf[64] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentSession.strName);
+        int32 rc;
+        if (bStrCmp(FEDatabase->OnlineSettings.GetLobbyPersona(), myCurrentSession.strOwner) != 0) {
+            char buf2[32] = "";
+            TagFieldSetString(buf2, sizeof(buf2), "USERSET0", "");
+            LobbyCore::Instance().QueueCommand('sele', buf2, nullptr, nullptr, nullptr, nullptr, false);
+            rc = LobbyCore::Instance().QueueCommand('ulea', buf, LeaveSessionCB, this, leaveSessionCB, context, false);
+        } else {
+            rc = LobbyCore::Instance().QueueCommand('udel', buf, LeaveSessionCB, this, leaveSessionCB, context, false);
+        }
+        return rc;
+    }
+    return -1;
+}
+
+bool LobbyGameSessions::FoundAllSessions() {
+    return lastSearchCount == static_cast<uint32>(DispListShown(sessionList));
+}
+
+void LobbyGameSessions::SessionDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (lgs->sessionUpdateCB) {
+        if (lgs->myCurrentSession.iIdent != -1 &&
+            TagFieldGetNumber(TagFieldFind(pMsg->pData, "IDENT"), -2) == lgs->myCurrentSession.iIdent) {
+            return;
+        }
+        lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+    }
+    LobbyCore &lobbyCore = LobbyCore::Instance();
+    if (lobbyCore.currentCommand && lobbyCore.currentCommand->kind == 'usea') {
+        lobbyCore.FinishCommand(pMsg, true);
+    }
+}
+
+void LobbyGameSessions::SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    lgs->hostHurryTimer.UnSet();
+    lgs->hostInactiveTimer.UnSet();
+    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+}
+
+void LobbyGameSessions::CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    LobbyCore &lobbyCore = LobbyCore::Instance();
+    if (pMsg->code == 0) {
+        LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+        lgs->createSessionCB = lobbyCore.currentCommand->commandCB;
+        lgs->createSessionContext = lobbyCore.currentCommand->commandContext;
+        lobbyCore.FinishCommand(pMsg, false);
+        LobbyGames::Instance().CreateGame(lgs->myCurrentSession.strOwner, FEDatabase->OnlineSettings,
+                                          CreateGameCB, lgs);
+    } else {
+        lobbyCore.FinishCommand(pMsg, true);
+    }
+}
+
+void LobbyGameSessions::JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+        lgs->ExtractSessionInfo();
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGameSessions::CreateGameCB(LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        lgs->UpdateSessionInfo(false);
+    } else {
+        lgs->LeaveSession_HaveMutex(nullptr, nullptr);
+    }
+    if (lgs->createSessionCB) {
+        lgs->createSessionCB(pMsg, lgs->createSessionContext);
+    }
+}
+
+void LobbyGameSessions::RecreateGameCB(LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        lgs->UpdateSessionInfo(true);
+    } else {
+        lgs->LeaveSession_HaveMutex(nullptr, nullptr);
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, false);
+}
+
+void LobbyGameSessions::LeaveSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    lgs->hostHurryTimer.UnSet();
+    lgs->hostInactiveTimer.UnSet();
+    if (pMsg->code == 0 || pMsg->code == 'join') {
+        bMemSet(&lgs->myCurrentSession, 0, sizeof(lgs->myCurrentSession));
+        lgs->myCurrentSession.iIdent = -1;
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGameSessions::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (IsGameFlowInFrontEnd()) {
+        if (pMsg->kind == 'uset' && lgs->myCurrentSession.iIdent != -1) {
+            lgs->hostHurryTimer.UnSet();
+            lgs->hostInactiveTimer.UnSet();
+            if (!TagFieldFind(pMsg->pData, "N")) {
+                lgs->SessionWasDeleted();
+            } else {
+                LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+                if (!LobbyUsers::Instance().GetMyUserRecord()->aUserSets[0][0]) {
+                    bMemSet(&lgs->myCurrentSession, 0, sizeof(lgs->myCurrentSession));
+                    lgs->myCurrentSession.iIdent = -1;
+                    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_KICKED);
+                } else {
+                    if (FEDatabase->OnlineSettings.GameDetails == eJOINING) {
+                        lgs->ExtractSessionInfo();
+                    }
+                    if (FEDatabase->OnlineSettings.GameDetails == eHOSTING) {
+                        lgs->UpdateSessionInfo(false);
+                    }
+                    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+                }
+            }
+        } else if (pMsg->kind == 'play' && FEDatabase->OnlineSettings.GameDetails == eHOSTING) {
+            char buf[96] = "";
+            TagFieldSetString(buf, sizeof(buf), "NAME", lgs->myCurrentSession.strName);
+            LobbyCore::Instance().QueueCommand('uadm', buf, nullptr, nullptr, nullptr, nullptr, false);
+        }
+    }
+}
+
+void LobbyGameSessions::FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (LobbyCore::Instance().currentCommand) {
+        if (pMsg->code == 0) {
+            lgs->lastSearchCount = TagFieldGetNumber(TagFieldFind(pMsg->pData, "COUNT"), 0);
+            lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+            if (lgs->lastSearchCount == 0) {
+                LobbyCore::Instance().FinishCommand(pMsg, true);
+            }
+        } else {
+            LobbyCore::Instance().FinishCommand(pMsg, true);
+        }
+    }
+}
+
+void LobbyGameSessions::SessionUpdateCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+int LobbyGameSessions::SortFunc(void *sortref, int sortcon, void *recptr1, void *recptr2) {
+    bool ascending = (sortcon & LobbyGameSessionsN::SORT_INVALID) != 0;
+    LobbyGameSessionsN::SortField sortField =
+        static_cast<LobbyGameSessionsN::SortField>(sortcon & 0x0fffffff);
+    int rc;
+    switch (sortField) {
+    case LobbyGameSessionsN::SORT_PING: {
+        LobbyGameSessions &lgs = Instance();
+        ExtraSessionDataMap::iterator esd1 =
+            lgs.extraSessionDataMap.find(static_cast<LobbyApiUserSetT *>(recptr1)->iIdent);
+        ExtraSessionDataMap::iterator esd2 =
+            lgs.extraSessionDataMap.find(static_cast<LobbyApiUserSetT *>(recptr2)->iIdent);
+        if (esd1->second.pingToHostInMsec < 0 && esd2->second.pingToHostInMsec >= 0) {
+            rc = 1;
+        } else if (esd1->second.pingToHostInMsec >= 0 && esd2->second.pingToHostInMsec < 0) {
+            rc = -1;
+        } else {
+            rc = esd1->second.pingToHostInMsec - esd2->second.pingToHostInMsec;
+        }
+        break;
+    }
+    case LobbyGameSessionsN::SORT_SESSION_NAME: {
+        char *g1 = bStrChr(static_cast<LobbyApiUserSetT *>(recptr1)->strName, '.');
+        rc = bStrICmp(g1 + 1, bStrChr(static_cast<LobbyApiUserSetT *>(recptr2)->strName, '.') + 1);
+        break;
+    }
+    case LobbyGameSessionsN::SORT_PLAYER_COUNT:
+        rc = static_cast<LobbyApiUserSetT *>(recptr1)->iCount -
+             static_cast<LobbyApiUserSetT *>(recptr2)->iCount;
+        break;
+    default:
+        return 0;
+    }
+    return ascending ? rc : -rc;
+}
+
+int LobbyGameSessions::FilterFunc(void *filtref, int filtcon, void *recptr) {
+    LobbyApiUserSetT *userset = static_cast<LobbyApiUserSetT *>(recptr);
+    LobbyGameSessions &lgs = Instance();
+    bool hidesession = TagFieldGetNumber(TagFieldFind(userset->strParams, "V"), -1) !=
+                       BuildVersionChangelistNumber;
+    ExtraSessionDataMap::iterator esd = lgs.extraSessionDataMap.find(userset->iIdent);
+    if (esd == lgs.extraSessionDataMap.end()) {
+        ExtraSessionData newesd;
+        newesd.pingToHostInMsec = -1;
+        std::pair<ExtraSessionDataMap::iterator, bool> rc =
+            lgs.extraSessionDataMap.insert(ExtraSessionDataMap::value_type(userset->iIdent, newesd));
+        if (!rc.second) {
+            return 0;
+        }
+        esd = rc.first;
+        if (hidesession) {
+            lgs.lastSearchCount--;
+        }
+    }
+
+    if (!hidesession) {
+        DirtyAddrT daddr;
+        bMemSet(&daddr, 0, sizeof(daddr));
+        char *xnaddr = bStrChr(userset->strDesc, '^');
+        if (!xnaddr) {
+            bStrNCpy(daddr.strMachineAddr, userset->strDesc, 63);
+            daddr.strMachineAddr[63] = '\0';
+        } else {
+            bStrNCpy(daddr.strMachineAddr, userset->strDesc, xnaddr - userset->strDesc);
+            daddr.strMachineAddr[xnaddr - userset->strDesc] = '\0';
+        }
+        esd->second.pingToHostInMsec =
+            PingManagerPingAddress(LobbyCore::Instance().pingManagerRef, &daddr, PingManagerCB,
+                                   reinterpret_cast<void *>(userset->iIdent));
+        if (esd->second.pingToHostInMsec < 0) {
+            esd->second.pingToHostInMsec = TagFieldGetNumber(TagFieldFind(userset->strParams, "P"), -1);
+        }
+        if (esd->second.pingToHostInMsec > 0) {
+            esd->second.pingToHostInMsec /= 2;
+        }
+    }
+    return !hidesession;
+}
+
+void LobbyGameSessions::PingManagerCB(DirtyAddrT *pAddr, unsigned int uPing, void *pData) {
+    LobbyGameSessions &lgs = Instance();
+    ExtraSessionDataMap::iterator esd = lgs.extraSessionDataMap.find(reinterpret_cast<int32>(pData));
+    if (esd != lgs.extraSessionDataMap.end()) {
+        esd->second.pingToHostInMsec = uPing;
+        lobbyMutex.Lock(nullptr);
+        lgs.RefilterAndUpdateSessionsList();
+        lobbyMutex.Unlock(nullptr);
+    }
+}

@@ -164,7 +164,9 @@ struct GroundSupportRequest {
           mSupportTimer(0.0f),     //
           mSupportRequestStatus(NOT_ACTIVE) {}
 
-    ~GroundSupportRequest() {}
+    ~GroundSupportRequest() {
+        this->Reset();
+    }
 
     void Reset();
     void Update(float dT);
@@ -341,7 +343,9 @@ struct RacePreparationInfo {
         RESET_DAMAGE = 1,
     };
 
-    RacePreparationInfo() {}
+    RacePreparationInfo() {
+        bMemSet(this, 0, sizeof(*this));
+    }
 
     UMath::Vector3 Position;  // offset 0x0, size 0xC
     float Speed;              // offset 0xC, size 0x4

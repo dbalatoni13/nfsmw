@@ -16,6 +16,23 @@ enum Difficulty {
     kRaceDifficulty_NumDifficulties = 3,
 };
 
+// Del DWARF, junto a Difficulty y con sus reflection_typedef.
+enum TrafficLevel {
+    kRaceTraffic_Off = 0,
+    kRaceTraffic_Light = 1,
+    kRaceTraffic_Medium = 2,
+    kRaceTraffic_Heavy = 3,
+    kRaceTraffic_NumLevels = 4,
+};
+
+enum CopDensity {
+    kRaceCops_Off = 0,
+    kRaceCops_Light = 1,
+    kRaceCops_Medium = 2,
+    kRaceCops_Heavy = 3,
+    kRaceCops_NumDensities = 4,
+};
+
 enum Context {
     kRaceContext_QuickRace,
     kRaceContext_TimeTrial,
@@ -24,6 +41,15 @@ enum Context {
 #endif
     kRaceContext_Career,
     kRaceContext_Count,
+};
+
+// Del DWARF: GRace::Region.
+enum Region {
+    kRaceRegion_None = -1,
+    kRaceRegion_College = 0,
+    kRaceRegion_Coastal = 1,
+    kRaceRegion_City = 2,
+    kRaceRegion_NumRegions = 3,
 };
 
 enum Type {
@@ -43,5 +69,13 @@ enum Type {
 };
 
 }; // namespace GRace
+
+enum eRaceStage {
+    RACE_STAGE_NONE = 0,
+    RACE_STAGE_FLYBY = 1,
+    RACE_STAGE_PRERACE = 2,
+    RACE_STAGE_COUNTDOWN = 3,
+    RACE_STAGE_RACING = 4,
+};
 
 #endif

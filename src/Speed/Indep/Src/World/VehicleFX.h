@@ -1,6 +1,7 @@
 #ifndef VEHICLEFX_H
 #define VEHICLEFX_H
 
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Misc/attribuserinclude.h"
 
 namespace VehicleFX {
@@ -39,6 +40,8 @@ struct Maps {
 };
 
 const Maps *GetMaps();
+
+ID LookupID(UCrc32 name);
 
 }; // namespace VehicleFX
 

@@ -15,13 +15,41 @@ struct SteeringWheelDevice : public UTL::COM::Object, public ISteeringWheel {
     bool isActivated;         // offset 0x20, size 0x1
 
   public:
+    bool IsActivated() {
+        return isActivated;
+    }
+
+    void Deactivated() {
+        isActivated = false;
+    }
+
+    float ConvertAcceleratorPosition();
+
+    float ConvertBrakePosition();
+
+    float GetShiftUpValue();
+
+    float GetShiftDownValue();
+
+    float GetNOSValue();
+
+    float GetHandbrakeValue();
+
+    float GetGameBrakerValue();
+
+    float GetLookBackvalue();
+
     static void InitWheelSupport();
     static void PollWheels();
     static bool WheelConnected(int port);
 
     static struct LGWheels *lgwheels;
 
-    SteeringWheelDevice(int deviceIndex) : UTL::COM::Object(0), ISteeringWheel(nullptr) {}
+    SteeringWheelDevice(int deviceIndex) : UTL::COM::Object(0), ISteeringWheel(this) {
+        mDeviceIndex = deviceIndex;
+        mManualTransmission = false;
+        isActivated = true;
+    }
 
     // ISteeringWheel
     virtual void UpdateForces(IPlayer *player);
@@ -29,7 +57,7 @@ struct SteeringWheelDevice : public UTL::COM::Object, public ISteeringWheel {
 
     virtual bool IsConnected();
     virtual ISteeringWheel::SteeringType GetSteeringType();
-    virtual ~SteeringWheelDevice();
+    virtual ~SteeringWheelDevice() {}
 
   private:
     void StopAllForces();

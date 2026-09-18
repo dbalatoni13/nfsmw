@@ -20,9 +20,27 @@ class MLoadingComplete : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MLoadingComplete &message);
+
     MLoadingComplete() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 
     ~MLoadingComplete() {}
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MLoadingComplete::HandleMessage_LuaBinding(const MLoadingComplete &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MLoadingComplete::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    lua_newtable(luaState);
+}
 
 #endif

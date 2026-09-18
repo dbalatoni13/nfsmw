@@ -92,7 +92,9 @@ struct Info {
         objBsurface = nullptr;
     }
 
-    CollisionType Type() const {}
+    CollisionType Type() const {
+        return (CollisionType) type;
+    }
 
     UMath::Vector3 position;               // offset 0x0, size 0xC
     const Attrib::Collection *objAsurface; // offset 0xC, size 0x4
@@ -129,6 +131,12 @@ class IRigidBody;
 // total size: 0x18
 class SimCollisionMap {
   public:
+    SimCollisionMap() {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(fBitMap); ++i) {
+            fBitMap[i] = 0;
+        }
+    }
+
     void Clear() {
         for (unsigned int i = 0; i < NUM_ELEMENTS(fBitMap); ++i) {
             fBitMap[i] = 0;
@@ -270,5 +278,8 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_RESET;
 
 #endif

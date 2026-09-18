@@ -75,6 +75,10 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     bool OnTask(HSIMTASK htask, float dT) override;
 
     // IVehicleCache
+    const char *GetCacheName() const override {
+        return "AITrafficManager";
+    }
+
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
@@ -89,6 +93,9 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual void OnDebugDraw();
 
   private:
+    static float mTrafficMinSpawnDist;
+    static float mTrafficMaxSpawnDist;
+
     HSIMTASK mTask;                       // offset 0x68, size 0x4
     unsigned int mSpawnIdx;               // offset 0x6C, size 0x4
     float mPatternTimer[10];              // offset 0x70, size 0x28

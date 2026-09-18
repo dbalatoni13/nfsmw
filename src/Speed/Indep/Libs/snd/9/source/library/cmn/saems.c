@@ -1,5 +1,4 @@
 #include "csis/csis.h"
-#include "dolphin/os/OSCache.h"
 #include "snd/sndo.h"
 #include "sndcmn.h"
 #include "Speed/Indep/Libs/snd/9/extern/aemsdef.h"
@@ -8,6 +7,10 @@
 #include <types.h>
 #undef override
 #include <cstring>
+
+#ifdef EA_PLATFORM_GAMECUBE
+#include "dolphin/os/OSCache.h"
+#endif
 
 void SNDAEMSI_bankpitchmult(int handle, int value);
 void SNDAEMSI_banktimemult(int handle, int value);
@@ -1375,9 +1378,9 @@ void SNDAEMSI_resolvemodulebank(
             // TODO remove these variables
             unsigned int func_offset = comp_func * sizeof(unsigned int);
             unsigned short entry_hi = *reinterpret_cast<unsigned short *>(
-                reinterpret_cast<unsigned int>(funcbase) + func_offset
+                reinterpret_cast<sndptruint>(funcbase) + func_offset
             );
-            func_offset += reinterpret_cast<unsigned int>(funcbase);
+            func_offset += reinterpret_cast<sndptruint>(funcbase);
             *addr_hi = entry_hi;
             unsigned short *pfuncentry = reinterpret_cast<unsigned short *>(func_offset);
             *addr_lo = pfuncentry[1];
@@ -1394,7 +1397,7 @@ void SNDAEMSI_resolvemodulebank(
         puint = reinterpret_cast<unsigned int *>(
             reinterpret_cast<char *>(pModuleBank) + pstaticdatafixupheader->fixup[i]
         );
-        *puint += reinterpret_cast<unsigned int>(pModuleBank);
+        *puint += reinterpret_cast<sndptruint>(pModuleBank);
     }
 
     pInterfaceFixupHeader = reinterpret_cast<AemsDef::InterfaceFixupHeader *>(
@@ -1427,9 +1430,9 @@ void SNDAEMSI_resolvemodulebank(
 
     pModule = reinterpret_cast<AemsDef::Module *>(&pModuleBank->id[pModuleBank->moduleoffset]);
     for (i = 0; i < pModuleBank->nummodules; i++) {
-        *reinterpret_cast<int *>(&pModule->pcode) = reinterpret_cast<int>(pModuleBank) + *reinterpret_cast<int *>(&pModule->pcode);
+        *reinterpret_cast<int *>(&pModule->pcode) = reinterpret_cast<sndptrint>(pModuleBank) + *reinterpret_cast<int *>(&pModule->pcode);
         pModule->constructorClient.pClientFunc = SNDAEMSI_CreateModuleInstance;
-        pModule->pdata = reinterpret_cast<char *>(pModuleBank) + reinterpret_cast<int>(pModule->pdata);
+        pModule->pdata = reinterpret_cast<char *>(pModuleBank) + reinterpret_cast<sndptrint>(pModule->pdata);
         pModule->constructorClient.pClientData = pModule;
         Csis::Class::SubscribeConstructorFast(&pModule->classHandle, &pModule->constructorClient);
 
@@ -1460,7 +1463,9 @@ void SNDAEMSI_resolvemodulebank(
         Snd::Util::AddVariableTimerClient(&sndaems.variabletimerclient);
     }
 
+#ifdef EA_PLATFORM_GAMECUBE
     ICInvalidateRange(pModuleBank, pModuleBank->totalsize);
     DCFlushRange(pModuleBank, pModuleBank->totalsize);
+#endif
     SNDSYS_leavecritical();
 }

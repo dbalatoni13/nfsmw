@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #include "AnimMemoryMap.h"
 #include "FnAnimMemoryMap.h"
 
@@ -27,35 +28,82 @@ class RawStateChan : public AnimMemoryMap {
 
     // void *operator new(size_t, void *ptr) {}
 
-    void SetNumFrames(unsigned short n) {}
+    void SetNumFrames(unsigned short n) {
+        mNumFrames = n;
+    }
 
-    unsigned short GetNumFrames() const {}
+    unsigned short GetNumFrames() const {
+        return mNumFrames;
+    }
 
-    void SetNumKeys(unsigned short n) {}
+    void SetNumKeys(unsigned short n) {
+        mNumKeys = n;
+    }
 
-    unsigned short GetNumKeys() const {}
+    unsigned short GetNumKeys() const {
+        return mNumKeys;
+    }
 
-    void SetKeySize(unsigned char n) {}
+    void SetKeySize(unsigned char n) {
+        mKeySize = n;
+    }
 
-    unsigned char GetKeySize() const {}
+    unsigned char GetKeySize() const {
+        return mKeySize;
+    }
 
-    void SetNumFields(unsigned char n) {}
+    void SetNumFields(unsigned char n) {
+        mNumFields = n;
+    }
 
-    unsigned char GetNumFields() const {}
+    unsigned char GetNumFields() const {
+        return mNumFields;
+    }
 
-    const unsigned short *GetDecodeData() const {}
+    const unsigned short *GetDecodeData() const {
+        return mDecodeData;
+    }
 
-    unsigned short *GetDecodeData() {}
+    unsigned short *GetDecodeData() {
+        return mDecodeData;
+    }
 
-    int GetSize() const {}
+    int GetSize() const {
+        return ComputeSize(mNumKeys, mNumFields, mKeySize);
+    }
 
-    static int ComputeSize(int numKeys, int numFields, int keySize) {}
+    static int ComputeSize(int numKeys, int numFields, int keySize) {
+        int size = 0xc + numFields * 2;
+        size = (size + 3) & ~3;
+        return size + numKeys * keySize;
+    }
 
-    const unsigned char *GetKeyData(int keyIdx) const {}
+    const unsigned char *GetKeyData(int keyIdx) const {
+        const unsigned char *keyData;
+        if (mNumFields & 1) {
+            keyData = reinterpret_cast<const unsigned char *>(&mDecodeData[mNumFields]);
+        } else {
+            keyData = reinterpret_cast<const unsigned char *>(&mDecodeData[mNumFields] + 1);
+        }
+        return keyData + keyIdx * GetKeySize();
+    }
 
-    unsigned char *GetKeyData(int keyIdx) {}
+    unsigned char *GetKeyData(int keyIdx) {
+        unsigned char *keyData;
+        if (mNumFields & 1) {
+            keyData = reinterpret_cast<unsigned char *>(&mDecodeData[mNumFields]);
+        } else {
+            keyData = reinterpret_cast<unsigned char *>(&mDecodeData[mNumFields] + 1);
+        }
+        return keyData + keyIdx * GetKeySize();
+    }
 
-    void GetDecodeData(int idx, unsigned char &storedNumBitsInPowersOf2, unsigned char &destNumBytes, unsigned char &destByteOffset) const {}
+    void GetDecodeData(int idx, unsigned char &storedNumBitsInPowersOf2, unsigned char &destNumBytes, unsigned char &destByteOffset) const {
+        unsigned short entry = mDecodeData[idx];
+        storedNumBitsInPowersOf2 = static_cast<unsigned char>(entry >> 13);
+        destNumBytes = static_cast<unsigned char>(((entry >> 11) & 3) + 1);
+        destByteOffset = static_cast<unsigned char>(entry);
+    }
 
     void SetDecodeData(int idx, unsigned char storedNumBitsInPowersOf2, unsigned char destNumBytes, unsigned char destByteOffset) {}
 
@@ -90,14 +138,18 @@ class FnRawStateChan : public FnAnimMemoryMap {
         mType = AnimTypeId::ANIM_RAWSTATE;
     }
 
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
+
     // Overrides: FnAnimSuper
-    ~FnRawStateChan() override {}
+    ~FnRawStateChan() override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {}
+    bool GetLength(float &timeLength) const override;
 
     // Overrides: FnAnim
-    void Eval(float, float time, float *dofs) override {}
+    void Eval(float, float time, float *dofs) override;
 
     void Decode(unsigned char *src, unsigned char *dest) const;
 

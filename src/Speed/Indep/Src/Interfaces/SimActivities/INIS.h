@@ -15,56 +15,58 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
   public:
     DECL_INTERFACE(INIS);
 
-    virtual void AddCar(UCrc32 channel, IVehicle *vehicle);
-    virtual IVehicle *GetCar(UCrc32 channelname);
-    virtual void StartLocation(const UMath::Vector3 &position, float direction);
-    virtual void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction);
-    virtual const UMath::Vector3 *GetStartLocation();
-    virtual const UMath::Vector3 *GetStartCameraLocation();
-    virtual void SetPreMovie(const char *movieName);
-    virtual void SetPostMovie(const char *movieName);
-
-    virtual CAnimChooser::eType GetType() {
-        // TODO
-        return CAnimChooser::Intro;
-    }
-
-    virtual void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded);
-    virtual bool SkipOverNIS();
-    virtual void Pause();
-    virtual void UnPause();
-
-    virtual bool IsLoaded() const {
-        // TODO
-        return false;
-    }
-
-    virtual bool IsPlaying() const {
-        // TODO
-        return false;
-    }
-
-    virtual bool InMovie() const {
-        // TODO
-        return false;
-    }
-
-    virtual void ServiceLoads();
-    virtual ICEScene *GetScene() const;
-    virtual CAnimScene *GetAnimScene() const;
-    virtual void Release();
-    virtual void StartEvents();
-    virtual void FireEventTag(const char *tagName);
-    virtual void ResetEvents(float SetTime);
-    virtual void StartPlayingNow();
-    virtual bool IsWorldMomement() const;
+    virtual void AddCar(UCrc32 channel, IVehicle *vehicle) = 0;
+    virtual IVehicle *GetCar(UCrc32 channelname) = 0;
+    virtual void StartLocation(const UMath::Vector3 &position, float direction) = 0;
+    virtual void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction) = 0;
+    virtual const UMath::Vector3 *GetStartLocation() = 0;
+    virtual const UMath::Vector3 *GetStartCameraLocation() = 0;
+    virtual void SetPreMovie(const char *movieName) = 0;
+    virtual void SetPostMovie(const char *movieName) = 0;
+    virtual CAnimChooser::eType GetType() = 0;
+    virtual void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded) = 0;
+    virtual bool SkipOverNIS() = 0;
+    virtual void Pause() = 0;
+    virtual void UnPause() = 0;
+    virtual bool IsLoaded() const = 0;
+    virtual bool IsPlaying() const = 0;
+    virtual bool InMovie() const = 0;
+    virtual void ServiceLoads() = 0;
+    virtual ICEScene *GetScene() const = 0;
+    virtual CAnimScene *GetAnimScene() const = 0;
+    virtual void Release() = 0;
+    virtual void StartEvents() = 0;
+    virtual void FireEventTag(const char *tagName) = 0;
+    virtual void ResetEvents(float SetTime) = 0;
+    virtual void StartPlayingNow() = 0;
+    virtual bool IsWorldMomement() const = 0;
 };
 
 class INISLISTENER : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(INISLISTENER);
 
-    virtual void ArrestLevel(int level);
+    virtual void ArrestLevel(int level) = 0;
+};
+
+enum NIS_CAR_IDS {
+    NIS_PLAYER_CAR1 = 0,
+    NIS_PLAYER_CAR2 = 1,
+    NIS_PLAYER_CAR3 = 2,
+    NIS_PLAYER_CAR4 = 3,
+    NIS_PLAYER_CAR5 = 4,
+    NIS_PLAYER_CAR6 = 5,
+    NIS_PLAYER_CAR7 = 6,
+    NIS_PLAYER_CAR8 = 7,
+    NIS_COP_CAR1 = 8,
+    NIS_COP_CAR2 = 9,
+    NIS_COP_CAR3 = 10,
+    NIS_COP_CAR4 = 11,
+    NIS_COP_CAR5 = 12,
+    NIS_COP_CAR6 = 13,
+    NIS_COP_CAR7 = 14,
+    NIS_COP_CAR8 = 15,
+    NIS_MAX_CARS = 16,
 };
 
 #endif

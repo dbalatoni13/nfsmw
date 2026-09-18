@@ -150,7 +150,6 @@ void CARSFX_Turbo::UpdateParams(float t) {
     }
 }
 
-// UNSOLVED
 void CARSFX_Turbo::ProcessUpdate() {
     if (this->m_pTurboBlowoffControl != nullptr) {
         int nDMixOut;
@@ -163,7 +162,9 @@ void CARSFX_Turbo::ProcessUpdate() {
             Az = this->GetDMixOutput(0, DMX_AZIM);
         }
 
-        int TmpBlowoffVol = static_cast<int>(static_cast<float>((this->BlowoffVol * nDMixOut) >> 15) * this->m_BlowoffRampDown.GetValue());
+        int TmpBlowoffVol = (this->BlowoffVol * nDMixOut) >> 15;
+
+        TmpBlowoffVol = static_cast<int>(static_cast<float>(TmpBlowoffVol) * this->m_BlowoffRampDown.GetValue());
         this->m_pTurboBlowoffControl->SetAzimuth(Az);
         this->m_pTurboBlowoffControl->SetVolume(TmpBlowoffVol);
         this->m_pTurboBlowoffControl->CommitMemberData();
@@ -244,11 +245,13 @@ void CARSFX_Turbo::StopBlowOff() {
 // UNSOLVED, regswap
 int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int Azimuth, int rotation) {
     if (IsSoundEnabled == 1) {
-        int nDMixOut = (Vol * this->GetDMixOutput(1, DMX_VOL)) >> 15;
+        int nDMixVol = this->GetDMixOutput(1, DMX_VOL);
+
+        Vol = (Vol * nDMixVol) >> 15;
 
         g_pEAXSound->SetCsisName("SND:Turbo Spool");
         this->m_pTurboSplControl =
-            new Csis::FX_TURBO_01(_ID, nDMixOut, PSI, this->GetDMixOutput(0, DMX_AZIM), rotation, static_cast<int>(this->GetPhysRPM()));
+            new Csis::FX_TURBO_01(_ID, Vol, PSI, this->GetDMixOutput(0, DMX_AZIM), rotation, static_cast<int>(this->GetPhysRPM()));
         gnMemLeakTurboSPOOLCountTest++;
     }
 

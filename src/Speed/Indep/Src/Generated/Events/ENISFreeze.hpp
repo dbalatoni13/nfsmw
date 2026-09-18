@@ -21,12 +21,14 @@ class ENISFreeze : public Event {
 
     ~ENISFreeze() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fFreezeAnimation; // offset: 0x8, size 0x4
 };
 
 void ENISFreeze_MakeEvent_Callback(const void *staticData);
+int ENISFreeze_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISFreeze_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

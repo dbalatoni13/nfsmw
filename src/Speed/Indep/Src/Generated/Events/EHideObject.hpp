@@ -19,12 +19,14 @@ class EHideObject : public Event {
 
     ~EHideObject() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhModel; // offset: 0xc, size 0x4
 };
 
 void EHideObject_MakeEvent_Callback(const void *staticData);
+int EHideObject_MakeEvent_LuaBinding(struct lua_State *L);
+void EHideObject_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

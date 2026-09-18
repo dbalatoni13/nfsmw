@@ -1,18 +1,21 @@
 #ifndef DYNAMICS_COLLISION_H
 #define DYNAMICS_COLLISION_H
 
-#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 
 
 namespace Dynamics {
 namespace Collision {
+
+inline UVector3 operator*(const UVector3 &v1, const UMath::Matrix4 &m) {
+    UMath::Vector3 result;
+    UMath::Rotate(v1, m, result);
+    return UVector3(result);
+}
 
 class Geometry {
     // total size: 0xB0
@@ -24,6 +27,10 @@ class Geometry {
         MAXSHAPES = 3,
     };
 
+    static bool BoxVsBox(const Geometry *A, const Geometry *B, Geometry *result);
+    static bool SphereVsBox(const Geometry *A, const Geometry *B, Geometry *result);
+    static bool SphereVsSphere(const Geometry *A, const Geometry *B, Geometry *result);
+    static bool BoxVsSphere(const Geometry *A, const Geometry *B, Geometry *result);
     static bool FindIntersection(const Geometry *A, const Geometry *B, Geometry *result);
 
     Geometry();
@@ -100,8 +107,15 @@ struct Friction {
         mUs *= scale;
     }
 
+    State GetForce(const UVector3 &p, const float impulse, const UVector3 &n, UVector3 &Ff) const;
+
     float mUk; // offset 0x0, size 0x4
     float mUs; // offset 0x4, size 0x4
+};
+
+// total size: 0xC
+struct Joint {
+    UVector3 p;
 };
 
 // total size: 0x20
@@ -202,6 +216,30 @@ class Moment {
 
     void SetFixedCG(bool b) {
         mFixedCG = b;
+    }
+
+    void ResolveForce(const UVector3 &F, const UVector3 &R, const UMath::Matrix4 &I, UVector3 &dV, UVector3 &dW) const {
+        UMath::Scale(F, mMassInv, dV);
+        UMath::Cross(R, F, dW);
+        UMath::Rotate(dW, I, dW);
+    }
+
+    void GetMomentumArm(const UVector3 &bumpPoint, UVector3 &R) const {
+        R = bumpPoint - (mPosition + mCG * mOrientation);
+    }
+
+    void GetParallelTensor(const UMath::Vector3 &R, UMath::Matrix4 &I0) const {
+        Inertia::Tensor inertia(mInertiaP);
+        UVector3 Rr = R * mOrientationInv;
+        inertia += Inertia::ParallelAxis(mMass, Rr.x, Rr.y, Rr.z);
+        UMath::Scale(inertia, mInertialScale, inertia);
+        inertia.GetInverseWorldTensor(mOrientation, I0);
+    }
+
+    void GetPrincipalTensor(UMath::Matrix4 &Ic) const {
+        Inertia::Tensor inertia;
+        UMath::Scale(mInertiaP, mInertialScale, inertia);
+        inertia.GetInverseWorldTensor(mOrientation, Ic);
     }
 
   private:

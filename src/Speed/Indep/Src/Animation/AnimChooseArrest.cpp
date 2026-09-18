@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EPause.hpp"
 #include "Speed/Indep/Src/Generated/Events/EQuitToFE.hpp"
@@ -21,6 +22,7 @@
 
 float g_TriggerMomentNISTime = 0;
 bool Tweak_TriggerMomentAlways = false;
+
 bool Tweak_TriggerMomentPrints = false;
 float world_anim_advance_time = 8.0f / 100.0f;
 

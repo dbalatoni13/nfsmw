@@ -125,6 +125,8 @@ void AIActionHeliPursuit::OnCollision(const COLLISION_INFO &cinfo) {
     }
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeliPursuit("AIActionHeliPursuit", AIActionHeliPursuit::Construct);
+
 AIAction *AIActionHeliPursuit::Construct(AIActionParams *params) {
     return new AIActionHeliPursuit(params, 0.0f);
 }
@@ -301,7 +303,7 @@ void AIActionHeliPursuit::SkidHitPursuit() {
     UMath::Vector3 lookPosition;
     UMath::Add(mPlayerPosition, perpLinVel, lookPosition);
     mIAIHelicopter->SetLookAtPosition(lookPosition);
-    mIVehicleAI->SetDriveSpeed(6.25f);
+    mIVehicleAI->SetDriveSpeed(100.0f);
 
     UMath::Vector3 destVel = mPlayerRigidBody->GetLinearVelocity();
     mIAIHelicopter->SetDestinationVelocity(destVel);
@@ -362,13 +364,13 @@ void AIActionHeliPursuit::SearchForPerp() {
     mIVehicleAI->SetDriveSpeed(70.0f);
     UMath::Vector3 destVel = mIRigidBody->GetLinearVelocity();
     mIAIHelicopter->SetDestinationVelocity(destVel);
-    mIVehicleAI->SetDriveTarget(destVel);
+    mIVehicleAI->SetDriveTarget(mSearchDestPoint);
     mIAIHelicopter->SetLookAtPosition(mSearchDestPoint);
     mIVehicleAI->DoDriving(7); // TODO magic
 }
 
-bool bIgnoreHeliSheet;
-bool NeverIgnoreHeliSheet;
+bool bIgnoreHeliSheet = 0;
+bool NeverIgnoreHeliSheet = true;
 
 void AIActionHeliPursuit::Update(float dT) {
     mPursuitTime += dT;

@@ -83,14 +83,14 @@ AverageBase::AverageBase(int size, int slots)
       nCurrentSlot(0) {}
 
 Average::Average()
-    : AverageBase(4, 0), //
-      fAverage(0.0f),    //
-      pData(NULL),       //
+    : AverageBase(4, 0),  //
+      fAverage(0.0f), //
+      pData(NULL),        //
       fTotal(0.0f) {}
 
 Average::Average(int slots)
     : AverageBase(4, slots), //
-      fAverage(0.0f),        //
+      fAverage(0.0f),    //
       pData(NULL),           //
       fTotal(0.0f) {
     Init(slots);

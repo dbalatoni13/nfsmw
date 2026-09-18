@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
+#include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
 #include "Speed/Indep/Src/World/Skids.hpp"
@@ -9,6 +10,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
@@ -567,13 +569,14 @@ void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &
 }
 
 // UNSOLVED, the BitArray inlines are weird
+#pragma scheduling off
 void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &data) {
     if (this->mPartState != data.mPartState) {
-        // TODO magic
         for (unsigned int i = 0; i < 0x4c; i++) {
             bool hide = data.mPartState.Test(i);
+            bool current = this->mPartState.Test(i);
 
-            if (hide != this->mPartState.Test(i)) {
+            if (hide != current) {
                 if (hide) {
                     this->HidePart(static_cast<CAR_PART_ID>(i));
                 } else {
@@ -581,10 +584,11 @@ void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &dat
                 }
             }
         }
-    }
 
-    this->mPartState = data.mPartState;
+        this->mPartState = data.mPartState;
+    }
 }
+#pragma scheduling reset
 
 // TODO the multification by M_TWOPI inside Sinr is getting optimized out I think
 void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNoiseRecord &noise) {
@@ -607,7 +611,9 @@ void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNois
 
         float noise_pitch = 0.0f;
         if (do_roll) {
-            noise_pitch = amplitude * UMath::Sinr(this->mAnimTime * frequency) * 0.5f;
+            float pitch_frequency = frequency * static_cast<float>(M_TWOPI);
+            float pitch_wave = UMath::Sinr(this->mAnimTime * pitch_frequency) * 0.5f;
+            noise_pitch = amplitude * pitch_wave;
             if (!do_front) {
                 noise_pitch = UMath::Abs(noise_pitch);
             }
@@ -618,7 +624,9 @@ void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNois
 
         float noise_roll = 0.0f;
         if (do_roll) {
-            noise_roll = amplitude * UMath::Sinr((this->mAnimTime + 0.33f) * frequency);
+            float roll_time = this->mAnimTime + 0.33f;
+            float roll_frequency = frequency * static_cast<float>(M_TWOPI);
+            noise_roll = amplitude * UMath::Sinr(roll_time * roll_frequency);
             if (!do_right) {
                 noise_roll = UMath::Abs(noise_roll);
             }
@@ -869,20 +877,28 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
 
     this->mWheelHop = UMath::Vector3::kZero;
     bool is_view_anchor = this->IsViewAnchor();
-    bool candofx = this->TestVisibility(renderModifier * Tweak_MaxDistanceForVehicleEffects);
+    bool candofx = this->TestVisibility(Tweak_MaxDistanceForVehicleEffects);
     CarRenderInfo *car_render_info = this->GetRenderInfo();
 
     for (unsigned int i = 0; i < 4; i++) {
         unsigned int axle = i >> 1;
-        bool onground = ((data.mGroundState >> i) & 1U) != 0;
-        bool is_flat = ((data.mBlowOuts >> i) & 1U) != 0;
+        bool onground = false;
+        bool is_flat = false;
+
+        if ((data.mGroundState >> i) & 1U) {
+            onground = true;
+        }
+
+        if ((data.mBlowOuts >> i) & 1U) {
+            is_flat = true;
+        }
         TireState *state = this->mTireState[i];
 
         eIdentity(&this->mTireMatrices[i]);
         eIdentity(&this->mBrakeMatrices[i]);
 
-        float dW = UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle, this->mMaxWheelRenderDeltaAngle);
-        float compression = data.mCompressions[i] + (this->mTireRadius[i] - this->mPhysicsRadius[i]);
+        const float &dW =
+            UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle, this->mMaxWheelRenderDeltaAngle);
 
         state->mRoll += dW;
 
@@ -899,15 +915,19 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
             eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], bRadToAng(this->mSteering[i]));
         }
 
+        float compression = data.mCompressions[i];
+        compression += this->mTireRadius[i] - this->mPhysicsRadius[i];
+
         if (flatten_tires && is_flat) {
             compression += Tweak_TireBlowOffset;
 
-            float x_angle = UMath::Atan2r(-Tweak_TireBlowOffset, UMath::Abs(this->mTirePositions[i].y)) * -static_cast<float>(M_PI);
-            float y_angle = UMath::Atan2r(-Tweak_TireBlowOffset, UMath::Abs(this->mTirePositions[i].x)) * static_cast<float>(M_PI);
+            float x_angle = UMath::Atan2r(-Tweak_TireBlowOffset, UMath::Abs(this->mTirePositions[i].y)) * -0.5f;
 
             if (this->mTirePositions[i].y < 0.0f) {
                 x_angle = -x_angle;
             }
+
+            float y_angle = UMath::Atan2r(-Tweak_TireBlowOffset, UMath::Abs(this->mTirePositions[i].x)) * 0.5f;
 
             if (this->mTirePositions[i].x < 0.0f) {
                 y_angle = -y_angle;
@@ -918,8 +938,8 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
             this->mFlatTireAngle.z += Tweak_TireBlowOffset * 0.25f;
         }
 
-        if (i > 1 && hop_wheels && onground) {
-            float hop_speed_scale;
+        if (i > 1 && onground && hop_wheels) {
+            float hop_speed_scale = 0.0f;
 
             if (0.0f < data.mTireSlip[i]) {
                 hop_speed_scale = UMath::Ramp(data.mTireSlip[i], Tweak_WheelHopMinBurnout, Tweak_WheelHopMaxBurnout);
@@ -928,7 +948,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
             }
 
             this->mWheelHop.y = wheel_hop_pitch * hop_speed_scale;
-            this->mWheelHop.z = UMath::Max(this->mWheelHop.z, this->mTirePositions[0].x * UMath::Sinr(wheel_hop_pitch * hop_speed_scale));
+            this->mWheelHop.z = UMath::Max(this->mTirePositions[0].x * UMath::Sinr(wheel_hop_pitch * hop_speed_scale), this->mWheelHop.z);
             this->mWheelHop.x = wheel_hop_roll * hop_speed_scale;
             compression += bSin(tire_hop * hop_speed_scale) * (this->mTirePositions[0].x - this->mTirePositions[i].x);
         }
@@ -948,8 +968,8 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
         state->UpdateWorld(this->GetWCollider(), this->GetFlag(CF_ISRAINING), is_flat);
 
-        if (onground) {
-            if (candofx) {
+        if (onground && candofx) {
+            {
                 float skid = UMath::Max(UMath::Abs(data.mTireSkid[i] * 0.05f) - 0.1f, 0.0f);
                 float slip = UMath::Max(UMath::Abs(data.mTireSlip[i] * 0.2f) - 0.1f, 0.0f);
                 float skidmark_intensity = UMath::Sqrt(skid * skid + slip * slip);
@@ -967,12 +987,10 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
                     state->KillSkids();
                 }
 
-                float slipfx_ratio = data.mTireSlip[i] * this->GetAttributes().SlipFX(axle);
-                float skidfx_ratio = data.mTireSkid[i] * this->GetAttributes().SkidFX(axle);
+                float slipfx = this->GetAttributes().SlipFX(axle);
+                float skidfx = this->GetAttributes().SkidFX(axle);
 
-                state->DoFX(slipfx_ratio, skidfx_ratio, carspeed, this->GetVelocity(), &this->mRenderMatrix, dT);
-            } else {
-                state->KillSkids();
+                state->DoFX(data.mTireSlip[i] * slipfx, data.mTireSkid[i] * skidfx, carspeed, this->GetVelocity(), &this->mRenderMatrix, dT);
             }
         } else {
             state->KillSkids();
@@ -1221,7 +1239,7 @@ void CarRenderConn::OnFetch(float dT) {
 }
 
 void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     VehicleRenderConn::OnLoaded(carrender_info);
 
     if (carrender_info == nullptr) {

@@ -13,17 +13,27 @@
 #include "eEnvMapE.hpp"
 #include "eLight.hpp"
 
+SlotPool *ePolySlotPool = 0;
+bool WaitUntilRenderingDoneDisabled = false;
+bool WaitForFrameBufferSwapDisabled = false;
+
 // EAXSound2
 float renderModifier = 1.0f;
 #ifdef EA_BUILD_A124
 uint32 numCopsActive;
 #else
-uint32 numCopsActiveCherry;
-uint32 numCopsActiveTotal;
+extern TextureInfo *SunTextures[5];
+// y los tres van al REVES de como estaban escritos (View, Total, Cherry)
 uint32 numCopsActiveView;
+uint32 numCopsActiveTotal;
+uint32 numCopsActiveCherry;
 #endif
 uint8 *FrameMemoryBuffer[2];
 uint32 FrameMemoryBufferSize = 0;
+uint8 *CurrentBufferStart = 0;
+uint8 *CurrentBufferPos = 0;
+uint8 *CurrentBufferEnd = 0;
+
 int FrameMemoryBufferAmountUsed[2];
 //
 uint32 FrameMallocAllocNum = 0;
@@ -120,10 +130,10 @@ void eFixUpTables() {
 }
 
 void eAllocateFrameMallocBuffers(uint32 total_size) {
-    uint32 buffer_size = (total_size >> 1) & 0x7FFFFFF0; // r29
+    uint32 buffer_size = (total_size >> 1) & 0x7FFFFFF0;
 
-    FrameMemoryBuffer[0] = new (__FILE__, __LINE__) uint8[buffer_size];
-    FrameMemoryBuffer[1] = new (__FILE__, __LINE__) uint8[buffer_size];
+    FrameMemoryBuffer[0] = new ("Ecstacy::eFrameMallocBuffer0", 0) uint8[buffer_size];
+    FrameMemoryBuffer[1] = new ("Ecstacy::eFrameMallocBuffer1", 0) uint8[buffer_size];
 
     FrameMemoryBufferSize = buffer_size;
     CurrentBufferPos = FrameMemoryBuffer[0];
@@ -135,7 +145,7 @@ void eAllocateFrameMallocBuffers(uint32 total_size) {
 void eFreeFrameMallocBuffers() {}
 
 void eSwapFrameMallocBuffers() {
-    uint8 *buffer0;  // r30
+    uint8 *buffer0;
     uint8 *buffer1;  // r3
     int amount_used; // r4
 
@@ -230,20 +240,6 @@ void eRemoveOtherEcstacyTexture(uint32 name_hash /* r3 */) {}
 bool eIsWidescreen() {
     return false;
 } // Unlocks fullscreen on GameCube for free?
-
-enum polyCountEnum {
-    NUM_POLY_COUNT_TYPES = 10,
-    POLY_COUNT_RVM_WORLDMODEL = 9,
-    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
-    POLY_COUNT_MAIN_WORLDMODEL = 7,
-    POLY_COUNT_RVM_SCENERY = 6,
-    POLY_COUNT_REFLECTION_SCENERY = 5,
-    POLY_COUNT_MAIN_SCENERY = 4,
-    POLY_COUNT_ENVMAP_SCENERY = 3,
-    POLY_COUNT_RVM_CAR = 2,
-    POLY_COUNT_REFLECTION_CAR = 1,
-    POLY_COUNT_MAIN_CAR = 0,
-};
 
 // STRIPPED
 void AddPolyCount(polyCountEnum type /* r3 */, struct eModel *model /* r4 */) {}

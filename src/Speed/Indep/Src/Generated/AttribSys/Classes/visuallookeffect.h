@@ -24,7 +24,7 @@ struct visuallookeffect : Instance {
     typedef EA::Reflection::Float TypeOf_radialblur_uvoffset;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("visuallookeffect");
+    USE_ATTRIB_ALLOC("Attrib::Gen::visuallookeffect");
     visuallookeffect(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -52,10 +52,10 @@ struct visuallookeffect : Instance {
         return 0x6ab2d241;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x6ab2d241, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

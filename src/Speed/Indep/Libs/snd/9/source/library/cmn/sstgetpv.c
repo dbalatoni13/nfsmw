@@ -13,5 +13,5 @@ int SNDSTRM_getprogvol(int sndstreamhandle) {
         return vol;
     }
 
-    return SNDI_ftoifast(pssc->sourceChannelState[0].vol);
+    return SNDI_ftoifast(pssc->sourceChannelState[0].vol * 127.0f);
 }

@@ -59,7 +59,9 @@ struct TrackStreamingSection {
     eTrackStreamingFileType FileType; // offset 0x10, size 0x4
     int32 FileOffset;                 // offset 0x14, size 0x4
     int32 Size;                       // offset 0x18, size 0x4
+#ifndef EA_BUILD_A124
     int32 CompressedSize;             // offset 0x1C, size 0x4
+#endif
     int32 PermSize;                   // offset 0x20, size 0x4
     int32 SectionPriority;            // offset 0x24, size 0x4
     bVector2 Centre;                  // offset 0x28, size 0x8
@@ -161,6 +163,10 @@ class TrackStreamer {
     void CloseMemoryPool();
 
     int GetMemoryPoolSize();
+
+    bool HasMemoryPool() {
+        return pMemoryPoolMem != nullptr;
+    }
 
     int CountUserAllocations(const char **pfragmented_user_allocation);
 
@@ -300,9 +306,11 @@ class TrackStreamer {
 
     void ForceSectionToUnload(int section_number);
 
+#ifndef EA_BUILD_A124
     bool IsFarLoadingInProgress() {
         return CurrentZoneFarLoad && IsLoadingInProgress();
     }
+#endif
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
@@ -312,19 +320,40 @@ class TrackStreamer {
         ZoneSwitchingDisabled = false;
     }
 
+    // El DWARF del original la declara aqui, entre IsLoadingInProgressNonRepeatable
+    // y GetCurrentZoneName: inline float TrackStreamer::GetLoadingBacklog().
+    float GetLoadingBacklog() {
+        return LoadingBacklog;
+    }
+
+    bool IsLoadingInProgressNonRepeatable() {
+        return LoadingPhase != 0;
+    }
+
     int IsSectionVisible(int section_number) {
         return CurrentVisibleSectionTable.IsSet(section_number);
     }
 
+#ifndef EA_BUILD_A124
     bool IsPermFileLoading() {
         return PermFileLoading;
     }
+#endif
+
+    char *GetCurrentZoneName() {
+        return CurrentZoneName;
+    }
+
+    bool HasUserMemoryAllocations() {
+        return UserMemoryAllocationSize > 0;
+    }
+
+    int GetCombinedSectionNumber(int section_number);
 
   private:
     void ClearCurrentZones();
     bool DetermineCurrentZones(int16 *current_zones);
     void HandleZoneSwitching();
-    int GetCombinedSectionNumber(int section_number);
     static void DiscBundleLoadedCallback(intptr_t param, int error_status);
 
     static void ReadyToMakeSpaceInPoolBridge(intptr_t param) {
@@ -351,17 +380,21 @@ class TrackStreamer {
     int NumSectionsMoved;                                 // offset 0x2C, size 0x4
     char StreamFilenames[2][64];                          // offset 0x30, size 0x80
     bool SplitScreen;                                     // offset 0xB0, size 0x1
+#ifndef EA_BUILD_A124
     bool PermFileLoading;                                 // offset 0xB4, size 0x1
     const char *PermFilename;                             // offset 0xB8, size 0x4
     bChunk *PermFileChunks;                               // offset 0xBC, size 0x4
     int PermFileSize;                                     // offset 0xC0, size 0x4
+#endif
     StreamingPositionEntry StreamingPositionEntries[2];   // offset 0xC4, size 0xD0
     eLoadingPhase LoadingPhase;                           // offset 0x194, size 0x4
     float LoadingBacklog;                                 // offset 0x198, size 0x4
     bool CurrentZoneAllocatedButIncomplete;               // offset 0x19C, size 0x1
     bool CurrentZoneOutOfMemory;                          // offset 0x1A0, size 0x1
     bool CurrentZoneNonReplayLoad;                        // offset 0x1A4, size 0x1
+#ifndef EA_BUILD_A124
     bool CurrentZoneFarLoad;                              // offset 0x1A8, size 0x1
+#endif
     char CurrentZoneName[8];                              // offset 0x1AC, size 0x8
     float StartLoadingTime;                               // offset 0x1B4, size 0x4
     int MemorySafetyMargin;                               // offset 0x1B8, size 0x4
@@ -383,7 +416,7 @@ class TrackStreamer {
     int UserMemoryAllocationSize;                         // offset 0x85C, size 0x4
     TSMemoryPool *pMemoryPool;                            // offset 0x860, size 0x4
     bBitTable CurrentVisibleSectionTable;                 // offset 0x864, size 0x8
-    int16 KeepSectionTable[4];                            // offset 0x86C, size 0x8
+    uint16 KeepSectionTable[4];                           // offset 0x86C, size 0x8
     void (*pCallback)(intptr_t);                          // offset 0x874, size 0x4
     intptr_t CallbackParam;                               // offset 0x878, size 0x4
     void (*MakeSpaceInPoolCallback)(intptr_t);            // offset 0x87C, size 0x4

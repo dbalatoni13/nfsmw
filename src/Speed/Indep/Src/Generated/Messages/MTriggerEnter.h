@@ -21,6 +21,10 @@ class MTriggerEnter : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MTriggerEnter &message);
+
     MTriggerEnter(GCollectionKey _Sender, HSIMABLE _Element) : Hermes::Message(_GetKind(), _GetSize(), 0), fSender(_Sender), fElement(_Element) {}
 
     ~MTriggerEnter() {}
@@ -45,5 +49,41 @@ class MTriggerEnter : public Hermes::Message {
     GCollectionKey fSender; // offset 0x10, size 0x4
     HSIMABLE fElement;      // offset 0x14, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MTriggerEnter::HandleMessage_LuaBinding(const MTriggerEnter &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MTriggerEnter::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MTriggerEnter *message = static_cast<const MTriggerEnter *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Sender");
+    GRuntimeInstance *pSender = message->fSender;
+
+    if (pSender != NULL) {
+        *static_cast<GRuntimeInstance **>(lua_newuserdata(luaState, sizeof(GRuntimeInstance *))) = pSender;
+        LuaBindery::AttachMetatable(luaState, "GRuntimeInstance");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Element");
+    if (ISimable::FindInstance(message->fElement) != NULL) {
+        *static_cast<HSIMABLE *>(lua_newuserdata(luaState, sizeof(HSIMABLE))) = message->fElement;
+        LuaBindery::AttachMetatable(luaState, "ISimable");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+}
 
 #endif

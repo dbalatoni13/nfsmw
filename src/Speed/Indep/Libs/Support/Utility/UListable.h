@@ -19,6 +19,7 @@
         UTL::Collections::ListableSet<TYPE, TYPE::List::Limit, ENUMERATORTYPE, NUMBUCKETS>::_mLists =                                                \
             UTL::Collections::ListableSet<TYPE, TYPE::List::Limit, ENUMERATORTYPE, NUMBUCKETS>::_ListSet();
 
+
 #define IMPLEMENT_COUNTABLE(TYPE) template <> int UTL::Collections::Countable<TYPE>::_mCount = 0;
 #define IMPLEMENT_SINGLETON(TYPE) template <> TYPE *UTL::Collections::Singleton<TYPE>::mInstance = NULL;
 
@@ -39,7 +40,6 @@ template <typename T, int U> class Listable {
 
         const static int Limit = U;
 
-        // List(const List &);
         List() {
             this->reserve(U);
         }
@@ -80,7 +80,7 @@ template <typename T, int U> class Listable {
         return _mTable;
     }
 
-    static void Sort(ComparisonFunc pred) {
+    template <typename Compare> static void Sort(Compare pred) {
         std::sort(_mTable.begin(), _mTable.end(), pred);
     }
 
@@ -98,7 +98,6 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
     class List : public _Storage<pointer, ListSize> {
       public:
-        // List(const List &);
         List() {}
         ~List() override {}
 
@@ -108,9 +107,12 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     class _ListSet {
       public:
-        _ListSet();
-        // _ListSet(_ListSet &);
-        ~_ListSet();
+        _ListSet() {
+            for (unsigned int i = 0; i < EnumMax; i++) {
+                _buckets[i].reserve(ListSize);
+            }
+        }
+        ~_ListSet() {}
 
         // _ListSet &operator=(const _ListSet &);
 
@@ -142,6 +144,15 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         return std::for_each(l.begin(), l.end(), f);
     }
 
+    template <typename Functor> static iterator FindIf(Enum idx, Functor f) {
+        List &l = _mLists._buckets[idx];
+        typename List::iterator iter = std::find_if(l.begin(), l.end(), f);
+        if (iter != l.end()) {
+            return *iter;
+        }
+        return nullptr;
+    }
+
     static const List &GetList(Enum idx) {
         return _mLists._buckets[idx];
     }
@@ -152,11 +163,30 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         }
     }
 
+    void UnList(Enum from) {
+        _mLists._remove(static_cast<iterator>(this), from);
+    }
+
     ~ListableSet() {
         UnList();
     }
 
-    iterator Next(Enum idx) {}
+    iterator Next(Enum idx) const {
+        const List &list = GetList(idx);
+        typename List::const_iterator iter = std::find(list.begin(), list.end(), static_cast<const_iterator>(this));
+
+        if (iter == list.end()) {
+            return nullptr;
+        }
+
+        ++iter;
+
+        if (iter == list.end()) {
+            return nullptr;
+        }
+
+        return *iter;
+    }
 
     void AddToList(Enum to) {
         _mLists._add(static_cast<iterator>(this), to);
@@ -183,6 +213,29 @@ template <typename T> class Countable {
         return _mCount;
     }
 };
+
+// NOTE: defined out of class on purpose. An in-class body would be implicitly
+// inline and GCC 2.9 would expand it into every caller instead of emitting the
+// standalone ListableSet<...>::Count/First/Last symbols the original ships.
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax> int ListableSet<T, ListSize, Enum, EnumMax>::Count(Enum idx) {
+    return GetList(idx).size();
+}
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax> T *ListableSet<T, ListSize, Enum, EnumMax>::First(Enum idx) {
+    const List &list = GetList(idx);
+    if (list.size() != 0) {
+        return *list.begin();
+    }
+    return nullptr;
+}
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax> T *ListableSet<T, ListSize, Enum, EnumMax>::Last(Enum idx) {
+    const List &list = GetList(idx);
+    if (list.size() != 0) {
+        return list[list.size() - 1];
+    }
+    return nullptr;
+}
 
 }; // namespace Collections
 }; // namespace UTL

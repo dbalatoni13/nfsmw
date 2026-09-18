@@ -84,6 +84,105 @@
 
 namespace Snd {
 
+// El enum de retorno de toda la API de sonido. Lo teniamos DUPLICADO dentro
+// de ssys.cpp; su sitio es la cabecera, que es donde lo declaran las firmas.
+enum Result {
+    RESULT_ERR_INVDATAFORMAT = -11,
+    RESULT_ERR_INVPARAM = -10,
+    RESULT_ERR_DRIVER = -9,
+    RESULT_ERR_UNSUPPORTEDOPT = -8,
+    RESULT_ERR_ALREADYINUSE = -7,
+    RESULT_ERR_GENERAL = -6,
+    RESULT_ERR_INVOPT = -5,
+    RESULT_ERR_NOTINIT = -4,
+    RESULT_ERR_INVPLAYERTYPE = -3,
+    RESULT_ERR_MEMERROR = -2,
+    RESULT_ERR_FILEERROR = -1,
+    RESULT_OK = 0,
+};
+
+struct System {
+    static Result VectorToReal6();
+
+    static Result VectorToCsisMutex();
+
+    static Result Init(const int headerversion); // Decl: 724
+
+    static Result ReInit();
+
+    static Result Restore(); // Decl: 751
+
+    static bool IsInited(); // Decl: 770
+
+    static Result SetMaxBanks(int banks); // Decl: 790
+
+    static Result GetMaxBanks(int *pbanks); // Decl: 805
+
+    static Result SetMaxStreams(int maxstreams); // Decl: 827
+
+    static Result SetStealEqualPriorityVoices(bool stealequalpriority); // Decl: 853
+
+    static Result SetRandomSeed(unsigned int seed); // Decl: 885
+
+    static Result SetUpdateRate(float rate);
+
+    static Result GetUpdateRate(float *prate);
+
+    static Result CapOutputMode(OutputMode mode, bool *psupported);
+
+    static Result SetOutputMode(OutputMode mode);
+
+    static Result GetOutputMode(OutputMode *pmode);
+
+    static Result GetOutputModeName(OutputMode mode, const char **pmodename);
+
+    static Result CapOutputSampleRate(Device device, int requestedsamplerate, int *pclosestsamplerate);
+
+    static Result SetOutputSampleRate(Device device, int samplerate);
+
+    static Result GetOutputSampleRate(Device device, int *psamplerate);
+
+    static Result CapVoices(Device device, int *pvoices); // Decl: 908
+
+    static Result SetVoices(Device device, int voices); // Decl: 951
+
+    static Result GetVoices(Device device, int *pvoices); // Decl: 970
+
+    static Result SetCompatibilityLevel(CompatibilityMode mode);
+
+    static Result SetResampleQuality(Device device, float quality); // Decl: 1002
+
+    static Result GetResampleQuality(Device device, float *pQuality); // Decl: 1020
+
+    static Result SetSse(bool useSse); // Decl: 1051
+
+    static Result SetDtsQuality(float quality);
+
+    static Result SetRouteMainFxToIop(bool enable);
+
+    static Result SetRouteHardwareFxToIop(bool enable);
+
+    static Result SetSndLoadsIopModules(bool loadIopModules);
+
+    static Result SetIopModulePath(const char *iopModulePath);
+
+    static Result SetSndInitsAram(bool sndInitsAram);
+
+    static Result SetAbortHandler(void (*abortMessage)(const char *));
+};
+
+struct Memory {
+    static Result SetHeap(Device device, void *pmem, int size);
+
+    static Result GetHeap(Device device, void **ppmem, int *psize);
+
+    static Result SetHeapThreshold(Device device, float threshold);
+
+    static Result GetHeapThreshold(Device device, float *pthreshold);
+
+    static Result SetHeapFastRam(void *pmem, int size);
+};
+
 // total size: 0x1
 class GlobalFxProcessor {
 public:
@@ -113,7 +212,6 @@ public:
 
     Csis::Result SetPreset(FxPreset fxPreset);
 };
-
 
 }
 
@@ -317,6 +415,29 @@ int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
 int SNDPKTPLAY_destroy(int packetinstancehandle);
 
+int SNDSTRM_overhead(int maxrequests, int maxchunks);
+int SNDSTRM_create(SNDPLAYOPTS *pspo, int maxrequests, int maxchunks, void *pmem, int memsize);
+int SNDSTRM_overheadtap(int maxrequests, int maxchunks);
+int SNDSTRM_createtap(int streamhandle, SNDPLAYOPTS *pspo, int maxrequests, int maxchunks, void *pmem, int memsize);
+int SNDSTRM_queuerequestid(int sndstreamhandle, int holdtime, int streamrequestid);
+int SNDSTRM_destroy(int sndstreamhandle);
+int SNDSTRM_purge(int sndstreamhandle);
+int SNDSTRM_queuefile(int sndstreamhandle, int holdtime, const char *filename, int offset);
+int SNDSTRM_queuemem(int sndstreamhandle, int holdtime, void *paddr, int offset);
+int SNDSTRM_modifyhold(int sndrequesthandle, int holdtime);
+int SNDSTRM_autovol(int sndstreamhandle, int time, int targetvol);
+// sstvol.c la define con Snd::Channel, que vive en el sndenum.h privado de la
+// libreria (ya incluido arriba). Con int aqui, el .c y la cabecera declaran
+// funciones distintas y la unidad no enlaza.
+int SNDSTRM_setvol(int sndstreamhandle, Snd::Channel sourcechannel, float volume);
+int SNDSTRM_setazimuth(int sndstreamhandle, int sourcechannel, float azimuth);
+int SNDSTRM_pitchmult(int sndstreamhandle, int pitchmult);
+int SNDSTRM_timemult(int sndstreamhandle, int timemult);
+int SNDSTRM_drylevel(int sndstreamhandle, int level);
+int SNDSTRM_fxlevel(int sndstreamhandle, int bus, int level);
+int SNDSTRM_setgreedylevel(int sndstreamhandle, int greedylevel);
+int SNDSTRM_status(int sndstreamhandle, SNDSTREAMSTATUS *psss);
+int SNDSTRM_requeststatus(int sndrequesthandle, SNDREQUESTSTATUS *psrs);
 int SNDSTRM_getprogvol(int sndstreamhandle);
 int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
 

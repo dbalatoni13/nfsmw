@@ -28,7 +28,7 @@ class ENISPlayEffect : public Event {
 
     ~ENISPlayEffect() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     const char *fEffect; // offset: 0x8, size 0x4
@@ -41,5 +41,7 @@ class ENISPlayEffect : public Event {
 };
 
 void ENISPlayEffect_MakeEvent_Callback(const void *staticData);
+int ENISPlayEffect_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISPlayEffect_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

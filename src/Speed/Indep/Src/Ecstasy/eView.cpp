@@ -64,20 +64,19 @@ int eView::GetPixelSize(const bVector3 *position, float radius) {
     return static_cast<int>(pixel_size);
 }
 
-// UNSOLVED
 int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
     Camera *camera = this->GetCamera();
     bVector3 *cam_position = camera->GetPosition();
     bVector3 *cam_direction = camera->GetDirection();
 
+    float rad_x = (bbox_min->x + bbox_max->x) * 0.5f;
+    float rad_y = (bbox_min->y + bbox_max->y) * 0.5f;
+    float rad_z = (bbox_min->z + bbox_max->z) * 0.5f;
     float pos_x = bbox_min->x - bbox_max->x;
     float pos_y = bbox_min->y - bbox_max->y;
     float pos_z = bbox_min->z - bbox_max->z;
 
     float radius = bSqrt(pos_x * pos_x + pos_y * pos_y + pos_z * pos_z) * 0.5f;
-    float rad_x = (bbox_min->x + bbox_max->x) * 0.5f;
-    float rad_y = (bbox_min->y + bbox_max->y) * 0.5f;
-    float rad_z = (bbox_min->z + bbox_max->z) * 0.5f;
 
     float dir_x = rad_x - cam_position->x;
     float dir_y = rad_y - cam_position->y;
@@ -89,11 +88,10 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
     } else {
         float distance_ahead = bSqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
         float distance_away = distance_ahead - radius;
-        rad_y = this->H;
+        pixel_size = this->H;
         if (distance_away > radius) {
-            rad_y = (radius * this->H) / distance_away;
+            pixel_size = (radius * this->H) / distance_away;
         }
-        pixel_size = rad_y;
     }
     return static_cast<int>(pixel_size);
 }

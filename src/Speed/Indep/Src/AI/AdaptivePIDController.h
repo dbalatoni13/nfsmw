@@ -46,12 +46,14 @@ class AdaptivePIDControllerBase {
 
     AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window);
     virtual ~AdaptivePIDControllerBase();
-    virtual float GetTerm(ePIDTerm term);
+    virtual float GetTerm(ePIDTerm term) = 0;
 
     void UpdateBase(float model_error, float timestep, float desired_process_value);
     float GetOutput();
 
-    void ForceCoefficient(ePIDTerm term, float new_coefficient) {}
+    void ForceCoefficient(ePIDTerm term, float new_coefficient) {
+        Coefficient[term] = new_coefficient;
+    }
 
     float GetCoefficient(ePIDTerm term) {
         return Coefficient[term];
@@ -147,6 +149,10 @@ class AdaptivePIDControllerComplicated : public AdaptivePIDControllerBase {
     ~AdaptivePIDControllerComplicated() override {}
 
     void Update(float model_behaviour_value, float actual_behaviour_value, float timestep, float desired_process_value);
+
+    void SetTerm(ePIDTerm term, float value) {
+        CurrentTermValue[term] = value;
+    }
 
     // Overrides: AdaptivePIDControllerBase
     float GetTerm(ePIDTerm term) override {

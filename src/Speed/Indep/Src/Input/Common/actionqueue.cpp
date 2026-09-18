@@ -16,7 +16,7 @@
 static const int PrintActionQueue = 0;
 
 bool ActionQueue::sInJoylogFrame = false;
-Timer ActionQueue::mLastAnyActionTime;
+Timer ActionQueue::mLastAnyActionTime(0);
 
 IMPLEMENT_LISTABLE(ActionQueue)
 
@@ -25,8 +25,8 @@ ActionQueue::ActionQueue(bool required) {
     this->mPort = -1;
     this->mMappings = nullptr;
     this->mConfig = 0;
-    this->mActionTime = Timer();
-    this->mActivationTime = Timer();
+    this->mActionTime = 0;
+    this->mActivationTime = 0;
     this->mState = AQS_ENABLED;
     this->mUniqueID = this->AssignUniqueID();
     this->mQueueName = "Unnamed";
@@ -40,8 +40,8 @@ ActionQueue::ActionQueue(int port, unsigned int config, const char *queue_name, 
     this->mPort = -1;
     this->mMappings = nullptr;
     this->mConfig = 0;
-    this->mActionTime = Timer();
-    this->mActivationTime = Timer();
+    this->mActionTime = 0;
+    this->mActivationTime = 0;
     this->mState = AQS_ENABLED;
     this->mUniqueID = this->AssignUniqueID();
     this->mConnected = false;
@@ -151,16 +151,44 @@ void ActionQueue::Enable(bool b) {
     this->OnActivationChange();
 }
 
-// unfinished
 void ActionQueue::FetchCurrentValues(InputDevice *device) {
+
     UTL::Std::list<InputMapEntry, _type_list> &e = this->mMappings->GetEntries();
 
     for (UTL::Std::list<InputMapEntry, _type_list>::iterator iter = e.begin(); iter != e.end(); iter++) {
-        if (iter->DeviceScalarIndex != 0) {
-            InputMapEntry &entry = *iter;
-            DeviceScalar *button = device->GetDeviceScalar(0);
 
-            // UMath::Ramp(button->GetValue(), button->GetValue(), button->GetValue());
+        InputMapEntry &entry = *iter;
+        DeviceScalar *button = device->GetDeviceScalar(entry.DeviceScalarIndex);
+
+        if (button == nullptr) {
+            entry.PreviousValue = -1.0f;
+            entry.CurrentValue = -1.0f;
+            continue;
+        }
+
+        switch (entry.UpdateType) {
+
+        case kUpdate:
+            entry.CurrentValue = UMath::Ramp(button->GetValue(), entry.LowerDZ, 1.0f - entry.UpperDZ);
+            break;
+
+        case kPress:
+        case kRelease:
+            if (button->GetValue() >= 0.5f) {
+                entry.CurrentValue = 1.0f;
+            } else {
+                entry.CurrentValue = 0.0f;
+            }
+            break;
+
+        case kAnalogPress:
+        case kAnalogRelease:
+            if (button->GetValue() >= entry.LowerDZ) {
+                entry.CurrentValue = 1.0f;
+            } else {
+                entry.CurrentValue = 0.0f;
+            }
+            break;
         }
     }
 }
@@ -188,21 +216,103 @@ int ActionQueue::AssignUniqueID() {
     return id;
 }
 
-// unfinished
 void ActionQueue::IO_UpdateFromDevice() {
-    if (this->mMappings == nullptr || this->mState == AQS_DISABLED || this->mPort < 0) return;
+
+    if (this->mMappings == nullptr) {
+        return;
+    }
+
+    if (this->mState == AQS_DISABLED) {
+        return;
+    }
+
+    if (this->mPort < 0) {
+        return;
+    }
 
     InputDevice *device = IOModule::GetIOModule().GetDevice(this->mPort);
-    ActionData ad = ActionData(0, 0.0f, 0);
+
+    if (device == nullptr) {
+        return;
+    }
+
+    ActionData ad(0, 0.0f, 0);
 
     this->FetchCurrentValues(device);
 
     UTL::Std::list<InputMapEntry, _type_list> &e = this->mMappings->GetEntries();
-    for (UTL::Std::list<InputMapEntry, _type_list>::iterator iaction = e.begin(); iaction != e.end(); iaction++) {
-        InputMapEntry &entry = *iaction;
-        if (entry.HasChanged()) {
-            iaction++;
-            continue;
+    UTL::Std::list<InputMapEntry, _type_list>::iterator iaction = e.begin();
+
+    for (UTL::Std::list<InputMapEntry, _type_list>::iterator iter = e.begin(); iter != e.end(); iter++) {
+
+        if ((*iter).Action != (*iaction).Action) {
+            iaction = iter;
+        }
+
+        InputMapEntry &entry = *iter;
+
+        if (entry.CurrentValue >= 0.0f && entry.HasChanged()) {
+
+            bool ignore_device = false;
+
+            if (entry.UpdateType == kUpdate) {
+
+                for (UTL::Std::list<InputMapEntry, _type_list>::iterator dupe = iaction; dupe != e.end(); dupe++) {
+
+                    if (dupe == iter) {
+                        continue;
+                    }
+
+                    const InputMapEntry &entry2 = *dupe;
+
+                    if (entry2.Action != entry.Action) {
+                        break;
+                    }
+
+                    if (entry2.UpdateType == kUpdate && entry2.CurrentValue > entry.CurrentValue) {
+                        ignore_device = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!ignore_device) {
+
+                ad.SetID(0);
+
+                switch (entry.UpdateType) {
+
+                case kPress:
+                case kAnalogPress:
+                    if (entry.CurrentValue >= 0.5f && entry.PreviousValue < 0.5f && entry.PreviousValue >= 0.0f) {
+                        ad.SetID(entry.Action);
+                        ad.SetData(entry.CurrentValue);
+                        ad.SetSlot(device->GetDeviceIndex());
+                    }
+                    break;
+
+                case kRelease:
+                case kAnalogRelease:
+                    if (entry.CurrentValue < 0.5f && entry.PreviousValue >= 0.5f) {
+                        ad.SetID(entry.Action);
+                        ad.SetData(entry.CurrentValue);
+                        ad.SetSlot(device->GetDeviceIndex());
+                    }
+                    break;
+
+                case kUpdate:
+                    ad.SetID(entry.Action);
+                    ad.SetData(entry.CurrentValue);
+                    ad.SetSlot(device->GetDeviceIndex());
+                    break;
+                }
+
+                if (ad.ID() != 0) {
+                    this->ReceiveAction(ad);
+                }
+            }
+
+            entry.PreviousValue = entry.CurrentValue;
         }
     }
 }

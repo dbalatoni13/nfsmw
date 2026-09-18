@@ -136,8 +136,14 @@ class World {
 
 extern int g_tweakIsDragRace;  // TODO move?
 extern int g_tweakIsDriftRace; // TODO move?
+extern int g_tweakIsBurnout;
+extern int g_tweakIsShortTrackRace;
+extern int g_tweakBurnoutPhysics;
+extern int g_tweakDriftPhysics;
 
 void World_Service();
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
+
+void World_RestoreProps();
 
 #endif

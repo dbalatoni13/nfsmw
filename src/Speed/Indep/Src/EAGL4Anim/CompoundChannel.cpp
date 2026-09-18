@@ -200,4 +200,27 @@ void FnCompoundChannel::UseFPS(bool u) {
     GetAttribute(AttributeId(AttributeId::ID_FPS), mFPS);
 }
 
+inline const AttributeBlock *FnCompoundChannel::GetAttributes() const {
+    CompoundChannel *cchannel = reinterpret_cast<CompoundChannel *>(mpAnim);
+
+    return cchannel->GetAttributeBlock();
+}
+
+inline void FnCompoundChannel::Eval(float previousTime, float currentTime, float *dofs) {
+    const CompoundChannel *cchannel = GetCompoundChannel();
+
+    if (!mChannels) {
+        InitSubChannels();
+    }
+
+    if (mUseFPS) {
+        previousTime *= mFPS;
+        currentTime *= mFPS;
+    }
+
+    for (int i = cchannel->GetNumChannels() - 1; i >= 0; i--) {
+        mChannels[i]->Eval(previousTime, currentTime, dofs);
+    }
+}
+
 }; // namespace EAGL4Anim

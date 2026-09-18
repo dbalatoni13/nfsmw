@@ -10,12 +10,12 @@ bPList<CSTATE_Base::StateInfo> CSTATEMGR_Base::m_STATEClassList;
 
 // UNSOLVED
 CSTATEMGR_Base::CSTATEMGR_Base() {
-    this->m_pHeadStateObj = nullptr;
     this->m_eStateType = eMM_MAIN;
     this->m_CurNumStates = 0;
-    this->bIsInitialized = false;
     this->m_CurTime = 0.0f;
     this->m_DeltaTime = 0.0f;
+    this->bIsInitialized = false;
+    this->m_pHeadStateObj = nullptr;
 }
 
 CSTATEMGR_Base::~CSTATEMGR_Base() {}
@@ -112,7 +112,9 @@ SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (MASK_GRPID(FoundTypeInfo->ObjectID) == this->m_eStateType) {
+                    if (MASK_GRPID(FoundTypeInfo->ObjectID) != this->m_eStateType) {
+                        FoundTypeInfo = CurTypeInfo;
+                    } else {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
 
                         while (BaseClassInfo != nullptr) {
@@ -123,8 +125,6 @@ SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
 
                             BaseClassInfo = BaseClassInfo->baseTypeInfo;
                         }
-                    } else {
-                        FoundTypeInfo = CurTypeInfo;
                     }
                 }
             }
@@ -162,7 +162,9 @@ SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (MASK_GRPID(FoundTypeInfo->ObjectID) == this->m_eStateType) {
+                    if (MASK_GRPID(FoundTypeInfo->ObjectID) != this->m_eStateType) {
+                        FoundTypeInfo = CurTypeInfo;
+                    } else {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
 
                         while (BaseClassInfo != nullptr) {
@@ -173,8 +175,6 @@ SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
 
                             BaseClassInfo = BaseClassInfo->baseTypeInfo;
                         }
-                    } else {
-                        FoundTypeInfo = CurTypeInfo;
                     }
                 }
             }
@@ -266,7 +266,7 @@ CSTATE_Base *CSTATEMGR_Base::GetFreeState(void *ObjectPtr) {
 }
 
 void CSTATEMGR_Base::UpdateParams(float t) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     CSTATE_Base *CurStateObj;
 
     if (bIsInitialized) {

@@ -13,22 +13,24 @@ class ESetPlayerCarReset : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         int fUseTrigger;   // offset: 0x4, size 0x4
-        Trigger *fTrigger; // offset: 0x8, size 0x4
+        CARP::Trigger *fTrigger; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ESetPlayerCarReset(int pUseTrigger, Trigger *pTrigger);
+    ESetPlayerCarReset(int pUseTrigger, CARP::Trigger *pTrigger);
 
     ~ESetPlayerCarReset() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fUseTrigger;   // offset: 0x8, size 0x4
-    Trigger *fTrigger; // offset: 0xc, size 0x4
+    CARP::Trigger *fTrigger; // offset: 0xc, size 0x4
 };
 
 void ESetPlayerCarReset_MakeEvent_Callback(const void *staticData);
+int ESetPlayerCarReset_MakeEvent_LuaBinding(struct lua_State *L);
+void ESetPlayerCarReset_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

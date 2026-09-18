@@ -1,0 +1,11 @@
+{
+ "src/Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.cpp": 6,
+ "src/Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.hpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeMinimap.cpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceInformation.hpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.cpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeShiftUpdater.hpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeSpeedometer.hpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp": 1,
+ "src/Speed/Indep/Src/Frontend/HUD/FeTachometerDrag.hpp": 1
+}

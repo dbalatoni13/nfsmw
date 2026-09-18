@@ -230,10 +230,11 @@ template <bool __threads, int __inst> class __node_alloc {
         typedef __allocator<_Tp1, __node_alloc<__threads, __inst> > other;
     };
 #endif
+#define _STLP_MEM_TAG "STL"
     /* __n must be > 0      */
     static void *_STLP_CALL allocate(size_t __n) {
 #ifndef CLANGD_DAMNIT
-        return gFastMem.Alloc(__n, "STL");
+        return gFastMem.Alloc(__n, _STLP_MEM_TAG);
 #else
         return (__n > (size_t)_MAX_BYTES) ? __stl_new(__n) : _M_allocate(__n);
 #endif
@@ -241,7 +242,7 @@ template <bool __threads, int __inst> class __node_alloc {
     /* __p may not be 0 */
     static void _STLP_CALL deallocate(void *__p, size_t __n) {
 #ifndef CLANGD_DAMNIT
-        gFastMem.Free(__p, __n, "STL");
+        gFastMem.Free(__p, __n, _STLP_MEM_TAG);
 #else
         if (__n > (size_t)_MAX_BYTES)
             __stl_delete(__p);

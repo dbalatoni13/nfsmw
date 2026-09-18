@@ -12,9 +12,9 @@ struct FloatVector {
 };
 
 struct LongVector {
-    float x; // offset 0x0, size 0x4
-    float y; // offset 0x4, size 0x4
-    float z; // offset 0x8, size 0x4
+    long x; // offset 0x0, size 0x4
+    long y; // offset 0x4, size 0x4
+    long z; // offset 0x8, size 0x4
 };
 
 // TODO from debug build

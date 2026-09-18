@@ -19,7 +19,7 @@ class EGPSFinished : public Event {
 
     ~EGPSFinished() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EGPSFinished_MakeEvent_Callback(const void *staticData);

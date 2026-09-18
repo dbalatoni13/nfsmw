@@ -1,0 +1,7 @@
+#include "./SFXCTL_3DCarPos.hpp"
+
+DEFINE_CREATABLE(0x00020070, SFXCTL_3DCarPos, SFXCTL_3DObjPos)
+
+SFXCTL_3DCarPos::SFXCTL_3DCarPos() {}
+
+SFXCTL_3DCarPos::~SFXCTL_3DCarPos() {}

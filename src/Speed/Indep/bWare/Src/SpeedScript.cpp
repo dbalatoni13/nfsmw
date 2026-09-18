@@ -22,6 +22,18 @@ bool IsWhiteSpace(char c) {
     return c == '\r';
 }
 
+// c36bw e6: lbl_803D1360 del objetivo son 84 B con las dos cadenas juntas. La
+// segunda, "Could not find command %s in %s\n", no esta en nuestro arbol (le falta
+// el cuerpo a la funcion que la usaba) y esta MUERTA en el original: va dentro del
+// literal vivo, que es donde el objetivo la tiene, sin tocar el codigo.
+#define BWARE_SS_TOO_MANY_NESTED "Too many nested INCLUDESCRIPT commands at %s\n" "\0\0\0" "Could not find command %s in %s\n" "\0\0\0"
+
+// c36bw e4: lbl_803D13F8 del objetivo son 88 B con las dos cadenas juntas. La de
+// "char" solo la referencia GetNextArgumentChar, que el objetivo no emite, asi que
+// nace muerta y el estripado se llevaba 40 B.
+#define BWARE_SS_PARAM_FIT "Parameter %d wouldn\'t fit into short in %s\n" "\0" "Parameter %d wouldn\'t fit into char in %s\n" "\0"
+#define BWARE_SS_PARAM_FIT_CHAR (BWARE_SS_PARAM_FIT + 44)
+
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->ErrorFunction = nullptr;
     if (enable_fatal_error) {
@@ -212,7 +224,7 @@ void SpeedScript::HandleIncludeScript(const char *filename) {
     SpeedScript script(filename, 1);
 
     if (this->NumFiles + script.NumFiles > 4) {
-        this->Error("Too many nested INCLUDESCRIPT commands at %s\n", this->GetPositionName());
+        this->Error(BWARE_SS_TOO_MANY_NESTED, this->GetPositionName());
     } else {
         for (int n = 0; n < script.NumEntries; n++) {
             SpeedScriptEntry *entry = this->AddEntry();
@@ -311,7 +323,7 @@ int SpeedScript::GetNextArgumentInt() {
 short SpeedScript::GetNextArgumentShort() {
     int a = this->GetNextArgumentInt();
     if (a < -32768 || a > 65535) {
-        this->Error("Parameter %d wouldn\'t fit into short in %s\n", a, this->GetPositionName());
+        this->Error(BWARE_SS_PARAM_FIT, a, this->GetPositionName());
     }
     return a;
 }
@@ -320,7 +332,7 @@ short SpeedScript::GetNextArgumentShort() {
 char SpeedScript::GetNextArgumentChar() {
     int a = this->GetNextArgumentInt();
     if (a < -128 || a > 255) {
-        this->Error("Parameter %d wouldn\'t fit into char in %s\n", a, this->GetPositionName());
+        this->Error(BWARE_SS_PARAM_FIT_CHAR, a, this->GetPositionName());
     }
     return a;
 }

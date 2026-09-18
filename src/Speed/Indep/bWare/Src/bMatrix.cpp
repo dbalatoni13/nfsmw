@@ -9,24 +9,14 @@ void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
 
 // UNSOLVED
 float fDeterminant(bMatrix4 *m) {
-    float value =
-        m->v0.x * m->v1.y * m->v2.z * m->v3.w +
-        (((m->v0.z * m->v1.x * m->v2.y * m->v3.w + m->v0.y * m->v1.z * m->v2.x * m->v3.w +
-           (((m->v0.y * m->v1.x * m->v2.w * m->v3.z + m->v0.x * m->v1.w * m->v2.y * m->v3.z +
-              (((m->v0.w * m->v1.y * m->v2.x * m->v3.z + m->v0.x * m->v1.z * m->v2.w * m->v3.y +
-                 (((m->v0.w * m->v1.x * m->v2.z * m->v3.y + m->v0.z * m->v1.w * m->v2.x * m->v3.y +
-                    (((m->v0.z * m->v1.y * m->v2.w * m->v3.x + m->v0.y * m->v1.w * m->v2.z * m->v3.x +
-                       ((m->v0.w * m->v1.z * m->v2.y * m->v3.x - m->v0.z * m->v1.w * m->v2.y * m->v3.x) - m->v0.w * m->v1.y * m->v2.z * m->v3.x)) -
-                      m->v0.y * m->v1.z * m->v2.w * m->v3.x) -
-                     m->v0.w * m->v1.z * m->v2.x * m->v3.y)) -
-                   m->v0.x * m->v1.w * m->v2.z * m->v3.y) -
-                  m->v0.z * m->v1.x * m->v2.w * m->v3.y)) -
-                m->v0.y * m->v1.w * m->v2.x * m->v3.z) -
-               m->v0.w * m->v1.x * m->v2.y * m->v3.z)) -
-             m->v0.x * m->v1.y * m->v2.w * m->v3.z) -
-            m->v0.z * m->v1.y * m->v2.x * m->v3.w)) -
-          m->v0.x * m->v1.z * m->v2.y * m->v3.w) -
-         m->v0.y * m->v1.x * m->v2.z * m->v3.w);
+    float value = m->v0.w * m->v1.z * m->v2.y * m->v3.x - m->v0.z * m->v1.w * m->v2.y * m->v3.x - m->v0.w * m->v1.y * m->v2.z * m->v3.x +
+                  m->v0.y * m->v1.w * m->v2.z * m->v3.x + m->v0.z * m->v1.y * m->v2.w * m->v3.x - m->v0.y * m->v1.z * m->v2.w * m->v3.x -
+                  m->v0.w * m->v1.z * m->v2.x * m->v3.y + m->v0.z * m->v1.w * m->v2.x * m->v3.y + m->v0.w * m->v1.x * m->v2.z * m->v3.y -
+                  m->v0.x * m->v1.w * m->v2.z * m->v3.y - m->v0.z * m->v1.x * m->v2.w * m->v3.y + m->v0.x * m->v1.z * m->v2.w * m->v3.y +
+                  m->v0.w * m->v1.y * m->v2.x * m->v3.z - m->v0.y * m->v1.w * m->v2.x * m->v3.z - m->v0.w * m->v1.x * m->v2.y * m->v3.z +
+                  m->v0.x * m->v1.w * m->v2.y * m->v3.z + m->v0.y * m->v1.x * m->v2.w * m->v3.z - m->v0.x * m->v1.y * m->v2.w * m->v3.z -
+                  m->v0.z * m->v1.y * m->v2.x * m->v3.w + m->v0.y * m->v1.z * m->v2.x * m->v3.w + m->v0.z * m->v1.x * m->v2.y * m->v3.w -
+                  m->v0.x * m->v1.z * m->v2.y * m->v3.w - m->v0.y * m->v1.x * m->v2.z * m->v3.w + m->v0.x * m->v1.y * m->v2.z * m->v3.w;
 
     return value;
 }

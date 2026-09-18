@@ -12,21 +12,23 @@ class EEnableTrigger : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        Trigger *fTrigger; // offset: 0x4, size 0x4
+        CARP::Trigger *fTrigger; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EEnableTrigger(Trigger *pTrigger);
+    EEnableTrigger(CARP::Trigger *pTrigger);
 
     ~EEnableTrigger() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
-    Trigger *fTrigger; // offset: 0x8, size 0x4
+    CARP::Trigger *fTrigger; // offset: 0x8, size 0x4
 };
 
 void EEnableTrigger_MakeEvent_Callback(const void *staticData);
+int EEnableTrigger_MakeEvent_LuaBinding(struct lua_State *L);
+void EEnableTrigger_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

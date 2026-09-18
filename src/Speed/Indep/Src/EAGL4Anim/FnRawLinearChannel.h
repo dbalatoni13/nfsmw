@@ -56,7 +56,9 @@ class FnRawLinearChannel : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnim
-    void Eval(float, float currentTime, float *output) override {}
+    void Eval(float, float currentTime, float *output) override {
+        GetRawLinearChannel()->Eval(currentTime, output, mInterp);
+    }
 
     // Overrides: FnAnim
     bool GetLength(float &l) const override {
@@ -73,7 +75,7 @@ class FnRawLinearChannel : public FnAnimMemoryMap {
     }
 
   private:
-    bool mInterp; // offset 0x10, size 0x1
+    int mInterp; // offset 0x10, size 0x4
 };
 
 }; // namespace EAGL4Anim

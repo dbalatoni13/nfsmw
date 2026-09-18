@@ -42,7 +42,6 @@ class EAXCopCar : public EAXAITunerCar {
   public:
     DECLARE_STATETYPE();
     EAXCopCar() {}           // Decl: 52
-    ~EAXCopCar() override {} // Decl: 52
 
     // Overrides: CSTATE_Base
     void Attach(void *pAttachment) override;
@@ -57,7 +56,6 @@ class EAXTruck : public EAXAITunerCar {
   public:
     DECLARE_STATETYPE();
     EAXTruck() {}           // Decl: 61
-    ~EAXTruck() override {} // Decl: 61
 
     // Overrides: CSTATE_Base
     void UpdateParams(float t) override;

@@ -52,6 +52,8 @@ class AIActionJackKnife : public AIAction {
     bool SentAudioMsg;                  // offset 0x64, size 0x1
 };
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionJackKnife("AIActionJackKnife", AIActionJackKnife::Construct);
+
 AIAction *AIActionJackKnife::Construct(AIActionParams *params) {
     return new AIActionJackKnife(params, 1.0f);
 }

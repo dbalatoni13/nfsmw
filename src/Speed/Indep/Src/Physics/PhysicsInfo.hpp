@@ -44,16 +44,26 @@ struct Performance {
         Acceleration = UMath::Max(Acceleration, other.Acceleration);
     }
 
+    // inline en el original (DWARF de Game_FindPerformanceCandidates); suma
+    // amount a cada componente y lo acota a [0, 1]
+    void Grow(float amount) {
+        TopSpeed = UMath::Clamp(TopSpeed + amount, 0.0f, 1.0f);
+        Handling = UMath::Clamp(Handling + amount, 0.0f, 1.0f);
+        Acceleration = UMath::Clamp(Acceleration + amount, 0.0f, 1.0f);
+    }
+
     float TopSpeed;
     float Handling;
     float Acceleration;
 };
 
 void Init();
+bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
 float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
 eInductionType InductionType(const Attrib::Gen::induction &induction);
+eInductionType InductionType(const Attrib::Gen::pvehicle &pvehicle);
 bool HasNos(const Attrib::Gen::pvehicle &pvehicle);
 bool HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle);
 float NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings);
@@ -61,8 +71,12 @@ float NosCapacity(const Attrib::Gen::nos &nos, const Tunings *tunings);
 float InductionRPM(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Tunings *tunings);
 float InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float rpm, float spool, const Tunings *tunings,
                      float *psi);
+FtLbs MaxTorque(const Attrib::Gen::engine &engine, Rpm &atrpm);
+Rpm Redline(const Attrib::Gen::engine &engine);
+Rpm Redline(const Attrib::Gen::pvehicle &pvehicle);
 float Torque(const Attrib::Gen::engine &engine, float rpm);
 Meters WheelDiameter(const Attrib::Gen::tires &tires, bool front);
+Meters WheelDiameter(const Attrib::Gen::pvehicle &pvehicle, bool front);
 float MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings);
 FtLbs AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Attrib::Gen::transmission &transmission,
                         bool from_peak, const Tunings *tunings);
@@ -73,10 +87,17 @@ bool ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Ge
                  float *shift_up, float *shift_down, unsigned int numpts);
 Mps Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires, Rpm rpm,
                 GearID gear, const Tunings *tunings);
-bool EstimatePerformance(Performance &perf);
+unsigned int NumFowardGears(const Attrib::Gen::transmission &transmission);
+unsigned int NumFowardGears(const Attrib::Gen::pvehicle &pvehicle);
+bool HasPerformanceRatings(const Attrib::Gen::pvehicle &pvehicle);
+// El ELF mangla EstimatePerformance__Q27Physics4InfoRCQ36Attrib3Gen8pvehicleRQ37Physics4Info11Performance:
+// toma el pvehicle y el Performance. La declaracion de un solo parametro emitia un simbolo inexistente.
+bool EstimatePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehicle, float &top_speed, float *table, int num_entries);
+bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
+bool GetStockPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
+bool GetMaximumPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 
-extern Performance PerformanceWeights[7];
 
 } // namespace Info
 } // namespace Physics

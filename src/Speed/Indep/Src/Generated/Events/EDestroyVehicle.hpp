@@ -19,12 +19,14 @@ class EDestroyVehicle : public Event {
 
     ~EDestroyVehicle() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4
 };
 
 void EDestroyVehicle_MakeEvent_Callback(const void *staticData);
+int EDestroyVehicle_MakeEvent_LuaBinding(struct lua_State *L);
+void EDestroyVehicle_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

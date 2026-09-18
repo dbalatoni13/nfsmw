@@ -37,24 +37,13 @@ class FnDeltaQ : public FnAnimMemoryMap {
     FnDeltaQ();
 
     // Overrides: FnAnimSuper
-    ~FnDeltaQ() override {
-        if (mPrevQBlock) {
-            MemoryPoolManager::DeleteBlock(mPrevQBlock);
-        }
-    }
+    ~FnDeltaQ() override;
 
     // Overrides: FnAnimMemoryMap
-    void SetAnimMemoryMap(AnimMemoryMap *anim) override {
-        mpAnim = anim;
-    }
+    void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {
-        DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
-
-        timeLength = static_cast<float>(deltaQ->GetNumFrames());
-        return true;
-    }
+    bool GetLength(float &timeLength) const override;
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *sqt) override;
@@ -64,16 +53,10 @@ class FnDeltaQ : public FnAnimMemoryMap {
 
     bool EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask);
 
-    // Overrides: FnAnim
-    bool EvalWeights(float currTime, float *weights) override;
-
-    // Overrides: FnAnim
-    bool EvalVel2D(float currTime, float *vel) override;
-
   protected:
     virtual bool EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sqt);
 
-    void InitBuffersAsRequired() {}
+    void InitBuffersAsRequired();
 
     DeltaQMinRange *mMinRanges;     // offset 0x10, size 0x4
     unsigned char *mBins;           // offset 0x14, size 0x4

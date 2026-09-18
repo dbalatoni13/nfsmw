@@ -2,8 +2,12 @@
 #include "AnimInternal.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern SlotPool *AnimPartSlotPool;
+namespace EAGL4 { class Transform; }
+extern EAGL4::Transform *AnimBridgeNewTransform(char *name, int size);
+extern void AnimBridgeDeleteTransform(EAGL4::Transform *pTransform);
 
 CAnimPart::CAnimPart()
     : m_pSkeleton(nullptr),       //
@@ -22,7 +26,7 @@ void InitAnimPartSlotPool() {}
 // STRIPPED
 void CloseAnimPartSlotPool() {}
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 static int NumAnimParts = 0;
 static int MaxNumAnimParts = 0;
 
@@ -34,7 +38,7 @@ int GetMaxNumAnimParts() {
 
 // STRIPPED
 void *CAnimPart::operator new(size_t size, const char *debug_name) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimParts++;
     if (NumAnimParts > MaxNumAnimParts) {
         MaxNumAnimParts = NumAnimParts;
@@ -44,7 +48,7 @@ void *CAnimPart::operator new(size_t size, const char *debug_name) {
 }
 
 void CAnimPart::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimParts--;
 #endif
     bFree(AnimPartSlotPool, ptr);

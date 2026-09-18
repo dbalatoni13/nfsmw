@@ -13,8 +13,8 @@
 
 class IAttribAllocator {
   public:
-    virtual void *Allocate(std::size_t bytes, const char *name);
-    virtual void Free(void *ptr, std::size_t bytes, const char *name);
+    virtual void *Allocate(std::size_t bytes, const char *name) = 0;
+    virtual void Free(void *ptr, std::size_t bytes, const char *name) = 0;
 };
 
 // TODO figure out whether we need the ifdefs
@@ -24,7 +24,7 @@ class AttribAlloc {
 
     static void *Allocate(std::size_t bytes, const char *name) {
         return mAllocator->Allocate(bytes,
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
                                     name
 #else
                                     nullptr
@@ -34,7 +34,7 @@ class AttribAlloc {
 
     static void Free(void *ptr, std::size_t bytes, const char *name) {
         mAllocator->Free(ptr, bytes,
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
                          name
 #else
                          nullptr
@@ -44,25 +44,6 @@ class AttribAlloc {
 
   private:
     static IAttribAllocator *mAllocator;
-};
-
-class HighAttribAlloc : public IAttribAllocator {
-  public:
-    void *Allocate(std::size_t bytes, const char *name) override {
-        if (bytes < 0x401) {
-            return gFastMem.Alloc(bytes, name);
-        } else {
-            return bMalloc(bytes, 0x40);
-        }
-    }
-
-    void Free(void *ptr, std::size_t bytes, const char *name) override {
-        if (bytes < 0x401) {
-            gFastMem.Free(ptr, bytes, name);
-        } else {
-            bFree(ptr);
-        }
-    }
 };
 
 #endif

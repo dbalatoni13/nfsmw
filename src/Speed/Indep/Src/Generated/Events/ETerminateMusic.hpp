@@ -19,9 +19,11 @@ class ETerminateMusic : public Event {
 
     ~ETerminateMusic() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void ETerminateMusic_MakeEvent_Callback(const void *staticData);
+int ETerminateMusic_MakeEvent_LuaBinding(struct lua_State *L);
+void ETerminateMusic_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -19,12 +19,14 @@ class EKillJoint : public Event {
 
     ~EKillJoint() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4
 };
 
 void EKillJoint_MakeEvent_Callback(const void *staticData);
+int EKillJoint_MakeEvent_LuaBinding(struct lua_State *L);
+void EKillJoint_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

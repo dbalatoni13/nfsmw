@@ -24,7 +24,9 @@ class ALIGN_16 AIAvoidable {
 
         // void operator delete(void *mem, void *ptr) {}
 
-        // void *operator new(unsigned int size) {}
+        void *operator new(unsigned int size) {
+            return gFastMem.Alloc(size, nullptr);
+        }
 
         void operator delete(void *mem, size_t size) {
             if (mem) {
@@ -32,14 +34,7 @@ class ALIGN_16 AIAvoidable {
             }
         }
 
-        // void *operator new(unsigned int size, const char *name) {}
-
-        // void operator delete(void *mem, const char *name) {}
-
-        // void operator delete(void *mem, unsigned int size, const char *name) {}
-
-        Grid(); // TODO delete
-        // Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius) : SAP::Grid() {}
+        Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius) : SAP::Grid<AIAvoidable>(owner, position, radius) {}
 
         ~Grid() {}
     };
@@ -56,13 +51,19 @@ class ALIGN_16 AIAvoidable {
 
     // Virtual functions
     virtual ~AIAvoidable();
-    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
+    // Pura en el original: OnUpdateAvoidable__11AIAvoidable... no existe en el ELF.
+    // Sin ella la clase no tiene "key method" y GCC 2.9 no emite _vt.11AIAvoidable
+    // (0x803CEEB8, 32 B). Las tres que heredan la sobreescriben: AIVehicle,
+    // SmackableAvoidable y HeirarchyModel.
+    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) = 0;
 
     const Neighbors &GetAvoidableNeighbors() {
         return mNeighbors;
     }
 
-    // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
+    void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {
+        mUnk = pUnk;
+    }
 
     template <typename T> bool QueryInterface(T **out) {
         if (mUnk) {

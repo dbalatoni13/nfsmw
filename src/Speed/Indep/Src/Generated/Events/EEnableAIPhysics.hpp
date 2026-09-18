@@ -23,7 +23,7 @@ class EEnableAIPhysics : public Event {
 
     ~EEnableAIPhysics() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     uintptr_t fhSimable;  // offset: 0x8, size 0x4

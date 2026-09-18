@@ -19,12 +19,14 @@ class ENISCarDamageReset : public Event {
 
     ~ENISCarDamageReset() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4
 };
 
 void ENISCarDamageReset_MakeEvent_Callback(const void *staticData);
+int ENISCarDamageReset_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISCarDamageReset_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

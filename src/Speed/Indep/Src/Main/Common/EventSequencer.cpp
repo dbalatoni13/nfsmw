@@ -11,6 +11,8 @@
 
 #include <cstddef>
 
+
+
 EventDynamicData gEventDynamicData;
 
 inline void *operator new(std::size_t, void *place, unsigned int) {
@@ -20,10 +22,10 @@ inline void *operator new(std::size_t, void *place, unsigned int) {
 static CARP::ExprValType StimulusFilterLookup(unsigned int name, unsigned int subindex, const void *context, const CARP::ExprValType *value) {
     CARP::ExprValType result;
     const CARP::StimulusFilter *sf = reinterpret_cast<const CARP::StimulusFilter *>(context);
-    unsigned int index = SearchPackedBinaryTree<const QueryDesc, unsigned int>(sf->mNumQueries, sf->GetQueries(), name);
+    unsigned int index = SearchPackedBinaryTree<const CARP::QueryDesc, unsigned int>(sf->mNumQueries, sf->GetQueries(), name);
 
     if (index < sf->mNumQueries) {
-        const QueryDesc *qDesc = &sf->GetQueries()[index];
+        const CARP::QueryDesc *qDesc = &sf->GetQueries()[index];
         if (subindex < qDesc->mCount) {
             return value[qDesc->mIndex + subindex];
         }
@@ -57,16 +59,18 @@ namespace EventSequencer {
 
 typedef std::map<UCrc32, const UData *> NameHashToDataMap;
 
-static unsigned int gCreateStimulus;
-static unsigned int gTriggerStimulus;
-static unsigned int gStartAction;
-static unsigned int gEndAction;
-static unsigned int gStopAction;
-static unsigned int gPauseAction;
-static unsigned int gResumeAction;
-static unsigned int gUnloadAction;
-static unsigned int gStimulusParameter;
-static unsigned int gStimulusResult;
+unsigned int StringToID(const char *str);
+
+static unsigned int gCreateStimulus = StringToID("create");
+static unsigned int gTriggerStimulus = StringToID("trigger");
+static unsigned int gStartAction = StringToID("start");
+static unsigned int gEndAction = StringToID("end");
+static unsigned int gStopAction = StringToID("stop");
+static unsigned int gPauseAction = StringToID("pause");
+static unsigned int gResumeAction = StringToID("resume");
+static unsigned int gUnloadAction = StringToID("unload");
+static unsigned int gStimulusParameter = StringToID("stimulus");
+static unsigned int gStimulusResult = StringToID("result");
 
 static NameHashToDataMap gEngineData;
 static unsigned int gNumActiveSystems = 0;
@@ -244,7 +248,7 @@ void System::Complete(float externalTime, bool flush, IContext *ifiringcontext) 
         this->FireTimedEvents(this->mActionLast, this->mAction->mDuration);
     }
 
-    this->TerminateAction(gStopAction, this->GetActiveIndex(), externalTime, flush, ifiringcontext);
+    this->TerminateAction(gEndAction, this->GetActiveIndex(), externalTime, flush, ifiringcontext);
 
     if (this->mEngine->IsVerbose()) {}
 }
@@ -273,69 +277,80 @@ void System::Reset(float externalTime, float rate, IContext *ifiringcontext) {
     this->ProcessStimulus(gCreateStimulus, externalTime, ifiringcontext, QUEUE_ALLOW);
 }
 
-// unfinished
 bool System::ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, EventSequencer::QueueMode mode) {
     bool result = false;
 
-    if (this->mSystem == NULL) return result;
+    if (this->mSystem != NULL) {
 
-    if (mode == QUEUE_ABORT && this->IsInAction()) {
-        this->Stop(externalTime, true, NULL);
-    }
-    if (mode == QUEUE_FLUSH && this->mQueuedStimuli[0] != 0) {
-        this->Flush();
-    }
-
-    if (this->IsInAction()) {
-        result = this->InvokeStimulus(stimulus, externalTime, ifiringcontext);
-    } else if (mode != QUEUE_DISABLE) {
-        bool queueIt = false;
-        if (mode == QUEUE_SHALLOW && this->mQueuedStimuli[0] == 0) {
-            queueIt = true;
-        } else if (mode != QUEUE_ALLOW && this->mQueuedStimuli[3] == 0) {
-            queueIt = true;
-        } else {
-            queueIt = false;
+        if (mode == QUEUE_ABORT && this->IsInAction()) {
+            this->Stop(externalTime, true, NULL);
         }
 
-        if (queueIt) {
-            unsigned int entry = 0;
-            while (this->mQueuedStimuli[entry] != 0) {
-                entry++;
+        if (mode == QUEUE_FLUSH && this->mQueuedStimuli[0] != 0) {
+            this->Flush();
+        }
+
+        if (!this->IsInAction()) {
+            if (this->InvokeStimulus(stimulus, externalTime, ifiringcontext)) {
+                result = true;
+            }
+        } else if (mode != QUEUE_DISABLE) {
+            bool queueIt = false;
+
+            if ((mode == QUEUE_SHALLOW && this->mQueuedStimuli[0] == 0) || (mode == QUEUE_ALLOW && this->mQueuedStimuli[3] == 0)) {
+                queueIt = true;
             }
 
-            unsigned int currentEnd;
-            if (this->IsInAction()) {
-                if (this->mQueuedStimuli[0] == 0) {
-                    currentEnd = this->mEndState;
-                } else {
-                    currentEnd = this->mQueueEndState;
+            if (queueIt) {
+                unsigned int entry;
+
+                for (entry = 0; this->mQueuedStimuli[entry] != 0; entry++) {
                 }
-            } else {
-                currentEnd = this->mCurrentState;
-            }
 
-            const CARP::EventSeqState *endState = this->mSystem->FindState(currentEnd);
-            if (endState == NULL) {
-                endState = this->mSystem->FindState(this->mSystem->mDefaultState);
-            }
+                unsigned int currentEnd;
 
-            currentEnd = this->ExecuteFilter(endState, stimulus, ifiringcontext);
-            const CARP::EventSeqResponse *response = this->mState->FindResponse(currentEnd);
-            if (response == NULL) {
-                return false;
-            }
-            this->mQueuedStimuli[entry] = currentEnd;
-            this->mQueueEndState = response->mEndState;
-            this->mQueueDuration = (response->mActionSeq->mDuration >= 0)
-                ? this->mQueueDuration + response->mActionSeq->mDuration
-                : UMath::Infinity;
+                if (this->IsInAction()) {
+                    if (this->mQueuedStimuli[0] == 0) {
+                        currentEnd = this->mEndState;
+                    } else {
+                        currentEnd = this->mQueueEndState;
+                    }
+                } else {
+                    currentEnd = this->mCurrentState;
+                }
 
-            result = true;
+                const CARP::EventSeqState *endState = this->mSystem->FindState(currentEnd);
+
+                if (endState == NULL) {
+                    // El defecto se reasigna a `currentEnd` en vez de pasarlo
+                    // en linea: por eso el objetivo evalua los dos `lwz` en la
+                    // linea de la sentencia (no dentro del inline de
+                    // FindState) y el valor cae en el registro de `currentEnd`.
+                    currentEnd = this->mSystem->mDefaultState;
+
+                    endState = this->mSystem->FindState(currentEnd);
+                }
+
+                stimulus = this->ExecuteFilter(endState, stimulus, ifiringcontext);
+
+                const CARP::EventSeqResponse *response = endState->FindResponse(stimulus);
+
+                if (response != NULL) {
+                    this->mQueuedStimuli[entry] = stimulus;
+                    this->mQueueEndState = response->mEndState;
+                    if (response->mActionSeq->mDuration >= 0.0f) {
+                        this->mQueueDuration = this->mQueueDuration + response->mActionSeq->mDuration;
+                    } else {
+                        this->mQueueDuration = UMath::Infinity;
+                    }
+
+                    result = true;
+                }
+            }
         }
-    }
 
-    if (this->mEngine->IsVerbose()) {}
+        if (this->mEngine->IsVerbose()) {}
+    }
 
     return result;
 }
@@ -547,28 +562,223 @@ unsigned int System::ExecuteFilter(const CARP::EventSeqState *state, unsigned in
         CARP::ExprValType queryValues[64];
 
         for (unsigned int q = 0; q < state->mFilter->mNumQueries; q++) {
-            const QueryDesc *qDesc = state->mFilter->GetQueries();
+            // El objetivo INDEXA el array (`mulli r0,q,0x14` + `add r31,base,r0`)
+            // y lee mQueryName/mIndex/mCount/mDataOffset por ese puntero; con
+            // `GetQueries()` a secas salian `slwi` sintetizados y sobraban las
+            // lecturas de `mAction->mName`.
+            const CARP::QueryDesc *qDesc = &state->mFilter->GetQueries()[q];
 
-            if (qDesc != NULL) {
-                const void *staticdata = state->mFilter->GetStaticData();
+            if (qDesc->mQueryName != 0) {
+                // El objetivo evalua `params` ANTES del `bl GetContext`: el
+                // argumento ligado a un local mueve la evaluacion delante.
+                const void *staticdata = state->mFilter->GetStaticData() + qDesc->mDataOffset;
                 Query::Invoke(
-                    reinterpret_cast<unsigned int>(qDesc),
+                    qDesc->mQueryName,
                     this->GetContext(),
                     ifiringcontext,
                     staticdata,
-                    this->mAction->mName,
-                    &queryValues[q]
+                    qDesc->mCount,
+                    &queryValues[qDesc->mIndex]
                 );
             } else {
                 queryValues[q].u = stimulus;
             }
         }
 
-        return CARP::ExpressionEvaluator(state->mFilter->GetExpression(), &StimulusFilterLookup, state->mFilter, queryValues).u;
-    } else {
-        return stimulus;
+        // Reasignar el PARAMETRO (en vez de dos `return`) comparte la cola: el
+        // objetivo carga el resultado en el registro de `stimulus` y sale por
+        // el mismo `mr r3,rN`, sin el `b` de mas.
+        stimulus = CARP::ExpressionEvaluator(state->mFilter->GetExpression(), &StimulusFilterLookup, state->mFilter, queryValues).u;
     }
 
+    return stimulus;
+}
+
+inline Engine::~Engine() {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].~System();
+    }
+
+    gFastMem.Free(this->mSystems, this->mNumSystems * sizeof(System), "EventSequencerSystems");
+}
+
+inline void Engine::Release() {
+    delete this;
+}
+
+inline const char *Engine::Name() const {
+    if (this->mEngine != NULL) {
+        return this->mEngine->mName;
+    } else {
+        return NULL;
+    }
+}
+
+inline void Engine::Relocate(unsigned int deltaAddress) {
+    if (this->mEngine != NULL) {
+        this->mEngine = reinterpret_cast<CARP::EventSeqEngine *>(reinterpret_cast<unsigned int>(this->mEngine) + deltaAddress);
+    }
+
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Relocate(deltaAddress);
+    }
+}
+
+inline void Engine::Unload() {
+    if (this->mEngine != NULL) {
+        this->mEngine = NULL;
+
+        for (unsigned int i = 0; i < this->mNumSystems; i++) {
+            this->mSystems[i].Unload();
+        }
+    }
+}
+
+inline IContext *Engine::GetContext() const {
+    return this->mContext;
+}
+
+inline void Engine::SetContext(IContext *context) {
+    this->mContext = context;
+}
+
+inline unsigned int Engine::NumSystems() const {
+    return this->mNumSystems;
+}
+
+inline unsigned int Engine::GetSystemID(unsigned int index) const {
+    unsigned int systemID;
+
+    if (this->mEngine == NULL) {
+        systemID = 0;
+    } else if (index >= this->mNumSystems) {
+        systemID = 0;
+    } else {
+        systemID = this->mEngine->GetSystemIDs()[index];
+    }
+
+    return systemID;
+}
+
+inline System *Engine::GetSystemByIndex(unsigned int index) const {
+    if (index < this->mNumSystems) {
+        return &this->mSystems[index];
+    } else {
+        return NULL;
+    }
+}
+
+inline System *Engine::FindSystem(unsigned int systemID) const {
+    if (this->mEngine != NULL) {
+        return this->GetSystemByIndex(this->mEngine->FindSystemIndex(systemID));
+    }
+
+    return NULL;
+}
+
+inline bool Engine::AnySystemInAction() const {
+    bool inAction = false;
+
+    for (unsigned int i = 0; i < this->mNumSystems && !inAction; i++) {
+        inAction = inAction | this->mSystems[i].IsInAction();
+    }
+
+    return inAction;
+}
+
+inline void Engine::SetAllSystemsState(float externalTime, unsigned int state) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].SetState(externalTime, state);
+    }
+}
+
+inline bool Engine::ProcessStimulus(unsigned int systemID, unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) {
+    System *system = this->FindSystem(systemID);
+
+    if (system == NULL) {
+        return false;
+    }
+
+    return system->ProcessStimulus(stimulus, externalTime, ifiringcontext, mode);
+}
+
+inline bool Engine::ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) {
+    bool processed = false;
+
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        if (this->mSystems[i].ProcessStimulus(stimulus, externalTime, ifiringcontext, mode)) {
+            processed = true;
+        }
+    }
+
+    return processed;
+}
+
+inline bool Engine::Trigger(float externalTime, IContext *ifiringcontext, QueueMode mode) {
+    bool processed = false;
+
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        if (this->mSystems[i].ProcessStimulus(gTriggerStimulus, externalTime, ifiringcontext, mode)) {
+            processed = true;
+        }
+    }
+
+    return processed;
+}
+
+inline bool Engine::FireEventTag(unsigned int tag, IContext *ifiringcontext) {
+    bool fired = false;
+
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        if (this->mSystems[i].FireEventTag(tag, ifiringcontext)) {
+            fired = true;
+        }
+    }
+
+    return fired;
+}
+
+inline void Engine::Flush() {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Flush();
+    }
+}
+
+inline void Engine::Stop(float externalTime, bool flush, IContext *ifiringcontext) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Stop(externalTime, flush, ifiringcontext);
+    }
+}
+
+inline void Engine::Complete(float externalTime, bool flush, IContext *ifiringcontext) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Complete(externalTime, flush, ifiringcontext);
+    }
+}
+
+inline void Engine::Pause(float externalTime, IContext *ifiringcontext) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Pause(externalTime, ifiringcontext);
+    }
+}
+
+inline void Engine::Resume(float externalTime, IContext *ifiringcontext) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        this->mSystems[i].Resume(externalTime, ifiringcontext);
+    }
+}
+
+inline void Engine::Reset(float externalTime) {
+    for (unsigned int i = 0; i < this->mNumSystems; i++) {
+        System *system = &this->mSystems[i];
+        system->Reset(externalTime, system->GetActionRate(), NULL);
+    }
+
+    this->ProcessStimulus(gCreateStimulus, externalTime, NULL, QUEUE_ALLOW);
+}
+
+inline void Engine::SetVerbose(bool verbose) {
+    this->mVerbose = verbose;
 }
 
 } // namespace EventSequencer
@@ -587,7 +797,7 @@ int LoaderEventSequence(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk->GetID() != 0x8003B72C) { // not defined? also is the same as a function pointer?
+    if (chunk->GetID() != BCHUNK_CARP_EVENT_SEQUENCES) {
         return 0;
     }
 
@@ -615,7 +825,7 @@ int UnloaderEventSequence(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk->GetID() != 0x8003B72C) { // not defined? also is the same as a function pointer?
+    if (chunk->GetID() != BCHUNK_CARP_EVENT_SEQUENCES) {
         return 0;
     }
 
@@ -628,3 +838,10 @@ int UnloaderEventSequence(bChunk *chunk) {
 
     return 1;
 }
+
+bChunkLoader bChunkLoaderEventSequence(BCHUNK_CARP_EVENT_SEQUENCES, LoaderEventSequence, UnloaderEventSequence);
+
+bChunkLoader bChunkLoaderEventSequenceTemp(BCHUNK_CARP_EVENT_SEQUENCE, LoaderEventSequence, UnloaderEventSequence);
+
+static const UCrc32 kCurrentWeapon("WEAPON");
+static const UCrc32 kCurrentGadget("GADGET");

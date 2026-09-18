@@ -20,7 +20,7 @@ struct fecooling : Instance {
     typedef EA::Reflection::Float TypeOf_NewWindowTint;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("fecooling");
+    USE_ATTRIB_ALLOC("Attrib::Gen::fecooling");
     fecooling(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     fecooling(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -38,10 +38,10 @@ struct fecooling : Instance {
         return 0x5d417978;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x5d417978, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

@@ -5,6 +5,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IOnlinePlayer.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Math/SimRandom.h"
 
 namespace Sim {
@@ -27,7 +30,7 @@ class ITimeManager : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(ITimeManager);
 
-    virtual float OnManageTime(float real_time_delta, float sim_speed);
+    virtual float OnManageTime(float real_time_delta, float sim_speed) = 0;
 };
 
 // total size: 0x8
@@ -35,14 +38,15 @@ class IStateManager : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IStateManager);
 
-    virtual Sim::State OnManageState(Sim::State state);
-    virtual bool ShouldPauseInput();
+    virtual Sim::State OnManageState(Sim::State state) = 0;
+    virtual bool ShouldPauseInput() = 0;
 };
 
 bool Exists();
 void StartProfile();
 void Suspend();
 float GetTime();
+void Update();
 SimRandom &GetRandom();
 unsigned int GetTick();
 float GetSpeed();
@@ -56,6 +60,8 @@ HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float s
 void RemoveTask(HSIMTASK hTask, ITaskable *handler);
 void ModifyTask(HSIMTASK hTask, float rate);
 float DistanceToCamera(const UMath::Vector3 &v);
+bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority);
+bool CanSpawnRigidBody(const UMath::Vector3 &position, bool highPriority);
 void Init(const UCrc32 activity, eUserMode mode);
 void Shutdown();
 

@@ -2,39 +2,14 @@
 #define MAIN_EVENTSEQUENCER_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/UTL.h"
 
-// TODO move?
-// total size: 0x64
-struct EventDynamicData {
-    void Clear() {
-        bMemSet(this, 0, sizeof(EventDynamicData));
-    }
-
-    UMath::Vector4 fPosition;        // offset 0x0, size 0x10
-    UMath::Vector4 fVector;          // offset 0x10, size 0x10
-    UMath::Vector4 fVelocity;        // offset 0x20, size 0x10
-    UMath::Vector4 fAngularVelocity; // offset 0x30, size 0x10
-    struct WTrigger *fTrigger;       // offset 0x40, size 0x4
-    int fTriggerStimulus;            // offset 0x44, size 0x4
-    uintptr_t fhSimable;             // offset 0x48, size 0x4
-    uintptr_t fhActivity;            // offset 0x4C, size 0x4
-    unsigned int fWorldID;           // offset 0x50, size 0x4
-    uintptr_t fhModel;               // offset 0x54, size 0x4
-    unsigned int fEventSeqEngine;    // offset 0x58, size 0x4
-    unsigned int fEventSeqSystem;    // offset 0x5C, size 0x4
-    unsigned int fEventSeqState;     // offset 0x60, size 0x4
-};
-
-extern EventDynamicData gEventDynamicData;
+#include "Speed/Indep/Src/Main/EventDynamicData.h"
 
 namespace EventSequencer {
 
@@ -45,16 +20,10 @@ class IContext : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IContext);
 
-    virtual bool SetDynamicData(const System *system, EventDynamicData *data);
+    virtual bool SetDynamicData(const System *system, EventDynamicData *data) = 0;
 };
 
-// TODO DECLAREHANDLE in new UTL.h
-struct HENGINE__ {
-    // total size: 0x4
-    int unused; // offset 0x0, size 0x4
-};
-
-typedef HENGINE__ *HENGINE;
+DECLAREHANDLE(HENGINE);
 
 enum QueueMode {
     QUEUE_DISABLE = 0,
@@ -70,29 +39,29 @@ class IEngine : public UTL::COM::IUnknown, public UTL::Collections::Instanceable
 
     DECL_INTERFACE(IEngine);
 
-    virtual void Release();
-    virtual const char *Name() const;
-    virtual void Relocate(unsigned int deltaAddress);
-    virtual void Unload();
-    virtual IContext *GetContext() const;
-    virtual void SetContext(IContext *context);
-    virtual unsigned int NumSystems() const;
-    virtual unsigned int GetSystemID(unsigned int index) const;
-    virtual System *GetSystemByIndex(unsigned int index) const;
-    virtual System *FindSystem(unsigned int systemID) const;
-    virtual bool AnySystemInAction() const;
-    virtual void SetAllSystemsState(float externalTime, unsigned int state);
-    virtual bool ProcessStimulus(unsigned int systemID, unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode);
-    virtual bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode);
-    virtual bool Trigger(float externalTime, IContext *ifiringcontext, QueueMode mode);
-    virtual bool FireEventTag(unsigned int, IContext *ifiringcontext);
-    virtual void Flush();
-    virtual void Stop(float externalTime, bool flush, IContext *ifiringcontext);
-    virtual void Complete(float externalTime, bool flush, IContext *ifiringcontext);
-    virtual void Pause(float externalTime, IContext *ifiringcontext);
-    virtual void Resume(float externalTime, IContext *ifiringcontext);
-    virtual void Reset(float externalTime);
-    virtual void SetVerbose(bool verbose);
+    virtual void Release() = 0;
+    virtual const char *Name() const = 0;
+    virtual void Relocate(unsigned int deltaAddress) = 0;
+    virtual void Unload() = 0;
+    virtual IContext *GetContext() const = 0;
+    virtual void SetContext(IContext *context) = 0;
+    virtual unsigned int NumSystems() const = 0;
+    virtual unsigned int GetSystemID(unsigned int index) const = 0;
+    virtual System *GetSystemByIndex(unsigned int index) const = 0;
+    virtual System *FindSystem(unsigned int systemID) const = 0;
+    virtual bool AnySystemInAction() const = 0;
+    virtual void SetAllSystemsState(float externalTime, unsigned int state) = 0;
+    virtual bool ProcessStimulus(unsigned int systemID, unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) = 0;
+    virtual bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) = 0;
+    virtual bool Trigger(float externalTime, IContext *ifiringcontext, QueueMode mode) = 0;
+    virtual bool FireEventTag(unsigned int, IContext *ifiringcontext) = 0;
+    virtual void Flush() = 0;
+    virtual void Stop(float externalTime, bool flush, IContext *ifiringcontext) = 0;
+    virtual void Complete(float externalTime, bool flush, IContext *ifiringcontext) = 0;
+    virtual void Pause(float externalTime, IContext *ifiringcontext) = 0;
+    virtual void Resume(float externalTime, IContext *ifiringcontext) = 0;
+    virtual void Reset(float externalTime) = 0;
+    virtual void SetVerbose(bool verbose) = 0;
 };
 
 // total size: 0x40
@@ -140,6 +109,8 @@ class System {
     bool FireEventTag(unsigned int tag, IContext *ifiringcontext) const;
 
   private:
+    friend class Engine;
+
     ~System();
 
     bool Update(unsigned int index, float externalTime);
@@ -174,6 +145,16 @@ class System {
     unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10
 };
 
+void UpdateDelta(float deltaTime);
+void Init(float externalTime);
+void Reset(float externalTime);
+IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate);
+
+}; // namespace EventSequencer
+
+
+namespace EventSequencer {
+
 class Engine : public UTL::COM::Object, public IEngine {
 public:
     USE_FASTALLOC(Engine)
@@ -184,37 +165,43 @@ public:
         const CARP::EventSeqEngine *engineData,
         float externalTime,
         float rate
-    ) : UTL::COM::Object(*baseObj), IEngine(baseObj) {
-        void *block;
+    ) : UTL::COM::Object(0), IEngine(baseObj != NULL ? baseObj : this), mEngine(const_cast<CARP::EventSeqEngine *>(engineData)), mContext(context), mNumSystems(engineData->mNumSystems), mVerbose(false) {
         const CARP::EventSeqSystem *const *sysData = engineData->GetSystems();
 
-        this->mContext = context;
-        this->mEngine = const_cast<CARP::EventSeqEngine *>(engineData);
-        this->mVerbose = false;
-        this->mNumSystems = engineData->mNumSystems;
+        void *block = gFastMem.Alloc(this->mNumSystems * sizeof(System), "EventSequencerSystems");
 
-        new (this->mEngine) System(this, sysData[engineData->mNumSystems], externalTime, rate);
+        this->mSystems = new (block) System(this, sysData[0], externalTime, rate);
 
-        for (unsigned int i = 0; i < engineData->mNumSystems; i++) {
+        for (unsigned int i = 1; i < this->mNumSystems; i++) {
             new (&this->mSystems[i]) System(this, sysData[i], externalTime, rate);
         }
     }
 
-    // ~Engine() override {}
+    ~Engine() override;
 
-    // void Release() override {}
-
-    // const char *Name() const override {}
-
-    // void Relocate(unsigned int deltaAddress) override {}
-
-    // void Unload() override {}
-
-    // IContext *GetContext() const override {}
-
-    // void SetContext(IContext *context) override {}
-
-    // unsigned int NumSystems() const override {}
+    void Release() override;
+    const char *Name() const override;
+    void Relocate(unsigned int deltaAddress) override;
+    void Unload() override;
+    IContext *GetContext() const override;
+    void SetContext(IContext *context) override;
+    unsigned int NumSystems() const override;
+    unsigned int GetSystemID(unsigned int index) const override;
+    System *GetSystemByIndex(unsigned int index) const override;
+    System *FindSystem(unsigned int systemID) const override;
+    bool AnySystemInAction() const override;
+    void SetAllSystemsState(float externalTime, unsigned int state) override;
+    bool ProcessStimulus(unsigned int systemID, unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) override;
+    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, QueueMode mode) override;
+    bool Trigger(float externalTime, IContext *ifiringcontext, QueueMode mode) override;
+    bool FireEventTag(unsigned int tag, IContext *ifiringcontext) override;
+    void Flush() override;
+    void Stop(float externalTime, bool flush, IContext *ifiringcontext) override;
+    void Complete(float externalTime, bool flush, IContext *ifiringcontext) override;
+    void Pause(float externalTime, IContext *ifiringcontext) override;
+    void Resume(float externalTime, IContext *ifiringcontext) override;
+    void Reset(float externalTime) override;
+    void SetVerbose(bool verbose) override;
 
     IContext *Context() const {
         return this->mContext;
@@ -236,11 +223,6 @@ private:
     bool mVerbose;              // offset 0x2C, size 0x1
 };
 
-void UpdateDelta(float deltaTime);
-void Init(float externalTime);
-void Reset(float externalTime);
-IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate);
-
 }; // namespace EventSequencer
 
-#endif
+#endif /* MAIN_EVENTSEQUENCER_H */

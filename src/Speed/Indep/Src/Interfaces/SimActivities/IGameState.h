@@ -12,8 +12,8 @@ class IGameState : public UTL::COM::IUnknown, public UTL::Collections::Singleton
   public:
     DECL_INTERFACE(IGameState);
 
-    virtual bool InGameBreaker() const;
-    virtual void RaceReset();
+    virtual bool InGameBreaker() const = 0;
+    virtual void RaceReset() = 0;
 };
 
 #endif

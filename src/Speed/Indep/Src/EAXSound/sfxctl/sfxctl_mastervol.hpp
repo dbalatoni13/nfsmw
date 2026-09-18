@@ -1,35 +1,38 @@
-#ifndef SFXCTL_MASTER_VOL_H
-#define SFXCTL_MASTER_VOL_H
+#ifndef EAXSOUND_SFXCTL_SFXCTL_MASTERVOL_H
+#define EAXSOUND_SFXCTL_SFXCTL_MASTERVOL_H
 
-#include "Speed/Indep/Src/EAXSound/SndBase.hpp"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
 // total size: 0x28
-// Decl: 10
-class SFXCTL_MasterVol : public SFXCTL {
+struct SFXCTL_MasterVol : public SFXCTL {
   public:
-    DECLARE_CREATABLE();
+    static TypeInfo s_TypeInfo;
 
+  public:
     SFXCTL_MasterVol();
     ~SFXCTL_MasterVol() override;
-
-    void SetupSFX();
-
-    // Overrides: SndBase
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
     void UpdateParams(float t) override;
 };
 
 // total size: 0x28
-// Decl: 31
-class SFXCTL_GameState : public SFXCTL {
+struct SFXCTL_GameState : public SFXCTL {
   public:
-    DECLARE_CREATABLE();
+    static TypeInfo s_TypeInfo;
 
-    SFXCTL_GameState() {}           // Decl: 31
-    ~SFXCTL_GameState() override {} // Decl: 31
-
-    // Overrides: SndBase
+  public:
+    SFXCTL_GameState() {}
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
+    static SndBase *CreateObject(unsigned int allocator);
     void UpdateMixerOutputs() override;
 };
 

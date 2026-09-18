@@ -14,7 +14,7 @@ class IControlScenario {
 
     IControlScenario() {}
 
-    virtual void HandleEventMessage(CWorldAnimEntityTree *entity_tree, uint32 wa_msg, void *data) {}
+    virtual void HandleEventMessage(CWorldAnimEntityTree *entity_tree, uint32 wa_msg, void *data) = 0;
 };
 
 void InitAnimControlScenarios(IControlScenario **arr_ptrs);

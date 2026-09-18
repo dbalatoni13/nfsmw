@@ -20,6 +20,10 @@ class MControlPathfinder : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MControlPathfinder &message);
+
     MControlPathfinder(bool _Licenced, unsigned int _PathEvent, unsigned int _PathControl, unsigned int _PartID)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fLicenced(_Licenced), fPathEvent(_PathEvent), fPathControl(_PathControl), fPartID(_PartID) {}
 
@@ -63,5 +67,37 @@ class MControlPathfinder : public Hermes::Message {
     unsigned int fPathControl; // offset 0x18, size 0x4
     unsigned int fPartID;      // offset 0x1c, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MControlPathfinder::HandleMessage_LuaBinding(const MControlPathfinder &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MControlPathfinder::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MControlPathfinder *message = static_cast<const MControlPathfinder *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Licenced");
+    lua_pushboolean(luaState, message->fLicenced);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "PathEvent");
+    lua_pushnumber(luaState, message->fPathEvent);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "PathControl");
+    lua_pushnumber(luaState, message->fPathControl);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "PartID");
+    lua_pushnumber(luaState, message->fPartID);
+    lua_settable(luaState, -3);
+}
 
 #endif

@@ -22,7 +22,7 @@ class EBailPursuit : public Event {
 
     ~EBailPursuit() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fPlayAudio;    // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class EBailPursuit : public Event {
 };
 
 void EBailPursuit_MakeEvent_Callback(const void *staticData);
+int EBailPursuit_MakeEvent_LuaBinding(struct lua_State *L);
+void EBailPursuit_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

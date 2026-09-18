@@ -20,6 +20,10 @@ class MReqRoadBlock : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MReqRoadBlock &message);
+
     MReqRoadBlock(int _Data) : Hermes::Message(_GetKind(), _GetSize(), 0), fData(_Data) {}
 
     ~MReqRoadBlock() {}
@@ -35,5 +39,25 @@ class MReqRoadBlock : public Hermes::Message {
   private:
     int fData; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MReqRoadBlock::HandleMessage_LuaBinding(const MReqRoadBlock &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MReqRoadBlock::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MReqRoadBlock *message = static_cast<const MReqRoadBlock *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Data");
+    lua_pushnumber(luaState, message->fData);
+    lua_settable(luaState, -3);
+}
 
 #endif

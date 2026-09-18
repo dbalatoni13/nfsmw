@@ -37,34 +37,26 @@ class FnDeltaQFast : public FnAnimMemoryMap {
     FnDeltaQFast();
 
     // Overrides: FnAnimSuper
-    ~FnDeltaQFast() override {
-        if (mPrevQBlock) {
-            MemoryPoolManager::DeleteBlock(mPrevQBlock);
-        }
-    }
+    ~FnDeltaQFast() override;
 
     // Overrides: FnAnimMemoryMap
-    void SetAnimMemoryMap(AnimMemoryMap *anim) override {
-        mpAnim = anim;
-    }
+    void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {
-        DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
+    bool GetLength(float &timeLength) const override;
 
-        timeLength = static_cast<float>(deltaQ->GetNumFrames());
-        return true;
-    }
+    // Overrides: FnAnim
+    void Eval(float prevTime, float currTime, float *sqt) override;
 
     // Overrides: FnAnim
     bool EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) override;
 
   protected:
-    void InitBuffers() {}
+    void InitBuffers();
 
-    void AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs) {}
+    void AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs);
 
-    void SubDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs) {}
+    void SubDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs);
 
     void UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx, int floorDeltaIdx);
 

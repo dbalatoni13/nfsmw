@@ -33,7 +33,6 @@ void SFXObj_Collision::SetupSFX(CSTATE_Base *_StateBase) {
     this->m_pCollisionState = static_cast<CSTATE_Collision *>(this->m_pStateBase);
 }
 
-// UNSOLVED regswap
 void SFXObj_Collision::InitSFX() {
     this->SndBase::InitSFX();
 
@@ -52,7 +51,6 @@ void SFXObj_Collision::InitSFX() {
     this->PitchSlot = ePCH_COLLISION_COL_PITCH;
     this->ReverbSlot = eVRB_COLLISION_RVRB_COL;
 
-    // TODO magic, macro or anynomous enum?
     if (this->m_pCollisionEvent->IsDescribed(0x412)) {
         this->VolSlot = eVOL_COLLISION_SMOKABLE_CAR;
         this->AzimSlot = eVOL_COLLISION_SMACKABLE_AZI;

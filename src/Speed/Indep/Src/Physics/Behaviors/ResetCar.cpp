@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EVehicleReset.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IResetable.h"

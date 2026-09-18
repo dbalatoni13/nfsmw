@@ -41,6 +41,8 @@ enum eSNDCTLSTATE {
     MAX_SNDCTL_STATES = 18,
 };
 
+void SoundPause(bool bPause, eSNDPAUSE_REASON reason);
+
 #define TURNOFF(index) (1 << index)    // Decl: 57
 #define SEND_STATE(index) (1 << index) // Decl: 58
 

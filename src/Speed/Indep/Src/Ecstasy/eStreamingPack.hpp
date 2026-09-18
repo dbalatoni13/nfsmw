@@ -83,7 +83,10 @@ class eStreamingPack : public bTNode<eStreamingPack> {
 
     eStreamingPack() {};
 
-    void RegisterLoadStreamingEntry(eStreamingEntry *entry) {}
+    void RegisterLoadStreamingEntry(eStreamingEntry *entry) {
+        this->NumLoadedStreamingEntries++;
+        this->NumLoadedBytes += entry->ChunkByteSize;
+    }
 
     void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {
         entry->ChunkData = nullptr;

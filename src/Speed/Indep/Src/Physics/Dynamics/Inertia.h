@@ -10,6 +10,10 @@ namespace Inertia {
 // total size: 0xC
 class Tensor : public UVector3 {
   public:
+    Tensor() {}
+
+    Tensor(const UMath::Vector3 &From) : UVector3(From) {}
+
     const Tensor &operator=(const UMath::Vector3 &From) {
         x = From.x;
         y = From.y;
@@ -25,6 +29,37 @@ class Tensor : public UVector3 {
         UMath::Transpose(orientation, orientationInv);
         UMath::Mult(result, orientation, temp);
         UMath::Mult(orientationInv, temp, result);
+    }
+
+
+    void AddPointMass(const UMath::Vector3 &r, float mass) {
+        UVector3 Ioff;
+        float xx = r.x * r.x;
+        float yy = r.y * r.y;
+        float zz = r.z * r.z;
+
+        Ioff.x = yy + zz;
+        Ioff.y = xx + zz;
+        Ioff.z = xx + yy;
+
+        UMath::Scale(Ioff, mass, Ioff);
+        UMath::Add(*this, Ioff, *this);
+    }
+};
+
+// total size: 0xC
+class ParallelAxis : public Tensor {
+  public:
+    ParallelAxis(float mass, float rx, float ry, float rz) {
+        float x2 = rx * rx;
+        float y2 = ry * ry;
+        float z2 = rz * rz;
+
+        x = y2 + z2;
+        y = x2 + z2;
+        z = x2 + y2;
+
+        *this *= mass;
     }
 };
 

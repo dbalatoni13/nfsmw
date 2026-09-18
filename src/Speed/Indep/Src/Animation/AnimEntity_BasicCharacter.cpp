@@ -322,7 +322,7 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
         FindWorldBonePosition(BoneMap[mBoneMapType].RightFoot, &right_foot);
 
-        bVector2 parallel = bVector2(1.0f, 1.0f);
+        bVector2 parallel = bVector2(1.0f, 0.0f);
 
         if (left_foot.x != right_foot.x || left_foot.y != right_foot.y) {
             parallel.x = left_foot.x - right_foot.x;
@@ -343,13 +343,14 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         left0.y += parallel.y + perpendicular.y;
         left1.x += parallel.x - perpendicular.x;
         left1.y += parallel.y - perpendicular.y;
-        right0.x -= parallel.x - perpendicular.x;
-        right0.y -= parallel.y - perpendicular.y;
-        right1.x -= parallel.x + perpendicular.x;
-        right1.y -= parallel.y + perpendicular.y;
+        right0.x += -parallel.x + perpendicular.x;
+        right0.y += perpendicular.y - parallel.y;
+        right1.x += -parallel.x - perpendicular.x;
+        right1.y += -parallel.y - perpendicular.y;
 
         ePoly shadow_poly;
-        float ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
+        bMatrix4 *baseMatrix = mSpaceNode->GetWorldMatrix();
+        float ground = baseMatrix->v3.z + 0.01f;
         shadow_poly.Vertices[0] = bVector3(left1.x, left1.y, ground);
         shadow_poly.Vertices[1] = bVector3(left0.x, left0.y, ground);
         shadow_poly.Vertices[2] = bVector3(right0.x, right0.y, ground);
@@ -359,13 +360,13 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         *reinterpret_cast<uint32 *>(&shadow_poly.Colours[2][0]) = 0x80808080;
         *reinterpret_cast<uint32 *>(&shadow_poly.Colours[3][0]) = 0x80808080;
         shadow_poly.UVs[0][0] = 0.0f;
-        shadow_poly.UVs[0][1] = 0.0f;
         shadow_poly.UVs[0][2] = 1.0f;
-        shadow_poly.UVs[0][3] = 0.0f;
-        shadow_poly.UVs[1][0] = 1.0f;
-        shadow_poly.UVs[1][1] = 1.0f;
         shadow_poly.UVs[1][2] = 0.0f;
+        shadow_poly.UVs[1][0] = 1.0f;
+        shadow_poly.UVs[0][1] = 0.0f;
+        shadow_poly.UVs[0][3] = 0.0f;
         shadow_poly.UVs[1][3] = 1.0f;
+        shadow_poly.UVs[1][1] = 1.0f;
         view->Render(&shadow_poly, CharacterShadowTexture, eGetIdentityMatrix(), 0, 0.0f);
     }
 }

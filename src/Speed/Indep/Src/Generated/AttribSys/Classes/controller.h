@@ -166,7 +166,7 @@ struct controller : Instance {
     typedef ControllerDataRecord TypeOf_VOIPACTION_PUSHTOTALK;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("controller");
+    USE_ATTRIB_ALLOC("Attrib::Gen::controller");
     controller(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -194,10 +194,10 @@ struct controller : Instance {
         return 0x2dee1998;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x2dee1998, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

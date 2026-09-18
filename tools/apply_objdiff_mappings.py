@@ -33,6 +33,8 @@ def apply(game_version: str):
     with open(SYMBOLS_TXT_PATH) as f:
         symbols = f.readlines()
 
+    changed = 0
+
     for i, line in enumerate(symbols):
         tokens = line.split()
         old_symbol = tokens[0]
@@ -49,6 +51,7 @@ def apply(game_version: str):
 
         tokens[0] = new_symbol
         symbols[i] = " ".join(tokens) + "\n"
+        changed += 1
 
     with open(SYMBOLS_TXT_PATH, "w") as f:
         f.writelines(symbols)
@@ -56,10 +59,14 @@ def apply(game_version: str):
     with open("./objdiff.json", "w") as f:
         json.dump(objdiff_config, f)
 
+    return changed
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Expected usage: {0} <game version>".format(sys.argv[0]))
         sys.exit(1)
 
-    apply(sys.argv[1])
+    changed = apply(sys.argv[1])
+
+    print(f"{changed} entries changed)")

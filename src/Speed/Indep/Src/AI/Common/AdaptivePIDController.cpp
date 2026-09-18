@@ -90,13 +90,16 @@ float AdaptivePIDControllerBase::GetSensitivityDerivative(float coefficient_deri
     float model_error_derivative = ModelErrorDerivative.GetValue();
     if (!bEqual(coefficient_derivative, 0.0f, 1e-9f)) {
         return bClamp(model_error_derivative / coefficient_derivative, -1000.0f, 1000.0f);
-    } else if (bEqual(model_error_derivative, 0.0f, 0.001f)) {
-        return 0.0f;
-    } else if (model_error_derivative > 0.0f) {
-        return 1.0f;
-    } else {
-        return -1.0f;
     }
+
+    float result = 0.0f;
+    if (!bEqual(model_error_derivative, 0.0f, 0.001f)) {
+        if (model_error_derivative <= 0.0f) {
+            return -1.0f;
+        }
+        return 1.0f;
+    }
+    return result;
 }
 
 float AdaptivePIDControllerBase::Sign(float v) {

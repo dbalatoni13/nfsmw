@@ -34,7 +34,7 @@ struct effects : Instance {
     typedef RefSpec TypeOf_emittergroup;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("effects");
+    USE_ATTRIB_ALLOC("Attrib::Gen::effects");
     effects(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -62,10 +62,10 @@ struct effects : Instance {
         return 0xebcee74c;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xebcee74c, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

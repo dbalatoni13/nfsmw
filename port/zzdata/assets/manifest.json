@@ -1,0 +1,434 @@
+{
+  "LANGUAGES\\ITALIAN_TEXTONLY.BIN": {
+    "hash": 3425820705,
+    "file": 1,
+    "local_sector": 134548,
+    "total_sector": 288481,
+    "size": 221124,
+    "checksum": 28548469,
+    "iso_offset": 595527624
+  },
+  "LANGUAGES\\DANISH_TEXTONLY.BIN": {
+    "hash": 1274632694,
+    "file": 1,
+    "local_sector": 133847,
+    "total_sector": 287780,
+    "size": 215568,
+    "checksum": 2603451882,
+    "iso_offset": 594091976
+  },
+  "CARS\\BRAKES\\GEOMETRY.BIN": {
+    "hash": 2874151787,
+    "file": 1,
+    "local_sector": 63858,
+    "total_sector": 217791,
+    "size": 6080,
+    "checksum": 1653767643,
+    "iso_offset": 450754504
+  },
+  "LANGUAGES\\ITALIAN.BIN": {
+    "hash": 1890478043,
+    "file": 1,
+    "local_sector": 134538,
+    "total_sector": 288471,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 595507144
+  },
+  "LANGUAGES\\FINNISH.BIN": {
+    "hash": 2693380808,
+    "file": 1,
+    "local_sector": 134187,
+    "total_sector": 288120,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 594788296
+  },
+  "LANGUAGES\\SWEDISH_TEXTONLY.BIN": {
+    "hash": 290896118,
+    "file": 1,
+    "local_sector": 135180,
+    "total_sector": 289113,
+    "size": 212240,
+    "checksum": 4006052779,
+    "iso_offset": 596821960
+  },
+  "GLOBAL\\GAMEPLAY.BIN": {
+    "hash": 1374355139,
+    "file": 1,
+    "local_sector": 135354,
+    "total_sector": 289287,
+    "size": 2103680,
+    "checksum": 1601523677,
+    "iso_offset": 597178312
+  },
+  "LANGUAGES\\DUTCH.BIN": {
+    "hash": 3083044465,
+    "file": 1,
+    "local_sector": 133953,
+    "total_sector": 287886,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 594309064
+  },
+  "TRACKS\\L2RA\\TrackMaps.bin": {
+    "hash": 226702717,
+    "file": 1,
+    "local_sector": 137667,
+    "total_sector": 291600,
+    "size": 16634816,
+    "checksum": 3218985103,
+    "iso_offset": 601915336
+  },
+  "LANGUAGES\\ENGLISH_TEXTONLY.BIN": {
+    "hash": 578808745,
+    "file": 1,
+    "local_sector": 134083,
+    "total_sector": 288016,
+    "size": 212136,
+    "checksum": 489505570,
+    "iso_offset": 594575304
+  },
+  "LANGUAGES\\FINNISH_TEXTONLY.BIN": {
+    "hash": 582077870,
+    "file": 1,
+    "local_sector": 134197,
+    "total_sector": 288130,
+    "size": 207676,
+    "checksum": 2107795088,
+    "iso_offset": 594808776
+  },
+  "LANGUAGES\\GERMAN_TEXTONLY.BIN": {
+    "hash": 2073614073,
+    "file": 1,
+    "local_sector": 134430,
+    "total_sector": 288363,
+    "size": 219804,
+    "checksum": 4204205692,
+    "iso_offset": 595285960
+  },
+  "CARS\\WHEELS\\TEXTURES.BIN": {
+    "hash": 889513715,
+    "file": 1,
+    "local_sector": 92614,
+    "total_sector": 246547,
+    "size": 344704,
+    "checksum": 18107013,
+    "iso_offset": 509646792
+  },
+  "CARS\\BRAKES\\TEXTURES.BIN": {
+    "hash": 2262512611,
+    "file": 1,
+    "local_sector": 63861,
+    "total_sector": 217794,
+    "size": 0,
+    "checksum": 4294967295,
+    "iso_offset": 450760648
+  },
+  "GLOBAL\\HUDTEXDRAG.BIN": {
+    "hash": 522155395,
+    "file": 1,
+    "local_sector": 132148,
+    "total_sector": 286081,
+    "size": 76160,
+    "checksum": 3668570289,
+    "iso_offset": 590612424
+  },
+  "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP.BIN": {
+    "hash": 2793011336,
+    "file": 1,
+    "local_sector": 44192,
+    "total_sector": 198125,
+    "size": 1376320,
+    "checksum": 2544144093,
+    "iso_offset": 410478536
+  },
+  "CARS\\SPOILER\\GEOMETRY.BIN": {
+    "hash": 1217638097,
+    "file": 1,
+    "local_sector": 92783,
+    "total_sector": 246716,
+    "size": 1073600,
+    "checksum": 3107676198,
+    "iso_offset": 509992904
+  },
+  "CARS\\ROOF\\GEOMETRY.BIN": {
+    "hash": 2300814601,
+    "file": 1,
+    "local_sector": 94666,
+    "total_sector": 248599,
+    "size": 714432,
+    "checksum": 2345903045,
+    "iso_offset": 513849288
+  },
+  "LANGUAGES\\SPANISH.BIN": {
+    "hash": 2553752047,
+    "file": 1,
+    "local_sector": 135052,
+    "total_sector": 288985,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 596559816
+  },
+  "GLOBAL\\HUDTEXRACE.BIN": {
+    "hash": 4070650176,
+    "file": 1,
+    "local_sector": 132193,
+    "total_sector": 286126,
+    "size": 53504,
+    "checksum": 1160227749,
+    "iso_offset": 590704584
+  },
+  "LANGUAGES\\DUTCH_TEXTONLY.BIN": {
+    "hash": 1981400951,
+    "file": 1,
+    "local_sector": 133963,
+    "total_sector": 287896,
+    "size": 224596,
+    "checksum": 531607874,
+    "iso_offset": 594329544
+  },
+  "GLOBAL\\HUDTEXTURESPHOTOFINISH.BIN": {
+    "hash": 1461898275,
+    "file": 1,
+    "local_sector": 132228,
+    "total_sector": 286161,
+    "size": 185728,
+    "checksum": 38978110,
+    "iso_offset": 590776264
+  },
+  "GLOBAL\\HUDTEXSPLIT.BIN": {
+    "hash": 1407489585,
+    "file": 1,
+    "local_sector": 132220,
+    "total_sector": 286153,
+    "size": 16128,
+    "checksum": 826783223,
+    "iso_offset": 590759880
+  },
+  "LANGUAGES\\SWEDISH.BIN": {
+    "hash": 1273009424,
+    "file": 1,
+    "local_sector": 135170,
+    "total_sector": 289103,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 596801480
+  },
+  "CARS\\SPOILER_PORSCHES\\GEOMETRY.BIN": {
+    "hash": 1784309335,
+    "file": 1,
+    "local_sector": 94325,
+    "total_sector": 248258,
+    "size": 697472,
+    "checksum": 1762799732,
+    "iso_offset": 513150920
+  },
+  "FRONTEND\\PLATFORMS\\PLATFORMCRIB.BIN": {
+    "hash": 429655195,
+    "file": 1,
+    "local_sector": 45525,
+    "total_sector": 199458,
+    "size": 1902880,
+    "checksum": 3193427723,
+    "iso_offset": 413208520
+  },
+  "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP_BACKROOM.BIN": {
+    "hash": 2268875797,
+    "file": 1,
+    "local_sector": 44865,
+    "total_sector": 198798,
+    "size": 1346928,
+    "checksum": 2573447776,
+    "iso_offset": 411856840
+  },
+  "GLOBAL\\DYNTEX.BIN": {
+    "hash": 703473807,
+    "file": 1,
+    "local_sector": 129925,
+    "total_sector": 283858,
+    "size": 1274240,
+    "checksum": 1109026522,
+    "iso_offset": 586059720
+  },
+  "LANGUAGES\\FRENCH_TEXTONLY.BIN": {
+    "hash": 1544575477,
+    "file": 1,
+    "local_sector": 134309,
+    "total_sector": 288242,
+    "size": 226540,
+    "checksum": 2875994549,
+    "iso_offset": 595038152
+  },
+  "FRONTEND\\PLATFORMS\\CAREER_SAFEHOUSE.BIN": {
+    "hash": 515939018,
+    "file": 1,
+    "local_sector": 43445,
+    "total_sector": 197378,
+    "size": 1528256,
+    "checksum": 2104284323,
+    "iso_offset": 408948680
+  },
+  "CARS\\SPOILER_HATCH\\GEOMETRY.BIN": {
+    "hash": 3122946712,
+    "file": 1,
+    "local_sector": 93811,
+    "total_sector": 247744,
+    "size": 1050688,
+    "checksum": 580226397,
+    "iso_offset": 512098248
+  },
+  "GLOBAL\\HUDTEXDRAGSPLIT.BIN": {
+    "hash": 713665071,
+    "file": 1,
+    "local_sector": 132186,
+    "total_sector": 286119,
+    "size": 13824,
+    "checksum": 3146651686,
+    "iso_offset": 590690248
+  },
+  "LANGUAGES\\DANISH.BIN": {
+    "hash": 4131526160,
+    "file": 1,
+    "local_sector": 133837,
+    "total_sector": 287770,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 594071496
+  },
+  "LANGUAGES\\GERMAN.BIN": {
+    "hash": 2410908595,
+    "file": 1,
+    "local_sector": 134420,
+    "total_sector": 288353,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 595265480
+  },
+  "LANGUAGES\\ENGLISH.BIN": {
+    "hash": 662116963,
+    "file": 1,
+    "local_sector": 134073,
+    "total_sector": 288006,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 594554824
+  },
+  "LANGUAGES\\POLISH.BIN": {
+    "hash": 2903205864,
+    "file": 1,
+    "local_sector": 134933,
+    "total_sector": 288866,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 596316104
+  },
+  "CARS\\SPOILER_CARRERA\\GEOMETRY.BIN": {
+    "hash": 3943445200,
+    "file": 1,
+    "local_sector": 93308,
+    "total_sector": 247241,
+    "size": 1029312,
+    "checksum": 3992406312,
+    "iso_offset": 511068104
+  },
+  "LANGUAGES\\FRENCH.BIN": {
+    "hash": 3353010991,
+    "file": 1,
+    "local_sector": 134299,
+    "total_sector": 288232,
+    "size": 18808,
+    "checksum": 1732843162,
+    "iso_offset": 595017672
+  },
+  "LANGUAGES\\POLISH_TEXTONLY.BIN": {
+    "hash": 1975008974,
+    "file": 1,
+    "local_sector": 134943,
+    "total_sector": 288876,
+    "size": 222952,
+    "checksum": 2251769882,
+    "iso_offset": 596336584
+  },
+  "CARS\\TEXTURES.BIN": {
+    "hash": 42450767,
+    "file": 1,
+    "local_sector": 90452,
+    "total_sector": 244385,
+    "size": 424832,
+    "checksum": 3650655713,
+    "iso_offset": 505219016
+  },
+  "CARS\\WHEELS\\GEOMETRY.BIN": {
+    "hash": 1501152891,
+    "file": 1,
+    "local_sector": 90660,
+    "total_sector": 244593,
+    "size": 4000512,
+    "checksum": 2795660154,
+    "iso_offset": 505645000
+  },
+  "GLOBAL\\FE_ATTRIB.BIN": {
+    "hash": 2159967075,
+    "file": 1,
+    "local_sector": 40987,
+    "total_sector": 194920,
+    "size": 116352,
+    "checksum": 1337015244,
+    "iso_offset": 403914696
+  },
+  "GLOBAL\\ATTRIBUTES.BIN": {
+    "hash": 2541041562,
+    "file": 1,
+    "local_sector": 129551,
+    "total_sector": 283484,
+    "size": 694976,
+    "checksum": 1327210865,
+    "iso_offset": 585293768
+  },
+  "LANGUAGES\\SPANISH_TEXTONLY.BIN": {
+    "hash": 1065892021,
+    "file": 1,
+    "local_sector": 135062,
+    "total_sector": 288995,
+    "size": 220556,
+    "checksum": 564433308,
+    "iso_offset": 596580296
+  },
+  "Global\\InGameMemoryFile.bin": {
+    "hash": 2530399709,
+    "file": 1,
+    "local_sector": 136382,
+    "total_sector": 290315,
+    "size": 79599,
+    "checksum": 3331183021,
+    "iso_offset": 599283656
+  },
+  "Global\\GlobalMemoryFile.bin": {
+    "hash": 2228279645,
+    "file": 1,
+    "local_sector": 40472,
+    "total_sector": 194405,
+    "size": 1007232,
+    "checksum": 2476257138,
+    "iso_offset": 402859976
+  },
+  "FRONTEND\\PLATFORMS\\CAR_LOT.BIN": {
+    "hash": 638793370,
+    "file": 1,
+    "local_sector": 42943,
+    "total_sector": 196876,
+    "size": 1027040,
+    "checksum": 1494552588,
+    "iso_offset": 407920584
+  },
+  "LANGUAGES\\LANGUAGETEXTURES.BIN": {
+    "hash": 3659047681,
+    "file": 1,
+    "local_sector": 134773,
+    "total_sector": 288706,
+    "size": 42560,
+    "checksum": 459610351,
+    "iso_offset": 595988424
+  }
+}

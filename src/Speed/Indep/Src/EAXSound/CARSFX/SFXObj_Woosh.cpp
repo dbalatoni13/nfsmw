@@ -33,11 +33,13 @@ void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &
             sizeperblock = 6;
             return;
 
+#ifndef EA_BUILD_A124
         case DRIVE_BY_CAMERA_BY:
             base = WHSH_Post_Fast_01;
             numblocks = 1;
             sizeperblock = 6;
             return;
+#endif
 
         case DRIVE_BY_SMOKABLE:
             base = WHSH_Smack_Med_01;
@@ -74,15 +76,26 @@ void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &
 }
 
 SFXObj_Woosh::SFXObj_Woosh() {
+#ifndef EA_BUILD_A124
     this->m_SndParams.Vol = 0x7FFF;
     this->m_SndParams.Pitch = 0x1000;
     this->m_SndParams.ID = 0;
     this->m_SndParams.Az = 0;
     this->m_SndParams.Mag = 0;
     this->m_SndParams.RVerb = 0;
+#else
+    this->m_SndParams.Vol = 0x7FFF;
+    this->m_SndParams.Pitch = 0x1000;
+    this->m_SndParams.ID = 0;
+#endif
     this->m_pDriveByState = nullptr;
     this->m_pStitchData = nullptr;
     this->m_pWooshStich = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_SndParams.RVerb = 0;
+    this->m_SndParams.Az = 0;
+    this->m_SndParams.Mag = 0;
+#endif
 }
 
 SFXObj_Woosh::~SFXObj_Woosh() {
@@ -137,10 +150,12 @@ void SFXObj_Woosh::InitSFX() {
         case DRIVE_BY_TRAFFIC:
             GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
             // fallthrough
+#ifndef EA_BUILD_A124
         case DRIVE_BY_CAMERA_BY:
             this->SetDMIX_Input(13, 0x7FFF);
             GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
             // fallthrough
+#endif
         case DRIVE_BY_UNKNOWN:
         default:
             break;
@@ -175,10 +190,12 @@ void SFXObj_Woosh::ProcessUpdate() {
 
     SndBase::ProcessUpdate();
 
-    this->SetDMIX_Input(11, 0);
-    this->SetDMIX_Input(13, 0);
+    this->SetDMIX_Input(TRIG_WOOSH_EVENT, 0);
+#ifndef EA_BUILD_A124
+    this->SetDMIX_Input(TRIG_WOOSH_CAMERA_BY, 0);
+#endif
     if (this->m_pDriveByState->IsAttached() && (this->m_pWooshStich != nullptr)) {
-        Pitch = this->GetDMixOutput(14, DMX_PITCH);
+        Pitch = this->GetDMixOutput(ePCH_WOOSH_PITCH, DMX_PITCH);
         switch (this->m_pDriveByState->m_DriveByInfo.eDriveByType) {
             case DRIVE_BY_AI_CAR:
                 slottouse = eVOL_WOOSH_AICAR;
@@ -204,9 +221,11 @@ void SFXObj_Woosh::ProcessUpdate() {
             case DRIVE_BY_LAMPPOST:
                 slottouse = eVOL_WOOSH_LAMPPOST;
                 break;
+#ifndef EA_BUILD_A124
             case DRIVE_BY_CAMERA_BY:
                 slottouse = eVOL_WOOSH_CAMERA_BY;
                 break;
+#endif
             case DRIVE_BY_TREE:
             default:
                 slottouse = eVOL_WOOSH_TREE;
@@ -216,7 +235,7 @@ void SFXObj_Woosh::ProcessUpdate() {
         this->m_SndParams.Az = this->GetDMixOutput(0, DMX_AZIM);
         this->m_SndParams.Vol = this->GetDMixOutput(slottouse, DMX_VOL);
         this->m_SndParams.Pitch = Pitch;
-        this->m_SndParams.RVerb = this->GetDMixOutput(15, DMX_VOL);
+        this->m_SndParams.RVerb = this->GetDMixOutput(eVRB_WOOSH_VERB, DMX_VOL);
         this->m_pWooshStich->Update(&this->m_SndParams);
     }
 }

@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySimTick.h"
+
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
 #include "Speed/Indep/Src/Lua/LuaAttributes.h"
@@ -32,7 +33,9 @@ GameplayActivity::GameplayActivity(Sim::Param params) : Sim::Activity(0) {
     mUpdateTask = AddTask("GameplayActivity", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdateTask, "GameplayActivity");
 
+#ifndef EA_BUILD_A124
     GManager::Get().PreBeginGameplay();
+#endif
     GRaceStatus::Init();
     LuaRuntime::Init(0x10000);
     LuaPostOffice::Init();
@@ -59,7 +62,7 @@ Sim::IActivity *GameplayActivity::Construct(Sim::Param params) {
 }
 
 bool GameplayActivity::OnTask(HSIMTASK task, float dT) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     if (task == mUpdateTask) {
         float simTime = Sim::GetTime();
@@ -73,3 +76,5 @@ bool GameplayActivity::OnTask(HSIMTASK task, float dT) {
     }
     return false;
 }
+
+BIND_ACTIVITY_FACTORY(GameplayActivity)

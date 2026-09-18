@@ -22,7 +22,7 @@ class ESndGameState : public Event {
 
     ~ESndGameState() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fState;      // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ESndGameState : public Event {
 };
 
 void ESndGameState_MakeEvent_Callback(const void *staticData);
+int ESndGameState_MakeEvent_LuaBinding(struct lua_State *L);
+void ESndGameState_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

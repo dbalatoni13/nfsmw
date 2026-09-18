@@ -35,7 +35,7 @@ class ESpawnFragment : public Event {
 
     ~ESpawnFragment() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     UCrc32 fPartName;               // offset: 0x8, size 0x4
@@ -56,5 +56,7 @@ class ESpawnFragment : public Event {
 };
 
 void ESpawnFragment_MakeEvent_Callback(const void *staticData);
+int ESpawnFragment_MakeEvent_LuaBinding(struct lua_State *L);
+void ESpawnFragment_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

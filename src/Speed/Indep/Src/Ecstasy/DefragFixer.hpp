@@ -23,7 +23,9 @@ class DefragFixer {
     Range RangeTable[128]; // offset 0xC, size 0x600
 
   public:
-    DefragFixer() {}
+    DefragFixer() {
+        Init();
+    }
 
     void Init() {
         this->MemLow = 0;

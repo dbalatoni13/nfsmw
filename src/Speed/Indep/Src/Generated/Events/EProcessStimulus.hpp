@@ -24,7 +24,7 @@ class EProcessStimulus : public Event {
 
     ~EProcessStimulus() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     UCrc32 fSystemName; // offset: 0x8, size 0x4
@@ -36,5 +36,7 @@ class EProcessStimulus : public Event {
 };
 
 void EProcessStimulus_MakeEvent_Callback(const void *staticData);
+int EProcessStimulus_MakeEvent_LuaBinding(struct lua_State *L);
+void EProcessStimulus_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

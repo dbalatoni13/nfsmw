@@ -13,7 +13,7 @@ struct pursuitsupport : Instance {
     typedef EA::Reflection::Float TypeOf_MinimumSupportDelay;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("pursuitsupport");
+    USE_ATTRIB_ALLOC("Attrib::Gen::pursuitsupport");
     pursuitsupport(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     pursuitsupport(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -31,10 +31,10 @@ struct pursuitsupport : Instance {
         return 0x77b93104;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x77b93104, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

@@ -8,7 +8,9 @@
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/os/OSArena.h"
+#ifdef EA_PLATFORM_GAMECUBE
 #include <dolphin.h>
+#endif
 #endif
 
 // TODO
@@ -33,7 +35,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetAllocationNumber() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding);
 #else
         return 0;
@@ -41,7 +43,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetDebugLine() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding + 2);
 #else
         return 0;
@@ -134,9 +136,34 @@ class MemoryPool {
     bMutex Mutex;                                  // offset 0x40, size 0x20
 };
 
+// c36bw e3: el objeto original tiene esta cadena y "Persistent Memory Pool" dentro
+// de UN SOLO simbolo (lbl_803D1288, 120 B). Emitidas como dos literales distintos,
+// la segunda nace MUERTA -- el nombre que se le pasa a bMalloc lo tira la inline de
+// bWare.hpp:97 -- y -strip-unused-data se lleva 16 B del DOL. En un unico literal la
+// segunda cae DENTRO del simbolo vivo y sobrevive; el formato no cambia porque printf
+// para en el primer NUL. El 96 es el desplazamiento que el objetivo le da.
+#define BWARE_OUT_OF_MEMORY_FMT "ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d\n" "\0" "Persistent Memory Pool" "\0"
+#define BWARE_PERSISTENT_MEMORY_POOL (BWARE_OUT_OF_MEMORY_FMT + 96)
+
+// c36bw e5: el objetivo mete en UN SOLO simbolo (lbl_803D122C, 60 B) el "\n" de
+// PrintAllocations*, las dos cadenas del cuerpo de MemoryPool::SetFancyStompDetector
+// -- que aqui es un stub vacio, asi que no las emitimos -- y el nombre muerto de
+// bMalloc de bSetMemoryPoolDebugTracing. Solo el "\n" se referencia; las otras tres
+// nacen muertas y -strip-unused-data se lleva 24 B si van en literales sueltos.
+// En un unico literal caen dentro del simbolo vivo, y de paso aparecen los 24 B de
+// "NULL" y "Stomp Detector" que nos faltaban. Desplazamientos del objetivo:
+//     +0   "\n"                              (vivo)
+//     +4   "NULL"                          (SetFancyStompDetector)
+//     +12  "Stomp Detector"                (SetFancyStompDetector)
+//     +28  "Tracing disabled for this pool" (nombre de bMalloc, lo tira bWare.hpp:97)
+#define BWARE_MEM_NEWLINE "\n" "\0\0\0" "NULL" "\0\0\0\0" "Stomp Detector" "\0\0" "Tracing disabled for this pool" "\0"
+#define BWARE_MEM_TRACING_DISABLED (BWARE_MEM_NEWLINE + 28)
+
 int bMemoryAutomaticVerifyPoolIntegrity = 0; // size: 0x4, address: 0x80416418
 int bMemoryPrintEachAllocation = 0;
-int EnableCleanupBorrowedMemoryBlock = 0;
+unsigned int bMemoryPrintAllocationRangeLow = 0;
+unsigned int bMemoryPrintAllocationRangeHigh = 0;
+int EnableCleanupBorrowedMemoryBlock = 1;
 int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
@@ -499,7 +526,7 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
             if (header->GetDebugLine() != 0) {
                 bReleasePrintf(", %d", header->GetDebugLine());
             }
-            bReleasePrintf("\n");
+            bReleasePrintf(BWARE_MEM_NEWLINE);
             prev_header = header;
         } else {
             prev_header = nullptr;
@@ -521,7 +548,7 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
             if (header->GetDebugLine() != 0) {
                 bReleasePrintf(", %d", header->GetDebugLine());
             }
-            bReleasePrintf("\n");
+            bReleasePrintf(BWARE_MEM_NEWLINE);
         }
     }
 }
@@ -651,7 +678,7 @@ bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off) {
     bool previous;
 
     if (!on_off) {
-        void *dummy = bMalloc(0x10, "Tracing disabled for this pool", 0, (pool_num & 0xf) | 0x40);
+        void *dummy = bMalloc(0x10, BWARE_MEM_TRACING_DISABLED, 0, (pool_num & 0xf) | 0x40);
 
         previous = MemoryPools[pool_num]->SetDebugTracing(false);
         bFree(dummy);
@@ -758,7 +785,7 @@ void bMemoryInit() {
 // STRIPPED
 void bMemoryUpdateTraceInformation() {}
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
 }
@@ -840,7 +867,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         return &header[1];
     }
 
-    bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(), debug_text,
+    bReleasePrintf(BWARE_OUT_OF_MEMORY_FMT, pool->GetName(), debug_text,
                    size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
     bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
     bBreak();
@@ -1039,31 +1066,34 @@ static char bMemoryDebugStringNoName[8] = "NO_NAME";
 #endif
 
 void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
-    // TODO magic numbers (flags)
-    int allocation_params = 0x40;
+
 #ifdef EA_BUILD_A124
     char *name = bMemoryDebugStringNoName;
 #else
     char *name;
 #endif
+    int allocation_params = BMEMORY_TOP_BIT;
+    const EA::TagValuePair *p = &flags;
+    void *ptr;
 
-    for (const EA::TagValuePair *p = &flags; p != nullptr; p = p->mNext) {
+    while (p != nullptr) {
         switch (p->mTag) {
             case 1:
                 if (p->mValue.mPointer != nullptr) {
-                    name = static_cast<char *>(p->mValue.mPointer);
+                    name = static_cast<char *>(const_cast<void *>(p->mValue.mPointer));
                 }
                 break;
             case 2:
-                allocation_params |= (p->mValue.mInt & 0x1ffc) << 6;
+                allocation_params |= BMEMORY_ALIGNMENT(p->mValue.mInt);
                 break;
             case 3:
-                allocation_params |= (p->mValue.mInt & 0x1ffc) << 0x11;
+                allocation_params |= BMEMORY_ALIGNMENT_OFFSET(p->mValue.mInt);
                 break;
             case 4:
-                allocation_params &= ~0x40;
+                allocation_params &= ~BMEMORY_TOP_BIT;
                 break;
         }
+        p = p->mNext;
     }
     return bMalloc(size, name, 0, allocation_params);
 }
@@ -1090,7 +1120,7 @@ int bMemoryAllocator::Release() {
 
 void bMemoryCreatePersistentPool(int size) {
     bMemoryPersistentPoolNumber = bGetFreeMemoryPoolNum();
-    void *mem = bMalloc(size, "Persistent Memory Pool", 0, 0);
+    void *mem = bMalloc(size, BWARE_PERSISTENT_MEMORY_POOL, 0, 0);
     bInitMemoryPool(bMemoryPersistentPoolNumber, mem, size, "Persistent Pool");
     TheMemoryPersistentAllocator.SetMemoryPool(bMemoryPersistentPoolNumber);
 }

@@ -29,8 +29,6 @@ HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType ct, Rend
     this->Load(oc->mWorldID, CarRenderUsage_AIHeli, !oc->mSpoolLoad, 0);
 }
 
-HeliRenderConn::~HeliRenderConn() {}
-
 void HeliRenderConn::Update(const RenderConn::Pkt_Heli_Service &data, float dT) {
     CarRenderInfo *car_render_info;
 

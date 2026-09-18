@@ -3,6 +3,11 @@
 #ifndef EVENTSYS_DATA_H
 #define EVENTSYS_DATA_H
 
+// En el original este tipo vive dentro de CARP: el unico simbolo que lo menciona
+// es Q24CARP9QueryDesc. Declararlo en el ambito global hacia que las plantillas
+// instanciadas con el (SearchPackedBinaryTree) salieran con 9QueryDesc a secas.
+namespace CARP {
+
 struct QueryDesc {
     unsigned int mQueryName;  // offset 0x0, size 0x4
     unsigned int mInputName;  // offset 0x4, size 0x4
@@ -34,5 +39,7 @@ struct QueryDesc {
         return this->mInputName != rhs;
     }
 };
+
+} // namespace CARP
 
 #endif

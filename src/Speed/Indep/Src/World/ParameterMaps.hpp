@@ -219,7 +219,9 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
 
     virtual int GetDataInt(int field_index);
 
-    // int IsValid() {}
+    int IsValid() {
+        return this->Layer != nullptr;
+    }
 
     unsigned int GetAutoAttachLayerNamehash() {
         return this->AutoAttachLayerNamehash;
@@ -232,6 +234,7 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
   protected:
     virtual void SetUpForNewLayer();
 
+  public:
     ParameterMapLayer *Layer;       // offset 0x8, size 0x4
     uint32 AutoAttachLayerNamehash; // offset 0xC, size 0x4
     const char *DebugName;          // offset 0x10, size 0x4

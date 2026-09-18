@@ -12,7 +12,7 @@ unsigned int bStringHashUpper(const char *text) {
     return h;
 }
 
-unsigned int bStringHash(const char *text) {
+uint32 bStringHash(const char *text) {
     unsigned int h = ~0;
     while (*text) {
         h = (h << 5) + h;
@@ -102,7 +102,6 @@ int bStrCmp(const char *s1, const char *s2) {
     return c1 - c2;
 }
 
-// UNSOLVED
 int bStrNCmp(const char *s1, const char *s2, int n) {
     if (s1 == nullptr) {
         if (s2 != nullptr) {
@@ -128,19 +127,7 @@ int bStrNCmp(const char *s1, const char *s2, int n) {
         }
     }
 
-    if (n >= 0) {
-        if (*s1 == '\0') {
-            if (*s2 == '\0') {
-                return s1[-1] - s2[-1];
-            } else {
-                return -1;
-            }
-        } else {
-            return 1;
-        }
-    } else {
-        return 0;
-    }
+    return n >= 0 ? (*s1 == '\0' ? (*s2 == '\0' ? s1[-1] - s2[-1] : -1) : 1) : 0;
 }
 
 int bStrICmp(const char *s1, const char *s2) {
@@ -166,7 +153,6 @@ int bStrICmp(const char *s1, const char *s2) {
     return c1 - c2;
 }
 
-// UNSOLVED
 int bStrNICmp(const char *s1, const char *s2, int n) {
     if (s1 == nullptr) {
         if (s2 != nullptr) {
@@ -197,19 +183,7 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         }
     }
 
-    if (n >= 0) {
-        if (*s1 == '\0') {
-            if (*s2 == '\0') {
-                return bToUpper(s1[-1]) - bToUpper(s2[-1]);
-            } else {
-                return -1;
-            }
-        } else {
-            return 1;
-        }
-    } else {
-        return 0;
-    }
+    return n >= 0 ? (*s1 == '\0' ? (*s2 == '\0' ? bToUpper(s1[-1]) - bToUpper(s2[-1]) : -1) : 1) : 0;
 }
 
 char *bStrCat(char *to, const char *s1, const char *s2) {
@@ -462,8 +436,8 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
             return false;
         }
 
-        string++;
         wild++;
+        string++;
     }
 
     while (*string != '\0') {

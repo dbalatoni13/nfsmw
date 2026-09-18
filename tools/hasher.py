@@ -53,10 +53,15 @@ def generate_header(in_file: Path) -> str:
     binhash_strings: list[str] = []
     vlthash_strings: list[str] = []
 
-    sourcelist_content = in_file.read_text(encoding="UTF-8")
+    sourcelist_content = in_file.read_text(encoding="latin-1")
+    # Quitar comentarios // y /* */ antes de buscar includes: una ruta entre
+    # comillas dentro de un comentario NO es un include (ej. zFe.cpp documenta
+    # `".../feScrollerina.hpp"` en comentarios y antes rompía el build).
+    sourcelist_content = re.sub(r"//[^\n]*", "", sourcelist_content)
+    sourcelist_content = re.sub(r"/\*.*?\*/", "", sourcelist_content, flags=re.DOTALL)
     for file_match in include_pattern.finditer(sourcelist_content):
         source_file_path = Path("src") / file_match.group(1)
-        source_file_content = source_file_path.read_text(encoding="UTF-8")
+        source_file_content = source_file_path.read_text(encoding="latin-1")
         # TODO headers
         for hash_match in binhash_pattern.finditer(source_file_content):
             # spaces are encoded as $$ because macro names can't contain spaces

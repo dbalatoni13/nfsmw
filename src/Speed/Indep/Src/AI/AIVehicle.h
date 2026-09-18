@@ -19,6 +19,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
@@ -258,7 +259,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return 0.0f;
     }
 
-    EventSequencer::IEngine *GetEngine() const {
+    IEngine *GetEngine() const {
         return mIEngine;
     }
 
@@ -356,7 +357,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     ICollisionBody *mCollisionBody;              // offset 0xD8, size 0x4
     ITransmission *mITransmission;               // offset 0xDC, size 0x4
     ISuspension *mISuspension;                   // offset 0xE0, size 0x4
-    EventSequencer::IEngine *mIEngine;           // offset 0xE4, size 0x4
+    IEngine *mIEngine;                           // offset 0xE4, size 0x4
     IInput *mIInput;                             // offset 0xE8, size 0x4
     WRoadNav *mCollNav;                          // offset 0xEC, size 0x4
     Attrib::Gen::aivehicle *mAttributes;         // offset 0xF0, size 0x4
@@ -633,12 +634,16 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
     void Update(float dT) override;
 
     // Overrides: IHumanAI
+    // En clase a proposito: el objetivo la emite en el bloque de finish_file,
+    // justo ANTES de GetAiControl (obj#938 contra obj#939). Fuera de la clase
+    // sale en orden de fichero (nue#241) y descoloca los 770 simbolos que
+    // vienen detras. Ver docs/analisis/r53-cerca3.md.
     bool IsPlayerSteering() override {
-        if (bAiControl) {
-            return false;
-        } else {
-            return IsDragSteering() == false;
+        bool result = false;
+        if (!bAiControl) {
+            result = IsDragSteering() == false;
         }
+        return result;
     }
 
     // Overrides: IHumanAI

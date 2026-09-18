@@ -19,7 +19,7 @@ class EAudioWorldTest : public Event {
 
     ~EAudioWorldTest() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EAudioWorldTest_MakeEvent_Callback(const void *staticData);

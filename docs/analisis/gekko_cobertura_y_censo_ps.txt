@@ -1,0 +1,65 @@
+LANGUAGE = PowerPC:BE:32:Gekko_Broadway
+COMPILER = default
+GHIDRA   = 12.1.2
+
+=== PART A: disassembly coverage of the 27 open functions ===
+addr       size   insn   bytes  cover%  psN   firstGap   name
+8007c390   3868   967    3868   100.0   12    -          Update__8ICEMoverf
+8008095c   3604   901    3604   100.0   18    -          staticinit_zCamera
+802feab0   2980   745    2980   100.0   36    -          HolePunchAvoidables__8WRoadNavP9NavCookieiff
+802cb51c   2908   727    2908   100.0   28    -          RenderFlaresOnCar__13CarRenderInfo
+8008f098   2352   588    2352   100.0   0     -          Initialize__Q25EAGL413DynamicLoader
+80109358   2072   518    2072   100.0   185   -          epCalculateLocalDirectionalPOS16
+80109bb8   2044   511    2044   100.0   36    -          UpdatePlatInfo__27eLightMaterialPlatInterface
+8026c574   1588   397    1588   100.0   14    -          ActualReadJoystickData__Fv
+800d80fc   1240   310    1240   100.0   8     -          GenerateRoadNoise__16CARSFX_RoadNoise
+80075c44   992    248    992    100.0   6     -          Update__19TrackCarCameraMoverf
+80321474   924    231    924    100.0   0     -          SimThread_Step
+802c9fb8   876    219    876    100.0   14    -          UpdateWheelYRenderOffset__13CarRenderInfo
+8024b310   856    214    856    100.0   6     -          UpdateLoaded__Q217SuspensionTraffic4Tire
+8030183c   816    204    816    100.0   6     -          InitAtSegment__8WRoadNavscf
+803598fc   740    185    740    100.0   0     -          VP6_PredictFilteredBlock
+802bc0a4   708    177    708    100.0   6     -          GetLoadingPriority__13TrackStreamer
+802dfcac   684    171    684    100.0   0     -          DefragmentPool__9CarLoader
+8034bac4   632    158    632    100.0   0     -          IdctColumn
+802a2248   596    149    596    100.0   0     -          Setup__Q26Speech13RoadblockFlow
+8031f7fc   588    147    588    100.0   0     -          HandleTriggers
+8034bd3c   516    129    516    100.0   0     -          IdctRow
+800a3090   456    114    456    100.0   0     -          EvalState__Q29EAGL4Anim14FnRawStateChanf
+80321330   324    81     324    100.0   0     -          SimThread_Init
+802dd360   304    76     304    100.0   0     -          SetMemoryPoolSize__9CarLoaderi
+80320840   276    69     276    100.0   0     -          Effect_Init
+8010ac40   268    67     268    100.0   0     -          eProject__FfffPA3_fPfN44
+8031fa48   260    65     260    100.0   0     -          CookValues
+803210b8   196    49     196    100.0   0     -          Effect_PerformEnvelope
+TOTAL bytes=33668 covered=33668 (100.0%) psInsn=375
+
+=== PART B: decode of every paired-single word ===
+decoded as paired-single : 8627
+NOT paired-single        : 0
+-- mnemonic histogram --
+  ps_abs         2
+  ps_add         59
+  ps_cmpo0       1
+  ps_madd        31
+  ps_madds0      62
+  ps_madds1      47
+  ps_merge00     116
+  ps_merge01     5
+  ps_merge10     7
+  ps_merge11     30
+  ps_mr          65
+  ps_msub        12
+  ps_mul         99
+  ps_muls0       78
+  ps_neg         4
+  ps_nmsub       4
+  ps_res         1
+  ps_rsqrte      1
+  ps_sel         6
+  ps_sub         30
+  ps_sum0        14
+  ps_sum1        3
+  psq_l          4094
+  psq_lu         1
+  psq_st         3855

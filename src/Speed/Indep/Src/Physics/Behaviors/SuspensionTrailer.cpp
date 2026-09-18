@@ -264,7 +264,7 @@ void SuspensionTrailer::Tire::UpdateFree(float dT) {
 }
 
 float TrailerCorneringForceTable[7] = {0.0f, 0.4f, 0.8f, 1.2f, 1.6f, 1.75f, 1.65f};
-Table TrailerCorneringForce(TrailerCorneringForceTable, 7, 0.0f, 1.0f / 3.0f);
+Table TrailerCorneringForce(TrailerCorneringForceTable, 7, 0.0f, DEG2ANGLE(12.0f));
 
 void SuspensionTrailer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
     const float brake_spec = FTLB2NM(this->mBrakes->BRAKES().At(this->mAxleIndex)) * 4.0f;
@@ -494,7 +494,6 @@ void SuspensionTrailer::DoSimpleAero(State &state) {
     this->mRB->ResolveForce(drag_vector);
 }
 
-// UNSOLVED, float math
 void SuspensionTrailer::DoWheelForces(State &state) {
     const float dT = state.time;
 
@@ -555,31 +554,31 @@ void SuspensionTrailer::DoWheelForces(State &state) {
         float max_compression = travel_specs[axle];
 
         if (wheel.GetCompression() == 0.0f) {
-            float delta = newCompression - max_compression;
-            maxDelta = UMath::Max(maxDelta, delta);
+            maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
         }
 
         newCompression = UMath::Max(newCompression, 0.0f);
         if (newCompression > max_compression) {
-            maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
+            float delta = newCompression - max_compression;
+            maxDelta = UMath::Max(maxDelta, delta);
             newCompression = max_compression;
         }
 
         if (newCompression > 0.0f && upness > VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
             ++wheelsOnGround;
 
-            float springForce = newCompression * spring_specs[axle];
+            float springForce;
             const float diff = newCompression - wheel.GetCompression();
             const float rise = diff / dT;
-            float spring = springForce * (newCompression * progression[axle] + 1.0f);
+
+            float spring = (newCompression * spring_specs[axle]) * (newCompression * progression[axle] + 1.0f);
             float damp = rise * shock_specs[axle];
 
-            if (damp > this->mSuspensionInfo->SHOCK_BLOWOUT() * 9.81f * mass) {
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
-            springForce = damp + spring + sway_stiffness[i];
-            springForce = UMath::Max(springForce, 0.0f);
+            springForce = UMath::Max(damp + spring + sway_stiffness[i], 0.0f);
 
             UVector3 verticalForce = UVector3(vUp) * springForce;
             UVector3 driveForce;

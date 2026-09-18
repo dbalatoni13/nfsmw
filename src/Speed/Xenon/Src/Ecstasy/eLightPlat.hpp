@@ -12,4 +12,8 @@ struct eLightMaterialPlatInterface {
 
 void elInitPlat();
 
+// r71e: la capa GC declara PlatConvertColor (eLightPlat.hpp:50) y eLight.hpp
+// (indep) la usa; el stub Xenon no la tenia. X360 es big-endian como GC.
+unsigned int PlatConvertColor(unsigned int colour);
+
 #endif

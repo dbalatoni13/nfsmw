@@ -58,9 +58,13 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     AICopManager(Sim::Param params);
     static IActivity *Construct(Sim::Param params);
     bool IsPendingSupportVehicle(IVehicle *ivehicle) const;
+
+  private:
     IVehicle *GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool bValidOnesOnly);
     IVehicle *GetAvailableCopVehicleByName(const char *name);
     IVehicle *GetActiveCopVehicleFromOutOfView(UCrc32 vehicleClass);
+
+  public:
     IPursuit *GetPursuitActivity(ISimable *itargetSimable);
     bool TrySpawnCop(const SpawnCopRequest &request);
     void UpdateSpawnRequests();
@@ -70,15 +74,27 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     void MessageBreakerStopCops(const MBreakerStopCops &message);
     void ApplyBreakerZones();
     bool SpawnPatrolCar();
+
+  private:
     bool GetSpawnPositionAheadOfTarget(IPursuit *ip, UMath::Vector3 &pos, UMath::Vector3 &forward, float distAhead);
     bool SpawnPursuitCar(IPursuit *ipursuit);
+
+  public:
     bool SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableCopCar);
     bool SpawnPursuitCarByName(IPursuit *ipursuit, const char *name);
+
+  private:
     void SpawnVehicleBehindTarget(IPursuit *ipursuit, IVehicle *availableCopCar);
     bool SpawnCopCarNow(IPursuit *ipursuit);
+
+  public:
     bool SpawnPursuitHelicopter(IPursuit *ipursuit);
     bool CreateRoadBlock(IPursuit *ipursuit, int cop_count, IVehicle *ivehicle_chopper, IVehicle::List *suvList);
+
+  private:
     void RemoveActiveCopVehicle(IVehicle *ivehicle);
+
+  public:
     void UpdatePatrols();
     bool GetHeavySupportVehicles(GroundSupportRequest *gsr);
     bool StartHeavySupport(IPursuit *ipursuit, GroundSupportRequest *gsr);

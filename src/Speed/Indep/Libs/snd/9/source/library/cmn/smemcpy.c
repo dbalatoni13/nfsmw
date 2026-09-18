@@ -2,9 +2,9 @@
 
 namespace Snd {
     void *Util::MemCpy(void *pDst, const void *pSrc, unsigned int bytes) {
-        int si = (int)pSrc;
-        int di = (int)pDst;
-        int difference = si - di;
+        sndptrint si = (sndptrint)pSrc;
+        sndptrint di = (sndptrint)pDst;
+        sndptrint difference = si - di;
         if (bytes == 0 || difference == 0) {
             return NULL;
         }
@@ -119,8 +119,8 @@ namespace Snd {
 
             if (bytes > 1) {
                 *(short *)dw = *(short *)sw;
-                sw = (int *)((int)sw + 2);
-                dw = (int *)((int)dw + 2);
+                sw = (int *)((sndptrint)sw + 2);
+                dw = (int *)((sndptrint)dw + 2);
                 bytes -= 2;
             }
 

@@ -87,7 +87,9 @@ class Model : public Sim::Object,
     }
 
     WUID GetWorldID() const override;
-    const CollisionGeometry::Bounds *GetCollisionGeometry() const override;
+    const CollisionGeometry::Bounds *GetCollisionGeometry() const override {
+        return mGeometry;
+    }
     void ReleaseModel() override;
 
     ISimable *GetSimable() const override {
@@ -144,9 +146,13 @@ class Model : public Sim::Object,
         this->mDistanceToView = distance;
     }
 
-    bool IsRendering() const {}
+    bool IsRendering() const {
+        return mService != NULL;
+    }
 
-    bool IsSimulating() const {}
+    bool IsSimulating() const {
+        return mSimable != NULL;
+    }
 
     virtual void OnBeginSimulation() {}
 
@@ -154,7 +160,7 @@ class Model : public Sim::Object,
 
     virtual void OnBeginDraw() {}
 
-    virtual bool OnDraw(Packet *service);
+    virtual bool OnDraw(Packet *service) = 0;
 
     virtual void OnEndDraw() {}
 

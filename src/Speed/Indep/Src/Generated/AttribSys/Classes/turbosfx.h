@@ -23,7 +23,7 @@ struct turbosfx : Instance {
     typedef EA::Reflection::UInt32 TypeOf_Vol_Spool;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("turbosfx");
+    USE_ATTRIB_ALLOC("Attrib::Gen::turbosfx");
     turbosfx(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -51,10 +51,10 @@ struct turbosfx : Instance {
         return 0x55624a85;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x55624a85, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

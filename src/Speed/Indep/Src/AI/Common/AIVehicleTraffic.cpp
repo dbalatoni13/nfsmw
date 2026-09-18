@@ -33,6 +33,9 @@ Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
     return new AIVehicleTraffic(bp);
 }
 
+BIND_BEHAVIOR_FACTORY(AIVehicleTraffic)
+
+
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
     : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {

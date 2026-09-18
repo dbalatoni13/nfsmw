@@ -20,7 +20,14 @@ typedef bTList<SimpleRigidBody> SimpleBodyList;
 SimpleBodyList TheSimpleBodies;
 
 unsigned int SimpleRigidBody::mCount = 0;
-SimCollisionMap SimpleRigidBody::mCollisionMap[Sim::MaxSimpleBodies] = {SimCollisionMap()};
+SimCollisionMap SimpleRigidBody::mCollisionMap[Sim::MaxSimpleBodies];
+
+Behavior *SimpleRigidBody::Construct(const BehaviorParams &params) {
+    const RBSimpleParams sp(params.fparams.Fetch<RBSimpleParams>(UCrc32(UCRC32_BASE)));
+    return new SimpleRigidBody(params, sp);
+}
+
+SimpleRigidBody::Volatile::Volatile() {}
 
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0),       //
@@ -49,13 +56,6 @@ SimpleRigidBody::~SimpleRigidBody() {
     this->mMaps[this->mData->index] = nullptr;
     this->mCount--;
 }
-
-Behavior *SimpleRigidBody::Construct(const BehaviorParams &params) {
-    const RBSimpleParams sp(params.fparams.Fetch<RBSimpleParams>(UCrc32(UCRC32_BASE)));
-    return new SimpleRigidBody(params, sp);
-}
-
-SimpleRigidBody::Volatile::Volatile() {}
 
 ISimable *SimpleRigidBody::GetOwner() const {
     return Behavior::GetOwner();

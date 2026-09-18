@@ -63,6 +63,9 @@ void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
 
 // UNSOLVED
 void CARSFX_Skids::InitSFX() {
+    // El DWARF la lista sin registro: estaba en el fuente y no se usa.
+    int numskids;
+
     if (this->GetPhysCar() == nullptr) {
         return;
     }
@@ -72,7 +75,6 @@ void CARSFX_Skids::InitSFX() {
     delete this->m_pSkidControl;
 
     g_pEAXSound->SetCsisName(this);
-    int numskids;
     this->m_pSkidControl = new Csis::FX_SKID(0, 0, 0, 0, this->SkidType, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
     this->m_pSkidControl->GetRefCount();
     this->Enable();
@@ -117,7 +119,9 @@ void CARSFX_Skids::ProcessUpdate() {
     this->m_pSkidControl->SetPITCH_OFFSET(this->GetDMixOutput(8, DMX_PITCH));
     this->m_pSkidControl->SetAzimuth(this->GetDMixOutput(1, DMX_AZIM));
 
-    int skid_type = UMath::Max(this->m_pWheelCtl->LeftSideTerrain.Aud_Skid_Type(), this->m_pWheelCtl->RightSideTerrain.Aud_Skid_Type());
+    const EA::Reflection::UInt32 &left_skid = this->m_pWheelCtl->LeftSideTerrain.Aud_Skid_Type();
+    const EA::Reflection::UInt32 &right_skid = this->m_pWheelCtl->RightSideTerrain.Aud_Skid_Type();
+    int skid_type = UMath::Max(right_skid, left_skid);
     this->m_pSkidControl->SetSurface(skid_type);
 
     float RadYaw = bAbs(this->GetPhysCar()->GetState()->GetYaw());

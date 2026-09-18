@@ -33,6 +33,10 @@ class EAXCar;
 // Decl: 75
 class SndBase : public AudioMemBase {
   public:
+    int *GetOutputPtr(int index) {
+        return &m_pOutPutBlock[index];
+    }
+
     // total size: 0x10
     struct TypeInfo {
         int ObjectID;                     // offset 0x0, size 0x4
@@ -53,6 +57,10 @@ class SndBase : public AudioMemBase {
     virtual TypeInfo *GetTypeInfo() const;
     virtual const char *GetTypeName() const;
     static SndBase::TypeInfo *GetStaticTypeInfo();
+
+    int GetUniqueID() {
+        return this->objectID;
+    }
 
     int GetObjectIndex() {
         return MASK_OBJIDX(GetTypeInfo()->ObjectID);
@@ -181,18 +189,14 @@ class SndBase : public AudioMemBase {
     int objectID;                    // offset 0x20, size 0x4
 };
 
-#define TYPEINFO(classType) classType::GetStaticTypeInfo() // Decl: 421
+#define TYPEINFO(classType) (&classType::s_TypeInfo) // Decl: 421
 // Decl: 429
 #define DECLARE_TYPEINFO()                                                                                                                           \
-  protected:                                                                                                                                         \
-    static SndBase::TypeInfo s_TypeInfo;                                                                                                             \
-                                                                                                                                                     \
   public:                                                                                                                                            \
+    static SndBase::TypeInfo s_TypeInfo;                                                                                                             \
     SndBase::TypeInfo *GetTypeInfo() const override;                                                                                                 \
     const char *GetTypeName() const override;                                                                                                        \
-    static SndBase::TypeInfo *GetStaticTypeInfo() {                                                                                                  \
-        return &s_TypeInfo;                                                                                                                          \
-    }
+    static SndBase::TypeInfo *GetStaticTypeInfo();
 #define DECLARE_CREATABLE() DECLARE_TYPEINFO() static SndBase *CreateObject(uint32 allocator); // Decl: 442
 
 // Decl: 457
@@ -209,9 +213,9 @@ class SndBase : public AudioMemBase {
 #define DEFINE_CREATABLE(theObjectID, theClass, baseClass)                                                                                           \
     TYPEINFO_IMPLEMENT(theObjectID, theClass, baseClass, theClass::CreateObject) SndBase *theClass::CreateObject(uint32 allocator) {                 \
         if (allocator == DEFAULT_ALLOCATOR) {                                                                                                        \
-            return new (GetStaticTypeInfo()->typeName, false) theClass;                                                                              \
+            return new (theClass::s_TypeInfo.typeName, false) theClass;                                                                              \
         } else                                                                                                                                       \
-            return new (GetStaticTypeInfo()->typeName, true) theClass;                                                                               \
+            return new (theClass::s_TypeInfo.typeName, true) theClass;                                                                               \
     }
 #define GETSMOOTHVAL(SmoothFactor) ((int)(32767.0f * 30.0f / (float)SmoothFactor) & 0x7fff) // Decl: 498
 

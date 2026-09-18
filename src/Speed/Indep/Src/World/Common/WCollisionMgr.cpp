@@ -10,12 +10,19 @@
 unsigned short WCollisionMgr::fIterCount = 0;
 
 inline void NearPtLine(const UMath::Vector3 &pt, const UMath::Vector3 &p0, float den, const UMath::Vector3 &diffVec, UMath::Vector3 &nearPt) {
-    float u = ((pt.x - p0.x) * diffVec.x + (pt.y - p0.y) * diffVec.y + (pt.z - p0.z) * diffVec.z) * den;
-    u = UMath::Min(u, 1.0f);
-    u = UMath::Max(u, 0.0f);
+    float u = (pt.x - p0.x) * diffVec.x + (pt.y - p0.y) * diffVec.y + (pt.z - p0.z) * diffVec.z;
+    u *= den;
+    u = UMath::Max(UMath::Min(u, 1.0f), 0.0f);
     nearPt.x = u * diffVec.x + p0.x;
     nearPt.y = u * diffVec.y + p0.y;
     nearPt.z = u * diffVec.z + p0.z;
+}
+
+// El DWARF del original lista `inline void OrthoInverse(Matrix4&)` expandido en
+// los llamantes: llamaban a un envoltorio inline, no al global directamente.
+// Esa capa inline extra cambia el reparto de registros (cerro Update__23WGridManagedDynamicElem).
+static inline void OrthoInverseInline(UMath::Matrix4 &m) {
+    OrthoInverse(m);
 }
 
 inline void NearPtLinePerSeg(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float &invDen, UMath::Vector3 &diffVec) {
@@ -29,14 +36,16 @@ inline void NearPtLinePerSegXZ(const UMath::Vector3 &p0, const UMath::Vector3 &p
     UMath::Sub(p1, p0, diffVec);
     diffVec.y = 0.0f;
     float ud = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
-    invDen = 0.0f;
     if (0.0f < ud) {
         invDen = 1.0f / ud;
+    } else {
+        invDen = 0.0f;
     }
 }
 
 inline void NearPtLineXZ(const UMath::Vector3 &pt, const UMath::Vector3 &p0, float den, const UMath::Vector3 &diffVec, UMath::Vector3 &nearPt) {
-    float u = ((pt.x - p0.x) * diffVec.x + (pt.z - p0.z) * diffVec.z) * den;
+    float u = (pt.x - p0.x) * diffVec.x + (pt.z - p0.z) * diffVec.z;
+    u *= den;
     u = UMath::Max(UMath::Min(u, 1.0f), 0.0f);
     nearPt.x = u * diffVec.x + p0.x;
     nearPt.z = u * diffVec.z + p0.z;
@@ -264,20 +273,12 @@ bool WCollisionMgr::FindFaceInCInst(const UMath::Matrix4 &vectorMat, const UMath
     cInst.MakeMatrix(invMat, true);
 
     UTransform mat(invMat);
-#ifdef EA_BUILD_A124
-    UMath::OrthoInverse(mat.fTransform);
-#else
-    OrthoInverse(mat.fTransform);
-#endif
+    OrthoInverseInline(mat.fTransform);
 
     const UMath::Vector3 &startPt = *reinterpret_cast<const UMath::Vector3 *>(&vectorMat[3]);
 
     UTransform vecMatInv(vectorMat);
-#ifdef EA_BUILD_A124
-    UMath::OrthoInverse(vecMatInv.fTransform);
-#else
-    OrthoInverse(vecMatInv.fTransform);
-#endif
+    OrthoInverseInline(vecMatInv.fTransform);
 
     UMath::Matrix4 combinedMat;
     UMath::Mult(mat.fTransform, vecMatInv.fTransform, combinedMat);
@@ -318,8 +319,8 @@ bool WCollisionMgr::FindFaceInCInst(const UMath::Matrix4 &vectorMat, const UMath
             float faceY;
             WCollisionTri face;
             if (this->FindFaceInTriStrip(combinedMat, UMath::Vector3::kZero, sp, strip, faceY, face)) {
-                if (0.0f < faceY && faceY < leastYDist) {
-                    float dist = faceY;
+                float dist = faceY;
+                if (0.0f < dist && dist < leastYDist) {
                     leastYDist = dist;
                     retVal = face;
                     retDist = dist;
@@ -611,8 +612,8 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
     float invDen;
     UMath::Vector3 npVec;
     NearPtLinePerSegXZ(UMath::Vector4To3(seg[0]), UMath::Vector4To3(seg[1]), invDen, npVec);
-    float minSegY = WWorldMath::wmin(seg[1].y, seg[0].y);
-    float maxSegY = WWorldMath::wmax(seg[1].y, seg[0].y);
+    float minSegY = WWorldMath::wmin(seg[0].y, seg[1].y);
+    float maxSegY = WWorldMath::wmax(seg[0].y, seg[1].y);
 
     for (const unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *node = grid.fNodes[*iter];
@@ -731,7 +732,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
         const WCollisionBarrierList &barriers = *barrierList;
         UMath::Matrix4 mat = UMath::Matrix4::kIdentity;
 
-        for (const WCollisionBarrierListEntry *iter = barriers.begin(); iter != barriers.end(); ++iter) {
+        for (WCollisionBarrierList::const_iterator iter = barriers.begin(); iter != barriers.end(); ++iter) {
             const WCollisionBarrierListEntry &ble = *iter;
             if (!this->SurfacePassesExclusion(ble.fB.GetWSurface())) {
                 continue;
@@ -818,12 +819,12 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
                                                      {{-1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f}},
                                                      {{1.0f, 1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, -1.0f, 1.0f}},
                                                      {{1.0f, -1.0f, 1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f, 1.0f}}};
-        unsigned int num2check;
+        unsigned int num2check = 4;
         UMath::Vector4 arms[4][2];
         UMath::Vector4 dim = UMath::Vector4Make(geom->GetDimension(), 1.0f);
         UMath::Vector4 cp = UMath::Vector4Make(geom->GetPosition(), 1.0f);
 
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < num2check; i++) {
             for (j = 0; j < 2; j++) {
                 UMath::Vector4 tmp;
                 UMath::Vector4 tmp2;
@@ -840,7 +841,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
         UMath::Vector4 seg[2];
         UMath::Vector4 delta = UMath::Vector4::kIdentity;
 
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < num2check; i++) {
             UMath::Addxyz(arms[i][0], delta, seg[0]);
             UMath::Addxyz(arms[i][1], delta, seg[1]);
 
@@ -890,7 +891,7 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
     const WCollisionBarrierListEntry *ret = nullptr;
     float closestDistSq = 1e38f;
 
-    for (const WCollisionBarrierListEntry *bIter = barrierList.begin(); bIter != barrierList.end(); ++bIter) {
+    for (WCollisionBarrierList::const_iterator bIter = barrierList.begin(); bIter != barrierList.end(); ++bIter) {
         const WCollisionBarrier *barrier = &bIter->fB;
         if (this->SurfacePassesExclusion(barrier->GetWSurface())) {
             UMath::Vector4 intersectionPt;
@@ -899,7 +900,7 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
                 float distSq = UMath::DistanceSquare(UMath::Vector4To3(intersectionPt), UMath::Vector4To3(*testSegment));
                 if (distSq < closestDistSq) {
                     cInfo.fCollidePt = intersectionPt;
-                    ret = bIter;
+                    ret = &*bIter;
                     closestDistSq = distSq;
                 }
             }
@@ -920,7 +921,7 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
     UMath::Vector4 closestIntersectionPt;
     float closestDistSq = 1e38f;
 
-    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+    for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
         const WCollisionArticle *cArt = cInst.fCollisionArticle;
         if ((cArt != nullptr) && cArt->fNumEdges != 0) {
@@ -1046,8 +1047,7 @@ void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCo
                     UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[0]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[0]));
                     UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[1]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[1]));
 
-                    // TODO GetSurface is probably wrong
-                    const Attrib::Collection *collection = cArt->GetSurface(wBarrier.GetWSurface().Surface());
+                    const Attrib::Collection *collection = cInst.fCollisionArticle->GetSurface(wBarrier.GetWSurface().Surface());
                     WCollisionBarrierListEntry ble(wBarrier, collection, distsqr);
 
                     if (1) {
@@ -1124,7 +1124,7 @@ inline float XZDistSq(const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
 void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, WCollisionTriList &triList) {
     float radiusSq = radius * radius;
 
-    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+    for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
         const WCollisionArticle *cArt = cInst.fCollisionArticle;
         if (cArt != nullptr) {

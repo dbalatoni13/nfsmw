@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+class WTrigger;
+
 // total size: 0x14
 class ERandomExplosion : public Event {
   public:
@@ -22,7 +24,7 @@ class ERandomExplosion : public Event {
 
     ~ERandomExplosion() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fClass; // offset: 0x8, size 0x4

@@ -1,8 +1,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include <cfloat>
 
 bVector3 bUnitVector3(1.0f, 0.0f, 0.0f);
 bVector4 bUnitVector4(1.0f, 0.0f, 0.0f, 0.0f);
-bVector3 bVector3FLT_MAX(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+bVector3 bVector3FLT_MAX(FLT_MAX, FLT_MAX, FLT_MAX);
 
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     float x = v1->x - v2->x;
@@ -12,8 +13,17 @@ float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     return bSqrt(x * x + y * y + z * z);
 }
 
-// STRIPPED
-float bDistBetween(const bVector4 *v1, const bVector4 *v2) {}
+// Descartada al enlazar, pero -strip-unused-data CONSERVA su pool: es el
+// cuadruplete que al objetivo le sale entre bDistBetween(bVector3) y
+// bNormalize(bVector2), y a nosotros nos faltaba.
+float bDistBetween(const bVector4 *v1, const bVector4 *v2) {
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    float z = v1->z - v2->z;
+    float w = v1->w - v2->w;
+
+    return bSqrt(x * x + y * y + z * z + w * w);
+}
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
     float len = bLength(v);
@@ -47,6 +57,7 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v) {
     float len = bLength(v);
 
@@ -84,6 +95,7 @@ bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length) {
     }
     return dest;
 }
+#endif
 
 bVector4 *bNormalize(bVector4 *dest, const bVector4 *v) {
     float len = bLength(v);
@@ -111,6 +123,7 @@ bVector2 *bScaleAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2, floa
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale) {
     float x = v2->x * scale + v1->x;
     float y = v2->y * scale + v1->y;
@@ -120,6 +133,7 @@ bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, floa
     dest->z = z;
     return dest;
 }
+#endif
 
 bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, float scale) {
     float x = v2->x * scale + v1->x;
@@ -146,6 +160,7 @@ int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {}
 // STRIPPED
 int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {}
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float x = v1->y * v2->z - v1->z * v2->y;
     float y = v1->z * v2->x - v1->x * v2->z;
@@ -155,13 +170,14 @@ bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     dest->z = z;
     return dest;
 }
+#endif
 
 void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max) {
-    bbox_min->x = 3.4028235e+38f;
-    bbox_min->y = 3.4028235e+38f;
+    bbox_min->x = FLT_MAX;
+    bbox_min->y = FLT_MAX;
 
-    bbox_max->x = -3.4028235e+38f;
-    bbox_max->y = -3.4028235e+38f;
+    bbox_max->x = -FLT_MAX;
+    bbox_max->y = -FLT_MAX;
 }
 
 // STRIPPED
@@ -206,13 +222,13 @@ int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, 
 float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {}
 
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
-    bbox_min->x = 3.4028235e+38f;
-    bbox_min->y = 3.4028235e+38f;
-    bbox_min->z = 3.4028235e+38f;
+    bbox_min->x = FLT_MAX;
+    bbox_min->y = FLT_MAX;
+    bbox_min->z = FLT_MAX;
 
-    bbox_max->x = -3.4028235e+38f;
-    bbox_max->y = -3.4028235e+38f;
-    bbox_max->z = -3.4028235e+38f;
+    bbox_max->x = -FLT_MAX;
+    bbox_max->y = -FLT_MAX;
+    bbox_max->z = -FLT_MAX;
 }
 
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {
@@ -315,9 +331,9 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
     float length = bLength(&tangent);
     bNormalize(&tangent, &tangent);
-    bVector2 normal(-tangent.y, tangent.x);
-    float d = bDot(&p, &normal);
-    float l = bDot(&p, &tangent);
+    bVector2 normal(tangent.y, -tangent.x);
+    float l = bDot(&tangent, &p);
+    float d = bDot(&normal, &p);
     float distance;
 
     if (l < 0.0f) {
@@ -331,8 +347,17 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     return distance;
 }
 
-// STRIPPED
-float bGetPolyArea(const bVector2 *points, int num_points) {}
+// Descartada al enlazar, pero su pool cuenta: el objetivo tiene {0.0f, 0.5f}
+// justo aqui, entre bDistToLine y la primera cadena de bMemory.cpp. Es la
+// formula del cordon de zapato: acumulador a 0.0f y el medio al final.
+float bGetPolyArea(const bVector2 *points, int num_points) {
+    float area = 0.0f;
+    for (int i = 0; i < num_points; i++) {
+        int j = (i + 1 == num_points) ? 0 : i + 1;
+        area += points[i].x * points[j].y - points[j].x * points[i].y;
+    }
+    return area * 0.5f;
+}
 
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
     float x = point->x;

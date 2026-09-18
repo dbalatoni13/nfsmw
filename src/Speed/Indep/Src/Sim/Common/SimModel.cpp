@@ -10,6 +10,10 @@
 
 #include <types.h>
 
+template <>
+UTL::Collections::GarbageNode<Sim::Model, 434>::Collector UTL::Collections::GarbageNode<Sim::Model, 434>::_mCollector =
+    UTL::Collections::GarbageNode<Sim::Model, 434>::Collector();
+
 namespace Sim {
 
 // UNSOLVED usual Sim stack problem
@@ -275,7 +279,7 @@ void Model::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, cons
         }
     }
     if (!modeleffect) {
-        modeleffect = ::new ("SimModel", 0) Model::Effect(identifire, GetWorldID(), GetAttributes().GetConstCollection());
+        modeleffect = ::new ("SimModel\0\0\0\0\0\0\0", 0) Model::Effect(identifire, GetWorldID(), GetAttributes().GetConstCollection());
 
         mEffects.AddTail(modeleffect);
     }

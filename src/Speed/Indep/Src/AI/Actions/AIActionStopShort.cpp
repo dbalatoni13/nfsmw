@@ -30,6 +30,8 @@ class AIActionStopShort : public AIAction {
     IPursuitAI *mPursuitAI; // offset 0x4C, size 0x4
 };
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionStopShort("AIActionStopShort", AIActionStopShort::Construct);
+
 AIAction *AIActionStopShort::Construct(AIActionParams *params) {
     return new AIActionStopShort(params, 0.0f);
 }

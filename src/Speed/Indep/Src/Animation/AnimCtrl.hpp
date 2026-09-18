@@ -121,6 +121,7 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
     }
 
     void SetMasterDelayTime(float time) {
+        m_flags |= 0x80;
         m_masterDelayTime = time;
     }
 

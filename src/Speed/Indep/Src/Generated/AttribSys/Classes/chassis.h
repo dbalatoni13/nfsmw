@@ -50,7 +50,7 @@ struct chassis : Instance {
     typedef EA::Reflection::Float TypeOf_WHEEL_BASE;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("chassis");
+    USE_ATTRIB_ALLOC("Attrib::Gen::chassis");
     chassis(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -78,10 +78,10 @@ struct chassis : Instance {
         return 0xafa210f0;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xafa210f0, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

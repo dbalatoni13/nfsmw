@@ -32,7 +32,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
 
     virtual const ISimable *GetSimable() const = 0;
     virtual ISimable *GetSimable() = 0;
-    virtual UMath::Vector3 &GetPosition() const = 0;
+    virtual const UMath::Vector3 &GetPosition() const = 0;
     virtual void SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) = 0;
     virtual void RemoveBehaviorOverride(UCrc32 mechanic) = 0;
     virtual void CommitBehaviorOverrides() = 0;
@@ -68,7 +68,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual float GetSpeed() const = 0;
     virtual void SetSpeed(float speed) = 0;
     virtual float GetAbsoluteSpeed() const = 0;
-    virtual bool IsGlareOn(VehicleFX::ID glare) const = 0;
+    virtual bool IsGlareOn(VehicleFX::ID glare) = 0;
     virtual void GlareOn(VehicleFX::ID glare) = 0;
     virtual void GlareOff(VehicleFX::ID glare) = 0;
     virtual bool IsCollidingWithSoftBarrier() = 0;

@@ -21,6 +21,10 @@ class MBreakerStopCops : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MBreakerStopCops &message);
+
     MBreakerStopCops(UMath::Vector3 _InitialPos, float _Duration, float _Radius)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fInitialPos(_InitialPos), fDuration(_Duration), fRadius(_Radius) {}
 
@@ -55,5 +59,33 @@ class MBreakerStopCops : public Hermes::Message {
     float fDuration;            // offset 0x1c, size 0x4
     float fRadius;              // offset 0x20, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MBreakerStopCops::HandleMessage_LuaBinding(const MBreakerStopCops &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MBreakerStopCops::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MBreakerStopCops *message = static_cast<const MBreakerStopCops *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "InitialPos");
+    lua_pushnil(luaState);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Duration");
+    lua_pushnumber(luaState, message->fDuration);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Radius");
+    lua_pushnumber(luaState, message->fRadius);
+    lua_settable(luaState, -3);
+}
 
 #endif

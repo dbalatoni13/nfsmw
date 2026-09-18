@@ -23,3 +23,5 @@ class DefaultAttribAllocator : public IAttribAllocator {
 };
 
 static DefaultAttribAllocator sDefaultAttribAlloc;
+
+IAttribAllocator *AttribAlloc::mAllocator = &sDefaultAttribAlloc;

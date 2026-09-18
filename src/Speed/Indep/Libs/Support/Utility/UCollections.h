@@ -15,11 +15,20 @@ DECLARE_CONTAINER_TYPE(UContainer);
 namespace UTL {
 namespace Collections {
 
+
 // total size: 0x8
 struct _KeyedNode {
     static _KeyedNode *Search(_KeyedNode *begin_iter, _KeyedNode *end_iter, uintptr_t handle);
 
+    // Igual que _Node: assign() con fuente nula instancia
+    // Vector<_KeyedNode>::push_back(), que hace `new (p) _KeyedNode()`.
+    _KeyedNode() {}
+
     _KeyedNode(uintptr_t handle, void *refrence) : Handle(handle), Ref(refrence) {}
+
+    bool operator<(const _KeyedNode &e) const {
+        return Handle < e.Handle;
+    }
 
     uintptr_t Handle; // offset 0x0, size 0x4
     void *Ref;        // offset 0x4, size 0x4
@@ -82,7 +91,12 @@ template <typename Handle, typename T, int Size> class Instanceable {
     }
 
   private:
-    class _List : public FixedVector<_KeyedNode, Size, 16> {};
+    class _List : public FixedVector<_KeyedNode, Size, 16> {
+      public:
+        _List() {
+            this->reserve(Size);
+        }
+    };
 
     static uintptr_t _mHNext;
     static _List _mList;
@@ -96,6 +110,11 @@ template <typename T, int Size> class GarbageNode {
       public:
         // total size: 0x8
         struct _Node {
+            // Necesario desde que assign() volvio a crecer con push_back(): el
+            // camino de fuente nula instancia Vector<_Node>::push_back(), que
+            // hace `new (p) _Node()`. Sin simbolo propio (cuerpo en clase).
+            _Node() {}
+
             _Node(T *r) : myptr(r), refcount(1) {}
 
             bool operator==(const _Node &n) const {
@@ -110,7 +129,10 @@ template <typename T, int Size> class GarbageNode {
             int refcount; // offset 0x4, size 0x4
         };
 
-        Collector() {}
+        Collector() {
+            _mDirty.reserve(Size);
+            _mClean.reserve(Size);
+        }
 
         // TODO match dwarf
         void Collect() {
@@ -202,8 +224,7 @@ template <typename T, int Size> class GarbageNode {
 
     bool ReleaseGC() {
         _mDirty = true;
-        _mCollector._Release(_This());
-        return true; // TODO
+        return _mCollector._Release(_This());
     }
 
     bool IsDirty() {
@@ -233,16 +254,45 @@ template <typename T, int Size> class GarbageNode {
     static Collector _mCollector;
 };
 
-template <typename T, typename Tag> class Container {
+/**
+ * @brief A list of owned pointers: destroying the container destroys the elements too.
+ */
+template <typename T, typename Tag> class Container : public UTL::Std::list<T *, Tag> {
   public:
-    class Elements {
-      public:
-        Elements();
-        ~Elements();
-    };
+    typedef UTL::Std::list<T *, Tag> Elements;
 
-  private:
-    Elements _mElements;
+    template <typename K, typename P> T *Create(K key, const P &params) {
+        T *instance = T::CreateInstance(key, params);
+
+        if (instance) {
+            this->push_back(instance);
+        }
+
+        return instance;
+    }
+
+    void Destroy(T *instance) {
+        typename Elements::iterator last = this->end();
+
+        for (typename Elements::iterator iter = this->begin(); iter != last; iter++) {
+            if ((*iter) == instance) {
+                this->erase(iter);
+
+                delete instance;
+                break;
+            }
+        }
+    }
+
+    ~Container() {
+        typename Elements::iterator last = this->end();
+
+        for (typename Elements::iterator iter = this->begin(); iter != last; ++iter) {
+            delete (*iter);
+        }
+
+        this->clear();
+    }
 };
 
 }; // namespace Collections

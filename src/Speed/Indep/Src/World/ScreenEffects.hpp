@@ -91,6 +91,13 @@ class ScreenEffectDB {
         return SE_data[type].intensity;
     }
 
+    void GetRGBA(ScreenEffectType type, unsigned int *R, unsigned int *G, unsigned int *B, unsigned int *A) {
+        *R = (unsigned int)SE_data[type].r;
+        *G = (unsigned int)SE_data[type].g;
+        *B = (unsigned int)SE_data[type].b;
+        *A = (unsigned int)SE_data[type].a;
+    }
+
     float GetDATA(ScreenEffectType type, int index) {
         return SE_data[type].data[index];
     }

@@ -1,12 +1,24 @@
 #include "Speed/Indep/Src/AI/AIVehicleCopCar.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+// El ELF carga aqui 1/2.237f y lo multiplica por 65.0f SIN plegar las dos
+// constantes: es una inline, no una expresion constante. MPH2MPS de
+// ConversionUtil.hpp da 0.44703001f y es el bueno para las otras 23
+// llamadas del juego, asi que este sitio lleva su propia conversion.
+static inline float CopCarMPH2MPS(float mph) {
+    return mph / 2.237f;
+}
+
 
 AIVehicleCopCar::AIVehicleCopCar(const BehaviorParams &bp)
     : AIVehiclePursuit(bp),  //
@@ -19,8 +31,11 @@ Behavior *AIVehicleCopCar::Construct(const BehaviorParams &bp) {
     return new AIVehicleCopCar(bp);
 }
 
+BIND_BEHAVIOR_FACTORY(AIVehicleCopCar)
+
+
 void AIVehicleCopCar::Update(float dT) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     bool have_simple_physics = IsSimplePhysicsActive();
     bool want_simple_physics;
@@ -73,6 +88,71 @@ bool AIVehicleCopCar::IsTetheredToTarget(UTL::COM::IUnknown *object) {
     return headingToTarget < -0.2f;
 }
 
+bool AIVehicleCopCar::CanSeeTarget(AITarget *target) {
+    IPerpetrator *iperp;
+    bool hidden = false;
+    target->QueryInterface(&iperp);
+    if (iperp && iperp->IsHiddenFromCars()) {
+        hidden = true;
+    }
+    if (hidden && mPerpHiddenFromMe) {
+        return false;
+    }
+
+    mPerpHiddenFromMe = false;
+    IPursuit *pursuit = GetPursuit();
+    float frontLOS = -1.0f;
+    float rearLOS = -1.0f;
+    if (pursuit && iperp) {
+        Attrib::Gen::pursuitlevels *pl = iperp->GetPursuitLevelAttrib();
+        if (pl) {
+            frontLOS = pl->frontLOSdistance();
+            rearLOS = pl->rearLOSdistance();
+        }
+    }
+    if (frontLOS < 0.0f) {
+        frontLOS = 150.0f;
+        rearLOS = 50.0f;
+    }
+
+    UMath::Vector3 targetPos = target->GetPosition();
+    UMath::Vector3 forward;
+    GetOwner()->GetRigidBody()->GetForwardVector(forward);
+    UMath::Vector3 myPos = GetOwner()->GetRigidBody()->GetPosition();
+
+    UMath::Vector3 dirTo;
+    UMath::Sub(targetPos, myPos, dirTo);
+    UMath::Unit(dirTo, dirTo);
+    float dist = UMath::Distance(myPos, targetPos);
+
+    bool blocked = dist >= frontLOS || (dist >= rearLOS && UMath::Dot(forward, dirTo) <= mLOSAngleFront);
+    bool outOfSight = blocked;
+
+    if (pursuit) {
+        outOfSight = outOfSight || !pursuit->PursuitMeterCanShowBusted();
+    }
+
+    if (!outOfSight) {
+        UMath::Vector4 segs[2];
+        segs[0] = UMath::Vector4Make(myPos, 1.0f);
+        segs[0].y += 0.5f;
+        segs[1] = UMath::Vector4Make(targetPos, 1.0f);
+        segs[1].y += 0.5f;
+        WCollisionMgr::WorldCollisionInfo cinfo;
+        if (WCollisionMgr(0, 3).CheckHitWorld(segs, cinfo, 3)) {
+            outOfSight = true;
+        }
+    }
+
+    if (outOfSight) {
+        if (hidden) {
+            mPerpHiddenFromMe = true;
+        }
+        return false;
+    }
+    return true;
+}
+
 void AIVehicleCopCar::WatchForPerps() {
     if (GetInPursuit()) {
         return;
@@ -123,7 +203,7 @@ bool AIVehicleCopCar::CheckForPursuit(IVehicle *itargetVehicle) {
     }
 
     int heat = (int)iperp->GetHeat();
-    if (!alreadypursuit && !active911 && !hittraffic && heat <= 3 && itargetVehicle->GetSpeed() < MPH2MPS(65.0f)) {
+    if (!alreadypursuit && !active911 && !hittraffic && heat <= 3 && itargetVehicle->GetSpeed() < CopCarMPH2MPS(65.0f)) {
         return false;
     }
 

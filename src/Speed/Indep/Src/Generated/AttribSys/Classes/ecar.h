@@ -85,7 +85,7 @@ struct ecar : Instance {
     typedef EA::Reflection::Float TypeOf_WheelWell;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("ecar");
+    USE_ATTRIB_ALLOC("Attrib::Gen::ecar");
     ecar(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
@@ -112,10 +112,10 @@ struct ecar : Instance {
         return 0xa5b543b7;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xa5b543b7, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

@@ -19,6 +19,14 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 
+// El ELF carga aqui 1/2.237f (0x3EE4E0C2), no el 0.44703001f de
+// ConversionUtil.hpp: el volcado DWARF nombra un segundo inline MPH2MPS(float x)
+// -sin const- que divide entre 2.237f. Local a esta TU para no tocar el resto
+// del juego, que si usa 0.44703001f.
+static inline float SceneryMPH2MPS(float mph) {
+    return mph / 2.237f;
+}
+
 int LoaderSceneryGroup(bChunk *chunk);
 int UnloaderSceneryGroup(bChunk *chunk);
 int LoaderScenery(bChunk *chunk);
@@ -71,12 +79,11 @@ class PrecullerBooBooManager {
 };
 
 // TODO move these?
-extern float EnvMapShadowExtraHeight;
-extern int CurrentZoneNumber;
-extern int SeeulatorToolActive;
-extern int ScenerySectionToBlink;
-extern int SeeulatorRefreshTrackStreamer;
-extern int ShowSectionBoarder;
+// r61-world: el objetivo lo emite en 0x80436000, DELANTE del hueco
+// gap_06_80436004_data y de EnvMapShadowExtraHeight.
+SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
+float EnvMapShadowExtraHeight = 2.0f;
+int CurrentZoneNumber = (int)0xFFFFFFFF;
 
 bTList<ScenerySectionHeader> ScenerySectionHeaderList;
 HashToHeirarchyMap HeirarchyMap;
@@ -88,13 +95,16 @@ bChunkLoader bChunkLoaderOverrideInfos(BCHUNK_SCENERY_OVERRIDE_INFOS, LoaderScen
 bChunkLoader bChunkLoaderSceneryHeirarchy(BCHUNK_MODEL_HIERARCHY_TREE, LoaderScenery, UnloaderScenery);
 bChunkLoader bChunkLoaderSceneryLighting(BCHUNK_SCENERY_LIGHT_CONTEXTS, LoaderScenery, UnloaderScenery);
 
-static const float EnablePrecullingSpeed = MPH2MPS(40.0f);
+static const float EnablePrecullingSpeed = SceneryMPH2MPS(40.0f);
 
-SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = nullptr;
 void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = nullptr;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = nullptr;
 void (*SectionDisconnectionCallback)(ScenerySectionHeader *) = nullptr;
+int SeeulatorToolActive = 0;
+int ScenerySectionToBlink = 0;
+int ShowSectionBoarder = 0;
+int SeeulatorRefreshTrackStreamer = 0;
 eLight *LightTable = nullptr;
 int MaxSceneryLightContexts = 0;
 eSceneryLightContext **SceneryLightContextTable = nullptr;
@@ -279,17 +289,17 @@ int LoaderScenery(bChunk *chunk) {
         ScenerySectionHeader *section_header = nullptr;
         bChunk *first_chunk = chunk->GetFirstChunk();
         bChunk *last_chunk = chunk->GetLastChunk();
-        int num_emodels;
-        int num_new_emodels;
 
         for (bChunk *chunk = first_chunk; chunk != last_chunk; chunk = chunk->GetNext()) {
             if (chunk->GetID() == BCHUNK_SCENERY_SECTION_HEADER) {
                 section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(16));
                 if (!section_header->ChunksLoaded) {
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&section_header->SectionNumber);
                     bPlatEndianSwap(&section_header->NumPolygonsInMemory);
                     bPlatEndianSwap(&section_header->NumPolygonsInWorld);
                     bPlatEndianSwap(&section_header->ViewsVisibleThisFrame);
+#endif
                 }
 
                 VisibleSectionUserInfo *user_info = TheVisibleSectionManager.AllocateUserInfo(section_header->SectionNumber);
@@ -305,12 +315,18 @@ int LoaderScenery(bChunk *chunk) {
                 section_header->NumSceneryInfo = chunk->GetSize() / sizeof(SceneryInfo);
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryInfo; i++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].mHeirarchyNameHash);
+#endif
                         for (int j = 0; j < 4; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&section_header->pSceneryInfo[i].NameHash[j]);
+#endif
                         }
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].Radius);
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].MeshChecksum);
+#endif
                     }
                 }
 
@@ -326,15 +342,22 @@ int LoaderScenery(bChunk *chunk) {
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryInstances; i++) {
                         SceneryInstance *scenery_instance = &section_header->pSceneryInstance[i];
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&scenery_instance->SceneryInfoNumber);
                         bPlatEndianSwap(&scenery_instance->ExcludeFlags);
+#endif
                         int j;
                         for (j = 0; j < 3; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&scenery_instance->Position[j]);
+#endif
                         }
                         for (j = 0; j < 9; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&scenery_instance->Rotation[j]);
+#endif
                         }
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&scenery_instance->BBoxMin[0]);
                         bPlatEndianSwap(&scenery_instance->BBoxMin[1]);
                         bPlatEndianSwap(&scenery_instance->BBoxMin[2]);
@@ -343,6 +366,7 @@ int LoaderScenery(bChunk *chunk) {
                         bPlatEndianSwap(&scenery_instance->BBoxMax[2]);
                         bPlatEndianSwap(&scenery_instance->PrecullerInfoIndex);
                         bPlatEndianSwap(&scenery_instance->LightingContextNumber);
+#endif
                     }
                 }
             } else if (chunk->GetID() == BCHUNK_SCENERY_TREE_NODES) {
@@ -350,6 +374,7 @@ int LoaderScenery(bChunk *chunk) {
                 section_header->NumSceneryTreeNodes = chunk->GetSize() / sizeof(SceneryTreeNode);
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryTreeNodes; i++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].NumChildren);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMin[0]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMin[1]);
@@ -357,9 +382,12 @@ int LoaderScenery(bChunk *chunk) {
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[0]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[1]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[2]);
+#endif
 
                         for (int j = 0; j < 5; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].ChildCodes[j]);
+#endif
                         }
                     }
                 }
@@ -391,7 +419,6 @@ int LoaderScenery(bChunk *chunk) {
         if (!AreChunksBeingMoved()) {
             for (int n = 0; n < section_header->NumSceneryInfo; n++) {
                 SceneryInfo *scenery_info = &section_header->pSceneryInfo[n];
-                eModel *lowest_detail_model;
                 for (int detail_level = 0; detail_level < 4; detail_level++) {
                     unsigned int name_hash = scenery_info->NameHash[detail_level];
                     // TODO magic
@@ -435,18 +462,22 @@ int LoaderScenery(bChunk *chunk) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (chunk = chunk->GetFirstChunk(); chunk < last_chunk; chunk = chunk->GetNext()) {
             ModelHeirarchy *mH = reinterpret_cast<ModelHeirarchy *>(chunk->GetData());
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&mH->mNameHash);
             bPlatEndianSwap(&mH->mNumNodes);
             bPlatEndianSwap(&mH->mFlags);
+#endif
 
             ModelHeirarchy::Node *node = mH->GetNodes();
             for (unsigned int i = 0; i < mH->mNumNodes; i++) {
+#ifndef EA_BUILD_A124
                 bPlatEndianSwap(&node[i].mNodeName);
                 bPlatEndianSwap(&node[i].mFlags);
                 bPlatEndianSwap(&node[i].mModelHash);
                 bPlatEndianSwap(&node[i].mParent);
                 bPlatEndianSwap(&node[i].mNumChildren);
                 bPlatEndianSwap(&node[i].mChildIndex);
+#endif
             }
 
             HeirarchyMap[mH->mNameHash] = mH;
@@ -547,9 +578,14 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk->GetID() == BCHUNK_SCENERY_LIGHT_CONTEXTS) {
-        MaxSceneryLightContexts = 0;
+        // El orden de estas tres asignaciones decide el reparto de r9/r10/r11
+        // del planificador: con (Max, Light, Scen) los `stw` salen rotados y
+        // cada `lis` queda contra el simbolo equivocado. Medido contra el .s
+        // del objetivo: (Light, Scen, Max) reproduce lis r11/r10/r9 =
+        // LightTable/SceneryLightContextTable/MaxSceneryLightContexts.
         LightTable = nullptr;
         SceneryLightContextTable = nullptr;
+        MaxSceneryLightContexts = 0;
         return 1;
     }
 
@@ -593,6 +629,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
     }
 
     bVector3 position;
+    position.z = 0.0f;
     TopologyCoordinate topology_coordinate;
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
 
@@ -685,7 +722,6 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     SceneryInfo *my_scenery_info = &pSceneryInfo[scenery_instance->SceneryInfoNumber];
-    static bool bPrintName = false;
     int exclude_bits = scenery_instance->ExcludeFlags & 0xFF;
     int exclude_mask = 0x60;
     int exclude_flagxor = exclude_bits ^ exclude_mask;
@@ -693,9 +729,6 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         return;
     }
     SceneryInfo *scenery_info = &pSceneryInfo[scenery_instance->SceneryInfoNumber];
-
-    if (bPrintName) {
-    }
 
     if (visibility_state == EVISIBLESTATE_PARTIAL) {
         bVector3 bbox_min;
@@ -882,15 +915,9 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
                 if (child_code >= 0) {
                     DrawAScenery(child_code, scenery_cull_info, visibility_state);
                 } else {
-                    // TODO, DebugBreak() stuff
-                    {
-                        int scenery_instance_number = -child_code;
-                    }
-                    {
-                        child_code = -child_code;
-                        SceneryTreeNode *child_node = &SceneryTreeNodeTable[child_code];
-                        *pnode = child_node;
-                    }
+                    child_code = -child_code;
+                    SceneryTreeNode *child_node = &SceneryTreeNodeTable[child_code];
+                    *pnode = child_node;
                     *pvisibility_state = visibility_state;
                     pnode++;
                     pvisibility_state++;
@@ -903,10 +930,16 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
 int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info) {
     DrivableScenerySection *drivable_scenery_section;
     int iViewID = scenery_cull_info->pView->GetID();
+#ifdef EA_BUILD_A124
+    if (iViewID == 17 || iViewID == 18) {
+        drivable_scenery_section = TheVisibleSectionManager.FindDrivableSection(
+            reinterpret_cast<const bVector2 *>(eGetView(1, false)->GetCamera()->GetPosition()));
+#else
     if (iViewID == EVIEW_SHADOWMAP1 || iViewID == EVIEW_SHADOWMAP2) {
         int iViewPlayer = iViewID - 12;
         drivable_scenery_section = TheVisibleSectionManager.FindDrivableSection(
             reinterpret_cast<const bVector2 *>(eGetView(iViewPlayer, false)->GetCamera()->GetPosition()));
+#endif
     } else {
         drivable_scenery_section =
             TheVisibleSectionManager.FindDrivableSection(reinterpret_cast<const bVector2 *>(scenery_cull_info->pView->GetCamera()->GetPosition()));
@@ -973,7 +1006,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
 }
 
 void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     const int max_sections_to_draw = 128;
     short sections_to_draw[max_sections_to_draw];
     int num_sections_to_draw = WhatSectionsShouldWeDraw(sections_to_draw, max_sections_to_draw, scenery_cull_info);
@@ -990,7 +1023,7 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
 }
 
 void GrandSceneryCullInfo::DoCulling() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     pFirstDrawInfo = SceneryDrawInfoTable;
     pCurrentDrawInfo = SceneryDrawInfoTable;
     pTopDrawInfo = SceneryDrawInfoTable + 3500;
@@ -1063,7 +1096,7 @@ void GrandSceneryCullInfo::DoCulling() {
 }
 
 void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     Camera *camera = view->GetCamera();
     bVector4 *cpos = reinterpret_cast<bVector4 *>(camera->GetPosition());
     unsigned int extra_flags = 0;
@@ -1090,9 +1123,11 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     if (stuff_flags & 0x800) {
         exclude_flags |= 0x400000;
     }
+#ifndef EA_BUILD_A124
     if (stuff_flags & 0x1000) {
         exclusive_flags = 0x1000000;
     }
+#endif
 
     for (int n = 0; n < NumCullInfos; n++) {
         SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
@@ -1116,9 +1151,15 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
             if (info->SceneryInst->ExcludeFlags & 0x1000000) {
                 flags |= 0x100000;
             }
+#ifdef EA_BUILD_A124
+            if (info->SceneryInst->ExcludeFlags & 0x100) {
+                flags |= 0x20000;
+            }
+#else
             if (info->SceneryInst->ExcludeFlags & 0x100) {
                 flags |= 0x1020000;
             }
+#endif
             if (info->SceneryInst->ExcludeFlags & 0x400000) {
                 flags |= 0x40000;
             }
@@ -1141,18 +1182,24 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                 if ((info->SceneryInst->ExcludeFlags & 0x200000) != 0) {
                     flags |= 0x10000;
                 }
+#ifndef EA_BUILD_A124
                 if ((info->SceneryInst->ExcludeFlags & 0x40000000) != 0) {
                     flags |= 0x10000;
                 }
+#endif
             }
             if (vis_state == EVISIBLESTATE_FULL) {
                 flags |= 4;
             }
 
+#ifdef EA_BUILD_A124
+            bool A = exclusive_flags == 0;
+#else
             bool A = false;
             if (exclusive_flags == 0) {
                 A = exclude_flags == 0;
             }
+#endif
 
             bool B = false;
             if (exclusive_flags != 0) {

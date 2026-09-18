@@ -20,7 +20,7 @@ struct collisionreactions : Instance {
     typedef CollisionReactionRecord TypeOf_REAR_REACTION;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("collisionreactions");
+    USE_ATTRIB_ALLOC("Attrib::Gen::collisionreactions");
     collisionreactions(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -48,10 +48,10 @@ struct collisionreactions : Instance {
         return 0xb32682f1;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xb32682f1, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

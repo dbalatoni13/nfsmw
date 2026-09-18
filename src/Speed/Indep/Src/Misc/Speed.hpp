@@ -10,6 +10,8 @@
 #ifndef SPEED_HPP
 #define SPEED_HPP // Decl: 11
 
+// TODO use these
+
 #define OLD_REALFONT 1 // Decl: 14
 
 #define TWEAKABLE const // Decl: 60

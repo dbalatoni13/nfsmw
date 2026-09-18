@@ -21,7 +21,7 @@ class EPursuitBreaker : public Event {
 
     ~EPursuitBreaker() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fBegin; // offset: 0x8, size 0x4

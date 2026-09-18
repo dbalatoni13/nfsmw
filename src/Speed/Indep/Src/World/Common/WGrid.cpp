@@ -161,7 +161,10 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     }
 
     if (bStartPosOut) {
-        if (!bEndPosOut) {
+        if (bEndPosOut) {
+            return;
+        }
+        {
             float fBarrierPosX;
             float fBarrierPosY;
             float fRevDirX = -fDirX;
@@ -192,8 +195,7 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
             iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
             iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
         }
-    } else {
-        if (bEndPosOut) {
+    } else if (bEndPosOut) {
             float fBarrierPosX;
             if (fDirX > 0.0f) {
                 fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
@@ -219,9 +221,8 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
                 points[1].x = fBarrierDistY * fDirX + points[0].x;
             }
 
-            iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
-            iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
-        }
+        iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
+        iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
     }
 
     nodeIndList.push_back(GetNodeInd(iStartPosY, iStartPosX));
@@ -229,21 +230,19 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
 
     float fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
 
-    // TODO only one push back call here
     if (fLength <= fEdgeSize) {
         if (iStartPosX != iEndPosX) {
-            if (iStartPosY == iEndPosY) {
-                nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
-                return;
+            if (iStartPosY != iEndPosY) {
+                goto walk;
             }
         } else if (iStartPosY == iEndPosY) {
             return;
-        } else {
-            nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
-            return;
         }
+        nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
+        return;
     }
 
+walk:
     {
         float fVx = fDirX / fLength;
         float fVy = fDirY / fLength;
@@ -288,66 +287,76 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
             fWallY = floorf(fCurY * fInvEdgeSize) * fEdgeSize;
         }
 
-        while (iCurPosX != iEndPosX && iCurPosY != iEndPosY) {
-            fRx = (fWallX - fCurX) * fInvVx;
-            fRy = (fWallY - fCurY) * fInvVy;
+        if (iCurPosX != iEndPosX && iCurPosY != iEndPosY) {
+            do {
+                fRx = (fWallX - fCurX) * fInvVx;
+                fRy = (fWallY - fCurY) * fInvVy;
 
-            if (fRx < fRy) {
-                fCurX = fWallX;
-                fCurY = fRx * fVy + fCurY;
-                if (bEast) {
-                    iCurPosX++;
-                    fWallX += fEdgeSize;
+                if (fRx < fRy) {
+                    fCurX = fWallX;
+                    fCurY = fRx * fVy + fCurY;
+                    if (bEast) {
+                        iCurPosX++;
+                        fWallX += fEdgeSize;
+                    } else {
+                        iCurPosX--;
+                        fWallX -= fEdgeSize;
+                    }
                 } else {
-                    iCurPosX--;
-                    fWallX -= fEdgeSize;
+                    fCurX = fRy * fVx + fCurX;
+                    fCurY = fWallY;
+                    if (bNorth) {
+                        iCurPosY++;
+                        fWallY += fEdgeSize;
+                    } else {
+                        iCurPosY--;
+                        fWallY -= fEdgeSize;
+                    }
                 }
-            } else {
-                fCurX = fRy * fVx + fCurX;
-                fCurY = fWallY;
-                if (bNorth) {
-                    iCurPosY++;
-                    fWallY += fEdgeSize;
-                } else {
-                    iCurPosY--;
-                    fWallY -= fEdgeSize;
+
+                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                iNumNodes++;
+
+                if (iNumNodes > iMaxNumNodes) {
+                    nodeIndList.clear();
+                    WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                    return;
                 }
-            }
-
-            nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-            iNumNodes++;
-
-            if (iNumNodes > iMaxNumNodes) {
-                nodeIndList.clear();
-                WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
-                return;
-            }
+            } while (iCurPosX != iEndPosX && iCurPosY != iEndPosY);
         }
 
         if (iCurPosX != iEndPosX) {
             if (bEast) {
-                do {
-                    iCurPosX++;
-                    if (iCurPosX > iEndPosX) {
-                        return;
-                    }
-                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                    iNumNodes++;
-                } while (iNumNodes <= iMaxNumNodes);
+                iCurPosX++;
+                if (iCurPosX <= iEndPosX) {
+                    do {
+                        nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                        iNumNodes++;
+                        if (iNumNodes > iMaxNumNodes) {
+                            nodeIndList.clear();
+                            WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                            return;
+                        }
+                        iCurPosX++;
+                    } while (iCurPosX <= iEndPosX);
+                }
+                return;
             } else {
-                do {
-                    iCurPosX--;
-                    if (iCurPosX < iEndPosX) {
-                        return;
-                    }
-                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                    iNumNodes++;
-                } while (iNumNodes <= iMaxNumNodes);
+                iCurPosX--;
+                if (iCurPosX >= iEndPosX) {
+                    do {
+                        nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                        iNumNodes++;
+                        if (iNumNodes > iMaxNumNodes) {
+                            nodeIndList.clear();
+                            WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                            return;
+                        }
+                        iCurPosX--;
+                    } while (iCurPosX >= iEndPosX);
+                }
+                return;
             }
-
-            nodeIndList.clear();
-            WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
-            return;
         }
 
         if (iCurPosY == iEndPosY) {
@@ -355,26 +364,35 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
         }
 
         if (bNorth) {
-            do {
-                iCurPosY++;
-                if (iEndPosY < iCurPosY) {
-                    return;
-                }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
+            iCurPosY++;
+            if (iCurPosY <= iEndPosY) {
+                do {
+                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                    if (iNumNodes > iMaxNumNodes) {
+                        nodeIndList.clear();
+                        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                        return;
+                    }
+                    iCurPosY++;
+                } while (iCurPosY <= iEndPosY);
+            }
+            return;
         } else {
-            do {
-                iCurPosY--;
-                if (iCurPosY < iEndPosY) {
-                    return;
-                }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
+            iCurPosY--;
+            if (iCurPosY >= iEndPosY) {
+                do {
+                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                    if (iNumNodes > iMaxNumNodes) {
+                        nodeIndList.clear();
+                        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                        return;
+                    }
+                    iCurPosY--;
+                } while (iCurPosY >= iEndPosY);
+            }
+            return;
         }
-
-        nodeIndList.clear();
-        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
     }
 }

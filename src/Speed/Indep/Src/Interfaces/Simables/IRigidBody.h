@@ -7,6 +7,11 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/World/WCollider.h"
 
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
+
 // total size: 0xC
 class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRigidBody, 160> {
   public:

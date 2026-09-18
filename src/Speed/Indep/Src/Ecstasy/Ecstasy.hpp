@@ -11,6 +11,22 @@
 
 extern SlotPool *eModelSlotPool;
 
+enum polyCountEnum {
+    NUM_POLY_COUNT_TYPES = 10,
+    POLY_COUNT_RVM_WORLDMODEL = 9,
+    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
+    POLY_COUNT_MAIN_WORLDMODEL = 7,
+    POLY_COUNT_RVM_SCENERY = 6,
+    POLY_COUNT_REFLECTION_SCENERY = 5,
+    POLY_COUNT_MAIN_SCENERY = 4,
+    POLY_COUNT_ENVMAP_SCENERY = 3,
+    POLY_COUNT_RVM_CAR = 2,
+    POLY_COUNT_REFLECTION_CAR = 1,
+    POLY_COUNT_MAIN_CAR = 0,
+};
+
+int GetPolyCount(polyCountEnum type);
+
 // total size: 0x18
 class eModel : public bTNode<eModel> {
     uint32 NameHash;                                           // offset 0x8, size 0x4
@@ -61,6 +77,10 @@ class eModel : public bTNode<eModel> {
         return Solid;
     }
 
+    void SetMovedSolid(eSolid *solid) {
+        Solid = solid;
+    }
+
     eSolid *GetSolid() {
         return Solid;
     }
@@ -83,12 +103,17 @@ class eSolidPlatInterface {
     eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 
   public:
+    int LoaderPlatChunks(bChunk *chunk);
     int UnloaderPlatChunks(bChunk *chunk);
     int FixPlatInfo();
     int UnFixPlatInfo();
 
     eSolidPlatInfo *GetPlatInfo() {
         return this->PlatInfo;
+    }
+
+    void SetPlatInfo(eSolidPlatInfo *info) {
+        this->PlatInfo = info;
     }
 
   protected:
@@ -128,9 +153,29 @@ class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     float Density;                              // offset 0x9C, size 0x4
     char Name[64];                              // offset 0xA0, size 0x40
 
-    const char *GetName();
+    const char *GetName() {
+        return Name;
+    }
     void ChangeName(const char *new_name);
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Flags);
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->NumPolys);
+        bPlatEndianSwap(&this->NumVerts);
+        bPlatEndianSwap(&this->NumBones);
+        bPlatEndianSwap(&this->NumTextureTableEntries);
+        bPlatEndianSwap(&this->NumLightMaterials);
+        bPlatEndianSwap(&this->NumPositionMarkerTableEntries);
+        bPlatEndianSwap(&this->AABBMinX);
+        bPlatEndianSwap(&this->AABBMinY);
+        bPlatEndianSwap(&this->AABBMinZ);
+        bPlatEndianSwap(&this->AABBMaxX);
+        bPlatEndianSwap(&this->AABBMaxY);
+        bPlatEndianSwap(&this->AABBMaxZ);
+        bPlatEndianSwap(&this->Volume);
+        bPlatEndianSwap(&this->Density);
+        bPlatEndianSwap(&this->PivotMatrix);
+    }
     void GetBoundingBox(bVector3 *min, bVector3 *max);
     void GetBoundingBox(bVector4 *min, bVector4 *max);
     void FixTextureTable();
@@ -200,6 +245,14 @@ class eView : public eViewPlatInterface {
 
     void SetRenderTarget(eRenderTarget *target, int index) {
         this->RenderTargetTable[index] = target;
+    }
+
+    eRenderTarget *GetRenderTarget() const {
+        return RenderTargetTable[0];
+    }
+
+    eRenderTarget *GetRenderTarget0() {
+        return GetRenderTarget();
     }
 
     void SetRenderTarget0(eRenderTarget *target) {
@@ -294,7 +347,11 @@ class ePoly {
 
     void operator delete(void *ptr) {}
 
-    void SetFlags(uint8 i) {}
+    void SetFlags(uint8 i) {
+#ifndef EA_BUILD_A124
+        flags = i;
+#endif
+    }
 
     void SetFlailer(uint8 i) {
 #ifndef EA_BUILD_A124
@@ -302,7 +359,13 @@ class ePoly {
 #endif
     }
 
-    uint8 GetFlags() {}
+    uint8 GetFlags() {
+#ifndef EA_BUILD_A124
+        return flags;
+#else
+        return 0;
+#endif
+    }
 
     uint8 GetFlailer() {
 #ifndef EA_BUILD_A124
@@ -317,7 +380,10 @@ class LoadedTable {
     uint8 Counts[8192]; // offset 0x4, size 0x2000
 
   public:
-    LoadedTable() {}
+    LoadedTable() {
+        NumLoaded = 0;
+        bMemSet(Counts, 0, sizeof(Counts));
+    }
 
     int IsLoaded(uint32 hash) {
         return static_cast<int>(*this->GetPtr(hash) == 0);
@@ -523,5 +589,12 @@ inline void eAllowDuplicateSolids(bool enable) {
 inline bool eIsGameViewID(int id) {
     return id >= EVIEW_FIRST_PLAYER && id <= EVIEW_LAST_PLAYER;
 }
+
+
+typedef enum {
+    EPOLY_APPLYASPECT = 1,
+    EPOLY_APPLYZSORT = 2,
+    EPOLY_MULTI_TEXT_MASK = 4,
+} epoly_flags;
 
 #endif

@@ -24,7 +24,7 @@ class ENISCopCarDoors : public Event {
 
     ~ENISCopCarDoors() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fCarDoor;             // offset: 0x8, size 0x4
@@ -34,5 +34,7 @@ class ENISCopCarDoors : public Event {
 };
 
 void ENISCopCarDoors_MakeEvent_Callback(const void *staticData);
+int ENISCopCarDoors_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISCopCarDoors_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

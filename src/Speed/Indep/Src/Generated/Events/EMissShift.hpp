@@ -23,7 +23,7 @@ class EMissShift : public Event {
 
     ~EMissShift() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4

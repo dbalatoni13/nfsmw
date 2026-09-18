@@ -54,52 +54,52 @@ class IPathTrack {
     IPathTrack();
     virtual ~IPathTrack();
 
-    virtual void SetTrackInfo(PATHTRACKINFO *info) {} // Decl: 80
+    virtual void SetTrackInfo(PATHTRACKINFO *info) { mTrackInfo = info; } // Decl: 80
 
-    virtual void UpdateStatus(); // Decl: 86
+    virtual void UpdateStatus() = 0; // Decl: 86
 
-    virtual int Stop();
+    virtual int Stop() = 0;
 
-    virtual int Pause(int pause); // Decl: 92
+    virtual int Pause(int pause) = 0; // Decl: 92
 
-    virtual void CheckStatus(); // Decl: 97
+    virtual void CheckStatus() = 0; // Decl: 97
 
-    virtual int GetPathStatus(PATHSTATUS *psps); // Decl: 101
+    virtual int GetPathStatus(PATHSTATUS *psps) = 0; // Decl: 101
 
-    virtual int ReadyForNewRequest(); // Decl: 104
+    virtual int ReadyForNewRequest() = 0; // Decl: 104
 
-    virtual int TimeRemaining(int request); // Decl: 107
+    virtual int TimeRemaining(int request) = 0; // Decl: 107
 
-    virtual int TimeBuffered(); // Decl: 110
+    virtual int TimeBuffered() = 0; // Decl: 110
 
     virtual int Play(int node, unsigned int offset, int, int holdtime,
-                     unsigned int duration); // Decl: 114
+                     unsigned int duration) = 0; // Decl: 114
 
-    virtual int GetVolume() {}         // Decl: 117
-    virtual int SetVolume(int volume); // Decl: 118
+    virtual int GetVolume() { return mVolume; } // Decl: 117
+    virtual int SetVolume(int volume) = 0; // Decl: 118
 
-    virtual int GetDryLevel() {}        // Decl: 121
-    virtual int SetDryLevel(int level); // Decl: 122
+    virtual int GetDryLevel() { return mDryLevel; } // Decl: 121
+    virtual int SetDryLevel(int level) = 0; // Decl: 122
 
-    virtual int GetFXSendLevel(int bus) {}          // Decl: 125
-    virtual int SetFXSendLevel(int bus, int level); // Decl: 126
+    virtual int GetFXSendLevel(int bus) { return mFXSendLevel; } // Decl: 125
+    virtual int SetFXSendLevel(int bus, int level) = 0; // Decl: 126
 
-    virtual int GetPitchMult();              // Decl: 129
-    virtual int SetPitchMult(int pitchmult); // Decl: 130
+    virtual int GetPitchMult() = 0;              // Decl: 129
+    virtual int SetPitchMult(int pitchmult) = 0; // Decl: 130
 
-    virtual int GetStretchMult();                // Decl: 133
-    virtual int SetStretchMult(int stretchmult); // Decl: 134
+    virtual int GetStretchMult() = 0;                // Decl: 133
+    virtual int SetStretchMult(int stretchmult) = 0; // Decl: 134
 
-    virtual int GetHandle() {}     // Decl: 136
-    virtual void *GetPlayOpts() {} // Decl: 137
+    virtual int GetHandle() { return mHandle; } // Decl: 136
+    virtual void *GetPlayOpts() { return mPlayOpts; } // Decl: 137
 
-    virtual void SetName(const char *inName); // Decl: 139
+    virtual void SetName(const char *inName) = 0; // Decl: 139
 
     virtual void SetFilePath(char *path) {} // Decl: 141
 
-    virtual void StreamCache(char *pcache, int cachesize); // Decl: 148
+    virtual void StreamCache(char *pcache, int cachesize) = 0; // Decl: 148
 
-    virtual int ModifyHold(int holdtime); // Decl: 151
+    virtual int ModifyHold(int holdtime) = 0; // Decl: 151
 
     virtual int GetNumSubBanks();
     virtual int GetMaxSubBanks();

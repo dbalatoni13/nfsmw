@@ -16,10 +16,10 @@ class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listab
     DECL_INTERFACE(IVehicleCache);
 
 #ifndef EA_BUILD_A124
-    virtual const char *GetCacheName() const;
+    virtual const char *GetCacheName() const = 0;
 #endif
-    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
-    virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
+    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const = 0;
+    virtual void OnRemovedVehicleCache(IVehicle *ivehicle) = 0;
 };
 
 #endif

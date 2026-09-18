@@ -32,7 +32,9 @@ class EAXTunerCar : public EAXCar {
     void PreLoadAssets() override;
     void UpdateParams(float t) override;
 
-    virtual int Play(void *peventst) {} // Decl: 58
+    virtual int Play(void *peventst) {
+        return 0;
+    } // Decl: 58
 
     // Overrides: EAXCar
     void ProcessSoundSphere(uint32 unamehash, int nparamid, bVector3 *pv3pos, float fradius) override;

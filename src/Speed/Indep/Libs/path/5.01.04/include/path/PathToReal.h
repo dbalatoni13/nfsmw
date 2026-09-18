@@ -47,7 +47,7 @@ class PathToReal6 : public PathToReal {
     int FileSize(const char *filename) override;
 
   private:
-    static void TaskService(int);
+    static void TaskService(void *, int);
 };
 
 // total size: 0x14

@@ -103,11 +103,11 @@ float bRandom(float range) {
     return bRandom(range, &bDefaultSeed);
 }
 
-// UNSOLVED
 float bFMod(float a, float b) {
     float d = bAbs(b);
     float c = a / d;
-    return (c - bFloor(c)) * d;
+    c -= bFloor(c);
+    return c * d;
 }
 
 float bSin(bAngle angle) {
@@ -224,7 +224,7 @@ ASinTableEntry bASinTable[209] = {
     {0x3F7F, 13.6025f}, {0x3F8C, 15.4395f}, {0x3F9C, 18.314f}, {0x3FAE, 23.8672f}, {0x3FC6, 57.6203f}, {0x3FFF, -0.0003f},
 };
 
-static unsigned short bFastATanTable[] = {
+unsigned short bFastATanTable[] = {
     0,    41,   81,   122,  163,  204,  244,  285,  326,  367,  407,  448,  489,  529,  570,  610,  651,  692,  732,  773,  813,  854,  894,  935,
     975,  1015, 1056, 1096, 1136, 1177, 1217, 1257, 1297, 1337, 1377, 1417, 1457, 1497, 1537, 1577, 1617, 1656, 1696, 1736, 1775, 1815, 1854, 1894,
     1933, 1973, 2012, 2051, 2090, 2129, 2168, 2207, 2246, 2285, 2324, 2363, 2401, 2440, 2478, 2517, 2555, 2594, 2632, 2670, 2708, 2746, 2784, 2822,
@@ -237,6 +237,8 @@ static unsigned short bFastATanTable[] = {
     7310, 7334, 7358, 7381, 7405, 7428, 7451, 7475, 7498, 7521, 7544, 7566, 7589, 7612, 7635, 7657, 7679, 7702, 7724, 7746, 7768, 7790, 7812, 7834,
     7856, 7877, 7899, 7920, 7942, 7963, 7984, 8005, 8026, 8047, 8068, 8089, 8110, 8131, 8151, 8172, 8192, 8192,
 };
+
+unsigned short bSinTable[513] = {0};
 
 unsigned short bFixATanTableLow[129] = {
     0,      0x145,  0x28B,  0x3CE,  0x511,  0x650,  0x78D,  0x8C6,  0x9FB,  0xB2B,  0xC57,  0xD7D,  0xE9E,  0xFB8,  0x10CD, 0x11DC, 0x12E4,
@@ -276,9 +278,9 @@ bAngle bASin(float x) {
     }
 
     bFix fix_x = static_cast<int>(x * 65536.0f);
-    int table_number = 0;    // r7
-    bFix table_size = 32768; // r8
-    bFix table_top = 32768;  // r0
+    int table_number = 0;
+    bFix table_size = 32768;
+    bFix table_top = 32768;
 
     while (fix_x >= table_top && table_number < 11) {
         table_size >>= 1;
@@ -288,9 +290,9 @@ bAngle bASin(float x) {
 
     bFix table_bottom = table_top - table_size;                                  // r0
     int table_index = (fix_x - table_bottom) >> (11 - table_number);             // r10
-    bFix table_spacing = table_number * 16 + table_index;                        // r8
     float table_x = (table_bottom + table_index * (table_size >> 4)) / 65536.0f; // f0
     float remainder_x = x - table_x;                                             // f0
+    bFix table_spacing = table_number * 16 + table_index;                        // r8
     bAngle table_a = bASinTable[table_spacing].Angle;
     float slope = bASinTable[table_spacing].Slope; // f11
     bAngle a = table_a + static_cast<int>(remainder_x * slope * 65536.0f);
@@ -302,11 +304,29 @@ bAngle bASin(float x) {
     }
 }
 
-// STRIPPED
-bAngle bOldATan(float x, float y) {}
+// e1: descartadas al enlazar; se escriben por su POOL. El objetivo tiene en
+// este punto {1e-4f, 5e-11, 0.5f, 1.0f, 0.0, 256.0f}: el 1e-4f es la guarda de
+// division, la terna es bSqrt y el 256.0f el paso de bFastATanTable (i >> 8).
+bAngle bFastATan(float x, float y);
+bAngle bOldATan(float x, float y) {
+    // El pool ENLAZADO da el orden y el reparto exactos: aqui {0.0f, 1e-4f,
+    // y la terna de bSqrt} y en bFastATan {0.0f, 256.0f}. O sea que el 256.0f
+    // NO es de esta funcion: bOldATan LLAMA a bFastATan, no repite la tabla.
+    if (y == 0.0f) {
+        return 0;
+    }
+    float d = x * x + y * y;
+    if (d < 1e-4f) {
+        return 0;
+    }
+    return bFastATan(bSqrt(d), y);
+}
 
-// STRIPPED
-bAngle bFastATan(float x, float y) {}
+bAngle bFastATan(float x, float y) {
+    float s = (x < 0.0f) ? -y : y;
+    int i = static_cast<int>((s / x) * 256.0f);
+    return static_cast<bAngle>(bFastATanTable[i & 0xFF]);
+}
 
 // Credit: Brawltendo
 bAngle bATan(float x, float y) {
@@ -326,13 +346,16 @@ bAngle bATan(float x, float y) {
         float r = y;
         int i = static_cast<int>((r / x) * 65536.0f);
         const bAngle *table = &bFastATanTable[i >> 8];
-        a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
+        a = table[0];
+        a = a + (((table[1] - table[0]) * (i & 0xFF)) >> 8);
     } else {
         if (y > x) {
             float r = y;
             int i = static_cast<int>((x / r) * 65536.0f);
             const bAngle *table = &bFastATanTable[i >> 8];
-            a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
+            a = table[0];
+            a = a + (((table[1] - table[0]) * (i & 0xFF)) >> 8);
+            a = bDegToAng(90.0f) - a;
         } else if (y == 0.0f) {
             a = 0;
         } else {
@@ -368,10 +391,10 @@ bAngle bFixATan(bFix x) {
     bAngle b;
     bFix interpolation_ratio;
 
-    if (x < 2097152) {
+    if (x < 0x200000) {
         bAngle *table_entry;
 
-        if (x < 262144) {
+        if (x < 0x40000) {
             table_entry = bFixATanTableLow + (x >> 0xb);
             interpolation_ratio = (x << 5) & 0xffff;
         } else {
@@ -381,10 +404,10 @@ bAngle bFixATan(bFix x) {
 
         a = table_entry[0];
         b = table_entry[1];
-    } else if (x < 16777216) {
+    } else if (x < 0x1000000) {
         interpolation_ratio = x >> 8;
-        a = 0x3eba;
-        b = 0x3fd7;
+        a = bDegToAng(88.21f);
+        b = bDegToAng(89.78f);
     } else {
         a = 0x3fff;
         b = 0x3fff;
@@ -436,8 +459,13 @@ bAngle bFixATan(bFix x, bFix y) {
     return static_cast<bAngle>(a);
 }
 
-// STRIPPED
-bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {}
+// Descartada al enlazar, pero -strip-unused-data CONSERVA su pool: los
+// {5e-11, 0.5f, 1.0f} que emite bSqrt y que al objetivo si le constan.
+bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {
+    dest->r = bSqrt(cartesian->x * cartesian->x + cartesian->y * cartesian->y);
+    dest->a = bATan(cartesian->x, cartesian->y);
+    return dest;
+}
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
     float v1x = m.v1.y;

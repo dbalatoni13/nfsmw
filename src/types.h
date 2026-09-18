@@ -1,6 +1,8 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+// TODO get rid of our own macros and use UDefs and bWare stuff instead of them
+
 #if defined(EA_PLATFORM_GAMECUBE)
 
 #include "dolphin/types.h"
@@ -29,8 +31,36 @@ typedef unsigned int type_operator_new;
 // TODO use PS2ALIGN16 instead of this
 #define ALIGN_16
 
+#define EA_PACKED __attribute__((packed))
+
 #define ONLINE_SUPPORT (0) // TODO get rid of this
 
+
+#elif defined(__ANDROID__)
+// Port Android: mismos tipos que GC pero con long de 64 bits del LP64 del NDK
+// (colisiona con stdint del sysroot si usamos long long). Sin dolphin/types.h.
+#include <stdint.h>
+#define ALIGN_16 __attribute__((aligned(16)))
+#ifndef __ANDROID__
+// Android: stdint.h de LP64 ya define int64_t/uint64_t correctamente
+typedef signed char int8_t;
+typedef short int16_t;
+typedef int int32_t;
+typedef long long int64_t;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+#endif
+typedef unsigned char Bool;
+typedef signed char int8;
+typedef unsigned char uint8;
+typedef short int16;
+typedef unsigned short uint16;
+typedef int int32;
+typedef unsigned int uint32;
+typedef long int int64;
+typedef unsigned long int uint64;
 #elif defined(EA_PLATFORM_XENON)
 
 #include <cstddef>
@@ -61,6 +91,8 @@ typedef bool Bool;
 #endif
 
 #define ALIGN_16 ATTRIBUTE_ALIGN(16)
+
+#define EA_PACKED
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
@@ -94,7 +126,76 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-// typedef signed char i8;
+    // typedef signed char i8;
+
+#define ONLINE_SUPPORT (1)
+
+#elif defined(EA_PLATFORM_WIN32)
+
+#include <cstddef>
+
+// TODO
+typedef int BOOL;
+typedef bool Bool;
+
+#define TRUE 1
+#define FALSE 0
+
+#if !defined(__cplusplus) || __cplusplus < 201103L
+
+#ifndef nullptr
+#define nullptr 0
+#endif
+
+#if __cplusplus < 201103L
+#ifndef override
+#define override
+#endif
+#endif
+
+#endif
+
+#ifndef ATTRIBUTE_ALIGN
+#define ATTRIBUTE_ALIGN(num) __declspec(align(num))
+#endif
+
+#define ALIGN_16
+
+#define EA_PACKED
+
+#ifndef AT_ADDRESS
+#define AT_ADDRESS(xyz)
+#endif
+
+// TODO
+typedef signed char int8;
+typedef __int16 int16;
+typedef signed int int32;
+typedef signed __int64 int64;
+typedef unsigned char uint8;
+typedef unsigned __int16 uint16;
+typedef unsigned int uint32;
+typedef unsigned __int64 uint64;
+typedef unsigned int type_operator_new;
+
+typedef signed char int8_t;
+typedef __int16 int16_t;
+typedef signed int int32_t;
+typedef signed __int64 int64_t;
+typedef unsigned char uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef float float_t;
+typedef double double_t;
+
+// TODO
+typedef unsigned int u32;
+typedef int i32;
+typedef unsigned __int16 u16;
+typedef __int16 i16;
+typedef unsigned __int8 u8;
+    // typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 
@@ -124,6 +225,8 @@ typedef bool Bool;
 #endif
 
 #define ALIGN_16 ATTRIBUTE_ALIGN(16)
+
+#define EA_PACKED __attribute__((packed))
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
@@ -192,6 +295,8 @@ typedef signed char i8;
 #ifdef CLANGD_DAMNIT
 typedef unsigned int uintptr_t;
 typedef int intptr_t;
+#elif defined(__ANDROID__)
+// Port Android: stdint.h ya define uintptr_t/intptr_t de 64 bits (LP64)
 #else
 #define uintptr_t unsigned int
 #define intptr_t int

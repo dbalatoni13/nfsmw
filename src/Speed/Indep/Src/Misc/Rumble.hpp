@@ -27,7 +27,7 @@ class tEnvelope {
     tEnvelope() {}
 
     tEnvelope(sEnvelopePoint *p, int n) {
-        p = pPoints;
+        pPoints = p;
         nPoints = n;
     }
 
@@ -49,17 +49,13 @@ class tShaker {
     void Update(float fDeltaTime);
     void GetValue(bVector3 *pV);
 
-    tShaker() {}
+    tShaker() {
+        Reset();
+    }
 
     ~tShaker() {}
 
-    void Reset() {
-        bFill(&vShake, 0.0f, 0.0f, 0.0f);
-        pAmplitude = nullptr;
-        fTime = 0.0f;
-        fDuration = 1.0f;
-        fFrequency = 11.74265f;
-    }
+    void Reset();
 
     // bool IsShaking() {}
 
@@ -73,5 +69,8 @@ class tShaker {
 
 void UpdateCameraShakers(float dT);
 void ResetCameraShakers();
+void ApplyCameraShake(int nViewID, bMatrix4 *pMatrix);
+void ForceCameraShake(int nPlayer, bVector3 *pShake);
+void MaybeCameraShake(int nPlayer, bVector3 *pAccel);
 
 #endif

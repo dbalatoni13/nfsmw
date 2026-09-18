@@ -98,3 +98,12 @@ Csis::Result GlobalFxProcessor::SetOutputLevel(float level) {
 }
 
 }
+
+// La .rodata del original tiene alineacion 8 (16 B); la nuestra sale con
+// alineacion 4 (12 B) y el enlace se desplaza 8 B. No hay ningun objeto con
+// nombre en esta seccion donde colgar el __attribute__((aligned(8))): esta
+// constante solo existe para dar esa alineacion y el enlazador la retira
+// (-strip-unused-data), como demuestra el DOL byte a byte identico.
+namespace Snd {
+extern const double sndfxbus_rodata_align8 __attribute__((aligned(8))) = 0.0;
+}

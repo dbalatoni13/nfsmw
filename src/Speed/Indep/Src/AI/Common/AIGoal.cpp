@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
+IMPLEMENT_FACTORY(AIGoal);
+
 AIGoal::~AIGoal() {
     for (AIAction::List::const_iterator iter = mActions.begin(); iter != mActions.end(); ++iter) {
         delete *iter;
@@ -57,14 +59,14 @@ void AIGoal::ChooseAction(float dT) {
 }
 
 void AIGoal::Update(float dT) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     {
-        ProfileNode profile_node("TODO2", 0);
+        ProfileNode profile_node;
         ChooseAction(dT);
     }
     if (mCurrentAction) {
-        ProfileNode profile_node("TODO3", 0);
+        ProfileNode profile_node;
         mCurrentAction->Update(dT);
     }
 }
@@ -172,7 +174,7 @@ AIGoalPursuit::AIGoalPursuit(ISimable *isimable)
 }
 
 void AIGoalPursuit::Update(float dT) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     AIGoal::Update(dT);
 }
 
@@ -302,7 +304,7 @@ class AIGoalStaticRoadBlock : public AIGoal {
 
     AIGoalStaticRoadBlock(ISimable *isimable);
 
-    ~AIGoalStaticRoadBlock() override {}
+    ~AIGoalStaticRoadBlock() override;
 };
 
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalStaticRoadBlock("AIGoalStaticRoadBlock", AIGoalStaticRoadBlock::Construct);
@@ -311,6 +313,8 @@ AIGoalStaticRoadBlock::AIGoalStaticRoadBlock(ISimable *isimable) : AIGoal(isimab
     AddAction("AIActionStaticRoadBlock");
     ChooseAction(0.0f);
 }
+
+AIGoalStaticRoadBlock::~AIGoalStaticRoadBlock() {}
 
 // total size: 0x18
 class AIGoalFleePursuit : public AIGoal {
@@ -391,14 +395,12 @@ void AIGoalHeliExit::Update(float dT) {
 // total size: 0x18
 class AIGoalRacer : public AIGoal {
   public:
+    // En clase: el objetivo la emite en el bloque de finish_file (obj#994).
     static AIGoal *Construct(ISimable *isimable) {
         return new AIGoalRacer(isimable);
     }
 
     AIGoalRacer(ISimable *isimable);
-    void Update(float dT) override;
-
-    ~AIGoalRacer() override {}
 };
 
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalRacer("AIGoalRacer", AIGoalRacer::Construct);

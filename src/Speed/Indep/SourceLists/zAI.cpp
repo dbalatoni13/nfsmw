@@ -59,3 +59,13 @@
 #include "Speed/Indep/Src/AI/Common/AIGoal.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AIPursuit.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIRoadBlock.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIRoadBlockSetups.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AISpawnManager.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIMath.cpp"
+
+#include "Speed/Indep/Src/AI/Gps.cpp"

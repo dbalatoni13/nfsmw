@@ -16,7 +16,7 @@ struct junkman : Instance {
     typedef JunkmanMod TypeOf_transmission_package;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("junkman");
+    USE_ATTRIB_ALLOC("Attrib::Gen::junkman");
     junkman(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     junkman(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -34,10 +34,10 @@ struct junkman : Instance {
         return 0x171737e9;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x171737e9, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

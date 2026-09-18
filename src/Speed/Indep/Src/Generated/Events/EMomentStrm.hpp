@@ -24,18 +24,20 @@ class EMomentStrm : public Event {
 
     ~EMomentStrm() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
-    const char *fAttribStrm; // offset: 0x8, size 0x4
-    unsigned int fAttribKey; // offset: 0xc, size 0x4
+    UMath::Vector4 fPosition; // offset: 0x8, size 0x10
+    UMath::Vector4 fVector;   // offset: 0x18, size 0x10
+    UMath::Vector4 fVelocity; // offset: 0x28, size 0x10
+    uintptr_t fhSimable;      // offset: 0x38, size 0x4
 
-    UMath::Vector4 fPosition; // offset: 0xc, size 0x10
-    UMath::Vector4 fVector;   // offset: 0x1c, size 0x10
-    UMath::Vector4 fVelocity; // offset: 0x2c, size 0x10
-    uintptr_t fhSimable;      // offset: 0x3c, size 0x4
+    const char *fAttribStrm; // offset: 0x3c, size 0x4
+    unsigned int fAttribKey; // offset: 0x40, size 0x4
 };
 
 void EMomentStrm_MakeEvent_Callback(const void *staticData);
+int EMomentStrm_MakeEvent_LuaBinding(struct lua_State *L);
+void EMomentStrm_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

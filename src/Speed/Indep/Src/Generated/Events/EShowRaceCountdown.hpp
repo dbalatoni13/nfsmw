@@ -19,9 +19,11 @@ class EShowRaceCountdown : public Event {
 
     ~EShowRaceCountdown() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EShowRaceCountdown_MakeEvent_Callback(const void *staticData);
+int EShowRaceCountdown_MakeEvent_LuaBinding(struct lua_State *L);
+void EShowRaceCountdown_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

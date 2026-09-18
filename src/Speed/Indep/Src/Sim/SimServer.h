@@ -8,13 +8,6 @@
 
 namespace Sim {
 
-enum ConnStatus {
-    CONNSTATUS_INVALID = -1,
-    CONNSTATUS_CONNECTING = 0,
-    CONNSTATUS_READY = 1,
-    CONNSTATUS_OTHER = 4,
-};
-
 struct ConnectionData {
     IServiceable *client; // offset 0x0, size 0x4
     Packet *pkt;          // offset 0x4, size 0x4

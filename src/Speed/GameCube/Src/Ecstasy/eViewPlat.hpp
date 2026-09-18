@@ -25,7 +25,8 @@ struct eViewPlatInfo {
     float fovscl;                      // offset 0x110, size 0x4
     bVector4 ClippingPlanes[6];        // offset 0x114, size 0x60
 
-    inline eViewPlatInfo();
+    eViewPlatInfo() { aspect = 1.0f; fovscl = 1.0f; }
+
     inline bMatrix4 *GetWorldViewMatrix();
     inline bMatrix4 *GetViewScreenMatrix();
     inline bMatrix4 *GetWorldClipMatrix();
@@ -40,6 +41,31 @@ struct eViewPlatInfo {
     void SetLightPerspectiveProjection(Mtx44 *projection) {
         LightPerspectiveProjection = projection;
     }
+
+    void CalculateViewMatricies(eView *view, float force_near_z, float force_far_z, float force_screen_far_z);
+};
+
+inline bMatrix4 *eViewPlatInfo::GetWorldViewMatrix() {
+    return &WorldViewMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetViewScreenMatrix() {
+    return &ViewScreenMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetWorldClipMatrix() {
+    return &WorldClipMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetWorldScreenMatrix() {
+    return &WorldScreenMatrix;
+}
+
+// total size: 0xC
+struct eDataRenderDynamic {
+    uint32 *colourtable0; // offset 0x0, size 0x4
+    uint32 *colourtable1; // offset 0x4, size 0x4
+    Mtx *trm;             // offset 0x8, size 0x4
 };
 
 #endif

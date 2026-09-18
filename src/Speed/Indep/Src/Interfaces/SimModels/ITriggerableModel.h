@@ -8,7 +8,7 @@ class ITriggerableModel : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(ITriggerableModel);
 
-    virtual void PlaceTrigger(const UMath::Matrix4 &matrix, bool enable);
+    virtual void PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) = 0;
 };
 
 #endif

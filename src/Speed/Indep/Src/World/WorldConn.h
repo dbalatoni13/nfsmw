@@ -140,7 +140,7 @@ class Pkt_Body_Service : public Sim::Packet {
 // total size: 0x48
 class Pkt_Body_Send : public Sim::Packet {
   public:
-    DECLARE_WORLDPACKET(Pkt_Body_Send, WorldBodyConn);
+    DECLARE_WORLDPACKET(Pkt_Body_Send, World_UpdateBody);
 
     Pkt_Body_Send(unsigned int id, const UMath::Matrix4 &matrix)
         : mMatrix(matrix), //
@@ -155,7 +155,7 @@ class Pkt_Body_Send : public Sim::Packet {
 // total size: 0x30
 class Pkt_Effect_Send : public Sim::Packet {
   public:
-    DECLARE_WORLDPACKET(Pkt_Effect_Send, WorldBodyConn);
+    DECLARE_WORLDPACKET(Pkt_Effect_Send, World_OneShotEffect);
 
     Pkt_Effect_Send(const Attrib::Collection *effect_group, const UMath::Vector3 &pos, const UMath::Vector3 &mag, WUID owner,
                     const Attrib::Collection *owner_attrib, const Attrib::Collection *context, WUID actee)
@@ -181,7 +181,7 @@ class Pkt_Effect_Send : public Sim::Packet {
 // total size: 0x18
 class Pkt_Effect_Open : public Sim::Packet {
   public:
-    DECLARE_WORLDPACKET(Pkt_Effect_Open, WorldBodyConn);
+    DECLARE_WORLDPACKET(Pkt_Effect_Open, WorldEffectConn);
 
     Pkt_Effect_Open(const Attrib::Collection *effect_group, unsigned int owner, const Attrib::Collection *owner_attrib,
                     const Attrib::Collection *context,
@@ -204,7 +204,7 @@ class Pkt_Effect_Open : public Sim::Packet {
 // total size: 0x20
 class Pkt_Effect_Service : public Sim::Packet {
   public:
-    DECLARE_WORLDPACKET(Pkt_Effect_Service, WorldBodyConn);
+    DECLARE_WORLDPACKET(Pkt_Effect_Service, WorldEffectConn);
 
     ~Pkt_Effect_Service() override {}
 

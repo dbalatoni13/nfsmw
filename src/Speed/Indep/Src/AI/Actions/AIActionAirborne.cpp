@@ -35,6 +35,8 @@ class AIActionAirborne : public AIAction {
     float mAirborneTimer;       // offset 0x58, size 0x4
 };
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionAirborne("AIActionAirborne", AIActionAirborne::Construct);
+
 AIAction *AIActionAirborne::Construct(AIActionParams *params) {
     return new AIActionAirborne(params, 0.0f);
 }

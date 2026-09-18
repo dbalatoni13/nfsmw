@@ -43,7 +43,11 @@ class AITarget : public bTNode<AITarget> {
     bool IsTarget(const AITarget *aitarget) const;
     float GetSpeed() const;
     const UMath::Vector3 &GetLinearVelocity() const;
+
+  private:
     void TrackInternal();
+
+  public:
 
     virtual ~AITarget();
 
@@ -88,7 +92,7 @@ class AITarget : public bTNode<AITarget> {
     }
 
     bool IsTarget(const UTL::COM::IUnknown *object) const {
-        return UTL::COM::ComparePtr(mTargetSimable, object);
+        return mTargetSimable != nullptr && UTL::COM::ComparePtr(mTargetSimable, object);
     }
 
   private:

@@ -1,0 +1,18 @@
+[
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.cpp",
+ "src/Speed/Indep/Src/World/TrackStreamer.cpp",
+ "src/Speed/Indep/Src/World/TrackPath.cpp",
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp",
+ "src/Speed/Indep/Src/EAXSound/SoundCollision.hpp",
+ "src/Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMap.cpp",
+ "src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.cpp",
+ "src/Speed/Indep/Src/Speech/SoundAI.h",
+ "src/Speed/Indep/Src/Generated/AttribSys/Classes/turbosfx.h",
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Wheel.hpp",
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp",
+ "src/Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_HybridMotor.hpp",
+ "src/Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.cpp",
+ "src/Speed/Indep/Src/EAXSound/EAXCarState.hpp",
+ "src/Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixMapState.cpp",
+ "src/Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.cpp"
+]

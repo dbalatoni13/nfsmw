@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/Damagezones.h"
 

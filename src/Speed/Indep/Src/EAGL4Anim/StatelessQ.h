@@ -11,23 +11,49 @@ namespace EAGL4Anim {
 
 // total size: 0x18
 struct StatelessQ : public AnimMemoryMap {
-    const AttributeBlock *GetAttributeBlock() const {}
+    const AttributeBlock *GetAttributeBlock() const {
+        return mAttributeBlock;
+    }
 
-    int GetNumFrames() const {}
+    int GetNumFrames() const {
+        if (!mTimes) {
+            return mNumKeys;
+        } else {
+            return mTimes[mNumKeys - 2] + 1;
+        }
+    }
 
-    unsigned short *GetData() {}
+    unsigned short *GetData() {
+        unsigned char *memBytes = reinterpret_cast<unsigned char *>(this);
 
-    unsigned short *GetFrameData(unsigned short *dataBuf, int frameIdx) {}
+        return reinterpret_cast<unsigned short *>(memBytes + sizeof(StatelessQ));
+    }
 
-    unsigned short *GetConstData(unsigned short *dataBuf) {}
+    unsigned short *GetFrameData(unsigned short *dataBuf, int frameIdx) {
+        return &dataBuf[frameIdx * 4 * mNumBones];
+    }
 
-    unsigned char *GetConstBoneIdx() {}
+    unsigned short *GetConstData(unsigned short *dataBuf) {
+        return &dataBuf[mNumKeys * 4 * mNumBones];
+    }
+
+    unsigned char *GetConstBoneIdx() {
+        return mBoneIdxs + mNumBones;
+    }
 
     static int ComputeSize(int numKeys, int numBones, int numConstBones, bool useKeyFrames) {}
 
     static unsigned short Compress2UShort(float val) {}
 
-    static float Uncompress2Float(unsigned short val) {}
+    static unsigned int Uncompress2Bits(unsigned short val) {
+        return ((val & 0x8000) << 16) | ((val & 0x7FFF) << 15);
+    }
+
+    static float Uncompress2Float(unsigned short val) {
+        int result = ((val & 0x8000) << 16) | ((val & 0x7FFF) << 15);
+
+        return *reinterpret_cast<float *>(&result);
+    }
 
     static int GetFnOffset() {
         return 24;

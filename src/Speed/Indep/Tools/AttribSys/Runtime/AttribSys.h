@@ -34,12 +34,17 @@ inline unsigned int RotateNTo32(unsigned long long v, unsigned int amount) {
     return (v << amount) | (v >> (64 - amount));
 }
 
+
+
+// El nombre se pasa siempre: fuera de MILESTONE_BUILD lo descarta AttribAlloc.
+// Sin `if (ENABLE_IN_MILESTONE)` aqui: la rama muerta duplica el RTL de estos
+// operadores y GCC 2.95 deja de expandir en linea los destructores que los usan.
 #define USE_ATTRIB_ALLOC(name)                                                                                                                       \
     void *operator new(size_t bytes) {                                                                                                               \
-        return (Attrib::Alloc(bytes, #name));                                                                                                        \
+        return (Attrib::Alloc(bytes, name));                                                                                                         \
     };                                                                                                                                               \
     void operator delete(void *ptr, size_t bytes) {                                                                                                  \
-        Attrib::Free(ptr, bytes, #name);                                                                                                             \
+        Attrib::Free(ptr, bytes, name);                                                                                                              \
     }                                                                                                                                                \
     void *operator new(size_t, void *ptr) {                                                                                                          \
         return (ptr);                                                                                                                                \
@@ -105,9 +110,16 @@ class TypeDesc {
     static ITypeHandler *Lookup(Type t);
     static Type NameToType(const char *name);
 
-    USE_ATTRIB_ALLOC(Attrib::TypeDesc);
+    USE_ATTRIB_ALLOC("Attrib::TypeDesc");
 
     TypeDesc() : mType(0), mName(""), mSize(0), mIndex(0), mHandler(nullptr) {}
+
+    TypeDesc(const TypeDesc &src)
+        : mType(src.mType),   //
+          mName(src.mName),   //
+          mSize(src.mSize),   //
+          mIndex(src.mIndex), //
+          mHandler(src.mHandler) {}
 
     TypeDesc(unsigned int t) : mType(t), mName(nullptr), mSize(0), mIndex(0), mHandler(Lookup(t)) {}
 
@@ -116,6 +128,10 @@ class TypeDesc {
 
     Type GetType() const {
         return mType;
+    }
+
+    const char *GetName() const {
+        return mName;
     }
 
     unsigned int GetSize() const {
@@ -130,13 +146,6 @@ class TypeDesc {
         return mHandler;
     }
 
-    TypeDesc(const TypeDesc &src)
-        : mType(src.mType),   //
-          mName(src.mName),   //
-          mSize(src.mSize),   //
-          mIndex(src.mIndex), //
-          mHandler(src.mHandler) {}
-
     bool operator<(const TypeDesc &rhs) const {
         return mType < rhs.mType;
     }
@@ -149,26 +158,10 @@ class TypeDesc {
     ITypeHandler *mHandler; // offset 0x10, size 0x4
 };
 
-// total size: 0x10
-class TypeDescPtrVec : public std::vector<const TypeDesc *> {
-    USE_ATTRIB_ALLOC(Attrib::TypeDescPtrVec);
-};
-
-// total size: 0x10
-class TypeTable : public std::set<TypeDesc> {
-    USE_ATTRIB_ALLOC(Attrib::TypeTable);
-};
-
-// total size: 0x8
-class CollectionList : public std::list<const Collection *> {
-    USE_ATTRIB_ALLOC(Attrib::CollectionList);
-};
-
-// total size: 0x8
-class ClassList : public std::list<const Class *> {
-    USE_ATTRIB_ALLOC(Attrib::ClassList);
-};
-
+// c36attx e4: `TypeDescPtrVec`, `TypeTable`, `CollectionList` y `ClassList`
+// se han ido con `DatabasePrivate` a AttribDatabase.cpp: debug_lines situa
+// ~TypeTable en attribdatabase.cpp:36 y el objetivo emite ~ClassTable ANTES
+// que ~TypeTable, o sea que ClassTable se define primero.
 // total size: 0x8
 class Database {
   public:
@@ -189,7 +182,11 @@ class Database {
         return *sThis;
     }
 
-    bool IsInitialized() {
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::Database");
+    }
+
+    static bool IsInitialized() {
         return sThis != nullptr;
     }
 
@@ -197,7 +194,6 @@ class Database {
     friend class DatabaseExportPolicy;
 
   private:
-    USE_ATTRIB_ALLOC(Attrib::Database);
     Database(DatabasePrivate &privates);
     virtual ~Database();
 
@@ -206,332 +202,12 @@ class Database {
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
 
-// TODO move to AttribHashMap.h
-class Array {
-#define Flag_AlignedAt16 (1 << 15)
-  private:
-    // Returns the base location of this array's data
-    unsigned char *BasePointer() const {
-        return (unsigned char *)(&this[1]);
-    }
-
-    void *Data(unsigned int byteindex) const {
-        unsigned char *base = BasePointer(); // unused
-        return (void *)((unsigned char *)(&this[1]) + GetPad() + byteindex);
-    }
-
-  public:
-    void SetTypeIndex(uint16_t typeIndex) {
-        mEncodedTypePad = typeIndex | (mEncodedTypePad & 0x8000);
-    }
-
-    const Array &operator=(const Array &rhs) {
-        for (unsigned int i = 0; i < mCount; i++) {
-            SetData(i, nullptr);
-        }
-
-        mAlloc = rhs.mAlloc;
-        mCount = rhs.mCount;
-        mSize = rhs.mSize;
-        mEncodedTypePad = rhs.mEncodedTypePad;
-
-        for (unsigned int i = 0; i < mCount; i++) {
-            SetData(i, rhs.GetData(i));
-        }
-
-        return *this;
-    }
-
-    bool IsReferences() const {
-        return mSize == 0;
-    }
-
-    unsigned short GetTypeIndex() const {
-        return mEncodedTypePad & 0x7fff;
-    }
-
-    std::size_t GetTypeSize() const {
-        return mSize;
-    }
-
-    std::size_t GetElementSize() const {
-        if (IsReferences()) {
-            return sizeof(void *);
-        } else {
-            return mSize;
-        }
-    }
-
-    std::size_t GetAlloc() const {
-        return GetPad() + sizeof(*this) + mAlloc * GetElementSize();
-    }
-
-    std::size_t GetCount() const {
-        return mCount;
-    }
-
-    std::size_t GetPad() const {
-        if (!(mEncodedTypePad & Flag_AlignedAt16)) {
-            return 0;
-        }
-        return sizeof(*this);
-    }
-
-    const TypeDesc &GetTypeDesc() const {
-        return Database::Get().GetIndexedTypeDesc(GetTypeIndex());
-    }
-
-    bool SetCount(unsigned int newCount) {
-        if (newCount > mAlloc) {
-            return false;
-        } else {
-            if (IsReferences()) {
-                for (unsigned int i = mCount; i < newCount; i++) {
-                    SetData(i, nullptr);
-                }
-            }
-            mCount = newCount;
-            return true;
-        }
-    }
-
-    void *GetData(unsigned int index) const {
-        if (index < mCount) {
-            if (IsReferences()) {
-                return reinterpret_cast<void **>(Data(0))[index];
-            } else {
-                return Data(index * mSize);
-            }
-        } else {
-            return nullptr;
-        }
-    }
-
-    void SetData(unsigned int index, void *value) {
-        if (IsReferences()) {
-            ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
-            typeHandler->Release(GetData(index));
-            reinterpret_cast<void **>(Data(0))[index] = typeHandler->Retain(value);
-        } else if (value) {
-            memcpy(GetData(index), value, mSize);
-        } else {
-            memset(GetData(index), 0, mSize);
-        }
-    }
-
-    static Array *CreateInPlace(void *ptr, unsigned int t, std::size_t count, std::size_t allocSize) {
-        const TypeDesc &desc = Database::Get().GetTypeDesc(t);
-        unsigned short typeIndex = desc.GetIndex();
-        unsigned int typesize = desc.GetSize();
-        bool align16 = typesize > 15;
-
-        return new (ptr) Array(typesize, count, allocSize, typeIndex, align16);
-    }
-
-    static Array *Create(unsigned int t, std::size_t count) {
-        const TypeDesc &desc = Database::Get().GetTypeDesc(t);
-        unsigned short typeIndex = desc.GetIndex();
-        unsigned int typesize = desc.GetSize();
-        bool align16 = typesize > 15;
-        std::size_t actualtypesize = typesize;
-        if (typesize == 0) {
-            actualtypesize = 4;
-        }
-        unsigned int overhead = align16 ? 16 : 8;
-        std::size_t allocSize = (((overhead + (actualtypesize * count) + 63) & ~63) - overhead) / actualtypesize;
-        std::size_t allocBytes = overhead + allocSize * actualtypesize;
-
-        return new (Alloc(allocBytes, "Attrib::Array")) Array(typesize, count, allocSize, typeIndex, align16);
-    }
-
-    static void Destroy(Array *array) {
-        std::size_t allocSize = array->GetAlloc();
-        array->~Array();
-        Free(array, allocSize, "Attrib::Array");
-    }
-
-  private:
-    Array(std::size_t typesize, std::size_t count, std::size_t allocSize, std::size_t typeIndex, bool align16) {
-        mAlloc = allocSize;
-        mCount = count;
-        mSize = typesize;
-        mEncodedTypePad = typeIndex;
-        if (align16 && (typesize != 0)) {
-            mEncodedTypePad = typeIndex | Flag_AlignedAt16;
-        }
-        for (std::size_t i = 0; i < count; i++) {
-            SetData(i, nullptr);
-        }
-        if (IsReferences()) {
-            GetTypeDesc();
-        }
-    }
-
-    // TODO is this really overriden?
-    void operator delete(void *ptr) {}
-
-    ~Array() {
-        if (IsReferences()) {
-            ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
-            void **ptrs = reinterpret_cast<void **>(Data(0));
-            for (std::size_t i = 0; i < mCount; i++) {
-                typeHandler->Release(ptrs[i]);
-            }
-        }
-    }
-
-    void *operator new(std::size_t, void *ptr) {
-        return ptr;
-    }
-
-    uint16_t mAlloc;
-    uint16_t mCount;
-    uint16_t mSize;
-    uint16_t mEncodedTypePad;
-};
-
-#undef Flag_AlignedAt16
-
-// TOOD move to AttribHashMap.h
-// Credit: Brawltendo
-// total size: 0xC
-class Node {
-  public:
-    enum Flags {
-        Flag_RequiresRelease = 1 << 0,
-        Flag_IsArray = 1 << 1,
-        Flag_IsInherited = 1 << 2,
-        Flag_IsAccessor = 1 << 3,
-        Flag_IsLaidOut = 1 << 4,
-        Flag_IsByValue = 1 << 5,
-        Flag_IsLocatable = 1 << 6,
-    };
-
-    void *operator new(std::size_t, void *ptr) {
-        return ptr;
-    }
-
-    Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
-
-    Node(Key key, unsigned int type, void *ptr, bool ptrIsRaw, unsigned char flags, void *layoutptr)
-        : mKey(key), mPtr(ptr), mTypeIndex(Database::Get().GetTypeDesc(type).GetIndex()), mFlags(flags) {
-        if (ptrIsRaw && IsLaidOut()) {
-            mPtr = (void *)((uintptr_t)ptr - (uintptr_t)layoutptr);
-        }
-    }
-
-    void Move(Node &src) {
-        mKey = src.mKey;
-        mTypeIndex = src.mTypeIndex;
-        mPtr = src.mPtr;
-        mFlags = src.mFlags;
-
-        src.mPtr = &src;
-        src.mFlags = 0;
-        src.mKey = 0;
-    }
-
-    bool GetFlag(unsigned int mask) const {
-        return mFlags & mask;
-    }
-
-    bool RequiresRelease() const {
-        return GetFlag(Flag_RequiresRelease);
-    }
-
-    bool IsArray() const {
-        return GetFlag(Flag_IsArray);
-    }
-
-    bool IsInherited() const {
-        return GetFlag(Flag_IsInherited);
-    }
-
-    bool IsAccessor() const {
-        return GetFlag(Flag_IsAccessor);
-    }
-
-    bool IsLaidOut() const {
-        return GetFlag(Flag_IsLaidOut);
-    }
-
-    bool IsByValue() const {
-        return GetFlag(Flag_IsByValue);
-    }
-
-    bool IsLocatable() const {
-        return GetFlag(Flag_IsLocatable);
-    }
-
-    bool IsValid() const {
-        return IsLaidOut() || mPtr != this;
-    }
-
-    void *GetPointer(void *layoutptr) const {
-        if (IsByValue()) {
-            return &mValue;
-        } else if (IsLaidOut()) {
-            return (void *)((uintptr_t)(layoutptr) + (uintptr_t)(mPtr));
-        } else {
-            return mPtr;
-        }
-    }
-
-    Array *GetArray(void *layoutptr) const {
-        if (IsLaidOut()) {
-            return (Array *)((uintptr_t)(layoutptr) + (uintptr_t)(mArray));
-        } else {
-            return mArray;
-        }
-    }
-
-    std::size_t GetCount(void *layoutptr) const {
-        if (IsValid()) {
-            if (IsArray()) {
-                return GetArray(layoutptr)->GetCount();
-            }
-            return 1;
-        }
-        return 0;
-    }
-
-    Key GetKey() const {
-        return IsValid() ? mKey : 0;
-    }
-
-    std::size_t MaxSearch() const {
-        return mMax;
-    }
-
-    void SetSearchLength(std::size_t searchLen) {
-        mMax = std::max(mMax, (unsigned char)searchLen);
-    }
-
-    void ResetSearchLength(std::size_t searchLen) {
-        mMax = searchLen;
-    }
-
-    const TypeDesc &GetTypeDesc() const {
-        return Database::Get().GetIndexedTypeDesc(mTypeIndex);
-    }
-
-    void Invalidate() {
-        mPtr = this;
-        mKey = 0;
-    }
-
-  private:
-    Key mKey;
-    union {
-        void *mPtr;
-        Array *mArray;
-        mutable unsigned int mValue;
-        unsigned int mOffset;
-    };
-    uint16_t mTypeIndex;
-    uint8_t mMax;
-    uint8_t mFlags;
-};
+// c36attx e1: `class Array` y `class Node` VIVEN EN AttribHashMap.h en el
+// original (debug_lines: attribhashmap.h:44-215 para Array y :385-466 para
+// Node; attribsys.h solo llega a Definition::GetFlag en :572). Aqui basta la
+// declaracion adelantada: Attribute e Instance solo los usan por PUNTERO.
+class Array;
+class Node;
 
 #define USER_ATTRIB_MIN(A, B) (((A) < (B)) ? (A) : (B))
 
@@ -542,7 +218,9 @@ class Node {
 
 // total size: 0x10
 class Attribute {
-  protected:
+  public:
+    // Publico a proposito: el original lo llama desde GRaceCustom::SetAttribute
+    // y CreateRaceActivity (attribsys.h:276-279 en el asm).
     void *GetElementPointer(unsigned int index) const {
         if (mDataPointer) {
             return index == 0 ? mDataPointer : nullptr;
@@ -601,6 +279,17 @@ class Attribute {
         return false;
     }
 
+    template <typename T> bool Set(unsigned int index, const T &input) {
+        T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));
+
+        if (resultptr != nullptr) {
+            *resultptr = input;
+            return true;
+        }
+
+        return false;
+    }
+
   private:
     void *GetInternalPointer(unsigned int index) const;
 
@@ -609,6 +298,12 @@ class Attribute {
     Node *mInternal;               // offset 0x8, size 0x4
     void *mDataPointer;            // offset 0xC, size 0x4
 };
+
+template <typename T> const T &Attribute::Get(unsigned int index) const {
+    const T *resultptr = reinterpret_cast<const T *>(GetElementPointer(index));
+
+    return (resultptr != NULL) ? *resultptr : *reinterpret_cast<const T *>(DefaultDataArea(sizeof(T)));
+}
 
 namespace Gen {
 class GenericAccessor;
@@ -628,9 +323,28 @@ template <typename T> class TAttrib : public Attribute {
     ~TAttrib() {}
 
     const TypeOf &Get(unsigned int index) const;
-    // TODO
-    bool Set(unsigned int index, const TypeOf &input) {}
+
+    bool Set(unsigned int index, const TypeOf &input) {
+        TypeOf *resultptr = reinterpret_cast<TypeOf *>(GetElementPointer(index));
+
+        if (resultptr != nullptr) {
+            *resultptr = input;
+            return true;
+        }
+
+        return false;
+    }
 };
+
+// Definida FUERA de la clase a proposito: asi no es implicitamente inline, GCC 2.9
+// emite la instanciacion en .gnu.linkonce.t y los llamantes conservan su `bl`.
+// El .o objetivo de zAI define las tres que se usan (bool, UMath::Vector4,
+// GCollectionKey); sin cuerpo eran un `bl` a la nada.
+template <typename T> const T &TAttrib<T>::Get(unsigned int index) const {
+    const T *resultptr = reinterpret_cast<const T *>(GetElementPointer(index));
+
+    return (resultptr != NULL) ? *resultptr : *reinterpret_cast<const T *>(DefaultDataArea(sizeof(T)));
+}
 
 // total size: 0xC
 class AttributeIterator {
@@ -672,8 +386,33 @@ class Instance {
     bool Add(Key attributeKey, unsigned int count);
     bool Remove(Key attributeKey);
 
-    // TODO
-    template <typename T> TAttrib<T> GetOrClone(Key attributeKey) {}
+    template <typename T> bool AddAndSet(Key attributeKey, const T *data, unsigned int count) {
+        if (Add(attributeKey, count) || Contains(attributeKey)) {
+            Attribute newattrib = Get(attributeKey);
+            for (unsigned int i = 0; i < count; i++) {
+                newattrib.Set(i, data[i]);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    template <typename T> TAttrib<T> GetOrClone(Key attributeKey) {
+        TAttrib<T> attr(Get(attributeKey));
+        if (!attr.IsValid() || attr.GetCollection() == GetConstCollection()) {
+            return attr;
+        }
+        unsigned int len = attr.GetLength();
+        if (!Add(attributeKey, len)) {
+            return attr;
+        }
+        TAttrib<T> localattr(Get(attributeKey));
+        localattr.GetCollection();
+        for (unsigned int i = 0; i < len; i++) {
+            localattr.Set(i, attr.Get(i));
+        }
+        return localattr;
+    }
 
     bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes);
     bool ModifyInternal(Key classKey, Key dynamicCollectionKey, unsigned int reserve);
@@ -756,6 +495,8 @@ class Instance {
 // total size: 0x10
 class Definition {
   public:
+    USE_ATTRIB_ALLOC("Attrib::Definition");
+
     enum Flags {
         kArray = 1 << 0,
         kInLayout = 1 << 1,
@@ -914,7 +655,6 @@ class Class {
 // total size: 0xC
 class RefSpec {
   public:
-    USE_ATTRIB_ALLOC(Attrib::RefSpec);
     RefSpec(const RefSpec &src);
     void SetCollection(const Collection *collectionPtr);
     const Class *GetClass() const;
@@ -928,6 +668,14 @@ class RefSpec {
         return *this;
     }
     void Clean() const;
+
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::RefSpec");
+    }
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::RefSpec");
+    }
 
     RefSpec() : mClassKey(0), mCollectionKey(0), mCollectionPtr(nullptr) {}
 
@@ -945,6 +693,14 @@ class RefSpec {
         return mCollectionKey;
     }
 
+    bool operator==(const RefSpec &rhs) const {
+        return mClassKey == rhs.mClassKey && mCollectionKey == rhs.mCollectionKey;
+    }
+
+    bool operator!=(const RefSpec &rhs) const {
+        return !(*this == rhs);
+    }
+
   private:
     Key mClassKey;                            // offset 0x0, size 0x4
     Key mCollectionKey;                       // offset 0x4, size 0x4
@@ -954,38 +710,74 @@ class RefSpec {
 // TODO where is this in the file?
 // total size: 0x8
 class Blob {
+  public:
+    USE_ATTRIB_ALLOC("Attrib::Blob");
+
+    Blob() {
+        mSize = 0;
+        mData = NULL;
+    }
+
+    Blob(uint32_t size, const void *data) {
+        mSize = size;
+        mData = data;
+    }
+
+    // Declarado a proposito: el constructor de copia hace que GCC 2.9 trate el
+    // Blob como local direccionable (ranura baja del marco) en vez de como
+    // pseudo derramado al final del marco.
+    Blob(const Blob &src) {
+        mSize = src.mSize;
+        mData = src.mData;
+    }
+
+    uint32_t GetSize() const {
+        return mSize;
+    }
+
+    const void *GetData() const {
+        return mData;
+    }
+
+    bool operator==(const Blob &rhs) const {
+        return mSize == rhs.mSize && mData == rhs.mData;
+    }
+
+    bool operator!=(const Blob &rhs) const {
+        return !(*this == rhs);
+    }
+
   private:
     uint32_t mSize;    // offset 0x0, size 0x4
     const void *mData; // offset 0x4, size 0x4
 };
 
-const Key key_default = 0xeec2271a; // Decl: 859
-const Key h64_default = 0xeec2271a; // Decl: 860
+const Key key_default = 0xeec2271a;
+const Key h64_default = 0xeec2271a;
 
 }; // namespace Attrib
 
 namespace EA {
 namespace Reflection {
 
-typedef int64_t Int64;    // Decl: 868
-typedef int32_t Int32;    // Decl: 869
-typedef int16_t Int16;    // Decl: 870
-typedef int8_t Int8;      // Decl: 871
-typedef uint64_t UInt64;  // Decl: 872
-typedef uint32_t UInt32;  // Decl: 873
-typedef uint16_t UInt16;  // Decl: 874
-typedef uint8_t UInt8;    // Decl: 875
-typedef char Char;        // Decl: 876
-typedef bool Bool;        // Decl: 877
-typedef float Float;      // Decl: 878
-typedef double Double;    // Decl: 879
-typedef const char *Text; // Decl: 880
+typedef int64_t Int64;
+typedef int32_t Int32;
+typedef int16_t Int16;
+typedef int8_t Int8;
+typedef uint64_t UInt64;
+typedef uint32_t UInt32;
+typedef uint16_t UInt16;
+typedef uint8_t UInt8;
+typedef char Char;
+typedef bool Bool;
+typedef float Float;
+typedef double Double;
+typedef const char *Text;
 typedef void *Reference;
 
 } // namespace Reflection
 } // namespace EA
 
-// Decl: 901
 #define ATTRIB_CODEGEN_GETATTRIB(TYPE, KEY)                                                                                                          \
     result = TAttrib<TYPE>(this->Get(KEY));                                                                                                          \
     return (result.IsValid())
@@ -1005,6 +797,11 @@ typedef void *Reference;
         return (true);                                                                                                                               \
     } else                                                                                                                                           \
         return (false)
+
+// TODO I made this up
+#define ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FIELD, RESULT)                                                                                               \
+    RESULT = static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD;                                                                          \
+    return (true)
 
 #define ATTRIB_CODEGEN_GETLAYOUT(FIELD) return (static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD)
 #define ATTRIB_CODEGEN_GETSTATIC(FIELD) return (gStatics.FIELD)

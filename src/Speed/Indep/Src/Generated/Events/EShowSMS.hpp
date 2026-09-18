@@ -21,12 +21,14 @@ class EShowSMS : public Event {
 
     ~EShowSMS() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fShowMsg; // offset: 0x8, size 0x4
 };
 
 void EShowSMS_MakeEvent_Callback(const void *staticData);
+int EShowSMS_MakeEvent_LuaBinding(struct lua_State *L);
+void EShowSMS_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

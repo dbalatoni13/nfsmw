@@ -84,7 +84,7 @@ void CAnimSceneData::InitHeaderData(void *data, int size) {
 void CAnimSceneData::AddEntityData(void *data, int size) {
     CAnimEntityFactory::EndianSwapEntityData(data, size);
 
-    CAnimEntityData *aed = BNEW CAnimEntityData(*reinterpret_cast<unsigned int *>(data), data, size);
+    CAnimEntityData *aed = new ("CAnimEntityData", 0) CAnimEntityData(*reinterpret_cast<unsigned int *>(data), data, size);
     mAnimEntityDataList.AddTail(aed);
 }
 
@@ -92,7 +92,7 @@ void CAnimSceneData::AddEntityData(void *data, int size) {
 void CAnimSceneData::RemoveAllEntityData() {}
 
 CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk) {
-    CAnimSceneData *anim_scene_data = BNEW CAnimSceneData(nested_chunk);
+    CAnimSceneData *anim_scene_data = new ("CAnimSceneData", 0) CAnimSceneData(nested_chunk);
 
     if (anim_scene_data) {
         anim_scene_data->InitHeaderData(sub_chunk + 1, sub_chunk->Size);
@@ -112,6 +112,8 @@ int LoaderAnimSceneData(bChunk *chunk) {
             unsigned int chunk_id = sub->ID;
 
             switch (chunk_id) {
+                case BCHUNK_NULL:
+                    break;
                 case BCHUNK_ANIM_SCENE_DATA:
                     anim_scene_data = CreateAnimSceneData(chunk, sub);
                     break;
@@ -137,7 +139,7 @@ int UnloaderAnimSceneData(bChunk *chunk) {
         while (anim_scene_data != g_loadedAnimSceneDataList.EndOfList()) {
             CAnimSceneData *next_anim_scene_data = anim_scene_data->GetNext();
             if (anim_scene_data->GetChunk() == chunk) {
-                anim_scene_data->Remove();
+                g_loadedAnimSceneDataList.Remove(anim_scene_data);
                 delete anim_scene_data;
                 break;
             }
@@ -311,6 +313,8 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
             return;
         case Paused:
             switch (new_status) {
+                case Playing:
+                    break;
                 case Paused:
                     return;
                 case Stopped:
@@ -318,8 +322,6 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
                     UnBindToGame();
                     ResetTime();
                     return;
-                case Playing:
-                    break;
                 default:
                     return;
             }
@@ -463,7 +465,7 @@ void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
     CAnimProperty *anim_property = FindProperty(property_id);
 
     if (!anim_property) {
-        CAnimProperty *anim_property = BNEW CAnimProperty(property_id, enabled);
+        CAnimProperty *anim_property = new ("CAnimProperty", 0) CAnimProperty(property_id, enabled);
         mAnimPropertyList.AddTail(anim_property);
     }
 }

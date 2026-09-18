@@ -6,20 +6,13 @@
 #endif
 
 #include "AnimCtrl.hpp"
+#include "AnimProperty.hpp"
 #include "AnimEntity.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEAnimScene.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-enum eAnimProperty {
-    eAnimProp_ControlRaceCountdown = 0,
-    eAnimProp_ControlRaceCars = 1,
-    eAnimProp_UnBindRaceCars = 2,
-    eAnimProp_MaxAnimProperty = 3,
-};
-
-typedef int AnimHandle;
 
 // total size: 0x40
 class NisScene {
@@ -41,7 +34,7 @@ class NisScene {
 // total size: 0x14
 class CAnimEntityData : public bTNode<CAnimEntityData> {
   public:
-    CAnimEntityData(int32 type, void *data, int size) : mType(type), mData(data), mSize(size) {}
+    CAnimEntityData(uint32 type, void *data, int size) : mType(type), mData(data), mSize(size) {}
     ~CAnimEntityData() {}
     int GetType() {
         return mType;
@@ -98,20 +91,6 @@ CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk);
 int LoaderAnimSceneData(bChunk *chunk);
 int UnloaderAnimSceneData(bChunk *chunk);
 
-// total size: 0x14
-class CAnimProperty : public bTNode<CAnimProperty> {
-  public:
-    CAnimProperty(eAnimProperty type, bool enabled);
-    virtual ~CAnimProperty();
-    eAnimProperty GetType();
-    void SetEnabled(bool enabled);
-    bool IsEnabled();
-
-  private:
-    eAnimProperty mType; // offset 0x8, size 0x4
-    int mEnabled;        // offset 0xC, size 0x4
-};
-
 // total size: 0x110
 class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
   public:
@@ -154,7 +133,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
         return mTimeElapsed > time;
     }
     bool IsFinished() {
-        return mTimeElapsed >= mTimeTotalLength;
+        return GetTimeElapsed() > GetTimeTotalLength();
     }
     void SetCameraControl(bool enable) {
         mControllingCamera = enable;
@@ -250,74 +229,6 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     SpaceNode *mSpaceNode;                        // offset 0x104, size 0x4
     int mAnimCandidateType;                       // offset 0x108, size 0x4
     int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
-};
-
-// total size: 0x94
-class CAnimMomentScene : public ICEScene {
-  public:
-    CAnimMomentScene(unsigned int sceneHash, int camera_track_number, bMatrix4 &rot, bMatrix4 &transform)
-        : mSceneHash(sceneHash),                     //
-          mCamera_track_number(camera_track_number), //
-          mTimeElapsed(0.0f),                        //
-          mTotalTime(0.0f),                          //
-          mSceneRotationMatrix(rot),                 //
-          mSceneTransformMatrix(transform) {}
-
-    virtual ~CAnimMomentScene();
-
-    // TODO are all of these really overridden?
-    uint32 GetSceneHash() override {
-        return mSceneHash;
-    }
-    int GetCameraTrackNumber() override {
-        return mCamera_track_number;
-    }
-    bool IsControllingCamera() override {
-        return true;
-    }
-    bool IsCameraFixingElevation() override {
-        return false;
-    }
-    void SetTime(float time) override {
-        mTimeElapsed = time;
-    }
-    bool Pause() override {
-        return true;
-    }
-    bool UnPause() override {
-        return true;
-    }
-    bool IsPlaying() override {
-        return true;
-    }
-    void Update(float dT) {
-        mTimeElapsed += dT;
-    }
-    bool IsFinished() {
-        return mTimeElapsed >= mTotalTime;
-    }
-    float GetTimeStart() override {
-        return 0.0f;
-    }
-    float GetTimeTotalLength() override {
-        return mTotalTime;
-    }
-    float GetTimeElapsed() override {
-        return mTimeElapsed;
-    }
-    const bMatrix4 &GetSceneRotationMatrix() override {
-        return mSceneRotationMatrix;
-    }
-    const bMatrix4 &GetSceneTransformMatrix() override {
-        return mSceneTransformMatrix;
-    }
-
-    uint32 mSceneHash;              // offset 0x4, size 0x4
-    int mCamera_track_number;       // offset 0x8, size 0x4
-    float mTimeElapsed;             // offset 0xC, size 0x4
-    float mTotalTime;               // offset 0x10, size 0x4
-    bMatrix4 mSceneRotationMatrix;  // offset 0x14, size 0x40
-    bMatrix4 mSceneTransformMatrix; // offset 0x54, size 0x40
 };
 
 void RenderAnimSceneEffects(eView *view, int exc_flag);

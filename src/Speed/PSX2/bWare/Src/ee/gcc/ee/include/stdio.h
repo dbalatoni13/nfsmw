@@ -144,6 +144,10 @@ int	_EXFUN(sscanf, (const char *, const char *, ...));
 int	_EXFUN(vfprintf, (FILE *, const char *, __VALIST));
 int	_EXFUN(vprintf, (const char *, __VALIST));
 int	_EXFUN(vsprintf, (char *, const char *, __VALIST));
+/* The PS2 libc.a provides these (snprintf.o, vsprintf.o) but this copy of the
+   header did not declare them. */
+int	_EXFUN(snprintf, (char *, size_t, const char *, ...));
+int	_EXFUN(vsnprintf, (char *, size_t, const char *, __VALIST));
 int	_EXFUN(fgetc, (FILE *));
 char *  _EXFUN(fgets, (char *, int, FILE *));
 int	_EXFUN(fputc, (int, FILE *));

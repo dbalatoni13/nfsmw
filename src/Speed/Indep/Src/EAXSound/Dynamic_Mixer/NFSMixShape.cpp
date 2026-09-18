@@ -242,9 +242,7 @@ float NFSMixShape::GetFloatFromHundredthsdB(int ndB) {
     return static_cast<float>(GetQ15FromHundredthsdB(ndB)) / 32767.0f;
 }
 
-// UNSOLVED
 int NFSMixShape::GetCurveOutput(eMIXTABLEID etable, int nQ15Ratio, bool bdBOut) {
-retry:
     switch (etable) {
         case SHAPE_DWN_LINEAR:
             if (bdBOut) {
@@ -307,10 +305,9 @@ retry:
             int nQOut;
 
             nindex = nQ15Ratio >> 6;
-            nrem = 0x1FF - nindex;
-            nindex = nrem + 1;
-            nout = 0x7FFF - g_nArrayCosTable[nrem];
-            nDiff = g_nArrayCosTable[nrem] - g_nArrayCosTable[nindex];
+            nindex = 0x1FF - nindex;
+            nout = 0x7FFF - g_nArrayCosTable[nindex];
+            nDiff = g_nArrayCosTable[nindex] - g_nArrayCosTable[nindex + 1];
             nrem = ((nQ15Ratio & 0x1F) << 9) | 0x3FF;
             nScaledDiff = (nDiff * nrem) >> 15;
             nQOut = nout + nScaledDiff;
@@ -337,12 +334,12 @@ retry:
                 if (nOut < -0x2580) {
                     nOut = -10000;
                 }
-            } else {
-                nOut = GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, false);
-                nOut = (nOut * nOut) >> 15;
+
+                return nOut;
             }
 
-            return nOut;
+            nOut = GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, false);
+            return (nOut * nOut) >> 15;
         }
 
         case SHAPE_UP_ONE_MIN_EQPWR_SQ:
@@ -350,45 +347,35 @@ retry:
                 return -GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR_SQ, nQ15Ratio, true);
             }
 
-            etable = SHAPE_DWN_ONE_MIN_EQPWR_SQ;
-            nQ15Ratio = 0x7FFF - nQ15Ratio;
-            goto retry;
+            return GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR_SQ, 0x7FFF - nQ15Ratio, false);
 
         case SHAPE_UP_EQPWR:
             if (bdBOut) {
                 return -GetCurveOutput(SHAPE_DWN_EQPWR, nQ15Ratio, true);
             }
 
-            etable = SHAPE_DWN_EQPWR;
-            nQ15Ratio = 0x7FFF - nQ15Ratio;
-            goto retry;
+            return GetCurveOutput(SHAPE_DWN_EQPWR, 0x7FFF - nQ15Ratio, false);
 
         case SHAPE_UP_ONE_MIN_EQPWR:
             if (bdBOut) {
                 return -GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, true);
             }
 
-            etable = SHAPE_DWN_ONE_MIN_EQPWR;
-            nQ15Ratio = 0x7FFF - nQ15Ratio;
-            goto retry;
+            return GetCurveOutput(SHAPE_DWN_ONE_MIN_EQPWR, 0x7FFF - nQ15Ratio, false);
 
         case SHAPE_UP_EQPWR_SQ:
             if (bdBOut) {
                 return -GetCurveOutput(SHAPE_DWN_EQPWR_SQ, nQ15Ratio, true);
             }
 
-            etable = SHAPE_DWN_EQPWR_SQ;
-            nQ15Ratio = 0x7FFF - nQ15Ratio;
-            goto retry;
+            return GetCurveOutput(SHAPE_DWN_EQPWR_SQ, 0x7FFF - nQ15Ratio, false);
 
         case SHAPE_UP_LINEAR:
             if (bdBOut) {
                 return -GetCurveOutput(SHAPE_DWN_LINEAR, nQ15Ratio, true);
             }
 
-            etable = SHAPE_DWN_LINEAR;
-            nQ15Ratio = 0x7FFF - nQ15Ratio;
-            goto retry;
+            return GetCurveOutput(SHAPE_DWN_LINEAR, 0x7FFF - nQ15Ratio, false);
 
         default:
             return 0;

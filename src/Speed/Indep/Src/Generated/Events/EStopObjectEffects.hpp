@@ -19,12 +19,14 @@ class EStopObjectEffects : public Event {
 
     ~EStopObjectEffects() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhModel; // offset: 0xc, size 0x4
 };
 
 void EStopObjectEffects_MakeEvent_Callback(const void *staticData);
+int EStopObjectEffects_MakeEvent_LuaBinding(struct lua_State *L);
+void EStopObjectEffects_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

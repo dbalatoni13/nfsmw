@@ -1,13 +1,23 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "path/path.h"
 #include "snd/sndo.h"
+#include "Speed/Indep/Libs/path/5.01.04/include/path/path.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
+
+extern unsigned int g_ActiveSFXStates;
 
 // int DEBUG_PATHFINDER = 0;          // size: 0x4, Decl: 45
 int DEBUG_STREAMS = 0;                         // size: 0x4, address: 0xFFFFFFFF, Decl: 46
@@ -49,7 +59,7 @@ void SFXObj_Pathfinder::AttachController(SFXCTL *psfxctl) {
     }
 }
 
-int g_MaxSongs; // size: 0x4, Decl: 208
+extern int g_MaxSongs; // lo define FEDatabase.cpp (zFe2), como el original
 
 // TODO use
 static const int DebugPrintIntensity = 0;     // size: 0x4, Decl: 210
@@ -85,9 +95,13 @@ SFXObj_PFEATrax::SFXObj_PFEATrax()
       mMsgPerpBusted(Hermes::Handler::Create<MPerpBusted, SFXObj_PFEATrax, SFXObj_PFEATrax>(this, &SFXObj_PFEATrax::MessagePerpBusted,
                                                                                             UCrc32(UCRC32_Gameplay), 0)), //
       mMsgInteractiveDone(Hermes::Handler::Create<MControlPathfinder, SFXObj_PFEATrax, SFXObj_PFEATrax>(
-          this, &SFXObj_PFEATrax::MessageInteractiveDone, UCrc32("InteractiveDone"), 0)), //
+          this, &SFXObj_PFEATrax::MessageInteractiveDone, UCrc32("InteractiveDone"), 0))
+#ifndef EA_BUILD_A124 // la alpha 124 no tiene mMsgSwapInteractive (SFXObj_Pathfinder.hpp)
+      , //
       mMsgSwapInteractive(Hermes::Handler::Create<MControlPathfinder, SFXObj_PFEATrax, SFXObj_PFEATrax>(
-          this, &SFXObj_PFEATrax::MessageSwapInteractive, UCrc32("Swap"), 0)) {
+          this, &SFXObj_PFEATrax::MessageSwapInteractive, UCrc32("Swap"), 0))
+#endif
+{
     this->m_EATraxState = EATRAX_OFF;
     this->m_CurPathEvent = 0;
     this->m_PrevPathEvent = static_cast<unsigned int>(-1);
@@ -102,11 +116,15 @@ SFXObj_PFEATrax::SFXObj_PFEATrax()
     this->m_InteractiveProj = static_cast<eINTERACTIVE_PROJ_ID>((bRandom(4) + 1) & PF_INTERACTIVE_03);
     this->m_Flags = 0x40;
     this->m_bSkipUpdate = false;
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
+#endif
     this->mT_ambienceStart = Timer(0);
+#ifndef EA_BUILD_A124
     this->m_bPathFAILED = false;
     this->m_FEPreviewEvent = 0;
     this->m_FEPreviewIndex = -1;
+#endif
 }
 
 SFXObj_PFEATrax::~SFXObj_PFEATrax() {
@@ -131,9 +149,11 @@ SFXObj_PFEATrax::~SFXObj_PFEATrax() {
     if (this->mMsgInteractiveDone != nullptr) {
         Hermes::Handler::Destroy(this->mMsgInteractiveDone);
     }
+#ifndef EA_BUILD_A124
     if (this->mMsgSwapInteractive != nullptr) {
         Hermes::Handler::Destroy(this->mMsgSwapInteractive);
     }
+#endif
 
     this->Destroy();
 }
@@ -143,7 +163,9 @@ void SFXObj_PFEATrax::RestartRace() {
         PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         PATH_clearallevents(PATH_ALL_PROJECTS);
         this->m_MusicType = eMUSIC_TYPE_LICENCED;
+#ifndef EA_BUILD_A124
         this->m_bPathFAILED = false;
+#endif
     }
 
     this->mT_ambienceStart = Timer(0);
@@ -153,7 +175,9 @@ void SFXObj_PFEATrax::SendPathEvent() {
     // TODO magic
     if (this->m_EATraxState != EATRAX_UNINIT && (this->m_Flags & 4) != 0) {
         if (this->m_CurPathEvent != this->m_PrevPathEvent && (this->m_Flags & 0x800) == 0) {
+#ifndef EA_BUILD_A124
             this->m_bPathFAILED = false;
+#endif
             this->m_PrevPathEvent = this->m_CurPathEvent;
 
             int status = PATH_event(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, this->m_CurPathEvent);
@@ -180,7 +204,9 @@ void SFXObj_PFEATrax::SendPathEvent() {
                 case PATHERR_GENERAL:
                 default:
                     this->m_PrevPathEvent = 0;
+#ifndef EA_BUILD_A124
                     this->m_bPathFAILED = true;
+#endif
                     return;
             }
 
@@ -297,7 +323,9 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
         }
         if (this->m_CurPathEvent != this->m_PrevPathEvent) {
             this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
             this->m_bClearSkipUpdate = false;
+#endif
         }
     }
 }
@@ -326,7 +354,9 @@ void SFXObj_PFEATrax::StartAmbience(unsigned int PathEvent) {
     this->m_PFParms[0].queue_next = 1;
     this->m_CurPathEvent = PathEvent;
     this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
+#endif
 
     EAXS_StreamChannel *pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
     if (pch != nullptr) {
@@ -384,37 +414,33 @@ void SFXObj_PFEATrax::Destroy() {
     SNDSYS_service();
 }
 
-// UNSOLVED, let's wait for the merge of zFE
 void InitializeEATrax(bool breset) {
-    // TODO
-    // SFXObj_PFEATrax::m_EATrax[0].PBMode = FEDatabase->GetAudioSettings()->PlayState;
+    SFXObj_PFEATrax::m_EATrax[0].PBMode = FEDatabase->GetUserProfile(0)->GetOptions()->TheAudioSettings.PlayState;
+    SFXObj_PFEATrax::m_EATrax[1].PBMode = FEDatabase->GetUserProfile(0)->GetOptions()->TheAudioSettings.PlayState;
     SFXObj_PFEATrax::m_EATrax[0].TraxMask = 0;
-    // SFXObj_PFEATrax::m_EATrax[1].PBMode = FEDatabase->GetAudioSettings()->PlayState;
-    SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs = 0;
     SFXObj_PFEATrax::m_EATrax[1].TraxMask = 0;
     SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs = 0;
+    SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs = 0;
 
-    int songindex;
-    int playability;
-    JukeboxEntry *playlist;
-    // TODO
-    // playlist = FEDatabase->GetUserProfile(0)->Playlist;
+    JukeboxEntry *playlist = FEDatabase->GetUserProfile(0)->Playlist;
     for (int n = 0; n < g_MaxSongs; n++) {
-        songindex = playlist[n].SongIndex;
-        playability = playlist[n].PlayabilityField;
+        unsigned int songindex = playlist[n].SongIndex;
+        int playability = playlist[n].PlayabilityField;
         switch (playability) {
+            case 0:
+                break;
             case 1:
-                SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << (songindex & 0x1F);
+                SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << songindex;
                 SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs++;
                 break;
             case 2:
-                SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << (songindex & 0x1F);
+                SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << songindex;
                 SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs++;
                 break;
             case 3:
-                SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << (songindex & 0x1F);
+                SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << songindex;
                 SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs++;
-                SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << (songindex & 0x1F);
+                SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << songindex;
                 SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs++;
                 break;
         }
@@ -422,8 +448,8 @@ void InitializeEATrax(bool breset) {
     SFXObj_PFEATrax::m_EATrax[0].PlayBits = SFXObj_PFEATrax::m_EATrax[0].TraxMask;
     SFXObj_PFEATrax::m_EATrax[1].PlayBits = SFXObj_PFEATrax::m_EATrax[1].TraxMask;
     if (breset) {
-        SFXObj_PFEATrax::m_EATrax[1].LastPlaylistSong = -1;
         SFXObj_PFEATrax::m_EATrax[0].LastPlaylistSong = -1;
+        SFXObj_PFEATrax::m_EATrax[1].LastPlaylistSong = -1;
     }
 }
 
@@ -435,6 +461,49 @@ void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
     } else {
         InitializeEATrax(false);
     }
+}
+
+eEATRAXSTATES SFXObj_PFEATrax::GenEATraxState() {
+    if (FEDatabase->GetAudioSettings()->MasterVol <= 0.0f) {
+        return EATRAX_OFF;
+    }
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        return EATRAX_FE;
+    }
+    return EATRAX_IG;
+}
+
+eMUSIC_TYPE SFXObj_PFEATrax::GenMusicType() {
+    if (this->m_EATraxState == EATRAX_IG) {
+        if (FEDatabase->GetAudioSettings()->IGMusicVol > 0.0f) {
+            if ((this->m_Flags & 0x800) != 0) {
+                return eMUSIC_TYPE_LICENCED;
+            }
+            bool pursuit = false;
+            SoundAI *ai = SoundAI::Get();
+            if (ai != nullptr && (ai->GetPursuitState() == SoundAI::kActive || ai->GetPursuitState() == SoundAI::kSearching)) {
+                pursuit = true;
+            }
+            if (pursuit) {
+                return eMUSIC_TYPE_INTERACTIVE;
+            }
+            return eMUSIC_TYPE_LICENCED;
+        }
+        return (this->m_Flags & 0x800) != 0 ? eMUSIC_TYPE_LICENCED : eMUSIC_TYPE_AMBIENCE;
+    }
+    if (this->m_EATraxState == EATRAX_FE) {
+        if (FEDatabase->GetAudioSettings()->FEMusicVol > 0.0f) {
+            if ((this->m_Flags & 0x800) != 0) {
+                return eMUSIC_TYPE_LICENCED;
+            }
+            return eMUSIC_TYPE_LICENCED;
+        }
+        return (this->m_Flags & 0x800) != 0 ? eMUSIC_TYPE_LICENCED : eMUSIC_TYPE_AMBIENCE;
+    }
+    if (this->m_EATraxState != EATRAX_OFF) {
+        return eMUSIC_TYPE_AMBIENCE;
+    }
+    return (this->m_Flags & 0x800) != 0 ? eMUSIC_TYPE_LICENCED : eMUSIC_TYPE_AMBIENCE;
 }
 
 bool SFXObj_PFEATrax::TestToPursuit() {
@@ -451,11 +520,324 @@ bool SFXObj_PFEATrax::TestToPursuit() {
     if (pursuit_active) {
         m_CurPathEvent = 0;
         // TODO magic
-        this->StartInteractiveMusic(0x026E7282);
+        StartInteractiveMusic(0x026E7282);
         return true;
     }
 
     return false;
+}
+
+bool SFXObj_PFEATrax::TestToLicensed(bool bstart) {
+    if (this->m_bSkipUpdate || (this->m_Flags & 0x800) != 0) {
+        return false;
+    }
+
+    if (g_pEAXSound->GetCurMusicVolume() > 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode == 1 &&
+        this->m_EATrax[this->m_EATraxState].TraxMask != 0) {
+        if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+            unsigned int fegm = FEDatabase->GetGameMode();
+
+            (void)fegm;
+            if (FEDatabase->IsRapSheetMode()) {
+                return false;
+            }
+            if (bstart) {
+                PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+                this->StartLicensedMusic(0);
+            }
+            return true;
+        }
+
+        if (GRaceStatus::Exists()) {
+            const GRaceParameters *raceparms = GRaceStatus::Get().GetRaceParameters();
+
+            if (raceparms != nullptr && raceparms->GetIsLoaded() == true &&
+                (raceparms->GetIsDDayRace() || GRaceStatus::IsDragRace())) {
+                return false;
+            }
+        }
+
+        if (this->m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+            float t_playing_ambience;
+
+            if (this->mT_ambienceStart > Timer(0)) {
+                t_playing_ambience = (WorldTimer - this->mT_ambienceStart).GetSeconds();
+            } else {
+                t_playing_ambience = 65535.0f;
+            }
+            if (t_playing_ambience <= static_cast<float>(PURSUIT_TO_LIC_DELAY)) {
+                return false;
+            }
+            if (bstart) {
+                this->StartLicensedMusic(0);
+            }
+            this->mT_ambienceStart = Timer(0);
+            return true;
+        }
+
+        if (bstart) {
+            this->StartLicensedMusic(0);
+        }
+        return true;
+    }
+
+    if (this->m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        if (g_pEAXSound->GetCurMusicVolume() <= 0.0f) {
+            return false;
+        }
+        if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+            return false;
+        }
+        PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+        if (g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0) {
+            return false;
+        }
+        this->m_CurPathEvent = 0;
+        this->StartLicensedMusic(0);
+        return true;
+    }
+
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        if (FEDatabase->IsRapSheetMode()) {
+            return false;
+        }
+        if (g_pEAXSound->GetCurMusicVolume() > 0.0f) {
+            // los dos caminos devuelven false; GCC borra el salto pero deja la comparacion
+            if (g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0) {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+bool SFXObj_PFEATrax::TestToAmbience() {
+    if ((this->m_Flags & 0x800) != 0) {
+        return false;
+    }
+
+    this->UpdateAmbience(0.1f);
+
+    if (this->m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        bool keep_interactive = true;
+        SoundAI *ai = SoundAI::Get();
+        if (ai == nullptr || !ai->IsMusicActive() || g_pEAXSound->GetCurMusicVolume() <= 0.0f ||
+            g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode <= 0) {
+            keep_interactive = false;
+        }
+        if (!keep_interactive) {
+            this->UpdateAmbience(0.1f);
+            this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            return true;
+        }
+        return false;
+    }
+
+    if (this->m_MusicType == eMUSIC_TYPE_LICENCED) {
+        if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+            if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
+                this->m_EATrax[this->m_EATraxState].TraxMask == 0) {
+                PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+                this->UpdateAmbience(0.1f);
+                this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+                return true;
+            }
+            if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
+                this->m_EATrax[this->m_EATraxState].TraxMask == 0) {
+                PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+                this->UpdateAmbience(0.1f);
+                this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+                return true;
+            }
+            if (!FEDatabase->IsRapSheetMode()) {
+                return false;
+            }
+            int val = (this->m_InteractiveProj + 1) & 3;
+            if (val == 3) {
+                val = 2;
+            }
+            PATH_setnamedvalue(this->m_PFParms[0].PATH_TRACK, "rapsheet", val + 1);
+            this->UpdateAmbience(0.1f);
+            this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            return true;
+        }
+
+        if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
+            this->m_EATrax[this->m_EATraxState].TraxMask == 0) {
+            PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+            this->UpdateAmbience(0.1f);
+            this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            return true;
+        }
+        return false;
+    }
+
+    if (this->m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0) {
+            PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+            this->UpdateAmbience(0.1f);
+            this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            return true;
+        }
+    }
+    return false;
+}
+
+void SFXObj_PFEATrax::UpdateInGame(float t) {
+#ifndef EA_BUILD_A124
+    if (this->m_bPathFAILED || (g_ActiveSFXStates & 1) != 0) {
+#else
+    if ((g_ActiveSFXStates & 1) != 0) {
+#endif
+        return;
+    }
+
+    if ((this->m_Flags & 0x800) == 0) {
+        if ((this->m_Flags & 0x404) != 4) {
+            return;
+        }
+        if (this->m_PFParms[this->m_ActiveProject].track_status == PATHTRACK_PAUSED) {
+            return;
+        }
+        if (this->m_bSkipUpdate) {
+            return;
+        }
+    }
+
+    int status = 1;
+    if (SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject] != nullptr) {
+        status = SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject]->track_status;
+    }
+
+    switch (this->m_MusicType) {
+        case eMUSIC_TYPE_AMBIENCE:
+            if (this->TestToPursuit() || this->TestToLicensed(true)) {
+                return;
+            }
+            if ((this->m_Flags & 0x800) != 0) {
+                return;
+            }
+            if (status == PATHTRACK_STOPPED) {
+                if (this->m_CurPathEvent == this->m_PrevPathEvent) {
+                    this->m_CurPathEvent = 0;
+                }
+                this->UpdateAmbience(t);
+                this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+                return;
+            }
+            this->UpdateAmbience(t);
+            if (AmbientCrossMap[this->m_nAmbientZone] != this->m_CurPathEvent) {
+                this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            }
+            return;
+
+        case eMUSIC_TYPE_LICENCED:
+            if (this->TestToPursuit() || this->TestToAmbience()) {
+                return;
+            }
+            if (this->TestToLicensed(false)) {
+                if ((this->m_Flags & 0x800) != 0) {
+                    return;
+                }
+                if (status != PATHTRACK_STOPPED) {
+                    return;
+                }
+                this->StartLicensedMusic(0);
+                return;
+            }
+            if ((this->m_Flags & 0x800) != 0) {
+                return;
+            }
+            this->UpdateAmbience(t);
+            this->StartAmbience(AmbientCrossMap[this->m_nAmbientZone]);
+            return;
+
+        case eMUSIC_TYPE_INTERACTIVE:
+            if (FEDatabase->GetAudioSettings()->InteractiveMusicMode == 0 || g_pEAXSound->GetCurMusicVolume() == 0.0f) {
+                PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+                if (this->TestToLicensed(true) || this->TestToAmbience()) {
+                    return;
+                }
+                if (status != PATHTRACK_STOPPED) {
+                    return;
+                }
+                this->m_CurPathEvent = 0;
+                SoundAI *ai = SoundAI::Get();
+                if (ai == nullptr || ai->IsMusicActive()) {
+                    return;
+                }
+                this->StartInteractiveMusic(0x026E7282);
+                return;
+            }
+            if (this->TestToAmbience()) {
+                return;
+            }
+            if (status != PATHTRACK_STOPPED) {
+                return;
+            }
+            this->m_CurPathEvent = 0;
+            {
+                SoundAI *ai = SoundAI::Get();
+                if (ai == nullptr || ai->IsMusicActive()) {
+                    return;
+                }
+                this->StartInteractiveMusic(0x026E7282);
+            }
+            return;
+
+        default:
+            return;
+    }
+}
+
+void SFXObj_PFEATrax::UpdateAmbience(float t) {
+    if (this->m_EATraxState == EATRAX_IG) {
+        int newzone = 0;
+        EAXCar *peaxcar_0 = g_pEAXSound->GetPlayerTunerCar(0);
+        if (peaxcar_0 != nullptr && peaxcar_0->GetPhysCar() != nullptr && AmbientAccessor.IsValid()) {
+            EAX_CarState *pcar = peaxcar_0->GetPhysCar();
+            {
+                const bVector2 *ppos = pcar->GetPosition2D();
+                AmbientAccessor.CaptureData(ppos->x, ppos->y);
+            }
+            newzone = AmbientAccessor.GetDataInt(0);
+        }
+        if (this->m_nAmbientZone == newzone) {
+            if (SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject]->track_status != PATHTRACK_STOPPED) {
+                return;
+            }
+        }
+        if (static_cast<unsigned int>(newzone) <= 13) {
+            this->m_nAmbientZone = newzone;
+        }
+        return;
+    }
+
+    {
+        int oldzone = this->m_nAmbientZone;
+
+        if (FEDatabase->IsRapSheetMode()) {
+            this->m_nAmbientZone = 13;
+        } else {
+            switch (FEManager::Get()->GetGarageType()) {
+                case GARAGETYPE_CAREER_SAFEHOUSE:
+                    this->m_nAmbientZone = 9;
+                    break;
+                case GARAGETYPE_CUSTOMIZATION_SHOP:
+                case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+                    this->m_nAmbientZone = 10;
+                    break;
+                case GARAGETYPE_CAR_LOT:
+                    this->m_nAmbientZone = 12;
+                    break;
+                case GARAGETYPE_NONE:
+                case GARAGETYPE_MAIN_FE:
+                default:
+                    this->m_nAmbientZone = 11;
+                    break;
+            }
+        }
+    }
 }
 
 // UNSOLVED
@@ -590,6 +972,103 @@ void SFXObj_PFEATrax::UpdateParams(float t) {
     }
 }
 
+void SFXObj_PFEATrax::ProcessUpdate() {
+    if (IsAudioStreamingEnabled == 0) {
+        return;
+    }
+
+#ifndef EA_BUILD_A124
+    if (this->m_bClearSkipUpdate) {
+        this->m_bClearSkipUpdate = false;
+        this->m_bSkipUpdate = false;
+    }
+#endif
+
+    if ((this->m_Flags & 0x800) == 0) {
+        if ((this->m_Flags & 0x404) != 4) {
+            return;
+        }
+        if (this->m_PFParms[this->m_ActiveProject].queue_next == 1 && (this->m_Flags & 4) != 0) {
+            this->SendPathEvent();
+            SNDSYS_service();
+            goto mute_stream;
+        }
+        if (this->m_MusicType == eMUSIC_TYPE_LICENCED && (this->m_Flags & 0x40) == 0 && !this->m_bSkipUpdate) {
+            if (this->m_CurPathEvent != 0x01C53FC7 && this->m_CurPathEvent != 0x01C3FA91) {
+                if (gMoviePlayer == nullptr || static_cast<unsigned int>(gMoviePlayer->GetStatus() - 3) > 2) {
+                    this->NotifyChyron();
+                }
+            }
+        }
+    }
+
+    if (this->m_bSkipUpdate) {
+    mute_stream:
+        EAXS_StreamChannel *pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
+        if (pch != nullptr) {
+            pch->SetVol(0, false);
+        }
+        return;
+    }
+
+    bool path_playing;
+    if ((this->m_Flags & 0x800) == 0) {
+        path_playing = false;
+        int status = this->m_PFParms[this->m_ActiveProject].track_status;
+        if (status == PATHTRACK_PLAYING) {
+            path_playing = true;
+        } else if (status == PATHTRACK_QUEUEING) {
+            path_playing = true;
+        }
+    } else {
+        path_playing = false;
+    }
+
+    if (!path_playing) {
+        return;
+    }
+
+    int vol = 0;
+    if (this->m_EATraxState == EATRAX_IG) {
+        switch (this->m_MusicType) {
+            case eMUSIC_TYPE_LICENCED:
+            case eMUSIC_TYPE_SPLASH:
+                vol = (this->GetDMixOutput(1, DMX_VOL) * 100) >> 15;
+                break;
+            case eMUSIC_TYPE_INTERACTIVE:
+                vol = (this->GetDMixOutput(3, DMX_VOL) * 100) >> 15;
+                break;
+            case eMUSIC_TYPE_AMBIENCE:
+                vol = (this->GetDMixOutput(5, DMX_VOL) * 100) >> 15;
+                break;
+            default:
+                vol = 0;
+                break;
+        }
+    } else if (this->m_EATraxState == EATRAX_FE) {
+        switch (this->m_MusicType) {
+            case eMUSIC_TYPE_LICENCED:
+            case eMUSIC_TYPE_SPLASH:
+                vol = (this->GetDMixOutput(0, DMX_VOL) * 100) >> 15;
+                break;
+            case eMUSIC_TYPE_AMBIENCE:
+                vol = (this->GetDMixOutput(4, DMX_VOL) * 100) >> 15;
+                break;
+            default:
+                vol = 0;
+                break;
+        }
+    }
+
+    this->m_Volume = vol;
+    if ((this->m_Flags & 0x800) == 0) {
+        PATH_volume(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, static_cast<signed char>(vol));
+        SNDSYS_entercritical();
+        SNDSTRM_lowpass(this->m_pSFXCTL_Pathfinder->GetHandle(this->m_ActiveProject), this->GetDMixOutput(9, DMX_FREQ));
+        SNDSYS_leavecritical();
+    }
+}
+
 void SFXObj_PFEATrax::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     this->m_PFParms[0].bAttached = false;
@@ -669,8 +1148,72 @@ CHECK_INTERACTIVE_PROJECT:
     }
 }
 
+void SFXObj_PFEATrax::GenNextMusicTrackID() {
+    this->m_EATrax[this->m_EATraxState].PlayTrackIndex = -1;
+    this->m_EATrax[this->m_EATraxState].TraxMask &= 0x0FFFFFFF;
+    if (this->m_EATraxState == EATRAX_OFF || this->m_EATrax[this->m_EATraxState].TraxMask == 0) {
+        return;
+    }
+
+    UserProfile *profile = FEDatabase->GetUserProfile(0);
+    if (this->m_EATrax[this->m_EATraxState].PlayBits == 0 && this->m_EATrax[this->m_EATraxState].NumEnabledSongs != 0) {
+        this->m_EATrax[this->m_EATraxState].PlayBits = this->m_EATrax[this->m_EATraxState].TraxMask & 0x0FFFFFFF;
+        this->m_EATrax[this->m_EATraxState].LastPlaylistSong = -1;
+    }
+
+    if (this->m_EATrax[this->m_EATraxState].PBMode == 0) {
+        int n = this->m_EATrax[this->m_EATraxState].LastPlaylistSong + 1;
+
+        for (; n < g_MaxSongs; n++) {
+            int nSongindex = profile->Playlist[n].SongIndex;
+
+            if ((this->m_EATrax[this->m_EATraxState].PlayBits & (1 << nSongindex)) != 0) {
+                this->m_EATrax[this->m_EATraxState].PlayTrackIndex = nSongindex;
+                this->m_EATrax[this->m_EATraxState].PlayBits ^= 1 << nSongindex;
+                if (this->m_EATrax[this->m_EATraxState].PlayBits == 0) {
+                    this->m_EATrax[this->m_EATraxState].PlayBits = this->m_EATrax[this->m_EATraxState].TraxMask & 0x0FFFFFFF;
+                    this->m_EATrax[this->m_EATraxState].PlayBits ^= 1 << n;
+                }
+                return;
+            }
+        }
+        if (this->m_EATrax[this->m_EATraxState].NumEnabledSongs != 0) {
+            this->m_EATrax[this->m_EATraxState].PlayBits = this->m_EATrax[this->m_EATraxState].TraxMask & 0x0FFFFFFF;
+            this->m_EATrax[this->m_EATraxState].LastPlaylistSong = -1;
+            this->GenNextMusicTrackID();
+        }
+        return;
+    } else {
+        int nrandcount = 0;
+        int nSongNumber;
+        int ncount;
+
+        for (int npb = 0; npb < g_MaxSongs; npb++) {
+            if ((this->m_EATrax[this->m_EATraxState].PlayBits & (1 << npb)) != 0) {
+                nrandcount++;
+            }
+        }
+        SoundRandomSeed = bGetTicker();
+        nSongNumber = g_pEAXSound->Random(nrandcount);
+        ncount = 0;
+        for (int n = 0; n < g_MaxSongs; n++) {
+            if ((this->m_EATrax[this->m_EATraxState].PlayBits & (1 << n)) != 0) {
+                if (nSongNumber == ncount) {
+                    this->m_EATrax[this->m_EATraxState].PlayTrackIndex = n;
+                    this->m_EATrax[this->m_EATraxState].PlayBits ^= 1 << n;
+                    if (this->m_EATrax[this->m_EATraxState].PlayBits == 0) {
+                        this->m_EATrax[this->m_EATraxState].PlayBits = this->m_EATrax[this->m_EATraxState].TraxMask & 0x0FFFFFFF;
+                        this->m_EATrax[this->m_EATraxState].PlayBits ^= 1 << n;
+                    }
+                    return;
+                }
+                ncount++;
+            }
+        }
+    }
+}
+
 // TODO move
-void SummonChyron(char *title, char *artist, char *album);
 
 void SFXObj_PFEATrax::NotifyChyron() {
     if (this->m_EATrax[this->m_EATraxState].PlayTrackIndex < 0 ||
@@ -713,7 +1256,9 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
         this->m_PrevPathEvent = event;
         this->StartLicensedMusic(event);
         this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
         this->m_bClearSkipUpdate = false;
+#endif
     }
 }
 
@@ -788,7 +1333,9 @@ void SFXObj_PFEATrax::MessageSendPathControl(const MControlPathfinder &message) 
 
 void SFXObj_PFEATrax::MessagePartUpdate(const MControlPathfinder &message) {
     this->m_CurPart = message.GetPartID();
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = true;
+#endif
     if (this->m_CurPart > 8) {
         return;
     }
@@ -808,8 +1355,10 @@ void SFXObj_PFEATrax::MessageInteractiveDone(const MControlPathfinder &message) 
     this->mT_ambienceStart = WorldTimer;
 }
 
+#ifndef EA_BUILD_A124
 void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) {
     this->m_CurPathEvent = PFXMAP[m_InteractiveProj][PF_EVT_INITSWAP][0];
     this->m_PrevPathEvent = 0;
     this->m_PFParms[m_ActiveProject].queue_next = 1;
 }
+#endif

@@ -12,6 +12,7 @@
 
 import io
 import json
+import yaml
 import math
 import os
 import platform
@@ -54,6 +55,7 @@ class Platform(Enum):
     GC_WII = 0
     X360 = 1
     PS2 = 2
+    WIN32 = 3
 
 
 class Object:
@@ -70,9 +72,11 @@ class Object:
             "extra_cflags": [],
             "extra_clang_flags": [],
             "lib": None,
+            "section_renames": None,
             "toolchain_version": None,
             "progress_category": None,
             "scratch_preset_id": None,
+            "section_rename": None,
             "shift_jis": None,
             "source": name,
             "src_dir": None,
@@ -83,6 +87,7 @@ class Object:
         self.src_path: Optional[Path] = None
         self.asm_path: Optional[Path] = None
         self.src_obj_path: Optional[Path] = None
+        self.objdiff_obj_path: Optional[Path] = None
         self.asm_obj_path: Optional[Path] = None
         self.ctx_path: Optional[Path] = None
 
@@ -128,9 +133,14 @@ class Object:
             obj.asm_path = (
                 Path(obj.options["asm_dir"]) / obj.options["source"]
             ).with_suffix(".s")
-        obj_extension = ".obj" if config.platform == Platform.X360 else ".o"
+        obj_extension = ".obj" if config.platform in [Platform.X360, Platform.WIN32] else ".o"
         base_name = Path(self.name).with_suffix("")
         obj.src_obj_path = build_dir / "src" / base_name.with_suffix(obj_extension)
+        if obj.options["section_renames"]:
+            obj.objdiff_obj_path = (
+                obj.src_obj_path.parent
+                / f"{obj.src_obj_path.stem}.objdiff{obj.src_obj_path.suffix}"
+            )
         obj.asm_obj_path = build_dir / "mod" / base_name.with_suffix(obj_extension)
         obj.ctx_path = build_dir / "src" / base_name.with_suffix(".ctx")
         return obj
@@ -157,6 +167,8 @@ class ProjectConfig:
         self.binutils_path: Optional[Path] = None  # If None, download
         self.dtk_tag: Optional[str] = None  # Git tag
         self.dtk_path: Optional[Path] = None  # If None, download
+        self.delink_tag: Optional[str] = None  # Git tag
+        self.delink_path: Optional[Path] = None  # If None, download
         self.platform: Optional[Platform] = Platform.GC_WII
         self.compilers_tag: Optional[str] = None  # 1
         self.compilers_path: Optional[Path] = None  # If None, download
@@ -363,6 +375,27 @@ def check_path_case(path: Path):
         print(f"⚠️  Case mismatch: expected={path} actual={curr}")
 
 
+# Normalizes the section_rename object option into the argument list that
+# tools/rename_section.py expects: "<old>=<new> <old>=<new> ...".
+# Accepts a string, a list of "old=new" strings or a dict.
+def make_section_renames(renames: Any) -> str:
+    if isinstance(renames, dict):
+        pairs = [f"{old}={new}" for old, new in renames.items()]
+    elif isinstance(renames, str):
+        pairs = [renames]
+    else:
+        pairs = list(renames)
+    for pair in pairs:
+        if "=" not in pair:
+            sys.exit(f"Invalid section_rename {pair!r}, expected <old>=<new>")
+        old, new = pair.split("=", 1)
+        if len(old) != len(new):
+            sys.exit(
+                f"Invalid section_rename {pair!r}: names must be the same length"
+            )
+    return " ".join(pairs)
+
+
 def make_flags_str(flags: Optional[List[str]]) -> str:
     if flags is None:
         return ""
@@ -484,7 +517,7 @@ def generate_build_ninja(
     python_lib = Path(os.path.relpath(__file__))
     python_lib_dir = python_lib.parent
     n.comment("The arguments passed to configure.py, for rerunning it.")
-    if config.platform == Platform.X360:
+    if config.platform in [Platform.X360, Platform.WIN32]:
         n.variable(
             "configure_args",
             [f'""{arg}""' if " " in arg else arg for arg in sys.argv[1:]],
@@ -531,6 +564,13 @@ def generate_build_ninja(
         deps="gcc",
     )
 
+    rename_section = config.tools_dir / "rename_section.py"
+    n.rule(
+        name="rename_sections",
+        command=f"$python {rename_section} $in $out $renames",
+        description="RENSEC $out",
+    )
+
     cargo_rule_written = False
 
     def write_cargo_rule():
@@ -548,6 +588,7 @@ def generate_build_ninja(
             cargo_rule_written = True
 
     dtk = ""
+    delink = ""
     if config.dtk_path is not None and config.dtk_path.is_file():
         dtk = config.dtk_path
     elif config.dtk_path is not None:
@@ -575,8 +616,38 @@ def generate_build_ninja(
                 "tag": config.dtk_tag,
             },
         )
-    elif config.platform != Platform.PS2:
+    elif config.platform not in [Platform.PS2, Platform.WIN32]:
         sys.exit("ProjectConfig.dtk_tag missing")
+
+    # delink is independent of dtk: in one if/elif chain, passing --dtk left delink empty.
+    if config.delink_path is not None and config.delink_path.is_file():
+        delink = config.delink_path
+    elif config.delink_path is not None:
+        delink = build_tools_path / "release" / f"delink{EXE}"
+        write_cargo_rule()
+        n.build(
+            outputs=delink,
+            rule="cargo",
+            inputs=config.delink_path / "Cargo.toml",
+            implicit=config.delink_path / "Cargo.lock",
+            variables={
+                "bin": "delink",
+                "target": build_tools_path,
+            },
+        )
+    elif config.delink_tag:
+        delink = build_tools_path / f"delink{EXE}"
+        n.build(
+            outputs=delink,
+            rule="download_tool",
+            implicit=download_tool,
+            variables={
+                "tool": "delink",
+                "tag": config.delink_tag,
+            },
+        )
+
+    
 
     if config.objdiff_path is not None and config.objdiff_path.is_file():
         objdiff = config.objdiff_path
@@ -670,6 +741,8 @@ def generate_build_ninja(
                 "tool": "ppc_binutils",
                 "tag": config.binutils_tag,
             }
+    elif config.platform == Platform.WIN32:
+        binutils = Path()
     else:
         sys.exit("ProjectConfig.binutils_tag missing")
 
@@ -684,11 +757,13 @@ def generate_build_ninja(
 
     n.newline()
 
-    download_tool_inputs = [wrapper, compilers, binutils, objdiff]
+    download_tool_inputs = [wrapper, compilers, objdiff]
     if config.platform == Platform.GC_WII:
         download_tool_inputs.append(sjiswrap)
     if config.platform != Platform.PS2:
         download_tool_inputs.append(dtk)
+    if config.platform != Platform.WIN32:
+        download_tool_inputs.append(binutils)
     ###
     # Helper rule for downloading all tools
     ###
@@ -745,11 +820,15 @@ def generate_build_ninja(
     ]
 
     # NGCCC
+    # -MD y no -MMD: el cpp de GCC 2.95 deja fuera de -MMD todo lo incluido con
+    # <...> (y lo que eso incluya), aunque viva en el arbol. Con -MMD, tocar
+    # snd/sndo.h no recompilaba las unidades de snd y el enlace usaba objetos
+    # viejos que ya no compilaban.
     ngccc = compiler_path / "ngccc.exe"
     if is_windows():
-        ngccc_cmd = f"{CHAIN}set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -MMD -c -o $out $in"
+        ngccc_cmd = f"{CHAIN}set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -MD -c -o $out $in"
     else:
-        ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ngccc} $cflags -MMD -c -o $out $in"
+        ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ngccc} $cflags -MD -c -o $out $in"
     ngccc_implicit: List[Optional[Path]] = [
         compilers_implicit or ngccc,
         wrapper_implicit,
@@ -757,15 +836,20 @@ def generate_build_ninja(
 
     # EE-GCC
     ee_gcc = compiler_path / "bin" / "ee-gcc.exe"
+    # Preprocess and compile in two steps (see tools/ee_gcc_pp.py): with a single
+    # call, cc1plus rejects every `#pragma implementation`.
+    ee_gcc_pp = config.tools_dir / "ee_gcc_pp.py"
+    ee_gcc_pp_dir = build_path / "pp"
     # Workaround because otherwise the dependency files are all placed into the root folder
     if is_windows():
-        ee_gcc_cmd = f"{CHAIN}set DEPENDENCIES_OUTPUT=$basefile.d&& {ee_gcc} $cflags -c -o $out $in"
+        ee_gcc_cmd = f"{CHAIN}set DEPENDENCIES_OUTPUT=$basefile.d&& $python {ee_gcc_pp} {ee_gcc_pp_dir} {ee_gcc} -- $cflags -c -o $out $in"
     else:
-        ee_gcc_cmd = f"env DEPENDENCIES_OUTPUT=$basefile.d {wrapper_cmd}{ee_gcc} $cflags -c -o $out $in"
+        ee_gcc_cmd = f"env DEPENDENCIES_OUTPUT=$basefile.d $python {ee_gcc_pp} {ee_gcc_pp_dir} {wrapper_cmd}{ee_gcc} -- $cflags -c -o $out $in"
     ee_gcc_implicit: List[Optional[Path]] = [
         compilers_implicit or ee_gcc,
         binutils,
         wrapper_implicit,
+        ee_gcc_pp,
     ]
 
     # TODO do EE-GCC linker
@@ -786,6 +870,15 @@ def generate_build_ninja(
             compilers_implicit or ngcld,
             wrapper_implicit,
         ]
+        # El fichero de `-keep` decide que datos sobreviven a -strip-unused-data:
+        # sin esta dependencia, cambiarlo NO vuelve a enlazar y el DOL sale corto
+        # en silencio (el mismo fallo que tenia el troceado con splits.txt).
+        _ldf = config.ldflags or []
+        for _i, _f in enumerate(_ldf):
+            if _f == "-keep" and _i + 1 < len(_ldf):
+                ld_implicit.append(Path(_ldf[_i + 1]))
+            elif _f.startswith("-keep="):
+                ld_implicit.append(Path(_f[len("-keep=") :]))
 
         gnu_as = binutils / f"powerpc-eabi-as{EXE}"
         gnu_as_cmd = (
@@ -796,7 +889,7 @@ def generate_build_ninja(
         # As a workaround for https://github.com/encounter/dtk-template/issues/51
         # include macros.inc directly as an implicit dependency
         gnu_as_implicit.append(build_path / "include" / "macros.inc")
-    elif config.platform == Platform.X360:
+    elif config.platform in [Platform.X360, Platform.WIN32]:
         # MSVC linker
         msvc_link = compiler_path / "link.exe"
         ld_cmd = f"{ld_prefix}{wrapper_cmd}{msvc_link} $ldflags /OUT:$out @$out.rsp"
@@ -911,6 +1004,30 @@ def generate_build_ninja(
     )
     n.newline()
 
+    # ProDG for translation units that the original build placed in a
+    # non-default output section (the GameCube overlay). objdiff pairs
+    # symbols per section, so our object has to carry the same section name
+    # as the one dtk extracted from the ELF, or the whole unit reads as
+    # unmatched. Kept as a separate rule so the plain "prodg" command line
+    # stays byte-identical and no other object is invalidated.
+    rename_section = config.tools_dir / "rename_section.py"
+    ngccc_rename_cmd = (
+        f"{ngccc_cmd} && $python {rename_section} -q $out $section_rename"
+    )
+    ngccc_rename_implicit: List[Optional[Path]] = [
+        *ngccc_implicit,
+        rename_section,
+    ]
+    n.comment("ProDG build (with section renaming)")
+    n.rule(
+        name="prodg_rename",
+        command=ngccc_rename_cmd,
+        description="ProDG $out",
+        depfile="$basefile.d",
+        deps="gcc",
+    )
+    n.newline()
+
     n.comment("EE-GCC build")
     n.rule(
         name="ee-gcc",
@@ -921,7 +1038,30 @@ def generate_build_ninja(
     )
     n.newline()
 
-    if config.platform != Platform.X360:
+    # Lo mismo que prodg_rename, pero para PS2. La seccion de salida no es cosa
+    # de GameCube: el objeto que dtk saca del ELF de PS2 tambien lleva `.over`
+    # en zOnline y zFeOverlay. Sin esto, nuestro objeto de PS2 se queda con
+    # `.text`, objdiff empareja por seccion y la unidad ENTERA se lee como no
+    # casada aunque case: medido, zFeOverlay pasa de 0 a 217 funciones al 100 %
+    # en SLES y 197 en SLUS solo con renombrar la seccion.
+    ee_gcc_rename_cmd = (
+        f"{ee_gcc_cmd} && $python {rename_section} -q $out $section_rename"
+    )
+    ee_gcc_rename_implicit: List[Optional[Path]] = [
+        *ee_gcc_implicit,
+        rename_section,
+    ]
+    n.comment("EE-GCC build (with section renaming)")
+    n.rule(
+        name="ee-gcc_rename",
+        command=ee_gcc_rename_cmd,
+        description="EE-GCC $out",
+        depfile="$basefile.d",
+        deps="gcc",
+    )
+    n.newline()
+
+    if config.platform not in [Platform.X360, Platform.WIN32]:
         n.comment("Assemble asm")
         n.rule(
             name="as",
@@ -1094,6 +1234,13 @@ def generate_build_ninja(
             n.newline()
 
     link_outputs: List[Path] = []
+
+    # Splat emits one assembly file for each PS2 subsegment.
+    def ps2_generated_asm_path(obj_name: str) -> Path:
+        source_path = Path(obj_name)
+        asm_name = source_path.with_suffix(source_path.suffix + ".s")
+        return build_path / "asm" / asm_name
+
     if build_config:
         link_steps: List[LinkStep] = []
         used_compiler_versions: Set[str] = set()
@@ -1143,6 +1290,14 @@ def generate_build_ninja(
                 return obj.src_obj_path
             source_added.add(obj.src_obj_path)
 
+            # The old Windows EE-GCC preprocessor accepts a source path with
+            # backslashes, but does not use them when deriving the directory
+            # for quoted includes. Keep the native paths in Ninja's graph,
+            # while passing PS2 source inputs with POSIX separators.
+            ninja_src_path: Union[Path, str] = (
+                src_path.as_posix() if config.platform == Platform.PS2 else src_path
+            )
+
             cflags = obj.options["cflags"]
             extra_cflags = obj.options["extra_cflags"]
             toolchain_version: str = obj.options["toolchain_version"]
@@ -1165,7 +1320,7 @@ def generate_build_ninja(
                 # Ensure extra_cflags is a unique instance,
                 # and insert into there to avoid modifying shared sets of flags
                 extra_cflags = obj.options["extra_cflags"] = list(extra_cflags)
-                if config.platform != Platform.X360:
+                if config.platform not in [Platform.X360, Platform.WIN32]:
                     if is_mwcc:
                         if file_is_cpp(src_path):
                             extra_cflags.insert(0, "-lang=c++")
@@ -1196,7 +1351,7 @@ def generate_build_ninja(
             }
 
             if config.platform == Platform.GC_WII:
-                # Add ProDG build rule
+                # Add MWCC/ProDG build rule
                 if is_mwcc:
                     build_rule = "mwcc"
                     build_implicit = mwcc_implicit
@@ -1219,7 +1374,14 @@ def generate_build_ninja(
                 else:
                     build_rule = "prodg"
                     build_implicit = ngccc_implicit
-            elif config.platform == Platform.X360:
+
+                    if obj.options["section_rename"] is not None:
+                        build_rule = "prodg_rename"
+                        build_implicit = ngccc_rename_implicit
+                        variables["section_rename"] = make_section_renames(
+                            obj.options["section_rename"]
+                        )
+            elif config.platform in [Platform.X360, Platform.WIN32]:
                 # Add MSVC build rule
                 build_rule = "msvc"
                 build_implicit = msvc_implicit
@@ -1228,11 +1390,18 @@ def generate_build_ninja(
                 build_rule = "ee-gcc"
                 build_implicit = ee_gcc_implicit
 
+                if obj.options["section_rename"] is not None:
+                    build_rule = "ee-gcc_rename"
+                    build_implicit = ee_gcc_rename_implicit
+                    variables["section_rename"] = make_section_renames(
+                        obj.options["section_rename"]
+                    )
+
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
                 rule=build_rule,
-                inputs=src_path,
+                inputs=ninja_src_path,
                 variables=variables,
                 implicit=build_implicit,
                 order_only="pre-compile",
@@ -1257,7 +1426,7 @@ def generate_build_ninja(
                 n.build(
                     outputs=obj.ctx_path,
                     rule="decompctx",
-                    inputs=src_path,
+                    inputs=ninja_src_path,
                     implicit=decompctx,
                     variables={
                         "includes": includes,
@@ -1265,10 +1434,31 @@ def generate_build_ninja(
                         "defines": defines,
                     },
                 )
+
+            objdiff_output = obj.src_obj_path
+            section_renames = obj.options["section_renames"]
+            if (
+                section_renames
+                and obj.objdiff_obj_path is not None
+                and obj.objdiff_obj_path not in source_added
+            ):
+                source_added.add(obj.objdiff_obj_path)
+                rename_args = " ".join(
+                    f"{old_name} {new_name}"
+                    for old_name, new_name in section_renames
+                )
+                n.build(
+                    outputs=obj.objdiff_obj_path,
+                    rule="rename_sections",
+                    inputs=obj.src_obj_path,
+                    implicit=rename_section,
+                    variables={"renames": rename_args},
+                )
+                objdiff_output = obj.objdiff_obj_path
             n.newline()
 
             if obj.options["add_to_all"]:
-                source_inputs.append(obj.src_obj_path)
+                source_inputs.append(objdiff_output)
 
             return obj.src_obj_path
 
@@ -1289,7 +1479,10 @@ def generate_build_ninja(
 
             # Add assembler build rule
             lib_name = obj.options["lib"]
-            n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
+            if lib_name is None:
+                n.comment(f"{obj.name}: generated assembly")
+            else:
+                n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj_path,
                 rule="as",
@@ -1305,10 +1498,29 @@ def generate_build_ninja(
 
             return obj_path
 
+        def ps2_generated_asm_build(
+            obj_name: str, obj_path: Path
+        ) -> Optional[Path]:
+            generated_obj = Object(False, obj_name)
+            generated_obj.options["add_to_all"] = True
+            generated_obj.options["asflags"] = config.asflags
+            return asm_build(
+                generated_obj,
+                ps2_generated_asm_path(obj_name),
+                obj_path,
+            )
+
         def add_unit(build_obj: BuildConfigUnit, link_step: LinkStep):
             obj_path, obj_name = build_obj["object"], build_obj["name"]
             obj = objects.get(obj_name)
             if obj is None:
+                if config.platform == Platform.PS2 and obj_path is not None:
+                    built_obj_path = ps2_generated_asm_build(
+                        obj_name, Path(obj_path)
+                    )
+                    if built_obj_path is not None:
+                        link_step.add(built_obj_path)
+                        return
                 if config.warn_missing_config and not build_obj["autogenerated"]:
                     print(f"Missing configuration for {obj_name}")
                 if obj_path is not None:
@@ -1322,12 +1534,18 @@ def generate_build_ninja(
                 if config.platform == Platform.PS2:
                     # Assemble target obj file for objdiff
                     # TODO this is really hacky
-                    asm_path = Path(
-                        str(
-                            obj.src_obj_path.with_suffix(Path(obj_name).suffix + ".s")
-                        ).replace("src", "asm")
+                    # Solo el componente de directorio `src` (build/<ver>/src/...):
+                    # un replace sobre la cadena entera convertia sfsrc.c en
+                    # sfobj.o / sfasm.c.s y el grafo de ninja no se podia construir.
+                    def cambia_raiz(p: Path, nueva: str) -> Path:
+                        partes = list(p.parts)
+                        partes[partes.index("src")] = nueva
+                        return Path(*partes)
+
+                    asm_path = cambia_raiz(
+                        obj.src_obj_path.with_suffix(Path(obj_name).suffix + ".s"), "asm"
                     )
-                    obj_path = Path(str(obj.src_obj_path).replace("src", "obj"))
+                    obj_path = cambia_raiz(obj.src_obj_path, "obj")
                     built_obj_path = asm_build(obj, asm_path, obj_path)
                 if file_is_c_cpp(obj.src_path):
                     # Add C/C++ build rule
@@ -1338,9 +1556,15 @@ def generate_build_ninja(
                 else:
                     sys.exit(f"Unknown source file type {obj.src_path}")
             else:
-                if config.warn_missing_source or obj.completed:
-                    print(f"Missing source file {obj.src_path}")
-                link_built_obj = False
+                if config.platform == Platform.PS2 and obj_path is not None:
+                    built_obj_path = ps2_generated_asm_build(
+                        obj_name, Path(obj_path)
+                    )
+                    link_built_obj = built_obj_path is not None
+                else:
+                    if config.warn_missing_source or obj.completed:
+                        print(f"Missing source file {obj.src_path}")
+                    link_built_obj = False
 
             # Assembly overrides
             if (
@@ -1405,7 +1629,7 @@ def generate_build_ninja(
         # Link
         ###
         # TODO
-        if config.platform != Platform.X360:
+        if config.platform not in [Platform.X360, Platform.WIN32]:
             for step in link_steps:
                 step.write(n)
                 link_outputs.append(step.output())
@@ -1527,7 +1751,7 @@ def generate_build_ninja(
                 order_only="post-build",
             )
             n.newline()
-        elif config.platform == Platform.X360:
+        elif config.platform in [Platform.X360, Platform.WIN32]:
             # TODO
             n.comment("Check hash")
             ok_path = build_path / "ok"
@@ -1707,8 +1931,16 @@ def generate_build_ninja(
     ###
     # Split DOL/XEX
     ###
+    build_config_path = build_path / "config.json"
     if config.platform == Platform.PS2:
-        build_config_path = build_path / "config.json"
+        split_asm_outputs = None
+        if build_config is not None:
+            split_asm_outputs = list(
+                dict.fromkeys(
+                    ps2_generated_asm_path(unit["name"])
+                    for unit in build_config["units"]
+                )
+            )
         n.comment("Split ELF into relocatable objects")
         n.rule(
             name="split",
@@ -1722,24 +1954,63 @@ def generate_build_ninja(
             outputs=build_config_path,
             rule="split",
             variables={"out_dir": build_path},
+            implicit_outputs=split_asm_outputs,
+        )
+        n.newline()
+    elif config.platform == Platform.WIN32:
+        with config.config_path.open("r", encoding="utf-8") as f:
+            yaml_config = yaml.safe_load(f)
+
+        splits_path = yaml_config["splits_path"]
+        symbols_path = yaml_config["symbols_path"]
+
+        n.comment("Split exe into relocatable objects")
+        n.rule(
+            name="split",
+            command="$python tools/delink_to_config_json.py $in $out_dir",
+            description="SPLIT $in",
+            depfile="$out_dir/dep",
+            deps="gcc",
+        )
+        n.build(
+            inputs=[delink, config.config_path],
+            outputs=build_config_path,
+            rule="split",
+            implicit=[splits_path, symbols_path],
+            variables={"out_dir": build_path},
         )
         n.newline()
     else:
         what_to_split = "xex" if config.platform == Platform.X360 else "dol"
-        build_config_path = build_path / "config.json"
         n.comment(f"Split {what_to_split.upper()} into relocatable objects")
         n.rule(
             name="split",
             command=f"{dtk} {what_to_split} split $in $out_dir",
             description="SPLIT $in",
-            depfile="$out_dir/dep",  # TODO?
-            deps="gcc",
+            # NOTE: dtk {dol,xex} split does not write a depfile; declaring one
+            # leaves the edge permanently dirty (SPLIT -> configure loop).
+            depfile=None,
+            deps=None,
         )
+        # El .yml solo APUNTA a splits.txt y symbols.txt; si no se declaran
+        # aqui, cambiarlos no vuelve a trocear y el enlace sigue usando la
+        # lista de objetos vieja. Eso falla EN SILENCIO: el DOL sale roto y
+        # parece que el reparto nuevo esta mal (r27, 06-sep-2026).
+        split_deps = [dtk]
+        try:
+            for linea in open(config.config_path, "r", encoding="utf-8"):
+                clave, _, valor = linea.partition(":")
+                if clave.strip() in ("splits", "symbols"):
+                    ruta = Path(valor.split("#")[0].strip())
+                    if ruta.is_file():
+                        split_deps.append(ruta)
+        except OSError:
+            pass
         n.build(
             inputs=config.config_path,
             outputs=build_config_path,
             rule="split",
-            implicit=dtk,
+            implicit=split_deps,
             variables={"out_dir": build_path},
         )
         n.newline()
@@ -1876,8 +2147,14 @@ def generate_objdiff_config(
         "ProDG/3.8.1": "prodg_381",
         "ProDG/3.9.3": "prodg_393",
         "PS2/ee-gcc2.9-991111": "ee-gcc2.9-991111",
+        "PS2/ee-gcc2.95.2-273a": "ee-gcc2.95.2-273a",
+        "PS2/ee-gcc2.95.2-274": "ee-gcc2.95.2-274",
+        "PS2/ee-gcc2.95.3-107": "ee-gcc2.95.3-107",
+        "PS2/ee-gcc2.95.3-114": "ee-gcc2.95.3-114",
+        "PS2/ee-gcc2.95.3-136": "ee-gcc2.95.3-136",
         "X360/14.00.2110": "msvc_ppc_14.00.2110",
         "X360/16.00.11886.00": "msvc_ppc_16.00.11886.00",
+        "Win32/7.1": "msvc7.1",
     }
 
     def add_unit(
@@ -1913,7 +2190,7 @@ def generate_objdiff_config(
 
         src_exists = obj.src_path is not None and obj.src_path.exists()
         if src_exists:
-            unit_config["base_path"] = obj.src_obj_path
+            unit_config["base_path"] = obj.objdiff_obj_path or obj.src_obj_path
             unit_config["metadata"]["source_path"] = obj.src_path
 
         # Filter out include directories
@@ -2250,7 +2527,7 @@ def generate_compile_commands(
                 return False
 
             for flag in flags:
-                if config.platform == Platform.X360:
+                if config.platform in [Platform.X360, Platform.WIN32]:
                     if flag.startswith("/I "):
                         cflags.extend(flag.split(" "))
                     else:
@@ -2291,6 +2568,7 @@ def generate_compile_commands(
                 "clang-cl.exe",
                 "--target=powerpc-eabi",
                 *cflags,
+                "/c",
                 obj.src_path,
                 "/Fo",
                 obj.src_obj_path,
@@ -2300,11 +2578,22 @@ def generate_compile_commands(
                 "clang",
                 "-nostdinc",
                 "-fno-builtin",
-                "--target=mips-linux-gnu",
+                "--target=mips64el-ps2-none-eabi",
+                "-mabi=o32",
                 *cflags,
                 "-c",
                 obj.src_path,
                 "-o",
+                obj.src_obj_path,
+            ]
+        elif config.platform == Platform.WIN32:
+             unit_config_args = [
+                "clang-cl.exe",
+                "--target=i686-pc-windows-msvc",
+                *cflags,
+                "/c",
+                obj.src_path,
+                "/Fo",
                 obj.src_obj_path,
             ]
         add_compile_command(obj.src_path, obj.src_obj_path, unit_config_args)

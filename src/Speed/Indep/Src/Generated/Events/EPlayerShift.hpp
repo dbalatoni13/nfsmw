@@ -27,7 +27,7 @@ class EPlayerShift : public Event {
 
     ~EPlayerShift() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     HSIMABLE fhSimable;  // offset: 0x8, size 0x4

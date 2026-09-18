@@ -19,9 +19,11 @@ class EResetProps : public Event {
 
     ~EResetProps() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EResetProps_MakeEvent_Callback(const void *staticData);
+int EResetProps_MakeEvent_LuaBinding(struct lua_State *L);
+void EResetProps_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -22,13 +22,15 @@ struct DestructorEntry {
     void *data;   // offset 0x4, size 0x4
 };
 
-typedef void *(*RuntimeAllocConstructor)(const char *, class DynamicLoader *, int &, bool &, const char *);
+typedef void *(*RuntimeAllocConstructor)(const char *, EAGL4::DynamicLoader *, int &, bool &, const char *);
 typedef void (*RuntimeAllocDestructor)(void *, int);
 
 // TODO wrong namespace
 // total size: 0x10
 struct RuntimeAllocDestructorEntry {
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
     // void *operator new(size_t size, const char *msg) {}
 
@@ -45,9 +47,10 @@ struct RuntimeAllocDestructorEntry {
     // void *operator new(size_t, void *ptr) {}
 
     RuntimeAllocDestructorEntry(RuntimeAllocDestructor d, void *data, int auxData)
-        : d(d),       //
-          data(data), //
-          auxData(auxData) {}
+        : d(d),             //
+          data(data),       //
+          auxData(auxData), //
+          next(nullptr) {}
 
     RuntimeAllocDestructor d;          // offset 0x0, size 0x4
     void *data;                        // offset 0x4, size 0x4

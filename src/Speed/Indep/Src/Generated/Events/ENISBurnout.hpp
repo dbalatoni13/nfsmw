@@ -21,7 +21,7 @@ class ENISBurnout : public Event {
 
     ~ENISBurnout() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fSpeed; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ENISBurnout : public Event {
 };
 
 void ENISBurnout_MakeEvent_Callback(const void *staticData);
+int ENISBurnout_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISBurnout_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

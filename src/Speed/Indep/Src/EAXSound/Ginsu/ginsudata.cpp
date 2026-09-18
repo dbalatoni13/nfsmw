@@ -117,7 +117,6 @@ GinsuSynthData::GinsuSynthData()
       mSampleCount(0),     //
       mSampleRate(0) {}
 
-// UNSOLVED
 bool GinsuSynthData::BindToData(void *ptr) {
     GinsuDataLayout *memdata = static_cast<GinsuDataLayout *>(ptr);
 
@@ -148,6 +147,7 @@ bool GinsuSynthData::BindToData(void *ptr) {
     this->mCyclePos = this->mFreqPos + (this->mSegCount + 1);
     this->mSampleData = reinterpret_cast<unsigned char *>(this->mCyclePos + (this->mCycleCount + 1));
     this->mCurrentBlock = -1;
+
     int minperiod = this->mSampleCount;
 
     for (int i = 0; i < this->mCycleCount; i++) {
@@ -166,44 +166,41 @@ int GinsuSynthData::FrequencyToSample(float freq) const {
     float seg;
     int i;
     float a;
-    int samp;
 
     if (this->mSegCount < 1) {
-        samp = 0;
-    } else if (freq <= this->mMinFrequency) {
-        samp = this->mFreqPos[0];
-    } else if (freq >= this->mMaxFrequency) {
-        samp = this->mFreqPos[this->mSegCount];
-    } else {
-        seg = static_cast<float>(this->mSegCount) * (freq - this->mMinFrequency) / (this->mMaxFrequency - this->mMinFrequency);
-        i = IntFloor(seg);
-        a = seg - static_cast<float>(i);
-        samp = IntRound(static_cast<float>(this->mFreqPos[i]) + a * static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]));
-        return samp;
+        return 0;
+    }
+    if (freq <= this->mMinFrequency) {
+        return this->mFreqPos[0];
+    }
+    if (freq >= this->mMaxFrequency) {
+        return this->mFreqPos[this->mSegCount];
     }
 
-    return samp;
+    seg = static_cast<float>(this->mSegCount) * (freq - this->mMinFrequency) / (this->mMaxFrequency - this->mMinFrequency);
+    i = IntFloor(seg);
+    a = seg - static_cast<float>(i);
+    return IntRound(static_cast<float>(this->mFreqPos[i]) + a * static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]));
 }
 
 // UNSOLVED
 int GinsuSynthData::CycleToSample(float cycle) const {
     int i;
     float a;
-    int samp;
 
     if (this->mCycleCount < 1) {
-        samp = 0;
-    } else if (cycle <= 0.0f) {
-        samp = this->mCyclePos[0];
-    } else if (cycle >= static_cast<float>(this->mCycleCount)) {
-        samp = this->mCyclePos[this->mCycleCount];
-    } else {
-        i = IntFloor(cycle);
-        a = cycle - static_cast<float>(i);
-        return IntRound(static_cast<float>(this->mCyclePos[i]) + a * static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]));
+        return 0;
+    }
+    if (cycle <= 0.0f) {
+        return this->mCyclePos[0];
+    }
+    if (cycle >= static_cast<float>(this->mCycleCount)) {
+        return this->mCyclePos[this->mCycleCount];
     }
 
-    return samp;
+    i = IntFloor(cycle);
+    a = cycle - static_cast<float>(i);
+    return IntRound(static_cast<float>(this->mCyclePos[i]) + a * static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]));
 }
 
 float GinsuSynthData::CyclePeriod(float cycle) const {
@@ -240,49 +237,43 @@ float GinsuSynthData::CyclePeriod(float cycle) const {
 }
 
 float GinsuSynthData::SampleToCycle(int sample) const {
-    if (mCycleCount <= 0) {
+    if (this->mCycleCount <= 0) {
         return 0.0f;
     }
-    if (sample <= mCyclePos[0]) {
+    if (sample <= this->mCyclePos[0]) {
         return 0.0f;
     }
-    if (sample >= mCyclePos[mCycleCount]) {
-        return static_cast<float>(mCycleCount);
+    if (sample >= this->mCyclePos[this->mCycleCount]) {
+        return static_cast<float>(this->mCycleCount);
     }
 
     int low = 0;
-    int high = mCycleCount;
+    int high = this->mCycleCount;
     int guess;
-    while (true) {
-        while (true) {
-            guess = low + IntFloor((static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) *
-                                   static_cast<float>(high - low));
-            if (sample >= mCyclePos[guess]) {
-                break;
-            } else {
-                int newlow = guess - IntCeil(static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod);
-                high = guess;
-                if (newlow > low) {
-                    low = newlow;
-                }
+    for (;;) {
+        guess = low + IntFloor((static_cast<float>(sample - this->mCyclePos[low]) / static_cast<float>(this->mCyclePos[high] - this->mCyclePos[low])) *
+                               static_cast<float>(high - low));
+        if (sample < this->mCyclePos[guess]) {
+            int newlow = guess - IntCeil(static_cast<float>(this->mCyclePos[guess] - sample) / this->mMinPeriod);
+            if (newlow > low) {
+                low = newlow;
             }
-        }
-
-        if (sample < mCyclePos[guess + 1]) {
-            break;
-        } else {
-            int newhigh = guess + IntCeil(static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod) + 1;
+            high = guess;
+        } else if (sample >= this->mCyclePos[guess + 1]) {
             low = guess + 1;
+            int add = IntCeil(static_cast<float>(sample - this->mCyclePos[guess]) / this->mMinPeriod) + 1;
+            int newhigh = guess + add;
             if (newhigh < high) {
                 high = newhigh;
             }
+        } else {
+            break;
         }
     }
 
-    float s1 = static_cast<float>(mCyclePos[guess]);
-    float s2 = static_cast<float>(mCyclePos[guess + 1]);
-    float cycle = (static_cast<float>(sample) - s1) / (s2 - s1);
-    return cycle + static_cast<float>(guess);
+    float s1 = static_cast<float>(this->mCyclePos[guess]);
+    float s2 = static_cast<float>(this->mCyclePos[guess + 1]);
+    return static_cast<float>(guess) + (static_cast<float>(sample) - s1) / (s2 - s1);
 }
 
 bool GinsuSynthData::GetSamples(int startSample, int numSamples, short *dest) {

@@ -3,13 +3,14 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorld.h"
+#include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-// TODO move
-extern bool Tweak_colliderDraws;
 
 UTL::Std::map<unsigned int, WCollider *, _type_map> WCollider::fWuidMap;
 UTL::Collections::Listable<WCollider, 100>::List UTL::Collections::Listable<WCollider, 100>::_mTable;
+
+// TODO move
+bool Tweak_colliderDraws = false;
 
 WCollider::WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask)
     : fRequestedPosition(UMath::Vector3::kZero),     //
@@ -82,7 +83,6 @@ void WCollider::InvalidateIntersectingColliders(const UMath::Vector4 &posRad) {
     }
 }
 
-// UNSOLVED
 static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector3 &reqPos, float reqRad, const UMath::Vector3 &oldPos, float oldRad,
                                            const UMath::Vector3 &lastPos, UMath::Vector3 &pos, float &rad) {
     if (!useLastData) {
@@ -104,9 +104,7 @@ static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector
 
             float moveDist = UMath::Length(moveVec);
             rad = reqRad + moveDist + 0.1f;
-            if (rad > 25.0f) {
-                rad = 25.0f;
-            }
+            rad = rad > 25.0f ? 25.0f : rad;
         }
     }
 }
@@ -184,7 +182,7 @@ void WCollider::PrepareRegion(unsigned int updateMask) {
 
 #ifndef EA_BUILD_A124
     if (updateMask & 0x10) {
-        WCollisionMgr(fExclusionFlags, 3).GetObjectList(this->fObbList, this->fPosition, this->fRadius);
+        WCollisionMgr(this->fExclusionFlags, 3).GetObjectList(this->fObbList, this->fPosition, this->fRadius);
     }
 #endif
 
@@ -192,8 +190,8 @@ void WCollider::PrepareRegion(unsigned int updateMask) {
 }
 
 bool WCollider::IsEmpty() const {
-    // TODO fObbList.empty()?
     return this->fInstanceCacheList.empty() && this->fBarrierList.empty();
+    // TODO dwarf: this->fObbList.empty();
 }
 
 void WCollider::Clear() {
@@ -265,7 +263,7 @@ unsigned int WCollider::GetUpdateMask(const UMath::Vector3 &pt, float radius) {
 }
 
 bool WCollider::InRegion(const UMath::Vector3 &pt, float radius) const {
-    float radDiff = fRadius - radius;
+    float radDiff = this->fRadius - radius;
     if (radDiff < 0.0f) {
         return false;
     }
@@ -301,14 +299,9 @@ void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
 }
 
 float WCollisionInstance::CalcSphericalRadius() const {
-    // TODO
-    // float maxExtent = WWorldMath::wmax(fInvMatRow2Length.w, fInvPosRadius.w);
-    // maxExtent = WWorldMath::wmax(maxExtent, fHeight);
-    // return WWorldMath::wmax(maxExtent, fInvMatRow0Width.w);
-
-    float maxExtent = (this->fInvMatRow2Length.w < this->fInvPosRadius.w) ? this->fInvPosRadius.w : this->fInvMatRow2Length.w;
-    maxExtent = (this->fHeight < maxExtent) ? maxExtent : this->fHeight;
-    return (this->fInvMatRow0Width.w < maxExtent) ? maxExtent : this->fInvMatRow0Width.w;
+    float maxExtent = WWorldMath::wmax(this->fInvPosRadius.w, this->fInvMatRow2Length.w);
+    maxExtent = WWorldMath::wmax(maxExtent, this->fHeight);
+    return WWorldMath::wmax(maxExtent, this->fInvMatRow0Width.w);
 }
 
 // STRIPPED
@@ -318,9 +311,9 @@ void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {
     pos.x = (-this->fInvPosRadius.x * this->fInvMatRow0Width.x - this->fInvPosRadius.y * this->fInvMatRow0Width.y) -
             this->fInvPosRadius.z * this->fInvMatRow0Width.z;
     pos.z = (-this->fInvPosRadius.x * this->fInvMatRow2Length.x - this->fInvPosRadius.y * this->fInvMatRow2Length.y) -
-            this->fInvPosRadius.z * fInvMatRow2Length.z;
+            this->fInvPosRadius.z * this->fInvMatRow2Length.z;
 
-    if (NeedsCrossProduct()) {
+    if (this->NeedsCrossProduct()) {
         UMath::Vector4 upVec;
         UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
                         reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), upVec);
@@ -336,9 +329,9 @@ void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
     m[0][2] = this->fInvMatRow0Width.z;
     m[0][3] = 0.0f;
 
-    if (NeedsCrossProduct()) {
-        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width),
-                        m[1]);
+    if (this->NeedsCrossProduct()) {
+        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
+                        reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), m[1]);
         m[1][3] = 0.0f;
     } else {
         m[1][0] = 0.0f;

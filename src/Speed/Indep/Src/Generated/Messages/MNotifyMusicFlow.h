@@ -20,6 +20,10 @@ class MNotifyMusicFlow : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNotifyMusicFlow &message);
+
     MNotifyMusicFlow(int _Part) : Hermes::Message(_GetKind(), _GetSize(), 0), fPart(_Part) {}
 
     ~MNotifyMusicFlow() {}
@@ -35,5 +39,25 @@ class MNotifyMusicFlow : public Hermes::Message {
   private:
     int fPart; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNotifyMusicFlow::HandleMessage_LuaBinding(const MNotifyMusicFlow &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNotifyMusicFlow::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MNotifyMusicFlow *message = static_cast<const MNotifyMusicFlow *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Part");
+    lua_pushnumber(luaState, message->fPart);
+    lua_settable(luaState, -3);
+}
 
 #endif

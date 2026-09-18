@@ -20,9 +20,27 @@ class MAcceptEnterCareerEvent : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MAcceptEnterCareerEvent &message);
+
     MAcceptEnterCareerEvent() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 
     ~MAcceptEnterCareerEvent() {}
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MAcceptEnterCareerEvent::HandleMessage_LuaBinding(const MAcceptEnterCareerEvent &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MAcceptEnterCareerEvent::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    lua_newtable(luaState);
+}
 
 #endif

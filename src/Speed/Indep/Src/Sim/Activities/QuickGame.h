@@ -39,7 +39,9 @@ class QuickGame : public Sim::Activity, public Sim::ITimeManager, Sim::IStateMan
     ~QuickGame() override;
 
     // IGameState
-    bool InGameBreaker() const override;
+    bool InGameBreaker() const override {
+        return mInGameBreaker;
+    }
 
     // ITaskable
     bool OnTask(HSIMTASK htask, float dT) override;
@@ -52,6 +54,10 @@ class QuickGame : public Sim::Activity, public Sim::ITimeManager, Sim::IStateMan
     bool ShouldPauseInput() override;
 
     // IVehicleCache
+    const char *GetCacheName() const override {
+        return "QuickGame";
+    }
+
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 

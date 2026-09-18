@@ -203,8 +203,82 @@ def ensure_function_blocks_cache_db(conn: sqlite3.Connection) -> None:
         """)
 
 
+def _cached_function_blocks_for_queries(
+    conn: sqlite3.Connection,
+    cache_key: str,
+    queries: Sequence[str],
+) -> List[FunctionBlock]:
+    query_candidates = [
+        _candidate_func_names(signature_function_name(query) or query)
+        for query in queries
+    ]
+    if not any(query_candidates):
+        return []
+
+    # Keep each statement below SQLite's parameter limit for large source files.
+    matches: Dict[int, FunctionBlock] = {}
+    pending = set(range(len(query_candidates)))
+    candidate_index = 0
+    while pending:
+        candidates = sorted(
+            set(
+                query_candidates[query_index][candidate_index]
+                for query_index in pending
+                if candidate_index < len(query_candidates[query_index])
+            )
+        )
+        if not candidates:
+            break
+
+        for offset in range(0, len(candidates), 200):
+            batch = candidates[offset : offset + 200]
+            predicates = " OR ".join("instr(signature_line, ?) > 0" for _ in batch)
+            rows = conn.execute(
+                f"""
+                SELECT ordinal, start_addr, end_addr, signature_line, block
+                FROM function_blocks
+                WHERE cache_key = ? AND ({predicates})
+                ORDER BY ordinal
+                """,
+                (cache_key, *batch),
+            ).fetchall()
+            resolved = set()
+            for query_index in pending:
+                if candidate_index >= len(query_candidates[query_index]):
+                    continue
+                candidate = query_candidates[query_index][candidate_index]
+                matching_rows = [
+                    row
+                    for row in rows
+                    if _function_block_matches_query(
+                        row[3], queries[query_index], candidate
+                    )
+                ]
+                if matching_rows:
+                    resolved.add(query_index)
+                    for row in matching_rows:
+                        matches[row[0]] = row[1:]
+            pending -= resolved
+
+        candidate_index += 1
+
+    return [matches[ordinal] for ordinal in sorted(matches)]
+
+
+def _function_block_matches_query(
+    signature: str, query: str, candidate: str
+) -> bool:
+    return _sig_contains_name(signature, candidate) or (
+        normalize_signature_registers(query)
+        in normalize_signature_registers(signature)
+    )
+
+
 def load_function_blocks(
-    path: str, folder_mode: bool, apply_split_fixups_in_ram: bool = False
+    path: str,
+    folder_mode: bool,
+    apply_split_fixups_in_ram: bool = False,
+    queries: Optional[Sequence[str]] = None,
 ) -> List[FunctionBlock]:
     source_path = os.path.join(path, "functions.nothpp") if folder_mode else path
     cache_key = function_blocks_cache_key(source_path, apply_split_fixups_in_ram)
@@ -216,17 +290,24 @@ def load_function_blocks(
             (cache_key,),
         ).fetchone()
         if entry is not None:
-            cached = conn.execute(
-                """
-                SELECT start_addr, end_addr, signature_line, block
-                FROM function_blocks
-                WHERE cache_key = ?
-                ORDER BY ordinal
-                """,
+            cached_count = conn.execute(
+                "SELECT COUNT(*) FROM function_blocks WHERE cache_key = ?",
                 (cache_key,),
-            ).fetchall()
-            if len(cached) == entry[0]:
-                return cached
+            ).fetchone()[0]
+            if cached_count == entry[0]:
+                if queries is not None:
+                    return _cached_function_blocks_for_queries(
+                        conn, cache_key, queries
+                    )
+                return conn.execute(
+                    """
+                    SELECT start_addr, end_addr, signature_line, block
+                    FROM function_blocks
+                    WHERE cache_key = ?
+                    ORDER BY ordinal
+                    """,
+                    (cache_key,),
+                ).fetchall()
 
         text = read_text(source_path)
         if apply_split_fixups_in_ram:
@@ -256,7 +337,21 @@ def load_function_blocks(
             (cache_key, os.path.abspath(source_path), len(funcs)),
         )
         conn.commit()
-        return funcs
+        if queries is None:
+            return funcs
+        return [
+            func
+            for func in funcs
+            if any(
+                _function_block_matches_query(
+                    func[2], query, candidate
+                )
+                for query in queries
+                for candidate in _candidate_func_names(
+                    signature_function_name(query) or query
+                )
+            )
+        ]
     finally:
         conn.close()
 
@@ -1237,11 +1332,16 @@ def main() -> None:
             except Exception:
                 rebuilt_debug_lines_path = None
 
-        original_funcs = load_function_blocks(GC_DWARF, folder_mode=True)
+        original_funcs = load_function_blocks(
+            GC_DWARF,
+            folder_mode=True,
+            queries=function_queries,
+        )
         rebuilt_funcs = load_function_blocks(
             rebuilt_dwarf_path,
             folder_mode=False,
             apply_split_fixups_in_ram=True,
+            queries=function_queries,
         )
         original_func_index = build_function_block_index(original_funcs)
         rebuilt_func_index = build_function_block_index(rebuilt_funcs)

@@ -19,7 +19,7 @@ class EUnPause : public Event {
 
     ~EUnPause() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EUnPause_MakeEvent_Callback(const void *staticData);

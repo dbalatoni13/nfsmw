@@ -1,5 +1,51 @@
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
+
+Wheel::Wheel(unsigned int flags)
+    : mWorldPos(0.025f),
+      mNormal(UMath::Vector4::kZero),
+      mPosition(UMath::Vector3::kZero),
+      mFlags(flags),
+      mForce(UMath::Vector3::kZero),
+      mAirTime(0.0f),
+      mLocalArm(UMath::Vector3::kZero),
+      mCompression(0.0f),
+      mWorldArm(UMath::Vector3::kZero),
+      mVelocity(UMath::Vector3::kZero),
+      mSurface(SimSurface::kNull),
+      mSurfaceStick(0.0f),
+      mIntegral(UMath::Vector4::kZero) {
+}
+
+void Wheel::UpdateTime(float dT) {
+    if (this->mSurfaceStick > 0.0f && dT < this->mSurfaceStick) {
+        this->mSurfaceStick -= dT;
+    } else {
+        this->mSurfaceStick = 0.0f;
+    }
+}
+
+void Wheel::UpdateSurface(const SimSurface &surface) {
+    if (!(this->mSurfaceStick > 0.0f)) {
+        this->mSurface = surface;
+    } else if (surface.GetConstCollection() != this->mSurface.GetConstCollection()) {
+        return;
+    }
+    this->mSurfaceStick = surface.STICK();
+}
+
+void Wheel::Reset() {
+    mIntegral = UMath::Vector4::kZero;
+    mSurfaceStick = 0.0f;
+    mAirTime = 0.0f;
+    mVelocity = UMath::Vector3::kZero;
+    mCompression = 0.0f;
+    mNormal = UMath::Vector4::kZero;
+    mForce = UMath::Vector3::kZero;
+    mSurface = SimSurface::kNull;
+    mWorldPos = WWorldPos(0.025f);
+}
 
 bool Wheel::UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &body_lv, 
     const UMath::Matrix4 &body_matrix, const UMath::Vector3 &cog,
@@ -23,4 +69,13 @@ bool Wheel::UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &
     bool result = this->mWorldPos.Update(this->mPosition, this->mNormal, IsOnGround() && usecache, collider, true);
     UpdateSurface(SimSurface(this->mWorldPos.GetSurface()));
     return result;
+}
+
+bool Wheel::InitPosition(const IRigidBody &rb, float maxcompression) {
+    UMath::Matrix4 matrix;
+    rb.GetMatrix4(matrix);
+    matrix.v3 = UMath::Vector4Make(rb.GetPosition(), 1.0f);
+
+    return UpdatePosition(rb.GetAngularVelocity(), rb.GetLinearVelocity(), matrix, UMath::Vector3::kZero, 0.0f, maxcompression, false, rb.GetWCollider(),
+                          rb.GetDimension().y * 2.0f);
 }

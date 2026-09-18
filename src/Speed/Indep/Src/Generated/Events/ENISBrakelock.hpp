@@ -22,7 +22,7 @@ class ENISBrakelock : public Event {
 
     ~ENISBrakelock() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fFront; // offset: 0x8, size 0x4
@@ -32,5 +32,7 @@ class ENISBrakelock : public Event {
 };
 
 void ENISBrakelock_MakeEvent_Callback(const void *staticData);
+int ENISBrakelock_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISBrakelock_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

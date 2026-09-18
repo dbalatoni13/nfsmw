@@ -24,7 +24,7 @@ class ENISCarShake : public Event {
 
     ~ENISCarShake() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fShake; // offset: 0x8, size 0x4
@@ -36,5 +36,7 @@ class ENISCarShake : public Event {
 };
 
 void ENISCarShake_MakeEvent_Callback(const void *staticData);
+int ENISCarShake_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISCarShake_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

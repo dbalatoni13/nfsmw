@@ -7,6 +7,7 @@
 #endif
 
 #include "FnAnim.h"
+#include "AnimUtil.h"
 
 namespace EAGL4Anim {
 
@@ -53,19 +54,33 @@ class FnCycle : public FnAnim {
     float GetEndTime() const {}
 
     // Overrides: FnAnim
-    void Eval(float previousTime, float currentTime, float *dofs) override {}
+    void Eval(float previousTime, float currentTime, float *dofs) override;
 
     // Overrides: FnAnim
-    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override {}
+    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override;
 
     // Overrides: FnAnim
-    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override {}
+    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override;
 
     // Overrides: FnAnim
-    bool EvalPhase(float currentTime, PhaseValue &phase) override {}
+    bool EvalPhase(float currentTime, PhaseValue &phase) override;
 
   private:
-    float GetInRangeTime(float t) const {}
+    float GetInRangeTime(float t) const {
+        int n;
+        float tmp;
+
+        if (t < mStartTime) {
+            tmp = t - mStartTime;
+            n = FloatToInt(tmp / mLength);
+            return mEndTime - (tmp - n * mLength);
+        } else if (t > mEndTime) {
+            tmp = t - mEndTime;
+            n = FloatToInt(tmp / mLength);
+            return mStartTime + (tmp - n * mLength);
+        }
+        return t;
+    }
 
     float mStartTime; // offset 0xC, size 0x4
     float mEndTime;   // offset 0x10, size 0x4

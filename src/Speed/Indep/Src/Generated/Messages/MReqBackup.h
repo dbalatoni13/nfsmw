@@ -20,6 +20,10 @@ class MReqBackup : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MReqBackup &message);
+
     MReqBackup(int _BackupType) : Hermes::Message(_GetKind(), _GetSize(), 0), fBackupType(_BackupType) {}
 
     ~MReqBackup() {}
@@ -35,5 +39,25 @@ class MReqBackup : public Hermes::Message {
   private:
     int fBackupType; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MReqBackup::HandleMessage_LuaBinding(const MReqBackup &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MReqBackup::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MReqBackup *message = static_cast<const MReqBackup *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "BackupType");
+    lua_pushnumber(luaState, message->fBackupType);
+    lua_settable(luaState, -3);
+}
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef REALCORE_COMMON_FILE_DRIVER_H
 #define REALCORE_COMMON_FILE_DRIVER_H
 
+
 #include "types.h"
 
 typedef void ASYNCFILE_CALLBACK(intptr_t);
@@ -59,8 +60,11 @@ class DeviceDriver {
     char mDeviceName[16]; // offset 0x0, size 0x10
 };
 
-void AddDevice(DeviceDriver *device);
+unsigned int AddDevice(DeviceDriver *device);
 void AddSearchLocation(const char *location, bool recursive);
+void SetSearchPath(const char *path);
+void RemoveDevice(unsigned int DevId);
+void GetInfoFastByHandle(int filehandle, uint64_t &location, uint64_t &size);
 
 } // namespace RealFile
 

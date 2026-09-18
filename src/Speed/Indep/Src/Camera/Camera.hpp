@@ -52,7 +52,9 @@ struct CameraParams {
 // total size: 0x50
 struct JollyRancherResponsePacket {
     // Functions
-    inline JollyRancherResponsePacket() {}
+    inline JollyRancherResponsePacket() {
+        UseMatrix = 0;
+    }
 
     // Members
     volatile int UseMatrix;             // offset 0x0, size 0x4
@@ -61,8 +63,6 @@ struct JollyRancherResponsePacket {
     volatile int Pad3;                  // offset 0xC, size 0x4
     volatile struct bMatrix4 CamMatrix; // offset 0x10, size 0x40
 };
-
-static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initialization_and_destruction_0
 
 // total size: 0x290
 class Camera {
@@ -124,7 +124,9 @@ class Camera {
         return &this->CurrentKey.Target;
     }
 
-    // unsigned short GetFov() {}
+    unsigned short GetFov() {
+        return this->CurrentKey.FieldOfView;
+    }
 
     bVector3 GetPositionSimSpace() {
         bVector3 vec(CurrentKey.Position);
@@ -147,13 +149,20 @@ class Camera {
 
     // bVector3 *GetVelocityDirection() {}
 
-    // bVector3 *GetVelocityTarget() {}
+    bVector3 *GetVelocityTarget() {
+        return &this->VelocityKey.Target;
+    }
 
-    // unsigned short GetVelocityFov() {}
+    unsigned short GetVelocityFov() {
+        return VelocityKey.FieldOfView;
+    }
 
     // unsigned int GetLastDisparateTime() {}
 
-    void ClearVelocity() {}
+    void ClearVelocity() {
+        bClearVelocity = true;
+        LastDisparateTime = RealTimeFrames;
+    }
 
     void SetRenderDash(int r) {
         if (!StopUpdating) {
@@ -162,19 +171,27 @@ class Camera {
     }
 
     void SetTargetDistance(float f) {
-        CurrentKey.TargetDistance = f;
+        if (!StopUpdating) {
+            CurrentKey.TargetDistance = f;
+        }
     }
 
     void SetFocalDistance(float f) {
-        CurrentKey.FocalDistance = f;
+        if (!StopUpdating) {
+            CurrentKey.FocalDistance = f;
+        }
     }
 
     void SetDepthOfField(float f) {
-        CurrentKey.DepthOfField = f;
+        if (!StopUpdating) {
+            CurrentKey.DepthOfField = f;
+        }
     }
 
     void SetFieldOfView(unsigned short fov) {
-        CurrentKey.FieldOfView = fov;
+        if (!StopUpdating) {
+            CurrentKey.FieldOfView = fov;
+        }
     }
 
     inline void SetNoiseFrequency1(float x, float y, float z, float w) {
@@ -253,7 +270,13 @@ class Camera {
         return CurrentKey.FarZ;
     }
 
-    void SetLetterBox(float LB_h) {}
+    void SetLetterBox(float LB_h) {
+        CurrentKey.LB_height = LB_h;
+    }
+
+    float GetLetterBox() {
+        return CurrentKey.LB_height;
+    }
 
     // float GetLetterBox() {}
 
@@ -261,7 +284,9 @@ class Camera {
         CurrentKey.SimTimeMultiplier = multiplier;
     }
 
-    // float GetSimTimeMultiplier() {}
+    float GetSimTimeMultiplier() {
+        return CurrentKey.SimTimeMultiplier;
+    }
 
   private:
     CameraParams CurrentKey;  // offset 0x0, size 0xD4
@@ -275,7 +300,7 @@ class Camera {
 };
 
 // TODO move?
-extern bool gCinematicMomementCamera;
+extern int gCinematicMomementCamera;
 extern int DisableCommunication;
 
 #endif

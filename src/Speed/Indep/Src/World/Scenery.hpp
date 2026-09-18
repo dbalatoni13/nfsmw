@@ -259,9 +259,11 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
 // total size: 0x6
 struct SceneryOverrideInfo {
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&SectionNumber);
         bPlatEndianSwap(&InstanceNumber);
         bPlatEndianSwap(&ExcludeFlags);
+#endif
     }
 
     static int GetHashIndex(short section_number) {
@@ -292,8 +294,10 @@ SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
 // total size: 0x4
 struct SceneryOverrideInfoHookup {
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&OverrideInfoNumber);
         bPlatEndianSwap(&InstanceNumber);
+#endif
     }
 
     uint16 OverrideInfoNumber; // offset 0x0, size 0x2
@@ -321,11 +325,15 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     }
 
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&NameHash);
         bPlatEndianSwap(&GroupNumber);
         bPlatEndianSwap(&NumObjects);
+#endif
         for (int n = 0; n < NumObjects; n++) {
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&OverrideInfoNumbers[n]);
+#endif
         }
     }
 
@@ -352,7 +360,11 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     void DisableRendering() {
         for (int n = 0; n < GetNumObjects(); n++) {
             SceneryOverrideInfo *override_info = GetOverrideInfo(n);
+#ifdef EA_BUILD_A124
+            override_info->SetExcludeFlags(0xFFEF, 0x10);
+#else
             override_info->SetExcludeFlags(0xFFFF, 0x10);
+#endif
         }
     }
 
@@ -368,6 +380,25 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 // total size: 0x8E0
 class GrandSceneryCullInfo {
   public:
+    // El ctor va ANTES de Init(): los cuerpos en clase se compilan en orden de
+    // declaracion, asi que aqui Init() todavia no tiene cuerpo y GCC 2.9 emite
+    // una llamada real mas la copia fuera de linea. Misma forma que DefragFixer.
+    GrandSceneryCullInfo() {
+        Init();
+    }
+
+    void Init() {
+        NumCullInfos = 0;
+    }
+
+    SceneryCullInfo *AddCullInfo() {
+        return &SceneryCullInfos[NumCullInfos++];
+    }
+
+    bool IsFrozen() {
+        return false;
+    }
+
     int WhatSectionsShouldWeDraw(int16 *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info);
     void CullView(SceneryCullInfo *scenery_cull_info);
     void DoCulling();
@@ -393,6 +424,7 @@ void CloseVisibleZones();
 void ServicePreculler();
 void LoadPrecullerBooBooScripts();
 void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork);
+void DisableSceneryGroup(unsigned int name_hash);
 SceneryGroup *FindSceneryGroup(unsigned int name_hash);
 SceneryInstance *FindSceneryInstance(unsigned int name_hash);
 SceneryInfo *FindSceneryInfo(unsigned int name_hash);
@@ -423,5 +455,7 @@ inline void EnablePreculler() {
 inline void DisablePreculler() {
     DisablePrecullerCounter++;
 }
+
+void DisableSceneryGroup(unsigned int group_name_hash);
 
 #endif

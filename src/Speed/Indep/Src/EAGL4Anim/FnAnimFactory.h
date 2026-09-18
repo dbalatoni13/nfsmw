@@ -7,13 +7,16 @@
 
 #include "AnimMemoryMap.h"
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
 // total size: 0x1
 class FnAnimFactory {
   public:
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
     // void *operator new(size_t size, const char *msg) {}
 

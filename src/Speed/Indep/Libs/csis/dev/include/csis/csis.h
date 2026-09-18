@@ -36,7 +36,10 @@ enum UnmatchedInterface {
 
 // total size: 0x8
 // Decl: 119
-typedef struct {
+// r71e: struct con TAG (antes typedef-anonimo): los forward-decl
+// 'struct InterfaceId;' de SpeechManager.hpp creaban un tag distinto en MSVC
+// (C2371). Mismo layout, cero emision.
+typedef struct InterfaceId {
     const char *pString; // offset 0x0, size 0x4
     short systemCrc;     // offset 0x4, size 0x2
     short interfaceCrc;  // offset 0x6, size 0x2
@@ -195,6 +198,7 @@ class System {
     static void Free(void *pMem);
 
   private:
+    friend class Class;
     static void *AllocFast(int size);
     static void FreeFast(void *pMem);
     System();

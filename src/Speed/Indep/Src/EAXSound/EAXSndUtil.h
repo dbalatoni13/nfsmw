@@ -71,7 +71,9 @@ class cInterpLine {
     float GetValue() {
         return this->CurValue;
     }
-    int iGetValue() {}
+    int iGetValue() {
+        return static_cast<int>(this->CurValue);
+    }
     void Update(float delta_time);
     void Update(float delta_time, float _new_Finish);
 

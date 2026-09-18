@@ -74,3 +74,5 @@ void Effect::Set(const Attrib::Collection *effect, const UMath::Vector3 &positio
 }
 
 }; // namespace Sim
+
+IMPLEMENT_FACTORY(Sim::Connection)

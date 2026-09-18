@@ -1,5 +1,14 @@
-extern "C" {
+#include "Speed/Indep/Src/Lua/LuaRuntime.cpp"
 
+#include "Speed/Indep/Src/Lua/LuaPostOffice.cpp"
+
+#include "Speed/Indep/Src/Lua/LuaBindery.cpp"
+
+#include "Speed/Indep/Src/Lua/LuaAttributes.cpp"
+
+#include "Speed/Indep/Src/Lua/LuaGameHooks.cpp"
+
+extern "C" {
 #include "Speed/Indep/Src/Lua/source/lapi.c"
 
 #include "Speed/Indep/Src/Lua/source/ldebug.c"
@@ -13,6 +22,8 @@ extern "C" {
 #include "Speed/Indep/Src/Lua/source/lmem.c"
 
 #include "Speed/Indep/Src/Lua/source/lobject.c"
+
+#include "Speed/Indep/Src/Lua/source/lopcodes.c"
 
 #include "Speed/Indep/Src/Lua/source/lstate.c"
 

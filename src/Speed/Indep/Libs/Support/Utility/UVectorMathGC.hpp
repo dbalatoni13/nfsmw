@@ -6,6 +6,12 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
     VU0_v3unit(dest, dest);
 }
 
+// Decl: GC MW: UVectorMathGC.hpp: 39
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {
+    VU0_v3crossprod(reinterpret_cast<const UMath::Vector3 &>(a), reinterpret_cast<const UMath::Vector3 &>(b), reinterpret_cast<UMath::Vector3 &>(dest));
+    VU0_v3unit(reinterpret_cast<const UMath::Vector3 &>(dest), reinterpret_cast<UMath::Vector3 &>(dest));
+}
+
 // Decl: Carbon: UVectorMathCPU.hpp: 293, GC MW: UVectorMathGC.hpp: 62, PS2 MW: UVectorMath.hpp: 1223
 inline void VU0_v3negate(UMath::Vector3 &result) {
     result.x = -result.x;
@@ -86,6 +92,33 @@ inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy
     dest[0][1] = 0.0f;
 }
 
+// Decl: GC MW: UVectorMathGC.hpp: 143
+inline void VU0_v4Init(UMath::Vector4 &a) {
+    a.x = a.y = a.z = 0.0f;
+    a.w = 1.0f;
+}
+
+// Decl: GC MW: UVectorMathGC.hpp: 150
+inline void VU0_MATRIX4Init(UMath::Matrix4 &dest) {
+    dest[0][0] =
+    dest[1][1] =
+    dest[2][2] =
+    dest[3][3] = 1.0f;
+
+    dest[0][1] =
+    dest[0][2] =
+    dest[0][3] =
+    dest[1][0] =
+    dest[1][2] =
+    dest[1][3] =
+    dest[2][0] =
+    dest[2][1] =
+    dest[2][3] =
+    dest[3][0] =
+    dest[3][1] =
+    dest[3][2] = 0.0f;
+}
+
 // Decl: Carbon: UVectorMathCPU.hpp: 607, GC MW: UVectorMathGC.hpp: 193, PS2 MW: UVectorMath.hpp: 2234
 inline void VU0_v4Copy(const UMath::Vector4 &a, UMath::Vector4 &b) {
     b = a;
@@ -140,6 +173,11 @@ inline float VU0_v3length(const struct UMath::Vector3 &a) {
 
 // Decl: Carbon: UVectorMathCPU.hpp: 359, GC MW: UVectorMathGC.hpp: 279, PS2 MW: UVectorMath.hpp: 1571
 inline float VU0_v3lengthxz(const UMath::Vector3 &a) {
+    return VU0_sqrt(a.x * a.x + a.z * a.z);
+}
+
+// Decl: GC MW: UVectorMathGC.hpp: 289
+inline float VU0_v4lengthxz(const UMath::Vector4 &a) {
     return VU0_sqrt(a.x * a.x + a.z * a.z);
 }
 

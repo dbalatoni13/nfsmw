@@ -28,6 +28,8 @@ struct RegisterEvent {
 class Event {
   public:
     struct StaticData {
+        USE_FASTALLOC(StaticData)
+
         unsigned int fEventID;
     };
 
@@ -36,7 +38,7 @@ class Event {
 
     virtual ~Event() {}
 
-    virtual const char *GetEventName();
+    virtual const char *GetEventName() const = 0;
 
     Event(std::size_t size) : fEventSize(size) {}
 
@@ -46,7 +48,7 @@ class Event {
 // total size: 0x1
 class EventManager {
   public:
-    static void BindMessagesToLua(struct HandlerVector &handlers);
+    static void BindMessagesToLua(UTL::Std::vector<Hermes::HHANDLER, Hermes::_type_ID_HermesHandlerVector> &handlers);
 
     static void Init();
 
@@ -66,9 +68,8 @@ class EventManager {
 
     static bool EventsQueued();
 
-    static const char *EmbedField(Event *event, const char *ptr);
-
-    static Hermes::Message *EmbedField(Event *event, Hermes::Message *ptr);
+    template<typename T>
+    static T *EmbedField(Event *event, T *ptr);
 
     // static Event *GetCurrentEvent() {}
 

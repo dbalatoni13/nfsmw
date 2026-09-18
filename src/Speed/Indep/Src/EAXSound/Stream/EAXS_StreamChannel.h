@@ -49,7 +49,9 @@ class EAXS_StreamChannel : public SndStrmWrapper {
 
     int InitChannel(const int maxChunks, const int maxRequests, const int buffersize, enum eSTRMTYPE strmtype); // Decl: 54
 
-    virtual int InitChannel(const int maxChunks, const int maxRequests, char *pmem, const int buffersize, enum eSTRMTYPE strmtype) {} // Decl: 54
+    virtual int InitChannel(const int maxChunks, const int maxRequests, char *pmem, const int buffersize, enum eSTRMTYPE strmtype) {
+        return 0;
+    } // Decl: 54
 
     int PlayStrmReq(const char *filename, long int offset);
 

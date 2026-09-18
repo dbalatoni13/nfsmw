@@ -116,8 +116,24 @@ class bList {
         return this->HeadNode.GetPrev();
     }
 
-    bNode *GetNextCircular(bNode *node); // TODO
-    bNode *GetPrevCircular(bNode *node); // TODO
+    // Cuerpos reconstruidos del volcado DWARF: el original los expande inline
+    // y el arbol de expansiones da el orden exacto de llamadas
+    // (GetNext -> EndOfList -> GetHead, y GetPrev -> EndOfList -> GetTail).
+    bNode *GetNextCircular(bNode *node) {
+        node = node->GetNext();
+        if (node == this->EndOfList()) {
+            node = this->GetHead();
+        }
+        return node;
+    }
+
+    bNode *GetPrevCircular(bNode *node) {
+        node = node->GetPrev();
+        if (node == this->EndOfList()) {
+            node = this->GetTail();
+        }
+        return node;
+    }
 
     bNode *AddHead(bNode *node) {
         return node->AddAfter(&this->HeadNode);
@@ -145,7 +161,9 @@ class bList {
     bNode *RemoveTail() {
         return this->GetTail()->Remove();
     }
-    int GetNodeNumber(bNode *node); // TODO
+    int GetNodeNumber(bNode *node) {
+        return this->TraversebList(node);
+    }
 
     int IsInList(bNode *node) {
         return this->TraversebList(node);
@@ -340,6 +358,10 @@ template <typename T> T *bTList<T>::AddSorted(SortFuncT check_flip, T *node) {
 // total size: 0xC
 class bPNode : public bTNode<bPNode> {
   public:
+    void *GetObj() {
+        return Object;
+    }
+
     static void *Malloc();
     static void Free(void *ptr);
 

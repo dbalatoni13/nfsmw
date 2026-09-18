@@ -20,6 +20,10 @@ class MForcePursuitStart : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MForcePursuitStart &message);
+
     MForcePursuitStart(int _MinHeatLevel) : Hermes::Message(_GetKind(), _GetSize(), 0), fMinHeatLevel(_MinHeatLevel) {}
 
     ~MForcePursuitStart() {}
@@ -35,5 +39,25 @@ class MForcePursuitStart : public Hermes::Message {
   private:
     int fMinHeatLevel; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MForcePursuitStart::HandleMessage_LuaBinding(const MForcePursuitStart &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MForcePursuitStart::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MForcePursuitStart *message = static_cast<const MForcePursuitStart *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "MinHeatLevel");
+    lua_pushnumber(luaState, message->fMinHeatLevel);
+    lua_settable(luaState, -3);
+}
 
 #endif

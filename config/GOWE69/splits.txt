@@ -17,11 +17,10 @@ Speed/Indep/SourceLists/zAI.cpp:
 	.rodata     start:0x803C8C60 end:0x803CF348
 	.data       start:0x80415180 end:0x804154C0
 	.bss        start:0x80456560 end:0x80457588
-	.sdata      start:0x804FEDC0 end:0x804FEDD0
 
 Speed/Indep/SourceLists/zAnim.cpp:
 	.text       start:0x80045E3C end:0x80050370
-	.ctors      start:0x803C8B68 end:0x803C8B6C
+	.ctors      start:0x803C8B68 end:0x803C8B6C align:1
 	.rodata     start:0x803CF348 end:0x803D0980
 	.data       start:0x804154C0 end:0x804158D8
 	.bss        start:0x80457588 end:0x80457778
@@ -35,10 +34,10 @@ Speed/Indep/SourceLists/zAttribSys.cpp:
 
 Speed/Indep/SourceLists/zBWare.cpp:
 	.text       start:0x8005C1F8 end:0x80064DB4
-	.ctors      start:0x803C8B70 end:0x803C8B74
+	.ctors      start:0x803C8B70 end:0x803C8B74 align:1
 	.rodata     start:0x803D0E18 end:0x803D1928
 	.data       start:0x80415938 end:0x80416488
-	.bss        start:0x804577A0 end:0x8045A974
+	.bss        start:0x804577A0 end:0x8045A974 align:4
 
 Speed/Indep/SourceLists/zCamera.cpp:
 	.text       start:0x80064DB4 end:0x80083604
@@ -51,63 +50,63 @@ Speed/Indep/SourceLists/zDebug.cpp:
 	.text       start:0x80083604 end:0x80083680
 	.ctors      start:0x803C8B78 end:0x803C8B7C
 	.rodata     start:0x803D3C78 end:0x803D3DC8
-	.bss        start:0x8045B0F8 end:0x8045B108
+	.bss        start:0x8045B0F8 end:0x8045B100
 
 Speed/Indep/SourceLists/zDynamics.cpp:
 	.text       start:0x80083680 end:0x8008A7B0
-	.ctors      start:0x803C8B7C end:0x803C8B80
+	.ctors      start:0x803C8B7C end:0x803C8B80 align:1
 	.rodata     start:0x803D3DC8 end:0x803D3FE8
 	.data       start:0x804170C8 end:0x804170F4
-	.bss        start:0x8045B108 end:0x8045B110
+	.bss        start:0x8045B100 end:0x8045B110
 
 Speed/Indep/SourceLists/zEagl4Anim.cpp:
 	.text       start:0x8008A7B0 end:0x800A6128
 	.ctors      start:0x803C8B80 end:0x803C8B84
 	.rodata     start:0x803D3FE8 end:0x803D5E38
 	.data       start:0x804170F4 end:0x80417634
-	.bss        start:0x8045B110 end:0x8045B268
+	.bss        start:0x8045B110 end:0x8045B1E0
 
 Speed/Indep/SourceLists/zEAXSound.cpp:
 	.text       start:0x800A6128 end:0x800CAF5C
 	.ctors      start:0x803C8B84 end:0x803C8B88
 	.rodata     start:0x803D5E38 end:0x803D9050
-	.data       start:0x80417634 end:0x80417D88
-	.bss        start:0x8045B268 end:0x8045DE60
+	.data       start:0x80417634 end:0x80417DA8
+	.bss        start:0x8045B1E0 end:0x8045DDF8
 
 Speed/Indep/SourceLists/zEAXSound2.cpp:
 	.text       start:0x800CAF5C end:0x800F486C
 	.ctors      start:0x803C8B88 end:0x803C8B8C
-	.rodata     start:0x803D9050 end:0x803DD6D8
-	.data       start:0x80417D88 end:0x8041A5A4
-	.bss        start:0x8045DE60 end:0x8045ECB0
+	.rodata     start:0x803D9050 end:0x803DD658
+	.data       start:0x80417DA8 end:0x8041A5A4
+	.bss        start:0x8045DDF8 end:0x8045EC40
 
 Speed/Indep/SourceLists/zEcstasy.cpp:
 	.text       start:0x800F486C end:0x80118248
 	.ctors      start:0x803C8B8C end:0x803C8B90
-	.rodata     start:0x803DD6D8 end:0x803DF568
+	.rodata     start:0x803DD658 end:0x803DF568
 	.data       start:0x8041A5A4 end:0x8041B5CC
-	.bss        start:0x8045ECB0 end:0x804729E0
+	.bss        start:0x8045EC40 end:0x804729E0
 
 Speed/Indep/SourceLists/zFe.cpp:
 	.text       start:0x80118248 end:0x80142AC0
 	.ctors      start:0x803C8B90 end:0x803C8B94
 	.rodata     start:0x803DF568 end:0x803E4380
-	.data       start:0x8041B5CC end:0x8041BE08
+	.data       start:0x8041B5CC end:0x8041BC60
 	.bss        start:0x804729E0 end:0x80472FBC
 
 Speed/Indep/SourceLists/zFe2.cpp:
 	.text       start:0x80142AC0 end:0x8017FE2C
 	.ctors      start:0x803C8B94 end:0x803C8B98
 	.rodata     start:0x803E4380 end:0x803EA7E8
-	.data       start:0x8041BE08 end:0x8041CE90
+	.data       start:0x8041BC60 end:0x8041D040
 	.bss        start:0x80472FBC end:0x80473CC8
 
 Speed/Indep/SourceLists/zFEng.cpp:
 	.text       start:0x8017FE2C end:0x80191550
-	.ctors      start:0x803C8B98 end:0x803C8B9C
+	.ctors      start:0x803C8B98 end:0x803C8B9C align:1
 	.rodata     start:0x803EA7E8 end:0x803EB230
-	.data       start:0x8041CE90 end:0x8041D1C0
-	.bss        start:0x80473CC8 end:0x80473E14
+	.data       start:0x8041D040 end:0x8041D1C0
+	.bss        start:0x80473CC8 end:0x80473E14 align:4
 
 Speed/Indep/SourceLists/zFoundation.cpp:
 	.text       start:0x80191550 end:0x8019A1F0
@@ -119,35 +118,36 @@ Speed/Indep/SourceLists/zFoundation.cpp:
 Speed/Indep/SourceLists/zGameModes.cpp:
 	.text       start:0x8019A1F0 end:0x8019A26C
 	.ctors      start:0x803C8BA0 end:0x803C8BA4
+	.rodata     start:0x803EBB48 end:0x803EBE98
 	.bss        start:0x80473EF8 end:0x80473F00
 
 Speed/Indep/SourceLists/zGameplay.cpp:
 	.text       start:0x8019A26C end:0x801BCB0C
 	.ctors      start:0x803C8BA4 end:0x803C8BA8
-	.rodata     start:0x803EBB48 end:0x803ED338
-	.data       start:0x8041D2B8 end:0x8041D5A4
+	.rodata     start:0x803EBE98 end:0x803ED338
+	.data       start:0x8041D2B8 end:0x8041D580
 	.bss        start:0x80473F00 end:0x80473FE0
 
 Speed/Indep/SourceLists/zLua.cpp:
 	.text       start:0x801BCB0C end:0x801D3B44
 	.ctors      start:0x803C8BA8 end:0x803C8BAC
 	.rodata     start:0x803ED338 end:0x803EF580
-	.data       start:0x8041D5A4 end:0x8041D7EC
+	.data       start:0x8041D580 end:0x8041D7EC
 	.bss        start:0x80473FE0 end:0x80474024
 
 Speed/Indep/SourceLists/zMain.cpp:
 	.text       start:0x801D3B44 end:0x801FAB64
-	.ctors      start:0x803C8BAC end:0x803C8BB0
+	.ctors      start:0x803C8BAC end:0x803C8BB0 align:1
 	.rodata     start:0x803EF580 end:0x803F4878
 	.data       start:0x8041D7EC end:0x8041E508
-	.bss        start:0x80474024 end:0x8047F914
+	.bss        start:0x80474024 end:0x8047F8C4
 
 Speed/Indep/SourceLists/zMisc.cpp:
 	.text       start:0x801FAB64 end:0x8020DC1C
 	.ctors      start:0x803C8BB0 end:0x803C8BB4
 	.rodata     start:0x803F4878 end:0x803F6730
 	.data       start:0x8041E508 end:0x8041ED7C
-	.bss        start:0x8047F914 end:0x804801A4
+	.bss        start:0x8047F8C4 end:0x804801A4
 	.bss        start:0x804FE9CC end:0x804FEA4C align:4 common
 
 Speed/Indep/SourceLists/zMiscSmall.cpp:
@@ -193,7 +193,7 @@ Speed/Indep/SourceLists/zRender.cpp:
 
 Speed/Indep/SourceLists/zSim.cpp:
 	.text       start:0x802728EC end:0x8028A17C
-	.ctors      start:0x803C8BCC end:0x803C8BD0
+	.ctors      start:0x803C8BCC end:0x803C8BD0 align:1
 	.rodata     start:0x80403F48 end:0x80405E10
 	.data       start:0x80435814 end:0x80435970
 	.bss        start:0x80496A28 end:0x80498974
@@ -235,12 +235,409 @@ Speed/Indep/SourceLists/zOnline.cpp:
 Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.over       start:0x803A4294 end:0x803C6A3C
 	.over       start:0x803C6A40 end:0x803C8B58 rename:.rodata
-	.ctors      start:0x803C8BE4 end:0x803C8BE8
-	.data       start:0x804390E4 end:0x804394D0
-	.bss        start:0x804AAA90 end:0x804B4DE8
+	.ctors      start:0x803C8BE4 end:0x803C8BE8 align:1
+	.data       start:0x804390E4 end:0x80439490
+	.bss        start:0x804AAA90 end:0x804AC6C0
+
+LibSN/metrotrk.c:
+	.text       start:0x8030EA7C end:0x80311BE4
+	.bss        start:0x804AC6C0 end:0x804B4DE8
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecppc.cpp:
+	.text       start:0x80311BE4 end:0x80311C50
+
+ppc2D2.tmp:
+	.text       start:0x80311C50 end:0x80311CB4
+
+Runtime.PPCEABI.H/__va_arg.c:
+	.text       start:0x80311CB4 end:0x80311DA8
+
+LibSN/crt0.s:
+	.init       start:0x80003100 end:0x80003468
+	.data       start:0x80439490 end:0x804394D0
+
+FSasync.c:
+	.text       start:0x80311DA8 end:0x803125E0
+	.data       start:0x804397D0 end:0x804397E0
+
+LibSN/sndvd.c:
+	.text       start:0x803125E0 end:0x80312C10
+	.rodata     start:0x8040F1C0 end:0x8040F1D8
+	.data       start:0x804397E0 end:0x804397E8
+
+libc/ctype_.c:
+	.rodata     start:0x8040F1D8 end:0x8040F2DC
+
+libc/impure.c:
+	.text       start:0x80312C10 end:0x80312C18
+	.rodata     start:0x8040F2DC end:0x8040F2E0
+	.data       start:0x804397E8 end:0x80439AEC
+	.sdata      start:0x804FEDC0 end:0x804FEDC4
+
+libc/sn_buf.cpp:
+	.data       start:0x80439AEC end:0x80439B3C
+	.sdata      start:0x804FEDC4 end:0x804FEDC8
+
+libc/fclose.c:
+	.text       start:0x80312C18 end:0x80312CD0
+
+libc/fflush.c:
+	.text       start:0x80312CD0 end:0x80312DC4
+
+libc/fopen.c:
+	.text       start:0x80312DC4 end:0x80313158
+	.bss        start:0x804B4FE0 end:0x804B53AC
+
+libc/fprintf.c:
+	.text       start:0x80313158 end:0x803131EC
+
+libc/fseek.c:
+	.text       start:0x803131EC end:0x803135D0
+
+libc/fwalk.c:
+	.text       start:0x803135D0 end:0x80313650
+
+libc/makebuf.c:
+	.text       start:0x80313650 end:0x80313728
+
+libc/printf.c:
+	.text       start:0x80313728 end:0x803137D4
+
+libc/wsetup.c:
+	.text       start:0x803137D4 end:0x80313968
+
+libc/sprintf.c:
+	.text       start:0x80313968 end:0x80313A40
+
+libc/stdio.c:
+	.text       start:0x80313A40 end:0x80313BA0
+
+libc/vsprintf.c:
+	.text       start:0x80313BA0 end:0x80313C70
+
+atexit.c:
+	.text       start:0x80313C70 end:0x80313D08
+
+qsort.c:
+	.text       start:0x80313D08 end:0x80314694
+
+libc/rand.c:
+	.text       start:0x80314694 end:0x803146B8
+
+sn_malloc.c:
+	.text       start:0x803146B8 end:0x80314730
+	.rodata     start:0x8040F350 end:0x8040F54C
+
+libc/memcmp.c:
+	.text       start:0x80314730 end:0x803147C0
+
+libc/memcpy.c:
+	.text       start:0x803147C0 end:0x80314864
+
+libc/memmove.c:
+	.text       start:0x80314864 end:0x80314950
+
+libc/memset.c:
+	.text       start:0x80314950 end:0x803149E4
+
+libc/strcasecmp.c:
+	.text       start:0x803149E4 end:0x80314A60
+
+libc/strcat.c:
+	.text       start:0x80314A60 end:0x80314AF0
+
+libc/strchr.c:
+	.text       start:0x80314AF0 end:0x80314B8C
+
+libc/strcmp.c:
+	.text       start:0x80314B8C end:0x80314C34
+
+libc/strcoll.c:
+	.text       start:0x80314C34 end:0x80314C54
+
+libc/strcpy.c:
+	.text       start:0x80314C54 end:0x80314CD8
+
+libc/strcspn.c:
+	.text       start:0x80314CD8 end:0x80314D48
+
+libc/strlen.c:
+	.text       start:0x80314D48 end:0x80314DB4
+
+libc/strncasecmp.c:
+	.text       start:0x80314DB4 end:0x80314E60
+
+libc/strncat.c:
+	.text       start:0x80314E60 end:0x80314F0C
+
+libc/strncmp.c:
+	.text       start:0x80314F0C end:0x80314FEC
+
+libc/strncpy.c:
+	.text       start:0x80314FEC end:0x803150B8
+
+libc/strstr.c:
+	.text       start:0x803150B8 end:0x80315120
+
+libc/setjmp.c:
+	.text       start:0x80315120 end:0x803152A0
+
+libc/itoa.c:
+	.text       start:0x803152A0 end:0x803158AC
+	.rodata     start:0x8040FB78 end:0x8040FBB8
+	.data       start:0x80439B3C end:0x80439B61
+	.bss        start:0x804B53AC end:0x804B5450
+
+libc/vfprintf.c:
+	.text       start:0x803158AC end:0x803173D0
+	.rodata     start:0x8040FBB8 end:0x8040FC48
+	.bss        start:0x804B5450 end:0x804B54D0
+	.sdata      start:0x804FEDD0 end:0x804FEDD8
+
+libc/vfprintf_1.c:
+	.text       start:0x803173D0 end:0x80318B24
+	.rodata     start:0x8040FC48 end:0x8040FCB2
+	.bss        start:0x804B54D0 end:0x804B5550
+	.sdata      start:0x804FEDD8 end:0x804FEDE0
+
+libc/strtod2.c:
+	.text       start:0x80318B24 end:0x80318E50
+	.rodata     start:0x8040FCB8 end:0x8040FCD8
+	.data       start:0x80439B68 end:0x80439BB0
+	.sdata      start:0x804FEDE0 end:0x804FEDE4
+
+libc/_tolower.c:
+	.text       start:0x80318E50 end:0x80318E6C
+
+libc/isdigit.c:
+	.text       start:0x80318E6C end:0x80318E80
+
+libc/isspace.c:
+	.text       start:0x80318E80 end:0x80318E94
+
+libc/locale.c:
+	.text       start:0x80318E94 end:0x80318EC4
+	.rodata     start:0x8040FCD8 end:0x8040FD2C
+	.sdata      start:0x804FEDE4 end:0x804FEDE8
+
+libc/math_support.c:
+	.text       start:0x80318EC4 end:0x803197D8
+	.rodata     start:0x8040FD30 end:0x8040FE10
+
+libc/closer.c:
+	.text       start:0x803197D8 end:0x80319828
+
+libc/fstatr.c:
+	.text       start:0x80319828 end:0x80319880
+
+libc/lseekr.c:
+	.text       start:0x80319880 end:0x803198D8
+
+libc/openr.c:
+	.text       start:0x803198D8 end:0x80319934
+
+libc/readr.c:
+	.text       start:0x80319934 end:0x8031998C
+
+libc/writer.c:
+	.text       start:0x8031998C end:0x803199E4
+
+libc/flags.c:
+	.text       start:0x803199E4 end:0x80319A80
+
+libc/mbtowc_r.c:
+	.text       start:0x80319A80 end:0x80319D9C
+	.rodata     start:0x8040FE10 end:0x8040FE28
+	.data       start:0x80439BB0 end:0x80439F10
+
+libc/memchr.c:
+	.text       start:0x80319D9C end:0x80319E5C
+
+crt2D1.tmp:
+	.text       start:0x80319E5C end:0x80319F24
+	.bss        start:0x804B5550 end:0x804B5554
+
+libc/libgcc2.c:
+	.text       start:0x80319F24 end:0x80319F64
+
+libc/libgcc2_1.c:
+	.text       start:0x80319F64 end:0x80319FA4
+
+libc/libgcc2_2.c:
+	.text       start:0x80319FA4 end:0x80319FE0
+
+libc/libgcc2_3.c:
+	.text       start:0x80319FE0 end:0x8031A55C
+	.sdata2     start:0x804FFF40 end:0x80500040
+
+libc/libgcc2_4.c:
+	.text       start:0x8031A55C end:0x8031A60C
+	.rodata     start:0x8040FE28 end:0x8040FE40
+
+libc/libgcc2_5.c:
+	.text       start:0x8031A60C end:0x8031A64C
+
+libc/libgcc2_6.c:
+	.text       start:0x8031A64C end:0x8031AB80
+	.sdata2     start:0x80500040 end:0x80500140
+
+libc/libgcc2_7.c:
+	.text       start:0x8031AB80 end:0x8031ABA0
+
+libc/libgcc2_8.c:
+	.text       start:0x8031ABA0 end:0x8031B084
+	.sdata2     start:0x80500140 end:0x80500240
+
+libc/libgcc2_9.c:
+	.text       start:0x8031B084 end:0x8031B51C
+	.sdata2     start:0x80500240 end:0x80500340
+
+libc/libgcc2_10.c:
+	.text       start:0x8031B51C end:0x8031B558
+	.rodata     start:0x8040FE40 end:0x8040FECC
+	.data       start:0x80439F10 end:0x80439F14
+
+libc/e_pow.c:
+	.text       start:0x8031B558 end:0x8031BD28
+	.sdata      start:0x804FEEF0 end:0x804FF000
+	.sdata2     start:0x80500340 end:0x80500370
+
+libc/e_sqrt.c:
+	.text       start:0x8031BD28 end:0x8031BF3C
+
+libc/s_fabs.c:
+	.text       start:0x8031BF3C end:0x8031BF78
+
+libc/e_acos.c:
+	.text       start:0x8031BF78 end:0x8031C1C4
+	.sdata      start:0x804FF000 end:0x804FF048
+
+libc/sf_asin.c:
+	.text       start:0x8031C1C4 end:0x8031C3F0
+	.sdata      start:0x804FF048 end:0x804FF088
+
+libc/ef_atan2.c:
+	.text       start:0x8031C3F0 end:0x8031C610
+	.sdata      start:0x804FF088 end:0x804FF0B8
+
+libc/sf_cosh.c:
+	.text       start:0x8031C610 end:0x8031C740
+	.sdata      start:0x804FF0B8 end:0x804FF0C4
+
+libc/sf_exp.c:
+	.text       start:0x8031C740 end:0x8031C96C
+	.sdata      start:0x804FF0C8 end:0x804FF110
+	.sdata2     start:0x80500370 end:0x80500388
+
+libc/sf_fmod.c:
+	.text       start:0x8031C96C end:0x8031CB34
+	.sdata2     start:0x80500388 end:0x80500390
+
+libc/sf_log.c:
+	.text       start:0x8031CB34 end:0x8031CDB4
+	.sdata      start:0x804FF110 end:0x804FF158
+
+libc/sf_log10.c:
+	.text       start:0x8031CDB4 end:0x8031CEC0
+	.sdata      start:0x804FF158 end:0x804FF180
+
+libc/ef_pow.c:
+	.text       start:0x8031CEC0 end:0x8031D5B4
+	.sdata      start:0x804FF180 end:0x804FF210
+	.sdata2     start:0x80500390 end:0x805003A8
+
+libc/sf_sinh.c:
+	.text       start:0x8031D5B4 end:0x8031D704
+	.sdata      start:0x804FF210 end:0x804FF21C
+
+libc/ef_sqrt.c:
+	.text       start:0x8031D704 end:0x8031D7FC
+
+libc/sf_atan.c:
+	.text       start:0x8031D7FC end:0x8031DA0C
+	.sdata      start:0x804FF21C end:0x804FF230
+	.sdata2     start:0x805003A8 end:0x805003F4
+
+libc/sf_ceil.c:
+	.text       start:0x8031DA0C end:0x8031DAD0
+	.sdata      start:0x804FF230 end:0x804FF238
+
+libc/sf_cos.c:
+	.text       start:0x8031DAD0 end:0x8031DBAC
+	.sdata      start:0x804FF238 end:0x804FF23C
+
+libc/sf_fabs.c:
+	.text       start:0x8031DBAC end:0x8031DBD0
+
+libc/sf_floor.c:
+	.text       start:0x8031DBD0 end:0x8031DC98
+	.sdata      start:0x804FF23C end:0x804FF244
+
+libc/sf_isnan.c:
+	.text       start:0x8031DC98 end:0x8031DCBC
+
+libc/sf_sin.c:
+	.text       start:0x8031DCBC end:0x8031DD98
+	.sdata      start:0x804FF244 end:0x804FF248
+
+libc/sf_tan.c:
+	.text       start:0x8031DD98 end:0x8031DE18
+	.sdata      start:0x804FF248 end:0x804FF24C
+
+libc/sf_tanh.c:
+	.text       start:0x8031DE18 end:0x8031DF28
+	.sdata      start:0x804FF24C end:0x804FF258
+
+libc/s_scalbn.c:
+	.text       start:0x8031DF28 end:0x8031E07C
+	.sdata      start:0x804FF258 end:0x804FF278
+
+libc/sf_scalbn.c:
+	.text       start:0x8031E07C end:0x8031E198
+	.sdata      start:0x804FF278 end:0x804FF288
+
+libc/sf_expm1.c:
+	.text       start:0x8031E198 end:0x8031E4BC
+	.sdata      start:0x804FF288 end:0x804FF2F0
+
+libc/kf_cos.c:
+	.text       start:0x8031E4BC end:0x8031E5A8
+	.sdata      start:0x804FF2F0 end:0x804FF314
+
+libc/kf_sin.c:
+	.text       start:0x8031E5A8 end:0x8031E654
+	.sdata      start:0x804FF314 end:0x804FF330
+
+libc/kf_tan.c:
+	.text       start:0x8031E654 end:0x8031E868
+	.sdata      start:0x804FF330 end:0x804FF350
+	.sdata2     start:0x805003F8 end:0x8050042C
+
+libc/ef_rem_pio2.c:
+	.text       start:0x8031E868 end:0x8031EBB8
+	.sdata      start:0x804FF350 end:0x804FF388
+	.sdata2     start:0x8050042C end:0x805007C4
+
+libc/s_copysign.c:
+	.text       start:0x8031EBB8 end:0x8031EC08
+
+libc/sf_copysign.c:
+	.text       start:0x8031EC08 end:0x8031EC3C
+
+libc/kf_rem_pio2.c:
+	.text       start:0x8031EC3C end:0x8031F4C0
+	.sdata      start:0x804FF388 end:0x804FF3B0
+	.sdata2     start:0x805007C4 end:0x805007FC
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
 	.text       start:0x8031F4C0 end:0x8031F5D8
+
+LibSN/steering.c:
+	.text       start:0x8031F5D8 end:0x80321810
+	.data       start:0x80439F18 end:0x80439F40
+	.bss        start:0x804B5558 end:0x804BA024
+	.sbss       start:0x804FF8C0 end:0x804FF8D4
+	.sdata2     start:0x80500800 end:0x80500828
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c:
 	.text       start:0x80321810 end:0x803222DC
@@ -343,8 +740,8 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSTime.c:
 	.text       start:0x80329328 end:0x80329404
 	.data       start:0x8043C280 end:0x8043C2E0
 
-LibSN/crt0.s:
-	.init       start:0x80003100 end:0x80003468
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSUtf.c:
+	.data       start:0x8043C2E0 end:0x8044D520
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.c:
 	.init       start:0x80003468 end:0x8000348C
@@ -596,27 +993,53 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c:
 	.text       start:0x803457E4 end:0x80345B50
 	.sbss       start:0x804FFC40 end:0x804FFC48
 
+Speed/GameCube/bWare/GameCube/OdemuExi2/src/DebuggerDriver.c:
+	.text       start:0x80345B50 end:0x803465D0
+	.sdata      start:0x804FF588 end:0x804FF590
+	.sbss       start:0x804FFC48 end:0x804FFC60
+
+Speed/GameCube/bWare/GameCube/OdemuExi2/src/AmcExi2Comm.c:
+	.text       start:0x803465D0 end:0x80346C74
+	.data       start:0x8044F610 end:0x8044F629
+	.sdata      start:0x804FF590 end:0x804FF598
+	.sbss       start:0x804FFC60 end:0x804FFC6C
+
+Speed/GameCube/bWare/GameCube/OdemuExi2/src/AmcExi.c:
+	.text       start:0x80346C74 end:0x803472B4
+	.bss        start:0x804BC0C8 end:0x804BC0E0
+	.sdata      start:0x804FF598 end:0x804FF5A0
+
 egami/rcmp/dev/source/av/cmn/avplayer.cpp:
 	.text       start:0x803472B4 end:0x80348334
+	.rodata     start:0x8040FEE0 end:0x8040FF48
 
 egami/rcmp/dev/source/av/cmn/avsubtitle.cpp:
 	.text       start:0x80348334 end:0x80348334
 
 egami/rcmp/dev/source/av/cmn/audioplayer.cpp:
 	.text       start:0x80348334 end:0x80348640
+	.rodata     start:0x80410078 end:0x80410080
 
 egami/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp:
 	.text       start:0x80348640 end:0x80348EE4
+	.rodata     start:0x80410088 end:0x804100F0
 
 egami/rcmp/dev/source/vd/gc/bigswizzler.cpp:
 	.text       start:0x80348EE4 end:0x8034939C
+	.rodata     start:0x804100F0 end:0x80410138
 
 egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp:
-	.text       start:0x8034939C end:0x803497E4
+	.text       start:0x8034939C end:0x8034983C
+	.ctors      start:0x803C8BE8 end:0x803C8BEC
+	.dtors      start:0x803C8C44 end:0x803C8C48
+	.rodata     start:0x80410138 end:0x80410188
 	.bss        start:0x804BC0E0 end:0x804BC0F0
 
 egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp:
-	.text       start:0x8034983C end:0x8034A2F0
+	.text       start:0x8034983C end:0x8034A348
+	.ctors      start:0x803C8BEC end:0x803C8BF0
+	.dtors      start:0x803C8C48 end:0x803C8C4C
+	.rodata     start:0x80410188 end:0x804102E8
 	.bss        start:0x804BC0F0 end:0x804BC104
 	.sbss       start:0x804FFC6C end:0x804FFC74
 
@@ -625,6 +1048,7 @@ egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp:
 
 egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp:
 	.text       start:0x8034A390 end:0x8034ADB0
+	.rodata     start:0x80410308 end:0x80410440
 
 egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp:
 	.text       start:0x8034ADB0 end:0x8034ADE4
@@ -638,7 +1062,7 @@ egami/rcmp/dev/source/decoder/cmn/maddec.cpp:
 
 egami/rcmp/dev/source/decoder/cmn/maddeca.cpp:
 	.text       start:0x8034B900 end:0x8034BAC4
-	.rodata     start:0x80411358 end:0x804114A8
+	.rodata     start:0x80411358 end:0x80411458
 
 egami/rcmp/dev/source/decoder/cmn/madidct.cpp:
 	.text       start:0x8034BAC4 end:0x8034C0A4
@@ -657,12 +1081,13 @@ Packages/vp6/1.0.6/source/decode/cmn/pb_globals.c:
 
 Packages/vp6/1.0.6/source/decode/cmn/postproc.c:
 	.text       start:0x8034C4E4 end:0x8034D1A8
+	.rodata     start:0x80411458 end:0x804114A8
 	.bss        start:0x804BDE04 end:0x804BE104
 	.sbss       start:0x804FFC8C end:0x804FFCF8
 
 Packages/vp6/1.0.6/source/decode/cmn/quantize.c:
 	.text       start:0x8034D1A8 end:0x8034D528
-	.rodata     start:0x804114A8 end:0x804119D0
+	.rodata     start:0x804114A8 end:0x804119A8
 	.sbss       start:0x804FFCF8 end:0x804FFCFC
 
 Packages/vp6/1.0.6/source/decode/cmn/simpledeblocker.c:
@@ -723,7 +1148,7 @@ Packages/vp6/1.0.6/source/decode/cmn/DeInterlace.c:
 Packages/vp6/1.0.6/source/decode/cmn/dering.c:
 	.text       start:0x803537FC end:0x80354FF0
 	.data       start:0x8044FA94 end:0x8044FD94
-	.bss        start:0x804BE46C end:0x804BE5FC
+	.bss        start:0x804BE46C end:0x804BE56C
 
 Packages/vp6/1.0.6/source/decode/cmn/DFrameR.c:
 	.text       start:0x80354FF0 end:0x803556B0
@@ -758,6 +1183,7 @@ Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
 	.text       start:0x80357928 end:0x8035A830
 	.rodata     start:0x804124FC end:0x80412778
 	.data       start:0x80450094 end:0x80450174
+	.bss        start:0x804BE56C end:0x804BE5FC
 	.sdata      start:0x804FF5B0 end:0x804FF5B8
 
 Packages/vp6/1.0.6/source/decode/cmn/recon.c:
@@ -872,6 +1298,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c:
 	.text       start:0x803608A0 end:0x80361480
+	.rodata     start:0x80412870 end:0x80412880
 	.bss        start:0x804BE8F4 end:0x804BEC78
 
 Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c:
@@ -882,7 +1309,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/spoutlat.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c:
 	.text       start:0x80361510 end:0x8036164C
-	.data       start:0x804502DC end:0x804502F8
+	.data       start:0x804502DC end:0x804502F4
 	.bss        start:0x804BEC78 end:0x804BEC90
 
 Speed/Indep/Libs/snd/9/source/library/cmn/srender.c:
@@ -892,8 +1319,10 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sresopat.c:
 	.text       start:0x80361708 end:0x8036178C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sserver.c:
-	.text       start:0x8036178C end:0x80361B40
-	.data       start:0x804502F8 end:0x80450300
+	.text       start:0x8036178C end:0x80361B6C
+	.ctors      start:0x803C8BF4 end:0x803C8BF8
+	.rodata     start:0x80412880 end:0x80412884
+	.data       start:0x804502F4 end:0x80450300
 	.bss        start:0x804BEC90 end:0x804BEC9C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/ssine.c:
@@ -902,20 +1331,24 @@ Speed/Indep/Libs/snd/9/source/library/cmn/ssine.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sst.c:
 	.text       start:0x80361BEC end:0x80362E80
+	.rodata     start:0x80412888 end:0x804128B0
 	.data       start:0x80450504 end:0x80450528
 	.bss        start:0x804BEC9C end:0x804BED1C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sst3dpos.c:
 	.text       start:0x80362E80 end:0x80363134
+	.rodata     start:0x804128B0 end:0x804128C0
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstautov.c:
 	.text       start:0x80363134 end:0x8036340C
+	.rodata     start:0x804128C0 end:0x804128D8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstcrtap.c:
 	.text       start:0x8036340C end:0x8036344C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstfxlev.c:
 	.text       start:0x8036344C end:0x80363548
+	.rodata     start:0x804128D8 end:0x804128E8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstgetrp.c:
 	.text       start:0x80363548 end:0x803635C0
@@ -946,6 +1379,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sstrmdry.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstrstat.c:
 	.text       start:0x80363858 end:0x80363A6C
+	.rodata     start:0x804128E8 end:0x80412908
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstsetgl.c:
 	.text       start:0x80363A6C end:0x80363AB8
@@ -958,17 +1392,19 @@ Speed/Indep/Libs/snd/9/source/library/cmn/ssttmul.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sstvol.c:
 	.text       start:0x80363C04 end:0x80363E50
-	.rodata     start:0x80412908 end:0x80412AE8
+	.rodata     start:0x80412908 end:0x80412930
 
 Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp:
 	.text       start:0x80363E50 end:0x80364790
+	.rodata     start:0x804129B4 end:0x804129B8
 	.data       start:0x80450528 end:0x80450530
 	.bss        start:0x804BED1C end:0x804BED68
 
 Speed/Indep/Libs/snd/9/source/library/cmn/ssysinit.c:
 	.text       start:0x80364790 end:0x80364E14
-	.data       start:0x80450530 end:0x80450544
-	.bss        start:0x804BED68 end:0x804BED88
+	.rodata     start:0x804129D0 end:0x804129DC
+	.data       start:0x80450530 end:0x80450540
+	.bss        start:0x804BED68 end:0x804BED84
 
 Speed/Indep/Libs/snd/9/source/library/cmn/ssysserv.c:
 	.text       start:0x80364E14 end:0x80364F54
@@ -978,46 +1414,55 @@ Speed/Indep/Libs/snd/9/source/library/cmn/ssysveccsismutex.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c:
 	.text       start:0x80364FD0 end:0x803658F4
+	.rodata     start:0x804129E0 end:0x804129F0
+	.data       start:0x80450540 end:0x80450544
 
 Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c:
 	.text       start:0x803658F4 end:0x8036598C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c:
 	.text       start:0x8036598C end:0x80366030
-	.data       start:0x80450544 end:0x80450550
+	.data       start:0x80450544 end:0x8045054C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/svecreal.cpp:
 	.text       start:0x80366030 end:0x803660C8
+	.data       start:0x8045054C end:0x80450550
 
 Speed/Indep/Libs/snd/9/source/library/cmn/svol.c:
 	.text       start:0x803660C8 end:0x80366270
+	.rodata     start:0x804129F0 end:0x80412A00
 
 Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/lbmpeg.cpp:
-	.text       start:0x80366270 end:0x80366298
+	.text       start:0x80366270 end:0x803662C4
+	.ctors      start:0x803C8BF8 end:0x803C8BFC
 	.data       start:0x80450550 end:0x80450558
+	.bss        start:0x804BED84 end:0x804BED88
 
 Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpeghufftables.cpp:
 	.text       start:0x803662C4 end:0x803662C4
 
 Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpegl3base.cpp:
 	.text       start:0x803662C4 end:0x803662C4
-	.rodata     start:0x80412AE8 end:0x80412CC8
 
 Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c:
 	.text       start:0x803662C4 end:0x8036641C
+	.rodata     start:0x80412AE8 end:0x80412AEC
 
 Speed/Indep/Libs/snd/9/source/library/gc/sdspmix.c:
 	.text       start:0x8036641C end:0x80366C64
+	.rodata     start:0x80412AEC end:0x80412AF0
 	.data       start:0x80450558 end:0x80450D58
-	.bss        start:0x804BED88 end:0x804C03C0
+	.bss        start:0x804BED88 end:0x804C03A0
 
 Speed/Indep/Libs/snd/9/source/library/gc/snddrv.c:
 	.text       start:0x80366C64 end:0x80369AF4
+	.rodata     start:0x80412AF0 end:0x80412B78
 	.data       start:0x80450D58 end:0x80450D68
-	.bss        start:0x804C03C0 end:0x804CC480
+	.bss        start:0x804C03A0 end:0x804CC480 align:32
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c:
 	.text       start:0x80369AF4 end:0x8036A948
+	.rodata     start:0x80412B78 end:0x80412B7C
 	.data       start:0x80450D68 end:0x804513A4
 	.bss        start:0x804CC480 end:0x804CC494
 
@@ -1026,6 +1471,7 @@ Speed/Indep/Libs/snd/9/source/library/mix/slinkmix.c:
 
 Speed/Indep/Libs/snd/9/source/library/mix/smixer.c:
 	.text       start:0x8036A9CC end:0x8036BB84
+	.rodata     start:0x80412B7C end:0x80412C0C
 	.bss        start:0x804CC494 end:0x804CC680
 
 Speed/Indep/Libs/snd/9/source/library/mix/smixfilt.c:
@@ -1039,6 +1485,7 @@ Speed/Indep/Libs/snd/9/source/library/mix/smixhip.c:
 
 Speed/Indep/Libs/snd/9/source/library/mix/smixlowp.c:
 	.text       start:0x8036BD24 end:0x8036BE70
+	.rodata     start:0x80412C10 end:0x80412C28
 
 Speed/Indep/Libs/snd/9/source/library/mix/smixptch.c:
 	.text       start:0x8036BE70 end:0x8036BF2C
@@ -1052,9 +1499,11 @@ Speed/Indep/Libs/snd/9/source/library/mix/smixvec.c:
 
 Speed/Indep/Libs/snd/9/source/library/mix/stretch.c:
 	.text       start:0x8036BF68 end:0x8036C8B4
+	.rodata     start:0x80412C28 end:0x80412C68
 
 Speed/Indep/Libs/snd/9/source/library/mix/sx87d16.c:
 	.text       start:0x8036C8B4 end:0x8036C90C
+	.rodata     start:0x80412C68 end:0x80412C70
 
 Speed/Indep/Libs/snd/9/source/library/cmn/author.cpp:
 	.text       start:0x8036C90C end:0x8036C90C
@@ -1062,6 +1511,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/author.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c:
 	.text       start:0x8036C90C end:0x8036D010
+	.rodata     start:0x80412C70 end:0x80412CC8
 	.bss        start:0x804CC69C end:0x804CC6B8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c:
@@ -1089,6 +1539,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sgettag.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/slib.c:
 	.text       start:0x8036D3D4 end:0x8036D53C
+	.rodata     start:0x80412DF8 end:0x80412E18
 
 Speed/Indep/Libs/snd/9/source/library/cmn/slinklst.c:
 	.text       start:0x8036D53C end:0x8036D668
@@ -1098,9 +1549,11 @@ Speed/Indep/Libs/snd/9/source/library/cmn/smemhigh.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_cos.c:
 	.text       start:0x8036D688 end:0x8036D720
+	.rodata     start:0x80412E18 end:0x80412E38
 
 Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_sin.c:
 	.text       start:0x8036D720 end:0x8036D7B4
+	.rodata     start:0x80412E38 end:0x80412E54
 
 Speed/Indep/Libs/snd/9/source/library/cmn/soutputmap.cpp:
 	.text       start:0x8036D7B4 end:0x8036D7B4
@@ -1141,42 +1594,52 @@ Speed/Indep/Libs/snd/9/source/library/gc/saramman.c:
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfamplf.c:
 	.text       start:0x8036E48C end:0x8036E5A4
+	.rodata     start:0x80412F20 end:0x80412F38
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfbpffir8.c:
 	.text       start:0x8036E5A4 end:0x8036E730
+	.rodata     start:0x80412F38 end:0x80412F40
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfecho.c:
 	.text       start:0x8036E730 end:0x8036EA40
+	.rodata     start:0x80412F40 end:0x80412F58
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfft24.c:
 	.text       start:0x8036EA40 end:0x8036EAB8
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfhpffir8.c:
 	.text       start:0x8036EAB8 end:0x8036EC10
+	.rodata     start:0x80412F58 end:0x80412F60
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfilter.c:
 	.text       start:0x8036EC10 end:0x8036EDBC
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfir.c:
 	.text       start:0x8036EDBC end:0x8036F164
+	.rodata     start:0x80412F60 end:0x80412F90
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfir8.c:
 	.text       start:0x8036F164 end:0x8036F250
+	.rodata     start:0x80412F90 end:0x80412F94
 
 Speed/Indep/Libs/snd/9/source/library/mix/sflpf.c:
 	.text       start:0x8036F250 end:0x8036F408
+	.rodata     start:0x80412F98 end:0x80412FB0
 
 Speed/Indep/Libs/snd/9/source/library/mix/sflpffir8.c:
 	.text       start:0x8036F408 end:0x8036F560
+	.rodata     start:0x80412FB0 end:0x80412FB8
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfmixer.c:
 	.text       start:0x8036F560 end:0x8036F6BC
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfreson.c:
 	.text       start:0x8036F6BC end:0x8036FA0C
+	.rodata     start:0x80412FB8 end:0x80412FE8
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfrsf.c:
 	.text       start:0x8036FA0C end:0x8036FD48
+	.rodata     start:0x80412FE8 end:0x80412FF0
 
 Speed/Indep/Libs/snd/9/source/library/mix/sfsplit.c:
 	.text       start:0x8036FD48 end:0x8036FEC4
@@ -1222,6 +1685,7 @@ Speed/Indep/Libs/snd/9/source/library/mix/supxalf.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/mix/supxapf.cpp:
 	.text       start:0x80370FE4 end:0x80371258
+	.rodata     start:0x80412FF0 end:0x80412FF8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp:
 	.text       start:0x80371258 end:0x80371460
@@ -1231,6 +1695,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_mult16.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_root1x.c:
 	.text       start:0x80371494 end:0x80371524
+	.rodata     start:0x80412FF8 end:0x80413018
 
 Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
 	.text       start:0x80371524 end:0x80371A48
@@ -1238,13 +1703,111 @@ Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
 
 Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp:
 	.text       start:0x80371A48 end:0x80372D10
+	.rodata     start:0x80413028 end:0x80413090
 	.data       start:0x80451A08 end:0x80451E88
 
 Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c:
 	.text       start:0x80372D10 end:0x80372DD4
+	.rodata     start:0x80413090 end:0x804130A0
 
 Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
+
+Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp:
+	.text       start:0x80372ED0 end:0x80374530
+	.ctors      start:0x803C8BFC end:0x803C8C00
+	.rodata     start:0x804130A0 end:0x80413110
+	.data       start:0x80451E88 end:0x80451EA4
+	.bss        start:0x804CC6D0 end:0x804CC6EC
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathcontrol.cpp:
+	.text       start:0x80374530 end:0x803748D4
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathevent.cpp:
+	.text       start:0x803748D4 end:0x803752AC
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathinit.cpp:
+	.text       start:0x803752AC end:0x80375BC8
+	.rodata     start:0x80413140 end:0x80413168
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp:
+	.text       start:0x80375BC8 end:0x80375DB8
+	.ctors      start:0x803C8C00 end:0x803C8C04
+	.rodata     start:0x80413168 end:0x80413258
+	.bss        start:0x804CC6EC end:0x804CC6F8
+	.sdata      start:0x804FF604 end:0x804FF608
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c:
+	.data       start:0x80451ED0 end:0x80451F00
+	.bss        start:0x804CC6F8 end:0x804CC900
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal6.cpp:
+	.text       start:0x80375DB8 end:0x8037614C
+	.rodata     start:0x80413258 end:0x804132F0
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathserv.cpp:
+	.text       start:0x8037614C end:0x803767F0
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathsnd.cpp:
+	.text       start:0x803767F0 end:0x803788F4
+	.rodata     start:0x80413300 end:0x80413768
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathtrack.cpp:
+	.text       start:0x803788F4 end:0x8037929C
+	.rodata     start:0x80413768 end:0x804138A0
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathvol.cpp:
+	.text       start:0x8037929C end:0x8037A2B8
+	.rodata     start:0x804138A8 end:0x80413960
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathaction.cpp:
+	.text       start:0x8037A2B8 end:0x8037B840
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathbank.cpp:
+	.text       start:0x8037B840 end:0x8037C0AC
+	.rodata     start:0x8041399C end:0x80413A48
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathdebug.cpp:
+	.text       start:0x8037C0AC end:0x8037C0F8
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathnode.cpp:
+	.text       start:0x8037C0F8 end:0x8037D164
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathrand.cpp:
+	.text       start:0x8037D164 end:0x8037D26C
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchbank.c:
+	.text       start:0x8037D26C end:0x8037D988
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchevnt.c:
+	.text       start:0x8037D988 end:0x8037E814
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchinit.c:
+	.text       start:0x8037E814 end:0x8037EAC0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchpick.c:
+	.text       start:0x8037EAC0 end:0x8038095C
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrand.c:
+	.text       start:0x8038095C end:0x80380D30
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrslv.c:
+	.text       start:0x80380D30 end:0x80380F14
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrule.c:
+	.text       start:0x80380F14 end:0x803813F0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchsamp.c:
+	.text       start:0x803813F0 end:0x803814A8
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/sptick.c:
+	.text       start:0x803814A8 end:0x803814E0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/sputil.c:
+	.text       start:0x803814E0 end:0x803814EC
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchcsis.cpp:
+	.text       start:0x803814EC end:0x80381654
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
 	.text       start:0x80381654 end:0x80381874
@@ -1253,19 +1816,25 @@ Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_cc.cpp:
 	.text       start:0x80381874 end:0x80381A94
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp:
-	.text       start:0x80381A94 end:0x803844B4
+	.text       start:0x80381A94 end:0x8038450C
+	.ctors      start:0x803C8C04 end:0x803C8C08
+	.dtors      start:0x803C8C4C end:0x803C8C50
+	.rodata     start:0x80413A70 end:0x80413CE8
 	.bss        start:0x804CCE80 end:0x804CCE94
 	.sdata      start:0x804FF610 end:0x804FF618
 	.sbss       start:0x804FFD40 end:0x804FFD44
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp:
-	.text       start:0x8038450C end:0x80384604
+	.text       start:0x8038450C end:0x80384630
+	.ctors      start:0x803C8C08 end:0x803C8C0C
 	.data       start:0x80451F84 end:0x80451FBC
 	.bss        start:0x804CCE94 end:0x804CCEA0
 	.sdata      start:0x804FF618 end:0x804FF61C
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp:
-	.text       start:0x80384630 end:0x80385008
+	.text       start:0x80384630 end:0x80385034
+	.ctors      start:0x803C8C0C end:0x803C8C10
+	.rodata     start:0x80413CE8 end:0x80413D40
 	.bss        start:0x804CCEA0 end:0x804CCEC0
 	.sdata      start:0x804FF61C end:0x804FF620
 	.sbss       start:0x804FFD44 end:0x804FFD54
@@ -1280,15 +1849,21 @@ Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp:
 	.text       start:0x8038510C end:0x803852B8
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/gc/dvd_device.cpp:
-	.text       start:0x803852B8 end:0x80385CF0
+	.text       start:0x803852B8 end:0x80385D48
+	.ctors      start:0x803C8C10 end:0x803C8C14
+	.dtors      start:0x803C8C50 end:0x803C8C54
+	.rodata     start:0x80413D90 end:0x80413E30
 	.bss        start:0x804CCEC0 end:0x804D5000
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/gc/hd_device.cpp:
-	.text       start:0x80385D48 end:0x80386024
+	.text       start:0x80385D48 end:0x8038607C
+	.ctors      start:0x803C8C14 end:0x803C8C18
+	.dtors      start:0x803C8C54 end:0x803C8C58
 	.bss        start:0x804D5000 end:0x804D5018
 
 Speed/Indep/Libs/realcore/6.24.00/source/system/gc/inittmr.cpp:
 	.text       start:0x8038607C end:0x80386254
+	.rodata     start:0x80413EB8 end:0x80413ED0
 	.bss        start:0x804D5018 end:0x804D5040
 	.sdata      start:0x804FF628 end:0x804FF630
 
@@ -1325,6 +1900,27 @@ Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp:
 Speed/Indep/Libs/realcore/6.24.00/source/system/gc/initvblt.cpp:
 	.text       start:0x80386B40 end:0x80386B9C
 
+fontkern.cpp:
+	.text       start:0x80386B9C end:0x80386CB4
+
+fontchar.cpp:
+	.text       start:0x80386CB4 end:0x80386CF4
+
+fontcreate.cpp:
+	.text       start:0x80386CF4 end:0x80386D7C
+
+creates.cpp:
+	.text       start:0x80386D7C end:0x80387A74
+
+allocator.cpp:
+	.text       start:0x80387A74 end:0x80387B90
+
+shpdestroy.cpp:
+	.text       start:0x80387B90 end:0x80387C30
+
+model.cpp:
+	.text       start:0x80387C30 end:0x80387D88
+
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
 	.text       start:0x80387D88 end:0x80388450
 	.sdata      start:0x804FF660 end:0x804FF664
@@ -1334,21 +1930,22 @@ Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp:
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp:
 	.text       start:0x80388B04 end:0x80388BC0
-	.sdata      start:0x804FF664 end:0x804FF670
+	.sdata      start:0x804FF664 end:0x804FF668
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp:
 	.text       start:0x80388BC0 end:0x8038A5A0
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp:
 	.text       start:0x8038A5A0 end:0x8038D088
-	.sdata      start:0x804FF670 end:0x804FF674
+	.rodata     start:0x80414398 end:0x804143F8
+	.sdata      start:0x804FF668 end:0x804FF674
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp:
 	.text       start:0x8038D088 end:0x8038D1B8
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp:
 	.text       start:0x8038D1B8 end:0x8038D624
-	.bss        start:0x804D6540 end:0x804D8E24
+	.bss        start:0x804D6540 end:0x804D8D40
 	.sdata      start:0x804FF674 end:0x804FF67C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
@@ -1357,18 +1954,18 @@ Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp:
 	.text       start:0x8038DA18 end:0x8038FD10
+	.rodata     start:0x80414408 end:0x804144C0
+	.bss        start:0x804D8D40 end:0x804D8DAC
 	.sdata      start:0x804FF67C end:0x804FF68C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
-	.text       start:0x8038FD10 end:0x80391518
-	.bss        start:0x804D8E24 end:0x804D95E8
+	.text       start:0x8038FD10 end:0x80391570
+	.ctors      start:0x803C8C18 end:0x803C8C1C
+	.dtors      start:0x803C8C58 end:0x803C8C5C
+	.rodata     start:0x80414530 end:0x80414790
+	.bss        start:0x804D8DAC end:0x804D95E8
 	.sdata      start:0x804FF68C end:0x804FF6A8
 	.sbss       start:0x804FFD58 end:0x804FFD5C
-
-asd2:
-	.text       start:0x80391518 end:0x80391570
-	.ctors      start:0x803C8BF4 end:0x803C8C1C
-	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
 	.text       start:0x80391570 end:0x80392910
@@ -1380,18 +1977,21 @@ Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp:
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp:
 	.text       start:0x80393AB8 end:0x80398988
+	.rodata     start:0x804147C8 end:0x804147F0
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
 	.text       start:0x80398988 end:0x80398D08
+	.rodata     start:0x804147F0 end:0x804149E8
 	.sdata      start:0x804FF6A8 end:0x804FF6AC
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
 	.text       start:0x80398D08 end:0x80398E40
+	.rodata     start:0x804149E8 end:0x80414A18
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memcopy.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memcopy.cpp:
 	.text       start:0x80398E40 end:0x80399038
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memfill.cpp:
 	.text       start:0x80399038 end:0x8039917C
 
 Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
@@ -1400,23 +2000,28 @@ Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
 Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp:
 	.text       start:0x80399560 end:0x80399588
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/abortmsg.cpp:
 	.text       start:0x80399588 end:0x80399738
+	.rodata     start:0x80414A18 end:0x80414A28
 	.bss        start:0x804D9668 end:0x804DA668
 	.sdata      start:0x804FF6AC end:0x804FF6B0
 
 Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp:
 	.text       start:0x80399738 end:0x8039976C
+	.rodata     start:0x80414A28 end:0x80414A2C
 
 Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
 	.text       start:0x8039976C end:0x80399800
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printstr.cpp:
 	.text       start:0x80399800 end:0x8039989C
+	.rodata     start:0x80414A2C end:0x80414B28
 	.data       start:0x804524FC end:0x804527FC
 
 Speed/Indep/Libs/realcore/6.24.00/source/debug/gc/printdrv.cpp:
 	.text       start:0x8039989C end:0x803998C8
+	.rodata     start:0x80414B28 end:0x80414B40
+	.data       start:0x804527FC end:0x8045285C
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_effect.cpp:
 	.text       start:0x803998C8 end:0x80399B28
@@ -1426,6 +2031,7 @@ Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effectimp.cpp:
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp:
 	.text       start:0x80399C4C end:0x80399D18
+	.rodata     start:0x80414BF0 end:0x80414C40
 	.sdata      start:0x804FF6B0 end:0x804FF6B8
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp:
@@ -1434,6 +2040,7 @@ Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp:
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_device.cpp:
 	.text       start:0x80399EBC end:0x80399FD8
+	.rodata     start:0x80414C90 end:0x80414CE0
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_interface.cpp:
 	.text       start:0x80399FD8 end:0x8039A3C8
@@ -1460,6 +2067,83 @@ Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/eventqueue.cpp:
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/itimer.cpp:
 	.text       start:0x8039B238 end:0x8039B258
+
+LibSN/vm.c:
+	.text       start:0x8039B258 end:0x8039B538
+	.sdata      start:0x804FF6D0 end:0x804FF6D8
+	.sbss       start:0x804FFD68 end:0x804FFD88
+
+LibSN/VMPageReplacement.c:
+	.text       start:0x8039B538 end:0x8039B84C
+	.sdata      start:0x804FF6D8 end:0x804FF6E0
+	.sbss       start:0x804FFD88 end:0x804FFD90
+
+LibSN/VMMapping.c:
+	.text       start:0x8039B84C end:0x8039BB58
+	.data       start:0x80452860 end:0x804528C8
+	.sbss       start:0x804FFD90 end:0x804FFDA0
+
+LibSN/syscalls.c:
+	.text       start:0x8039BB58 end:0x8039BD38
+	.data       start:0x804528C8 end:0x804528CC
+
+libc/tolower.c:
+	.text       start:0x8039BD38 end:0x8039BD54
+
+libc/vprintf.c:
+	.text       start:0x8039BD54 end:0x8039BD88
+
+libc/bsearch.c:
+	.text       start:0x8039BD88 end:0x8039BE20
+
+libc/strrchr.c:
+	.text       start:0x8039BE20 end:0x8039BE6C
+
+libc/wcscat.c:
+	.text       start:0x8039BE6C end:0x8039BED4
+
+libc/wcscpy.c:
+	.text       start:0x8039BED4 end:0x8039BF2C
+
+libc/wcslen.c:
+	.text       start:0x8039BF2C end:0x8039BF54
+
+pro2D4.tmp:
+	.text       start:0x8039BF54 end:0x8039BFEC
+
+libc/e_exp.c:
+	.text       start:0x8039BFEC end:0x8039C268
+	.sdata      start:0x804FF6E0 end:0x804FF758
+	.sdata2     start:0x80500A18 end:0x80500A48
+
+libc/s_sin.c:
+	.text       start:0x8039C268 end:0x8039C348
+	.sdata      start:0x804FF758 end:0x804FF760
+
+libc/k_cos.c:
+	.text       start:0x8039C348 end:0x8039C43C
+	.sdata      start:0x804FF760 end:0x804FF7A8
+
+libc/k_sin.c:
+	.text       start:0x8039C43C end:0x8039C4E8
+	.sdata      start:0x804FF7A8 end:0x804FF7E0
+
+libc/e_rem_pio2.c:
+	.text       start:0x8039C4E8 end:0x8039C84C
+	.sdata      start:0x804FF7E0 end:0x804FF838
+	.sdata2     start:0x80500A48 end:0x80500BD0
+
+libc/k_rem_pio2.c:
+	.text       start:0x8039C84C end:0x8039D0D4
+	.sdata      start:0x804FF838 end:0x804FF878
+	.sdata2     start:0x80500BD0 end:0x80500C20
+
+libc/s_floor.c:
+	.text       start:0x8039D0D4 end:0x8039D230
+	.sdata      start:0x804FF878 end:0x804FF888
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMessage.c:
+	.text       start:0x8039D230 end:0x8039D434
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/arq.c:
 	.text       start:0x8039D434 end:0x8039D8B8
@@ -1572,3 +2256,13 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sstgetpv.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c:
 	.text       start:0x803A32BC end:0x803A3398
+
+LibSN/vmbase.c:
+	.text       start:0x803A3398 end:0x803A4004
+	.sbss       start:0x804FFED8 end:0x804FFEF4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSemaphore.c:
+	.text       start:0x803A4004 end:0x803A4180
+
+cluttype.cpp:
+	.text       start:0x803A4180 end:0x803A41B8

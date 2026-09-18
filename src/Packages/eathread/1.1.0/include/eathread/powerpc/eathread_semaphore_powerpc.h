@@ -4,6 +4,8 @@
 #include "dolphin/os/OSSemaphore.h"
 #include "eathread/eathread_atomic.h"
 
+struct PathSemaphore;
+
 struct EASemaphoreData {
     OSSemaphore mSemaphore; // offset 0x0, size 0xC
     AtomicInt<int> mnCount; // offset 0xC, size 0x4
@@ -50,6 +52,7 @@ public:
     void * GetPlatformData() {}
 
 private:
+    friend struct ::PathSemaphore;
     Semaphore(int initialCount);
 
     // Semaphore &operator=() {}

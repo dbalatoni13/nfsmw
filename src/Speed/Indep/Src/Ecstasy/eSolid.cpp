@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "eLight.hpp"
 
 #include <types.h>
@@ -12,10 +13,17 @@
 int eUnloadSolidListPlatChunks(bChunk *chunk);
 eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash);
 
-LoadedTable SolidLoadedTable;
 bTList<eSolidListHeader> SolidListHeaderList;
-int eDirtySolids;
-float TotalFindSolidTime;
+bTList<eSolid> InvalidSolidList;
+bTList<eSolid> SolidList;
+LoadedTable SolidLoadedTable;
+eLoadedSolidStats LoadedSolidStats;
+int AllowDuplicateSolids = 0;
+int32 eDisableFixUpTables = 0;
+int eDirtySolids = 0;
+int32 eDirtyTextures = 0;
+int32 eDirtyAnimations = 0;
+float TotalFindSolidTime = 0;
 
 void eSolid::GetBoundingBox(bVector3 *min, bVector3 *max) {
     float minx = this->AABBMinX;
@@ -66,7 +74,151 @@ void EmptySolidTextureFixupInfo(eSolidListHeader *list_header) {
     list_header->NumDefaultTextures = 0;
 }
 
-void eSolidNotifyTextureMoving(TexturePack *texture_pack /* r29 */, TextureInfo *texture_info /* r28 */) {}
+static inline bPNode *FindDefaultTexture(eSolidListHeader *list_header, uint32 name_hash) {
+    for (bPNode *p = list_header->DefaultTextureList.GetHead(); p != list_header->DefaultTextureList.EndOfList(); p = p->GetNext()) {
+        eTextureEntry *texture_entry = reinterpret_cast<eTextureEntry *>(p->GetObject());
+
+        if (texture_entry->NameHash == name_hash) {
+            return p;
+        }
+    }
+    return nullptr;
+}
+
+static inline bPNode *FindTexturePack(eSolidListHeader *list_header, TexturePack *texture_pack) {
+    for (bPNode *p = list_header->TexturePackList.GetHead(); p != list_header->TexturePackList.EndOfList(); p = p->GetNext()) {
+        if (texture_pack == p->GetObject()) {
+            return p;
+        }
+    }
+    return nullptr;
+}
+
+void RebuildSolidTextureFixupInfo(eSolidListHeader *list_header) {
+    EmptySolidTextureFixupInfo(list_header);
+
+    for (int i = 0; i < list_header->NumSolids; i++) {
+        eSolidIndexEntry *index_entry = &list_header->SolidIndexEntryTable[i];
+        eSolid *solid = index_entry->Solid;
+
+        if (solid) {
+            for (int j = 0; j < solid->NumTextureTableEntries; j++) {
+                eTextureEntry *texture_entry = &solid->pTextureTable[j];
+                TextureInfo *texture_info = texture_entry->pTextureInfo;
+
+                if (texture_info == DefaultTextureInfo) {
+                    if (!FindDefaultTexture(list_header, texture_info->NameHash)) {
+                        list_header->DefaultTextureList.AddHead(texture_entry);
+                        list_header->NumDefaultTextures++;
+                    }
+                } else {
+                    if (!FindTexturePack(list_header, texture_info->pTexturePack)) {
+                        list_header->TexturePackList.AddHead(texture_info->pTexturePack);
+                        list_header->NumTexturePacks++;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void eSolidNotifyTextureMoving(TexturePack *texture_pack, TextureInfo *texture_info) {
+    for (eSolidListHeader *list_header = SolidListHeaderList.GetHead(); list_header != SolidListHeaderList.EndOfList();
+         list_header = list_header->GetNext()) {
+        if (list_header->NumTexturePacks == -1) {
+            RebuildSolidTextureFixupInfo(list_header);
+        }
+
+        if (FindTexturePack(list_header, texture_pack)) {
+            for (int n = 0; n < list_header->NumSolids; n++) {
+                eSolidIndexEntry *index_entry = &list_header->SolidIndexEntryTable[n];
+                eSolid *solid = index_entry->Solid;
+
+                if (solid) {
+                    if (texture_info) {
+                        solid->NotifyTextureMoving(texture_pack, texture_info);
+                    } else {
+                        solid->NotifyTextureMoving(texture_pack);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void eSolidNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading) {
+    if (loading) {
+        if (!AreChunksBeingMoved()) {
+            for (eSolidListHeader *list_header = SolidListHeaderList.GetHead(); list_header != SolidListHeaderList.EndOfList();
+                 list_header = list_header->GetNext()) {
+                if (list_header->NumTexturePacks == -1) {
+                    RebuildSolidTextureFixupInfo(list_header);
+                }
+
+                bool textures_changed = false;
+
+                for (bPNode *p = list_header->DefaultTextureList.GetHead(); p != list_header->DefaultTextureList.EndOfList();) {
+                    bPNode *next_p = p->GetNext();
+                    eTextureEntry *texture_entry = reinterpret_cast<eTextureEntry *>(p->GetObject());
+                    TextureInfo *texture_info = FixupTextureInfoLoading(texture_entry->pTextureInfo, texture_entry->NameHash, texture_pack);
+
+                    if (texture_info != texture_entry->pTextureInfo) {
+                        list_header->DefaultTextureList.Remove(p);
+                        list_header->NumDefaultTextures--;
+                        textures_changed = true;
+                    }
+                    p = next_p;
+                }
+
+                if (textures_changed) {
+                    bPNode *p2 = FindTexturePack(list_header, texture_pack);
+
+                    if (!p2) {
+                        list_header->TexturePackList.AddHead(texture_pack);
+                        list_header->NumTexturePacks++;
+                    }
+
+                    for (int n = 0; n < list_header->NumSolids; n++) {
+                        eSolidIndexEntry *index_entry = &list_header->SolidIndexEntryTable[n];
+                        eSolid *solid = index_entry->Solid;
+
+                        if (solid) {
+                            solid->NotifyTextureLoading(texture_pack);
+                        }
+                    }
+                }
+            }
+        }
+    } else if (AreChunksBeingMoved()) {
+        eSolidNotifyTextureMoving(texture_pack, texture_info);
+    } else {
+        for (eSolidListHeader *list_header = SolidListHeaderList.GetHead(); list_header != SolidListHeaderList.EndOfList();
+             list_header = list_header->GetNext()) {
+            if (list_header->NumTexturePacks == -1) {
+                RebuildSolidTextureFixupInfo(list_header);
+            }
+
+            if (FindTexturePack(list_header, texture_pack)) {
+                bool textures_changed = false;
+
+                for (int n = 0; n < list_header->NumSolids; n++) {
+                    eSolidIndexEntry *index_entry = &list_header->SolidIndexEntryTable[n];
+                    eSolid *solid = index_entry->Solid;
+
+                    if (solid) {
+                        if (solid->NotifyTextureUnloading(texture_pack)) {
+                            textures_changed = true;
+                        }
+                    }
+                }
+
+                if (textures_changed) {
+                    RebuildSolidTextureFixupInfo(list_header);
+                }
+            }
+        }
+    }
+}
 
 // UNSOLVED https://decomp.me/scratch/sdOFh
 bool eSolid::NotifyTextureLoading(TexturePack *texture_pack /* r27 */) {
@@ -74,11 +226,8 @@ bool eSolid::NotifyTextureLoading(TexturePack *texture_pack /* r27 */) {
 
     for (int n = 0; n < this->NumTextureTableEntries; n++) {
         eTextureEntry *texture_entry = &this->pTextureTable[n];
-        TextureInfo *texture_info = texture_entry->pTextureInfo;
+        TextureInfo *texture_info = FixupTextureInfoLoading(texture_entry->pTextureInfo, texture_entry->NameHash, texture_pack);
 
-        if (texture_info == DefaultTextureInfo) {
-            texture_info = FixupTextureInfoLoading(texture_info, texture_entry->NameHash, texture_pack);
-        }
         if (texture_info != texture_entry->pTextureInfo) {
             texture_entry->pTextureInfo = texture_info;
             textures_changed = true;
@@ -93,11 +242,8 @@ bool eSolid::NotifyTextureUnloading(TexturePack *texture_pack) {
 
     for (int n = 0; n < this->NumTextureTableEntries; n++) {
         eTextureEntry *texture_entry = &this->pTextureTable[n];
-        TextureInfo *texture_info = texture_entry->pTextureInfo;
+        TextureInfo *texture_info = FixupTextureInfoUnloading(texture_entry->pTextureInfo, texture_entry->NameHash, texture_pack);
 
-        if (texture_info->pTexturePack == texture_pack) {
-            texture_info = FixupTextureInfoUnloading(texture_info, texture_entry->NameHash, texture_pack);
-        }
         if (texture_info != texture_entry->pTextureInfo) {
             texture_entry->pTextureInfo = texture_info;
             textures_changed = true;
@@ -145,19 +291,19 @@ void eSolid::ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_ligh
     }
 }
 
-// UNSOLVED regswap between r4 and r11
-ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker /* r11 */) {
+ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker) {
     ePositionMarker *position_marker_table = this->PositionMarkerTable;
-    int numposition_markers = this->NumPositionMarkerTableEntries;
+    int num_position_markers = this->NumPositionMarkerTableEntries;
     ePositionMarker *next_marker;
 
-    if (!position_marker_table || (numposition_markers == 0)) {
+    if (!position_marker_table || (num_position_markers == 0)) {
         return nullptr;
     }
     if (prev_marker) {
         if (prev_marker >= position_marker_table) {
-            if (prev_marker < &position_marker_table[numposition_markers - 1]) {
-                return prev_marker + 1;
+            if (prev_marker < &position_marker_table[num_position_markers - 1]) {
+                next_marker = prev_marker + 1;
+                return next_marker;
             }
         }
         return nullptr;
@@ -168,7 +314,7 @@ ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker /* r11 */
 // UNSOLVED
 ePositionMarker *eSolid::GetPostionMarker(uint32 namehash /* r31 */) {
     ePositionMarker *position_marker = nullptr;
-    for (position_marker = this->GetPostionMarker(position_marker); position_marker; position_marker = this->GetPostionMarker(position_marker)) {
+    while ((position_marker = this->GetPostionMarker(position_marker)) != nullptr) {
         if (position_marker->NameHash == namehash) {
             return position_marker;
         }
@@ -176,30 +322,124 @@ ePositionMarker *eSolid::GetPostionMarker(uint32 namehash /* r31 */) {
     return nullptr;
 }
 
-eSolidListHeader *InternalUnloaderSolidHeaderChunks(bChunk *chunk) {
-    if (chunk->GetID() != BCHUNK_MESH_CONTAINER_INFO) {
-        return nullptr;
-    }
-    eSolidListHeader *solid_list_header = nullptr;
-    bChunk *current_chunk = chunk->GetFirstChunk();
-    bChunk *last_chunk = chunk->GetLastChunk();
-    while (current_chunk < last_chunk) {
-        uint32 current_chunk_id = current_chunk->GetID();
+void eSolid::SmoothNormals(eSmoothVertex **smooth_vertex_table, int num_smooth_verts) {
+    eNormalSmoother *normal_smoother = this->NormalSmoother;
 
-        if (current_chunk_id == BCHUNK_MESH_CONTAINER_HEADER) {
-            solid_list_header = reinterpret_cast<eSolidListHeader *>(current_chunk->GetData());
-            solid_list_header->Remove();
-            EmptySolidTextureFixupInfo(solid_list_header);
-            LoadedSolidStats.NumLoadedLists--;
-        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_KEYS) {
-        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_OFFSETS) {
-        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_EMPTY) {
-            eUnloadSolidListPlatChunks(current_chunk);
+    if (normal_smoother && smooth_vertex_table && num_smooth_verts > 0) {
+        int num_plat_verts = normal_smoother->NumSmoothVertexPlat;
+
+        for (int i = 0; i < num_plat_verts; i++) {
+            eSmoothVertexPlat *smooth_vertex_plat = &normal_smoother->SmoothVertexPlatTable[i];
+            unsigned int smoothing_group = smooth_vertex_plat->SmoothingGroup;
+            unsigned int vertex_hash = smooth_vertex_plat->VertexHash;
+            int smooth_vertex_index = -1;
+            bVector3 norm(0.0f, 0.0f, 0.0f);
+
+            int low_index = 0;
+            int high_index = num_smooth_verts - 1;
+
+            while (low_index <= high_index && smooth_vertex_index == -1) {
+                int mid_index = (low_index + high_index) / 2;
+                unsigned int mid_vertex_hash = smooth_vertex_table[mid_index]->VertexHash;
+
+                if (vertex_hash < mid_vertex_hash) {
+                    high_index = mid_index - 1;
+                } else if (vertex_hash > mid_vertex_hash) {
+                    low_index = mid_index + 1;
+                } else {
+                    smooth_vertex_index = mid_index;
+                }
+            }
+
+            if (smooth_vertex_index != -1) {
+                int debug_print;
+
+                while (smooth_vertex_index > 0 && smooth_vertex_table[smooth_vertex_index - 1]->VertexHash == vertex_hash) {
+                    smooth_vertex_index--;
+                }
+
+                for (; smooth_vertex_index < num_smooth_verts && smooth_vertex_table[smooth_vertex_index]->VertexHash == vertex_hash;
+                     smooth_vertex_index++) {
+                    eSmoothVertex *smv = smooth_vertex_table[smooth_vertex_index];
+
+                    if (smoothing_group & (1 << smv->SmoothingGroupNumber)) {
+                        bVector3 tnorm;
+
+                        tnorm.x = smv->NX * (1.0f / 127.0f);
+                        tnorm.y = smv->NY * (1.0f / 127.0f);
+                        tnorm.z = smv->NZ * (1.0f / 127.0f);
+                        bNormalize(&tnorm, &tnorm);
+                        bAdd(&norm, &norm, &tnorm);
+                    }
+                }
+                bNormalize(&norm, &norm);
+                this->SetSmoothVertex(smooth_vertex_plat->VertexOffset, norm.x, norm.y, norm.z);
+            }
         }
-        current_chunk = current_chunk->GetNext();
+    }
+}
+
+int eSmoothNormals(eSolid **solid_table, int num_solids) {
+    if (!solid_table || num_solids < 0) {
+        return 0;
     }
 
-    return solid_list_header;
+    if (num_solids == 0) {
+        return 1;
+    }
+
+    int *smooth_vertex_index_table = new ("smooth_vertex_index_table", 0) int[num_solids];
+    int num_verts_indep = 0;
+
+    for (int i = 0; i < num_solids; i++) {
+        if (solid_table[i] && solid_table[i]->NormalSmoother) {
+            num_verts_indep += solid_table[i]->NormalSmoother->NumSmoothVertex;
+        } else {
+            solid_table[i] = nullptr;
+        }
+
+        smooth_vertex_index_table[i] = 0;
+    }
+
+    int num_verts_plat;
+    unsigned int start_time = bGetTicker();
+
+    int num_smooth_verts = 0;
+    eSmoothVertex **smooth_vertex_table = new ("eSmoothVertices", 0) eSmoothVertex *[num_verts_indep];
+
+    for (int v = 0; v < num_verts_indep; v++) {
+        eSmoothVertex *smv = nullptr;
+        int solid_index = 0;
+
+        for (int j = 0; j < num_solids; j++) {
+            if (solid_table[j] && smooth_vertex_index_table[j] < solid_table[j]->NormalSmoother->NumSmoothVertex) {
+                eSmoothVertex *test_smv = &solid_table[j]->NormalSmoother->SmoothVertexTable[smooth_vertex_index_table[j]];
+
+                if (!smv || test_smv->VertexHash < smv->VertexHash) {
+                    smv = test_smv;
+                    solid_index = j;
+                }
+            }
+        }
+
+        if (smv) {
+            smooth_vertex_table[num_smooth_verts] = smv;
+            num_smooth_verts++;
+
+            smooth_vertex_index_table[solid_index]++;
+        }
+    }
+
+    for (int s = 0; s < num_solids; s++) {
+        if (solid_table[s]) {
+            solid_table[s]->SmoothNormals(smooth_vertex_table, num_smooth_verts);
+        }
+    }
+
+    delete smooth_vertex_index_table;
+    delete smooth_vertex_table;
+
+    return 1;
 }
 
 eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
@@ -243,7 +483,186 @@ eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
     return solid_list_header;
 }
 
-eSolid *InternalLoaderSolidChunks(bChunk *chunk /* r14 */, eSolidListHeader *solid_list_header /* r1+0x8 */) {}
+eSolid *InternalLoaderSolidChunks(bChunk *chunk, eSolidListHeader *solid_list_header) {
+    if (chunk->GetID() != BCHUNK_SOLID_PACK) {
+        return nullptr;
+    }
+    bChunk *solid_chunk = chunk->GetFirstChunk();
+    bChunk *solid_last_chunk = chunk->GetLastChunk();
+    eSolid *solid = nullptr;
+    int solid_is_valid = 1;
+
+    while (solid_chunk < solid_last_chunk) {
+        uint32 solid_chunk_id = solid_chunk->GetID();
+
+        if (solid_chunk_id == BCHUNK_SOLID_INFO) {
+            solid = reinterpret_cast<eSolid *>(solid_chunk->GetAlignedData(16));
+            solid->ModelList.InitList();
+
+            if (!solid->EndianSwapped) {
+                solid->EndianSwap();
+            }
+        } else if (solid_chunk_id == BCHUNK_SOLID_TEXTURES) {
+            solid->pTextureTable = reinterpret_cast<eTextureEntry *>(solid_chunk->GetData());
+
+            if (!solid->EndianSwapped) {
+                for (int i = 0; i < solid->NumTextureTableEntries; i++) {
+                    {
+                        uint32 textureinfoNH = solid->pTextureTable[i].NameHash;
+                        bStringHash("DEFAULT");
+                    }
+                    solid->pTextureTable[i].EndianSwap();
+                }
+            }
+        } else if (solid_chunk_id == BCHUNK_SOLID_LIGHT_MATERIALS) {
+            solid->LightMaterialTable = reinterpret_cast<eLightMaterialEntry *>(solid_chunk->GetData());
+
+            if (!solid->EndianSwapped) {
+                for (int i = 0; i < solid->NumLightMaterials; i++) {
+                    solid->LightMaterialTable[i].EndianSwap();
+                }
+            }
+        } else if (solid_chunk_id == BCHUNK_MESH_NORMAL_SMOOTHER) {
+            solid->NormalSmoother = reinterpret_cast<eNormalSmoother *>(solid_chunk->GetData());
+
+            if (!solid->EndianSwapped) {
+                solid->NormalSmoother->EndianSwap();
+            }
+            LoadedSolidStats.TotalNormalSmootherBytes += solid_chunk->GetSize();
+        } else if (solid_chunk_id == BCHUNK_MESH_SMOTH_VERTICES) {
+            solid->NormalSmoother->SmoothVertexTable = reinterpret_cast<eSmoothVertex *>(solid_chunk->GetData());
+            solid->NormalSmoother->NumSmoothVertex = solid_chunk->GetSize() / sizeof(eSmoothVertex);
+
+            if (!solid->EndianSwapped) {
+                eSmoothVertex *smooth_vertex = solid->NormalSmoother->SmoothVertexTable;
+                int num_smooth_verts = solid->NormalSmoother->NumSmoothVertex;
+
+                for (int i = 0; i < num_smooth_verts; i++) {
+                    smooth_vertex->EndianSwap();
+                    smooth_vertex++;
+                }
+            }
+            LoadedSolidStats.TotalNormalSmootherBytes += solid_chunk->GetSize();
+        } else if (solid_chunk_id == BCHUNK_MESH_SMOTH_VERTEX_PLATS) {
+            solid->NormalSmoother->SmoothVertexPlatTable = reinterpret_cast<eSmoothVertexPlat *>(solid_chunk->GetData());
+            solid->NormalSmoother->NumSmoothVertexPlat = solid_chunk->GetSize() / sizeof(eSmoothVertexPlat);
+
+            if (!solid->EndianSwapped) {
+                eSmoothVertexPlat *smooth_vertex = solid->NormalSmoother->SmoothVertexPlatTable;
+                int num_smooth_verts = solid->NormalSmoother->NumSmoothVertexPlat;
+
+                for (int i = 0; i < num_smooth_verts; i++) {
+                    smooth_vertex->EndianSwap();
+                    smooth_vertex++;
+                }
+            }
+            LoadedSolidStats.TotalNormalSmootherBytes += solid_chunk->GetSize();
+        } else if (solid_chunk_id == BCHUNK_SOLID_DAMAGE_VERTICES) {
+            int num_damage_verts = solid_chunk->GetSize() / sizeof(eDamageVertex);
+
+            solid->DamageVertexTable = reinterpret_cast<eDamageVertex *>(solid_chunk->GetData());
+
+            if (!solid->EndianSwapped) {
+                for (int i = 0; i < num_damage_verts; i++) {
+                    solid->DamageVertexTable[i].EndianSwap();
+                }
+            }
+            LoadedSolidStats.TotalDamageBytes += solid_chunk->GetSize();
+        } else if (solid_chunk_id == BCHUNK_SOLID_MARKERS) {
+            solid->PositionMarkerTable = reinterpret_cast<ePositionMarker *>(solid_chunk->GetAlignedData(16));
+            solid->NumPositionMarkerTableEntries = solid_chunk->GetAlignedSize(16) / sizeof(ePositionMarker);
+
+            if (!solid->EndianSwapped) {
+                for (int i = 0; i < solid->NumPositionMarkerTableEntries; i++) {
+                    solid->PositionMarkerTable[i].EndianSwap();
+                }
+            }
+        } else if (solid_chunk_id == BCHUNK_MESH_INFO_CONTAINER) {
+            if (!solid->LoaderPlatChunks(solid_chunk)) {
+                solid_is_valid = 0;
+            }
+        }
+        solid_chunk = solid_chunk->GetNext();
+    }
+
+    if (solid) {
+        solid->EndianSwapped = 1;
+    }
+
+    solid_list_header->NumTexturePacks = -1;
+
+    solid->FixTextureTable();
+    solid->FixLightMaterialTable();
+
+    if (!AreChunksBeingMoved() && !(solid->Flags & 0x10)) {
+        eSolid *other_solid = eFindSolid(solid->NameHash);
+
+        if (other_solid) {
+            solid->Flags |= 0x100;
+            other_solid->Flags |= 0x100;
+
+            if (!AllowDuplicateSolids) {
+                solid->Flags |= 0x200;
+                other_solid->Flags |= 0x200;
+            }
+        }
+    }
+
+    if (!solid->FixPlatInfo()) {
+        solid_is_valid = 0;
+    }
+
+    eSolidIndexEntry *index_entry = GetSolidIndexEntry(solid_list_header, solid->NameHash);
+
+    if (!index_entry) {
+    }
+
+    if (solid_is_valid) {
+        if (index_entry) {
+            index_entry->Solid = solid;
+        }
+        SolidList.AddTail(solid);
+        SolidLoadedTable.SetLoaded(solid->NameHash);
+    } else {
+        if (index_entry) {
+            index_entry->Solid = nullptr;
+        }
+        InvalidSolidList.AddTail(solid);
+    }
+
+    eDirtySolids = 1;
+
+    LoadedSolidStats.NumLoadedSolids++;
+    LoadedSolidStats.TotalSolidsByteSize += chunk->GetSize();
+
+    return solid;
+}
+
+eSolidListHeader *InternalUnloaderSolidHeaderChunks(bChunk *chunk) {
+    if (chunk->GetID() != BCHUNK_MESH_CONTAINER_INFO) {
+        return nullptr;
+    }
+    eSolidListHeader *solid_list_header = nullptr;
+    bChunk *current_chunk = chunk->GetFirstChunk();
+    bChunk *last_chunk = chunk->GetLastChunk();
+    while (current_chunk < last_chunk) {
+        uint32 current_chunk_id = current_chunk->GetID();
+
+        if (current_chunk_id == BCHUNK_MESH_CONTAINER_HEADER) {
+            solid_list_header = reinterpret_cast<eSolidListHeader *>(current_chunk->GetData());
+            solid_list_header->Remove();
+            EmptySolidTextureFixupInfo(solid_list_header);
+            LoadedSolidStats.NumLoadedLists--;
+        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_KEYS) {
+        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_OFFSETS) {
+        } else if (current_chunk_id == BCHUNK_MESH_CONTAINER_EMPTY) {
+            eUnloadSolidListPlatChunks(current_chunk);
+        }
+        current_chunk = current_chunk->GetNext();
+    }
+
+    return solid_list_header;
+}
 
 void InternalUnloaderSolidChunks(bChunk *chunk, eSolidListHeader *solid_list_header) {
     if (chunk->GetID() != BCHUNK_SOLID_PACK) {
@@ -363,14 +782,6 @@ int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void
     return streaming_pack != nullptr;
 }
 
-eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash) {
-    if (!list_header) {
-        return nullptr;
-    } else {
-        return reinterpret_cast<eSolidIndexEntry *>(ScanHashTableKey32(name_hash, list_header->SolidIndexEntryTable, list_header->NumSolids, 0, 8));
-    }
-}
-
 void SolidLoadingStreamingPackPhase1(eStreamingPackHeaderLoadingInfoPhase1 *loading_info) {
     bChunk *list_chunk = loading_info->TempHeaderChunks;
     EndianSwapChunkHeader(list_chunk);
@@ -414,6 +825,14 @@ void eInitSolids() {
     InitStreamingPacks();
 }
 
+eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash) {
+    if (!list_header) {
+        return nullptr;
+    } else {
+        return reinterpret_cast<eSolidIndexEntry *>(ScanHashTableKey32(name_hash, list_header->SolidIndexEntryTable, list_header->NumSolids, 0, 8));
+    }
+}
+
 eSolid *eFindSolid(uint32 name_hash) {
     return eFindSolid(name_hash, nullptr);
 }
@@ -424,7 +843,7 @@ eSolid *eFindSolid(uint32 name_hash /* r31 */, eSolidListHeader *solid_list_head
         return nullptr;
     }
     uint32 start_time = bGetTicker();
-    eSolid *solid = nullptr; // r27
+    eSolid *solid = nullptr;
     if (solid_list_header) {
         eSolidIndexEntry *index_entry = GetSolidIndexEntry(solid_list_header, name_hash);
         if (index_entry) {
@@ -437,8 +856,8 @@ eSolid *eFindSolid(uint32 name_hash /* r31 */, eSolidListHeader *solid_list_head
             if (!index_entry) {
                 continue;
             }
-            solid = index_entry->Solid;
-            if (solid) {
+            if (index_entry->Solid) {
+                solid = index_entry->Solid;
                 SolidListHeaderList.Remove(list_header);
                 SolidListHeaderList.AddHead(list_header);
                 break;
@@ -449,3 +868,9 @@ eSolid *eFindSolid(uint32 name_hash /* r31 */, eSolidListHeader *solid_list_head
 
     return solid;
 }
+
+bChunkLoader bChunkLoaderSolidList(0x80134000, LoaderSolidList, UnloaderSolidList);
+
+eStreamPackLoader StreamingSolidPackLoader(0x20, SolidLoadedStreamingEntryCallback, SolidUnloadedStreamingEntryCallback,
+                                           SolidLoadingStreamingPackPhase1, SolidLoadingStreamingPackPhase2,
+                                           SolidUnloadingStreamingPack);

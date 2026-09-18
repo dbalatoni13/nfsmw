@@ -1,0 +1,209 @@
+#include "LobbyCore.hpp"
+#include "LobbyAccount.hpp"
+
+LobbyRooms::LobbyRooms()
+    : roomList(nullptr) //
+    , roomUpdateCB(nullptr) //
+    , roomUpdateContext(nullptr) {
+    currentRoomName[0] = '\0';
+}
+
+LobbyRooms::~LobbyRooms() { Reset(); }
+
+LobbyRooms &LobbyRooms::Instance() {
+    static LobbyRooms theLobbyRooms;
+    return theLobbyRooms;
+}
+
+int32 LobbyRooms::Init() {
+    if (!roomList) {
+        if (!LobbyCore::Instance().pLobbyRef) {
+            return -1;
+        }
+        roomList = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                     static_cast<LobbyRanks::RankListMapping>(0), RoomsDispListCB,
+                                     this);
+        if (!roomList) {
+            Reset();
+            return -1;
+        }
+    }
+    return 0;
+}
+
+void LobbyRooms::Reset() {
+    if (!LobbyCore::Instance().pLobbyRef) {
+        currentRoomName[0] = '\0';
+    } else if (!roomList) {
+        currentRoomName[0] = '\0';
+    } else {
+        LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0, roomList);
+        roomList = nullptr;
+        currentRoomName[0] = '\0';
+    }
+    roomUpdateContext = nullptr;
+    roomUpdateCB = nullptr;
+}
+
+void LobbyRooms::RoomsDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyRooms *lobbyRooms = static_cast<LobbyRooms *>(pData);
+    if (lobbyRooms->roomUpdateCB) {
+        lobbyRooms->roomUpdateCB(lobbyRooms->roomUpdateContext, pMsg);
+    }
+}
+
+LobbyAccount &LobbyAccount::Instance() {
+    static LobbyAccount theLobbyAccount;
+    return theLobbyAccount;
+}
+
+int32 LobbyAccount::CreateAccount(const LobbyAccountT &accountData, CommandCBFunc func,
+                                  void *context) {
+    lobbyMutex.Lock("LobbyAccount::CreateAccount");
+    if (bStrLen(accountData.name) < 4 || bStrLen(accountData.name) > 16 ||
+        bStrLen(accountData.password) < 4 || bStrLen(accountData.password) > 16 ||
+        bStrLen(accountData.email) < 7 || bStrLen(accountData.email) > 50 ||
+        static_cast<unsigned int>(accountData.birthDay - 1) >= 31 ||
+        static_cast<unsigned int>(accountData.birthMonth - 1) >= 12 ||
+        (accountData.parentEmail[0] &&
+         (bStrLen(accountData.parentEmail) < 7 || bStrLen(accountData.parentEmail) > 50))) {
+        lobbyMutex.Unlock("LobbyAccount::CreateAccount");
+        return -1;
+    }
+
+    char dob[16] = "";
+    bSPrintf(dob, "%04d%02d%02d", accountData.birthYear, accountData.birthMonth,
+             accountData.birthDay);
+    char gender[2] = "";
+    bSPrintf(gender, "%c", accountData.male ? 'M' : 'F');
+    char spam[3] = "";
+    bSPrintf(spam, "%c%c", accountData.spamFromEA ? 'Y' : 'N',
+             accountData.spamFromAll ? 'Y' : 'N');
+    char buf[768] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", accountData.name);
+    TagFieldSetString(buf, sizeof(buf), "PASS", accountData.password);
+    TagFieldSetString(buf, sizeof(buf), "MAIL", accountData.email);
+    TagFieldSetString(buf, sizeof(buf), "BORN", dob);
+    TagFieldSetString(buf, sizeof(buf), "GEND", gender);
+    TagFieldSetString(buf, sizeof(buf), "SPAM", spam);
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    if (accountData.parentEmail[0]) {
+        TagFieldSetString(buf, sizeof(buf), "PMAIL", accountData.parentEmail);
+    }
+    TagFieldSetNumber(buf, sizeof(buf), "TOS", 1);
+    int32 rc = LobbyCore::Instance().QueueCommand('acct', buf, LobbyCore::DefaultCB, nullptr, func,
+                                                   context, false);
+    lobbyMutex.Unlock("LobbyAccount::CreateAccount");
+    return rc;
+}
+
+int32 LobbyAccount::RequestLostUsername(const char *email, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::RequestLostUsername");
+    if (!email || !email[0]) {
+        lobbyMutex.Unlock("LobbyAccount::RequestLostUsername");
+        return -1;
+    }
+
+    char buf[256] = "";
+    TagFieldSetString(buf, sizeof(buf), "MAIL", email);
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    int32 rc = LobbyCore::Instance().QueueCommand('lost', buf, LobbyCore::DefaultCB, nullptr,
+                                                   func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::RequestLostUsername");
+    return rc;
+}
+
+int32 LobbyAccount::RequestLostPassword(const char *username, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::RequestLostPassword");
+    if (!username || !username[0]) {
+        lobbyMutex.Unlock("LobbyAccount::RequestLostPassword");
+        return -1;
+    }
+
+    char buf[256] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", username);
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    int32 rc = LobbyCore::Instance().QueueCommand('lost', buf, LobbyCore::DefaultCB, nullptr,
+                                                   func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::RequestLostPassword");
+    return rc;
+}
+
+int32 LobbyAccount::CreatePersona(const char *name, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::CreatePersona");
+    if (pendingPersona[0]) {
+        lobbyMutex.Unlock("LobbyAccount::CreatePersona");
+        return -1;
+    }
+
+    bStrNCpy(pendingPersona, name, 15);
+    char buf[64] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", name);
+    int32 rc = LobbyCore::Instance().QueueCommand('cper', buf, CperCB, this, func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::CreatePersona");
+    return rc;
+}
+
+void LobbyAccount::CancelPersonaCreation(const int32 &commandID) {
+    LobbyCore::Instance().AbortCommand(commandID);
+    pendingPersona[0] = '\0';
+}
+
+int32 LobbyAccount::DeletePersona(const char *name, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::DeletePersona");
+    if (name && name[0] && !pendingPersona[0]) {
+        LobbyLoginNameListT &personas = LobbyLogin::Instance().GetPersonaList();
+        for (int i = 0; i < personas.iNumNames; i++) {
+            if (bStrCmp(name, personas.strNames[i]) == 0) {
+                char buf[64] = "";
+                TagFieldSetString(buf, sizeof(buf), "PERS", name);
+                int32 rc = LobbyCore::Instance().QueueCommand('dper', buf, DperCB, this, func,
+                                                               context, false);
+                if (rc > 0) {
+                    bStrCpy(pendingPersona, personas.strNames[i]);
+                }
+                lobbyMutex.Unlock("LobbyAccount::DeletePersona");
+                return rc;
+            }
+        }
+    }
+    lobbyMutex.Unlock("LobbyAccount::DeletePersona");
+    return -1;
+}
+
+int32 LobbyAccount::Init() { return 0; }
+
+void LobbyAccount::Reset() { pendingPersona[0] = '\0'; }
+
+void LobbyAccount::CperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyAccount *lobbyAccount = static_cast<LobbyAccount *>(pData);
+    if (pMsg->code == 0) {
+        LobbyLogin::Instance().AddPersona(lobbyAccount->pendingPersona);
+    }
+    lobbyAccount->pendingPersona[0] = '\0';
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyAccount::DperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyAccount *lobbyAccount = static_cast<LobbyAccount *>(pData);
+    if (pMsg->code == 0) {
+        LobbyLogin::Instance().DeletePersona(lobbyAccount->pendingPersona);
+    }
+    lobbyAccount->pendingPersona[0] = '\0';
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}

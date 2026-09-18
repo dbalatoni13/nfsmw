@@ -19,10 +19,18 @@ class TableBase {
         SetMinMax(min, max);
     }
 
+    int32 GetNumEntries() {
+        return NumEntries;
+    }
+
     void SetMinMax(float fMin, float fMax) {
         MinArg = fMin;
         MaxArg = fMax;
         CalcIndexMultiplier();
+    }
+
+    float GetIndex(float f) {
+        return IndexMultiplier * (f - MinArg);
     }
 
     void CalcIndexMultiplier() {
@@ -60,7 +68,24 @@ template <typename T> class tTable : public TableBase {
   public:
     tTable() : TableBase(0, 0.0f, 1.0f) {}
 
+    tTable(T *table, int32 num, float min, float max) : TableBase(num, min, max), pTable(table) {}
+
     void Blend(T *dest, T *a, T *b, float blend_a);
+
+    void GetValue(T *p, float arg) {
+        int entries = GetNumEntries();
+        float normarg = GetIndex(arg);
+        int index = (int)normarg;
+        float blend;
+        if (index < 0) {
+            bMemCpy(p, &pTable[0], sizeof(T));
+        } else if (index >= entries - 1) {
+            bMemCpy(p, &pTable[entries - 1], sizeof(T));
+        } else {
+            blend = normarg - bFloor(normarg);
+            Blend(p, &pTable[index + 1], &pTable[index], blend);
+        }
+    }
 
   private:
     T *pTable;
@@ -100,7 +125,7 @@ class AverageBase {
         return nSamples;
     }
 
-    virtual void Recalculate() {}
+    virtual void Recalculate();
 
   protected:
     uint8 nSize;
@@ -138,6 +163,56 @@ class Average : public AverageBase {
 
   private:
     float SmallDataBuffer[5];
+};
+
+template <typename T> class tAverage : public AverageBase {
+  public:
+    tAverage(int nSlots) : AverageBase(sizeof(T), nSlots) {
+        pData = new T[nSlots];
+        bMemSet(pData, 0, nSlots * sizeof(T));
+        Average = pData[0];
+        Total = pData[0];
+    }
+
+    ~tAverage() override {
+        delete[] pData;
+    }
+
+    T *GetValue() {
+        return &Average;
+    }
+
+    void Record(T *pValue) {
+        if (nSamples < nSlots) {
+            nSamples++;
+        }
+
+        Total -= pData[nCurrentSlot];
+        Total += *pValue;
+
+        pData[nCurrentSlot] = *pValue;
+
+        Average = Total * (1.0f / (float)(int)nSamples);
+
+        nCurrentSlot++;
+        if (nCurrentSlot >= nSlots) {
+            nCurrentSlot = 0;
+        }
+    }
+
+    void Recalculate() override {
+        Total *= 0.0f;
+        for (int i = 0; i < nSamples; i++) {
+            Total += pData[i];
+        }
+        float fRecip = 1.0f / (float)bMax(1, (int)nSamples);
+        Average = bScale(Total, fRecip);
+    }
+
+  private:
+    T *pData;  // offset 0x8, size 0x4
+    T Total;   // offset 0xC
+    T Average; // offset 0x1C
 };
 
 class AverageWindow : public Average {

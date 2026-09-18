@@ -17,7 +17,7 @@ class AttributeId {
         ID_USERBASE = 128,
     };
 
-    AttributeId() {}
+    AttributeId() : mId(ID_INVALID) {}
 
     AttributeId(unsigned short id) : mId(id) {}
 

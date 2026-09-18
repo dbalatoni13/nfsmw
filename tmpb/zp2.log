@@ -1,0 +1,60 @@
+In file included from src/Speed/GameCube/Src/Platform_G.cpp:1,
+                 from src/Speed/Indep/SourceLists/zPlatform.cpp:2:
+src/Speed/Indep/Src/Misc/Platform.h: In method `void VMStats::Init()':
+src/Speed/Indep/Src/Misc/Platform.h:31: warning: assignment of negative value `-1' to `unsigned int'
+In file included from src/Speed/Indep/Src/Main/EventSequencer.h:9,
+                 from src/Speed/Indep/Src/Interfaces/SimModels/IModel.h:8,
+                 from src/Speed/Indep/Src/Interfaces/Simables/ISimable.h:7,
+                 from src/Speed/Indep/Src/Interfaces/Simables/IVehicle.h:10,
+                 from src/Speed/Indep/Src/AI/AIAvoidable.h:12,
+                 from src/Speed/Indep/Src/Interfaces/Simables/IAI.h:5,
+                 from src/Speed/Indep/Src/Frontend/Database/RaceDB.hpp:4,
+                 from src/Speed/Indep/Src/Frontend/Database/FEDatabase.hpp:6,
+                 from src/Speed/Indep/Src/EAXSound/EAXSOund.hpp:9,
+                 from src/Speed/GameCube/Src/Platform_G.cpp:234,
+                 from src/Speed/Indep/SourceLists/zPlatform.cpp:2:
+src/Speed/Indep/Libs/Support/Miscellaneous/CARP.h: In method `unsigned int CARP::EventSeqAction::GetTimeIndex(float) const':
+src/Speed/Indep/Libs/Support/Miscellaneous/CARP.h:99: warning: return of negative value `-1' to `unsigned int'
+src/Speed/Indep/Libs/Support/Miscellaneous/CARP.h: In method `unsigned int CARP::EventSeqAction::GetTagIndex(unsigned int) const':
+src/Speed/Indep/Libs/Support/Miscellaneous/CARP.h:111: warning: return of negative value `-1' to `unsigned int'
+In file included from src/Speed/Indep/Src/FEng/FEPackage.h:12,
+                 from src/Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp:4,
+                 from src/Speed/GameCube/Src/Platform_G.cpp:239,
+                 from src/Speed/Indep/SourceLists/zPlatform.cpp:2:
+src/Speed/Indep/Src/FEng/FELibraryRef.h: In method `FELibraryRef::FELibraryRef()':
+src/Speed/Indep/Src/FEng/FELibraryRef.h:15: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:6:
+src/Speed/GameCube/Src/JoyE.cpp: In function `int ActualReadJoystickData()':
+src/Speed/GameCube/Src/JoyE.cpp:127: new declaration `int ActualReadJoystickData()'
+src/Speed/GameCube/Src/Platform_G.cpp:258: ambiguates old declaration `void ActualReadJoystickData()'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:16:
+src/Speed/GameCube/Src/Logitech/Wheels.cpp: In method `Wheels::Wheels()':
+src/Speed/GameCube/Src/Logitech/Wheels.cpp:8: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/Wheels.cpp: In method `short int Wheels::ReadAll()':
+src/Speed/GameCube/Src/Logitech/Wheels.cpp:34: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:20:
+src/Speed/GameCube/Src/Logitech/Periodic.cpp: In method `long int Periodic::DownloadForce(long int, long int, long unsigned int &, unsigned char, long unsigned int, long unsigned int, unsigned char, short unsigned int, short unsigned int, short unsigned int, short int, long unsigned int, long unsigned int, unsigned char, unsigned char)':
+src/Speed/GameCube/Src/Logitech/Periodic.cpp:40: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/Periodic.cpp: In method `long int Periodic::UpdateForce(long int, long int, unsigned char, long unsigned int, long unsigned int, unsigned char, short unsigned int, short unsigned int, short unsigned int, short int, long unsigned int, long unsigned int, unsigned char, unsigned char)':
+src/Speed/GameCube/Src/Logitech/Periodic.cpp:72: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:22:
+src/Speed/GameCube/Src/Logitech/LGWheels.cpp: In method `void LGWheels::InitVars(long int)':
+src/Speed/GameCube/Src/Logitech/LGWheels.cpp:413: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/LGWheels.cpp:415: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/LGWheels.cpp:417: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/LGWheels.cpp:419: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:24:
+src/Speed/GameCube/Src/Logitech/Force.cpp: In method `void Force::InitVars()':
+src/Speed/GameCube/Src/Logitech/Force.cpp:14: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/Force.cpp: In method `long int Force::Destroy(long int, long int)':
+src/Speed/GameCube/Src/Logitech/Force.cpp:62: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:26:
+src/Speed/GameCube/Src/Logitech/Constant.cpp: In method `long int Constant::DownloadForce(long int, long int, long unsigned int &, long unsigned int, long unsigned int, short int, short unsigned int, long unsigned int, long unsigned int, unsigned char, unsigned char)':
+src/Speed/GameCube/Src/Logitech/Constant.cpp:36: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/Constant.cpp: In method `long int Constant::UpdateForce(long int, long int, long unsigned int, long unsigned int, short int, short unsigned int, long unsigned int, long unsigned int, unsigned char, unsigned char)':
+src/Speed/GameCube/Src/Logitech/Constant.cpp:65: warning: assignment of negative value `-1' to `long unsigned int'
+In file included from src/Speed/Indep/SourceLists/zPlatform.cpp:28:
+src/Speed/GameCube/Src/Logitech/Condition.cpp: In method `long int Condition::DownloadForce(long int, long int, long unsigned int &, unsigned char, long unsigned int, long unsigned int, signed char, unsigned char, unsigned char, unsigned char, short int, short int)':
+src/Speed/GameCube/Src/Logitech/Condition.cpp:37: warning: assignment of negative value `-1' to `long unsigned int'
+src/Speed/GameCube/Src/Logitech/Condition.cpp: In method `long int Condition::UpdateForce(long int, long int, unsigned char, long unsigned int, long unsigned int, signed char, unsigned char, unsigned char, unsigned char, short int, short int)':
+src/Speed/GameCube/Src/Logitech/Condition.cpp:66: warning: assignment of negative value `-1' to `long unsigned int'

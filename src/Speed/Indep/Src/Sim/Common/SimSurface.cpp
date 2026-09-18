@@ -5,6 +5,8 @@
 
 static Attrib::Class *TheSurfaceClass = nullptr;
 
+const SimSurface SimSurface::kNull;
+
 const Attrib::Collection *SimSurface::mUnknown = nullptr;
 const Attrib::Collection *SimSurface::mNullSpec = nullptr;
 
@@ -28,10 +30,16 @@ SimSurface::SimSurface(const Attrib::Collection *spec) : Attrib::Gen::simsurface
     }
 }
 
-// UNSOLVED, confusing
-// SimSurface SimSurface::GetParentSurface() const {
-//     const Attrib::Collection *collection;
-// }
+SimSurface SimSurface::GetParentSurface() const {
+    if (*this == kNull) {
+        return *this;
+    }
+    const Attrib::Collection *collection = Attrib::GetCollectionParent(GetConstCollection());
+    if (collection) {
+        return SimSurface(collection);
+    }
+    return kNull;
+}
 
 void SimSurface::UpdateSystem() {}
 

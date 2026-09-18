@@ -14,6 +14,15 @@
 
 namespace EAGL4 {
 
+inline unsigned short htotus(unsigned short s) {
+    return (s << 8) | (s >> 8);
+}
+
+inline unsigned int htotul(unsigned int l) {
+    return htotus(static_cast<unsigned short>(l >> 16)) |
+           (htotus(static_cast<unsigned short>(l & 0xFFFF)) << 16);
+}
+
 // total size: 0x30
 class DynamicLoader {
   public:
@@ -54,7 +63,21 @@ class DynamicLoader {
 
     // bool IsResolved() {}
 
-    // void *ELFAddr(unsigned int offset) {}
+    void *ELFAddr(unsigned int offset) {
+        if (offset < mDataLen) {
+            return &mpData[offset];
+        }
+
+        if (mpReloc) {
+            return &mpReloc[offset - mDataLen];
+        }
+
+        if (offset > mDataLen) {
+            return nullptr;
+        }
+
+        return &mpData[offset];
+    }
 
     DynamicLoader(void *d, unsigned int len, DynamicUserCallback pSearchFunction);
 
@@ -253,7 +276,10 @@ enum ELF32_SHN_TYPES { SHN_UNDEF = 0, SHN_MIPS_ACCOMON = 65280, SHN_ABS = 65521,
 
 // total size: 0x430
 struct HashPointer {
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        // TODO
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
     // void *operator new(size_t size, const char *msg) {}
 
@@ -281,7 +307,15 @@ struct HashPointer {
         mpDynamicLoader = pDL;
     }
 
-    ~HashPointer() {}
+    ~HashPointer() {
+        if (chain) {
+            EAGL4Internal::EAGL4Free(chain, symbols_num * sizeof(*chain));
+        }
+
+        if (isOriginal) {
+            EAGL4Internal::EAGL4Free(isOriginal, symbols_num * sizeof(*isOriginal));
+        }
+    }
 
     HashPointer *next;                   // offset 0x0, size 0x4
     HashPointer *prev;                   // offset 0x4, size 0x4

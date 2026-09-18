@@ -21,7 +21,7 @@ class EEnableModeling : public Event {
 
     ~EEnableModeling() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fEnable; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class EEnableModeling : public Event {
 };
 
 void EEnableModeling_MakeEvent_Callback(const void *staticData);
+int EEnableModeling_MakeEvent_LuaBinding(struct lua_State *L);
+void EEnableModeling_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

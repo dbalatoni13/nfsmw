@@ -16,6 +16,17 @@ struct cCaptureBuffer {
     void Init(int xO, int yO, int w, int h, int format, int buffer_function);
     void Destroy();
     void CaptureEFB(int opt, int downsample, GXTexFmt capture_format);
+
+    TextureInfo *GetTexture() {
+        return pCaptureTexture;
+    }
+
+    void SetEFBCaptureRegion(int x, int y, int w, int h) {
+        xOrigin = x;
+        yOrigin = y;
+        width = w;
+        height = h;
+    }
     
     // total size: 0x20
 

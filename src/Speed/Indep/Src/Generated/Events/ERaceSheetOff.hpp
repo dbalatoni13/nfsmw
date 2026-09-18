@@ -19,7 +19,7 @@ class ERaceSheetOff : public Event {
 
     ~ERaceSheetOff() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void ERaceSheetOff_MakeEvent_Callback(const void *staticData);

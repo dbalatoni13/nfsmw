@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+class GRuntimeInstance;
+
 // total size: 0xc
 class EExitEngagableTrigger : public Event {
   public:
@@ -21,12 +23,14 @@ class EExitEngagableTrigger : public Event {
 
     ~EExitEngagableTrigger() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     GRuntimeInstance *fRaceActivity; // offset: 0x8, size 0x4
 };
 
 void EExitEngagableTrigger_MakeEvent_Callback(const void *staticData);
+int EExitEngagableTrigger_MakeEvent_LuaBinding(struct lua_State *L);
+void EExitEngagableTrigger_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -17,7 +17,7 @@ public:
     void Reset();
 
     int _SimRandom_IntRange(const int range) {
-        int r = SimRandom_Generate() * range;
+        int r = range * SimRandom_Generate();
         return r >> 16;
     }
 

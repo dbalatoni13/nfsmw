@@ -36,6 +36,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_MasterVol.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 
 void RegisterSFX() {
     CSTATEMGR_Base::RegisterSFX(TYPEINFO(CARSFX_SingleGinsuEng));
@@ -103,15 +104,15 @@ void RegisterSFX() {
 }
 
 void RegisterStates() {
-    CSTATEMGR_Base::RegisterSTATE(EAXAITunerCar::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(EAXTrafficCar::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(EAXTunerCar::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(EAXTruck::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(EAXCopCar::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_Collision::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_Main::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_DriveBy::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_Music::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_Helicopter::GetStaticStateInfo());
-    CSTATEMGR_Base::RegisterSTATE(CSTATE_WorldObject::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(EAXAITunerCar));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(EAXTrafficCar));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(EAXTunerCar));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(EAXTruck));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(EAXCopCar));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_Collision));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_Main));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_DriveBy));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_Music));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_Helicopter));
+    CSTATEMGR_Base::RegisterSTATE(STATEINFO(CSTATE_WorldObject));
 }

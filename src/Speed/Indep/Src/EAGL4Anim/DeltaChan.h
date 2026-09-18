@@ -87,11 +87,7 @@ class FnDeltaChan : public FnAnimMemoryMap {
     FnDeltaChan();
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {
-        timeLength = static_cast<float>(reinterpret_cast<DeltaChan *>(mpAnim)->GetNumFrames());
-
-        return true;
-    }
+    bool GetLength(float &timeLength) const override;
 
     // Overrides: FnAnimSuper
     ~FnDeltaChan() override;
@@ -137,7 +133,6 @@ class FnDeltaLerpChan : public FnDeltaChan {
     }
 
     // Overrides: FnAnimSuper
-    ~FnDeltaLerpChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
@@ -181,7 +176,6 @@ class FnDeltaQuatChan : public FnDeltaChan {
     }
 
     // Overrides: FnAnimSuper
-    ~FnDeltaQuatChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
@@ -289,13 +283,7 @@ class FnKeyDeltaChan : public FnAnimMemoryMap {
     void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {
-        KeyDeltaChan *keyChan = reinterpret_cast<KeyDeltaChan *>(mpAnim);
-        int numKeys = keyChan->GetNumKeys();
-        timeLength = static_cast<float>(keyChan->GetKeyTimes()[numKeys - 2] + 1);
-
-        return true;
-    }
+    bool GetLength(float &timeLength) const override;
 
   protected:
     void EvalToPrevValues(int key);
@@ -357,7 +345,6 @@ class FnKeyLerpChan : public FnKeyDeltaChan {
     }
 
     // Overrides: FnAnimSuper
-    ~FnKeyLerpChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
@@ -395,7 +382,6 @@ class FnKeyQuatChan : public FnKeyDeltaChan {
     }
 
     // Overrides: FnAnimSuper
-    ~FnKeyQuatChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
@@ -434,6 +420,20 @@ inline FnDeltaChan::FnDeltaChan()
       mPrevValues(nullptr), //
       mNumDofs(0),          //
       mDofMask(nullptr) {}
+
+inline bool FnDeltaChan::GetLength(float &timeLength) const {
+    timeLength = static_cast<float>(reinterpret_cast<DeltaChan *>(mpAnim)->GetNumFrames());
+
+    return true;
+}
+
+inline bool FnKeyDeltaChan::GetLength(float &timeLength) const {
+    KeyDeltaChan *keyChan = reinterpret_cast<KeyDeltaChan *>(mpAnim);
+    int numKeys = keyChan->GetNumKeys();
+    timeLength = static_cast<float>(keyChan->GetKeyTimes()[numKeys - 2] + 1);
+
+    return true;
+}
 
 }; // namespace EAGL4Anim
 

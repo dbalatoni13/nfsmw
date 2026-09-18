@@ -10,7 +10,6 @@
 #include "FnAnim.h"
 #include "FnAnimMemoryMap.h"
 #include "MemoryPoolManager.h"
-#include "PhaseChan.h"
 #include "PosePalette.h"
 #include "eagl4supportdef.h"
 
@@ -149,11 +148,8 @@ class FnCompoundChannel : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnim
-    const AttributeBlock *GetAttributes() const override {
-        CompoundChannel *cchannel = reinterpret_cast<CompoundChannel *>(mpAnim);
-
-        return cchannel->GetAttributeBlock();
-    }
+    // r63-world: el cuerpo esta en CompoundChannel.cpp, ver la nota de alli.
+    const AttributeBlock *GetAttributes() const override;
 
   protected:
     void InitSubChannels() {
@@ -167,22 +163,8 @@ class FnCompoundChannel : public FnAnimMemoryMap {
 
   public:
     // Overrides: FnAnim
-    void Eval(float previousTime, float currentTime, float *dofs) override {
-        const CompoundChannel *cchannel = GetCompoundChannel();
-
-        if (!mChannels) {
-            InitSubChannels();
-        }
-
-        if (mUseFPS) {
-            previousTime *= mFPS;
-            currentTime *= mFPS;
-        }
-
-        for (int i = cchannel->GetNumChannels() - 1; i >= 0; i--) {
-            mChannels[i]->Eval(previousTime, currentTime, dofs);
-        }
-    }
+    // r63-world: el cuerpo esta en CompoundChannel.cpp, ver la nota de alli.
+    void Eval(float previousTime, float currentTime, float *dofs) override;
 
   private:
     FnAnim **mChannels; // offset 0x10, size 0x4

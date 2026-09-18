@@ -1,0 +1,1580 @@
+Sections:
+	.init       type:code align:4
+	.text       type:code align:16
+	.over       type:code align:8
+	.ctors      type:rodata align:1
+	.dtors      type:rodata align:1
+	.rodata     type:rodata align:8
+	.data       type:data align:32
+	.bss        type:bss align:32
+	.sdata      type:data align:8
+	.sbss       type:bss align:8
+	.sdata2     type:rodata align:8
+
+Speed/Indep/SourceLists/zAI.cpp:
+	.text       start:0x800034A0 end:0x80045E3C
+	.ctors      start:0x803C8B64 end:0x803C8B68
+	.rodata     start:0x803C8C60 end:0x803CF348
+	.data       start:0x80415180 end:0x804154C0
+	.bss        start:0x80456560 end:0x80457588
+	.sdata      start:0x804FEDC0 end:0x804FEDD0
+
+Speed/Indep/SourceLists/zAnim.cpp:
+	.text       start:0x80045E3C end:0x80050370
+	.ctors      start:0x803C8B68 end:0x803C8B6C
+	.rodata     start:0x803CF348 end:0x803D0980
+	.data       start:0x804154C0 end:0x804158D8
+	.bss        start:0x80457588 end:0x80457778
+
+Speed/Indep/SourceLists/zAttribSys.cpp:
+	.text       start:0x80050370 end:0x8005C1F8
+	.ctors      start:0x803C8B6C end:0x803C8B70
+	.rodata     start:0x803D0980 end:0x803D0E18
+	.data       start:0x804158D8 end:0x80415938
+	.bss        start:0x80457778 end:0x804577A0
+
+Speed/Indep/SourceLists/zBWare.cpp:
+	.text       start:0x8005C1F8 end:0x80064DB4
+	.ctors      start:0x803C8B70 end:0x803C8B74
+	.rodata     start:0x803D0E18 end:0x803D1928
+	.data       start:0x80415938 end:0x80416488
+	.bss        start:0x804577A0 end:0x8045A974
+
+Speed/Indep/SourceLists/zCamera.cpp:
+	.text       start:0x80064DB4 end:0x80083604
+	.ctors      start:0x803C8B74 end:0x803C8B78
+	.rodata     start:0x803D1928 end:0x803D3C78
+	.data       start:0x80416488 end:0x804170C8
+	.bss        start:0x8045A974 end:0x8045B0F8
+
+Speed/Indep/SourceLists/zDebug.cpp:
+	.text       start:0x80083604 end:0x80083680
+	.ctors      start:0x803C8B78 end:0x803C8B7C
+	.rodata     start:0x803D3C78 end:0x803D3DC8
+	.bss        start:0x8045B0F8 end:0x8045B108
+
+Speed/Indep/SourceLists/zDynamics.cpp:
+	.text       start:0x80083680 end:0x8008A7B0
+	.ctors      start:0x803C8B7C end:0x803C8B80
+	.rodata     start:0x803D3DC8 end:0x803D3FE8
+	.data       start:0x804170C8 end:0x804170F4
+	.bss        start:0x8045B108 end:0x8045B110
+
+Speed/Indep/SourceLists/zEagl4Anim.cpp:
+	.text       start:0x8008A7B0 end:0x800A6128
+	.ctors      start:0x803C8B80 end:0x803C8B84
+	.rodata     start:0x803D3FE8 end:0x803D5E38
+	.data       start:0x804170F4 end:0x80417634
+	.bss        start:0x8045B110 end:0x8045B268
+
+Speed/Indep/SourceLists/zEAXSound.cpp:
+	.text       start:0x800A6128 end:0x800CAF5C
+	.ctors      start:0x803C8B84 end:0x803C8B88
+	.rodata     start:0x803D5E38 end:0x803D9050
+	.data       start:0x80417634 end:0x80417D88
+	.bss        start:0x8045B268 end:0x8045DE60
+
+Speed/Indep/SourceLists/zEAXSound2.cpp:
+	.text       start:0x800CAF5C end:0x800F486C
+	.ctors      start:0x803C8B88 end:0x803C8B8C
+	.rodata     start:0x803D9050 end:0x803DD6D8
+	.data       start:0x80417D88 end:0x8041A5A4
+	.bss        start:0x8045DE60 end:0x8045ECB0
+
+Speed/Indep/SourceLists/zEcstasy.cpp:
+	.text       start:0x800F486C end:0x80118248
+	.ctors      start:0x803C8B8C end:0x803C8B90
+	.rodata     start:0x803DD6D8 end:0x803DF568
+	.data       start:0x8041A5A4 end:0x8041B5CC
+	.bss        start:0x8045ECB0 end:0x804729E0
+
+Speed/Indep/SourceLists/zFe.cpp:
+	.text       start:0x80118248 end:0x80142AC0
+	.ctors      start:0x803C8B90 end:0x803C8B94
+	.rodata     start:0x803DF568 end:0x803E4380
+	.data       start:0x8041B5CC end:0x8041BE08
+	.bss        start:0x804729E0 end:0x80472FBC
+
+Speed/Indep/SourceLists/zFe2.cpp:
+	.text       start:0x80142AC0 end:0x8017FE2C
+	.ctors      start:0x803C8B94 end:0x803C8B98
+	.rodata     start:0x803E4380 end:0x803EA7E8
+	.data       start:0x8041BE08 end:0x8041CE90
+	.bss        start:0x80472FBC end:0x80473CC8
+
+Speed/Indep/SourceLists/zFEng.cpp:
+	.text       start:0x8017FE2C end:0x80191550
+	.ctors      start:0x803C8B98 end:0x803C8B9C
+	.rodata     start:0x803EA7E8 end:0x803EB230
+	.data       start:0x8041CE90 end:0x8041D1C0
+	.bss        start:0x80473CC8 end:0x80473E14
+
+Speed/Indep/SourceLists/zFoundation.cpp:
+	.text       start:0x80191550 end:0x8019A1F0
+	.ctors      start:0x803C8B9C end:0x803C8BA0
+	.rodata     start:0x803EB230 end:0x803EBB48
+	.data       start:0x8041D1C0 end:0x8041D2B8
+	.bss        start:0x80473E14 end:0x80473EF8
+
+Speed/Indep/SourceLists/zGameModes.cpp:
+	.text       start:0x8019A1F0 end:0x8019A26C
+	.ctors      start:0x803C8BA0 end:0x803C8BA4
+	.bss        start:0x80473EF8 end:0x80473F00
+
+Speed/Indep/SourceLists/zGameplay.cpp:
+	.text       start:0x8019A26C end:0x801BCB0C
+	.ctors      start:0x803C8BA4 end:0x803C8BA8
+	.rodata     start:0x803EBB48 end:0x803ED338
+	.data       start:0x8041D2B8 end:0x8041D5A4
+	.bss        start:0x80473F00 end:0x80473FE0
+
+Speed/Indep/SourceLists/zLua.cpp:
+	.text       start:0x801BCB0C end:0x801D3B44
+	.ctors      start:0x803C8BA8 end:0x803C8BAC
+	.rodata     start:0x803ED338 end:0x803EF580
+	.data       start:0x8041D5A4 end:0x8041D7EC
+	.bss        start:0x80473FE0 end:0x80474024
+
+Speed/Indep/SourceLists/zMain.cpp:
+	.text       start:0x801D3B44 end:0x801FAB64
+	.ctors      start:0x803C8BAC end:0x803C8BB0
+	.rodata     start:0x803EF580 end:0x803F4878
+	.data       start:0x8041D7EC end:0x8041E508
+	.bss        start:0x80474024 end:0x8047F914
+
+Speed/Indep/SourceLists/zMisc.cpp:
+	.text       start:0x801FAB64 end:0x8020DC1C
+	.ctors      start:0x803C8BB0 end:0x803C8BB4
+	.rodata     start:0x803F4878 end:0x803F6730
+	.data       start:0x8041E508 end:0x8041ED7C
+	.bss        start:0x8047F914 end:0x804801A4
+	.bss        start:0x804FE9CC end:0x804FEA4C align:4 common
+
+Speed/Indep/SourceLists/zMiscSmall.cpp:
+	.text       start:0x8020DC1C end:0x8020DF1C
+	.ctors      start:0x803C8BB4 end:0x803C8BB8
+	.rodata     start:0x803F6730 end:0x803F6890
+	.data       start:0x8041ED7C end:0x8041EFE8
+	.bss        start:0x804801A4 end:0x804801AC
+
+Speed/Indep/SourceLists/zMission.cpp:
+	.text       start:0x8020DF1C end:0x8020DF98
+	.ctors      start:0x803C8BB8 end:0x803C8BBC
+	.rodata     start:0x803F6890 end:0x803F68F0
+	.bss        start:0x804801AC end:0x804801D8
+
+Speed/Indep/SourceLists/zPhysics.cpp:
+	.text       start:0x8020DF98 end:0x80231A64
+	.ctors      start:0x803C8BBC end:0x803C8BC0
+	.rodata     start:0x803F68F0 end:0x803FA7B0
+	.data       start:0x8041EFE8 end:0x8041F1A4
+	.bss        start:0x804801D8 end:0x80484EB8
+
+Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
+	.text       start:0x80231A64 end:0x8026B4F4
+	.ctors      start:0x803C8BC0 end:0x803C8BC4
+	.rodata     start:0x803FA7B0 end:0x80402108
+	.data       start:0x8041F1A4 end:0x8041F728
+	.bss        start:0x80484EB8 end:0x8048BD18
+
+Speed/Indep/SourceLists/zPlatform.cpp:
+	.text       start:0x8026B4F4 end:0x802727B8
+	.ctors      start:0x803C8BC4 end:0x803C8BC8
+	.rodata     start:0x80402108 end:0x80403B40
+	.data       start:0x8041F728 end:0x80435768
+	.bss        start:0x8048BD18 end:0x80496A20
+
+Speed/Indep/SourceLists/zRender.cpp:
+	.text       start:0x802727B8 end:0x802728EC
+	.ctors      start:0x803C8BC8 end:0x803C8BCC
+	.rodata     start:0x80403B40 end:0x80403F48
+	.data       start:0x80435768 end:0x80435814
+	.bss        start:0x80496A20 end:0x80496A28
+
+Speed/Indep/SourceLists/zSim.cpp:
+	.text       start:0x802728EC end:0x8028A17C
+	.ctors      start:0x803C8BCC end:0x803C8BD0
+	.rodata     start:0x80403F48 end:0x80405E10
+	.data       start:0x80435814 end:0x80435970
+	.bss        start:0x80496A28 end:0x80498974
+
+Speed/Indep/SourceLists/zSpeech.cpp:
+	.text       start:0x8028A17C end:0x802B5C44
+	.ctors      start:0x803C8BD0 end:0x803C8BD4
+	.rodata     start:0x80405E10 end:0x80408FB8
+	.data       start:0x80435970 end:0x80435F48
+	.bss        start:0x80498974 end:0x8049A5A4
+
+Speed/Indep/SourceLists/zTrack.cpp:
+	.text       start:0x802B5C44 end:0x802C5544
+	.ctors      start:0x803C8BD4 end:0x803C8BD8
+	.rodata     start:0x80408FB8 end:0x80409D58
+	.data       start:0x80435F48 end:0x80437248
+	.bss        start:0x8049A5A4 end:0x804A5E60
+
+Speed/Indep/SourceLists/zWorld.cpp:
+	.text       start:0x802C5544 end:0x802ECA00
+	.ctors      start:0x803C8BD8 end:0x803C8BDC
+	.rodata     start:0x80409D58 end:0x8040DFE8
+	.data       start:0x80437248 end:0x80438F58
+	.bss        start:0x804A5E60 end:0x804AA598
+
+Speed/Indep/SourceLists/zWorld2.cpp:
+	.text       start:0x802ECA00 end:0x8030EA7C
+	.ctors      start:0x803C8BDC end:0x803C8BE0
+	.rodata     start:0x8040DFE8 end:0x8040F1B8
+	.data       start:0x80438F58 end:0x804390E4
+	.bss        start:0x804AA598 end:0x804AAA88
+
+Speed/Indep/SourceLists/zOnline.cpp:
+	.over       start:0x803A41B8 end:0x803A4234
+	.over       start:0x803A4234 end:0x803A4294 rename:.rodata
+	.ctors      start:0x803C8BE0 end:0x803C8BE4
+	.bss        start:0x804AAA88 end:0x804AAA90
+
+Speed/Indep/SourceLists/zFeOverlay.cpp:
+	.over       start:0x803A4294 end:0x803C6A3C
+	.over       start:0x803C6A40 end:0x803C8B58 rename:.rodata
+	.ctors      start:0x803C8BE4 end:0x803C8BE8
+	.data       start:0x804390E4 end:0x804394D0
+	.bss        start:0x804AAA90 end:0x804B4DE8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
+	.text       start:0x8031F4C0 end:0x8031F5D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c:
+	.text       start:0x80321810 end:0x803222DC
+	.data       start:0x80439F40 end:0x8043A138
+	.bss        start:0x804BA040 end:0x804BA0B0
+	.sdata      start:0x804FF3B0 end:0x804FF3C0
+	.sbss       start:0x804FF8D8 end:0x804FF910
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c:
+	.text       start:0x803222DC end:0x80322AB4
+	.data       start:0x8043A138 end:0x8043A330
+	.sbss       start:0x804FF910 end:0x804FF918
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c:
+	.text       start:0x80322AB4 end:0x80322C9C
+	.data       start:0x8043A330 end:0x8043A6C8
+	.sdata      start:0x804FF3C0 end:0x804FF3C8
+	.sbss       start:0x804FF918 end:0x804FF928
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c:
+	.text       start:0x80322C9C end:0x80322CE8
+	.sdata      start:0x804FF3C8 end:0x804FF3CC
+	.sbss       start:0x804FF928 end:0x804FF92C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c:
+	.text       start:0x80322CE8 end:0x80322F7C
+	.data       start:0x8043A6C8 end:0x8043A748
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSCache.c:
+	.text       start:0x80322F7C end:0x803233E0
+	.data       start:0x8043A748 end:0x8043A978
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSContext.c:
+	.text       start:0x803233E0 end:0x80323C50
+	.data       start:0x8043A978 end:0x8043AB50
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c:
+	.text       start:0x80323C50 end:0x803242FC
+	.data       start:0x8043AB50 end:0x8043AE70
+	.bss        start:0x804BA0B0 end:0x804BA0F4
+	.sdata      start:0x804FF3D0 end:0x804FF3D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSExec.c:
+	.text       start:0x803242FC end:0x80324C5C
+	.data       start:0x8043AE70 end:0x8043AE80
+	.sdata      start:0x804FF3D8 end:0x804FF3E0
+	.sbss       start:0x804FF930 end:0x804FF938
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFont.c:
+	.text       start:0x80324C5C end:0x80325B30
+	.data       start:0x8043AE80 end:0x8043B990
+	.sdata      start:0x804FF3E0 end:0x804FF3E8
+	.sbss       start:0x804FF938 end:0x804FF948
+	.sdata2     start:0x80500828 end:0x80500830
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c:
+	.text       start:0x80325B30 end:0x8032639C
+	.data       start:0x8043B990 end:0x8043B9BC
+	.sbss       start:0x804FF948 end:0x804FF960
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c:
+	.text       start:0x8032639C end:0x803263B4
+	.data       start:0x8043B9C0 end:0x8043BA10
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c:
+	.text       start:0x803263B4 end:0x8032668C
+	.data       start:0x8043BA10 end:0x8043BA20
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c:
+	.text       start:0x8032668C end:0x803268D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c:
+	.text       start:0x803268D8 end:0x8032695C
+	.sbss       start:0x804FF960 end:0x804FF968
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReset.c:
+	.text       start:0x8032695C end:0x80326DE0
+	.data       start:0x8043BA20 end:0x8043BA70
+	.sbss       start:0x804FF968 end:0x804FF978
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSResetSW.c:
+	.text       start:0x80326DE0 end:0x8032718C
+	.sbss       start:0x804FF978 end:0x804FF998
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSRtc.c:
+	.text       start:0x8032718C end:0x80327F54
+	.bss        start:0x804BA100 end:0x804BA154
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSync.c:
+	.text       start:0x80327F54 end:0x80327FD8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSThread.c:
+	.text       start:0x80327FD8 end:0x80329328
+	.data       start:0x8043BA70 end:0x8043C280
+	.bss        start:0x804BA158 end:0x804BAB50
+	.sdata      start:0x804FF3E8 end:0x804FF3F0
+	.sbss       start:0x804FF998 end:0x804FF9A4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSTime.c:
+	.text       start:0x80329328 end:0x80329404
+	.data       start:0x8043C280 end:0x8043C2E0
+
+LibSN/crt0.s:
+	.init       start:0x80003100 end:0x80003468
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.c:
+	.init       start:0x80003468 end:0x8000348C
+	.text       start:0x80329404 end:0x8032950C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/db/db.c:
+	.text       start:0x8032950C end:0x803295F8
+	.data       start:0x8044D520 end:0x8044D538
+	.sdata      start:0x804FF3F0 end:0x804FF3F8
+	.sbss       start:0x804FF9A8 end:0x804FF9B0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx.c:
+	.text       start:0x803295F8 end:0x80329C6C
+	.sdata      start:0x804FF3F8 end:0x804FF400
+	.sdata2     start:0x80500830 end:0x80500850
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtxvec.c:
+	.text       start:0x80329C6C end:0x80329CC0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx44.c:
+	.text       start:0x80329CC0 end:0x8032A3F8
+	.data       start:0x8044D538 end:0x8044D548
+	.sdata2     start:0x80500850 end:0x80500870
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/vec.c:
+	.text       start:0x8032A3F8 end:0x8032A478
+	.sdata2     start:0x80500870 end:0x80500898
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdfs.c:
+	.text       start:0x8032A478 end:0x8032A92C
+	.data       start:0x8044D548 end:0x8044D938
+	.sdata      start:0x804FF400 end:0x804FF408
+	.sbss       start:0x804FF9B0 end:0x804FF9D0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvd.c:
+	.text       start:0x8032A92C end:0x8032D0B4
+	.data       start:0x8044D938 end:0x8044DAC0
+	.bss        start:0x804BAB60 end:0x804BABF8
+	.sdata      start:0x804FF408 end:0x804FF428
+	.sbss       start:0x804FF9D0 end:0x804FFA30
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdqueue.c:
+	.text       start:0x8032D0B4 end:0x8032D2AC
+	.data       start:0x8044DAC0 end:0x8044DC28
+	.bss        start:0x804BABF8 end:0x804BAC18
+	.sdata      start:0x804FF428 end:0x804FF460
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvderror.c:
+	.text       start:0x8032D2AC end:0x8032D444
+	.data       start:0x8044DC28 end:0x8044DC70
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdidutils.c:
+	.text       start:0x8032D444 end:0x8032D53C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdFatal.c:
+	.text       start:0x8032D53C end:0x8032D56C
+	.data       start:0x8044DC70 end:0x8044E020
+	.sdata      start:0x804FF460 end:0x804FF468
+	.sbss       start:0x804FFA30 end:0x804FFA38
+	.sdata2     start:0x80500898 end:0x805008A0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/fstload.c:
+	.text       start:0x8032D56C end:0x8032D7AC
+	.data       start:0x8044E020 end:0x8044E090
+	.bss        start:0x804BAC18 end:0x804BAC88
+	.sdata      start:0x804FF468 end:0x804FF478
+	.sbss       start:0x804FFA38 end:0x804FFA44
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdlow.c:
+	.text       start:0x8032D7AC end:0x8032E628
+	.bss        start:0x804BAC88 end:0x804BAD58
+	.sdata      start:0x804FF478 end:0x804FF480
+	.sbss       start:0x804FFA48 end:0x804FFA90
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/vi/vi.c:
+	.text       start:0x8032E628 end:0x80330468
+	.data       start:0x8044E090 end:0x8044E478
+	.bss        start:0x804BAD58 end:0x804BAEA0
+	.sdata      start:0x804FF480 end:0x804FF490
+	.sbss       start:0x804FFA90 end:0x804FFAF8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/demo/DEMOPad.c:
+	.data       start:0x8044E478 end:0x8044E488
+	.bss        start:0x804BAEA0 end:0x804BAED0
+	.sbss       start:0x804FFAF8 end:0x804FFB00
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Padclamp.c:
+	.text       start:0x80330468 end:0x803306AC
+	.rodata     start:0x8040FED0 end:0x8040FEE0
+	.sdata2     start:0x805008A0 end:0x805008C0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Pad.c:
+	.text       start:0x803306AC end:0x80332134
+	.data       start:0x8044E488 end:0x8044E4E0
+	.bss        start:0x804BAED0 end:0x804BAF20
+	.sdata      start:0x804FF490 end:0x804FF4B0
+	.sbss       start:0x804FFB00 end:0x804FFB30
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ai/ai.c:
+	.text       start:0x80332134 end:0x80332A18
+	.data       start:0x8044E4E0 end:0x8044E528
+	.sdata      start:0x804FF4B0 end:0x804FF4B4
+	.sbss       start:0x804FFB30 end:0x804FFB70
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/ar.c:
+	.text       start:0x80332A18 end:0x803344F0
+	.data       start:0x8044E528 end:0x8044E570
+	.sdata      start:0x804FF4B8 end:0x804FF4C0
+	.sbss       start:0x804FFB70 end:0x804FFB90
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDMount.c:
+	.text       start:0x803344F0 end:0x80334FF4
+	.data       start:0x8044E570 end:0x8044E5B0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDNet.c:
+	.text       start:0x80334FF4 end:0x80335120
+	.sdata      start:0x804FF4C0 end:0x804FF4C8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBios.c:
+	.text       start:0x80335120 end:0x80336698
+	.data       start:0x8044E5B0 end:0x8044E608
+	.bss        start:0x804BAF20 end:0x804BB160
+	.sdata      start:0x804FF4C8 end:0x804FF4D0
+	.sbss       start:0x804FFB90 end:0x804FFB98
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDUnlock.c:
+	.text       start:0x80336698 end:0x803378F8
+	.data       start:0x8044E620 end:0x8044E780
+	.sdata      start:0x804FF4D0 end:0x804FF4D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDRdwr.c:
+	.text       start:0x803378F8 end:0x80337B88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBlock.c:
+	.text       start:0x80337B88 end:0x80337F8C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDir.c:
+	.text       start:0x80337F8C end:0x803381F0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCheck.c:
+	.text       start:0x803381F0 end:0x80339158
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDStatEx.c:
+	.text       start:0x80339158 end:0x80339498
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDOpen.c:
+	.text       start:0x80339498 end:0x80339B88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXInit.c:
+	.text       start:0x80339B88 end:0x8033AF14
+	.data       start:0x8044E780 end:0x8044E9C0
+	.bss        start:0x804BB160 end:0x804BB790
+	.sdata      start:0x804FF4D8 end:0x804FF4E0
+	.sbss       start:0x804FFB98 end:0x804FFBC0
+	.sdata2     start:0x805008C0 end:0x805008E8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFifo.c:
+	.text       start:0x8033AF14 end:0x8033B6C0
+	.sbss       start:0x804FFBC0 end:0x804FFBE0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXAttr.c:
+	.text       start:0x8033B6C0 end:0x8033CA74
+	.data       start:0x8044E9C0 end:0x8044EC38
+	.sdata      start:0x804FF4E0 end:0x804FF4F0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXMisc.c:
+	.text       start:0x8033CA74 end:0x8033D228
+	.data       start:0x8044EC38 end:0x8044EC90
+	.sbss       start:0x804FFBE0 end:0x804FFBF8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXGeometry.c:
+	.text       start:0x8033D228 end:0x8033D548
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFrameBuf.c:
+	.text       start:0x8033D548 end:0x8033DFF0
+	.data       start:0x8044EC90 end:0x8044EE28
+	.sdata2     start:0x805008E8 end:0x805008F8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXLight.c:
+	.text       start:0x8033DFF0 end:0x8033E510
+	.data       start:0x8044EE28 end:0x8044EE48
+	.sdata2     start:0x805008F8 end:0x80500940
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTexture.c:
+	.text       start:0x8033E510 end:0x8033F588
+	.data       start:0x8044EE48 end:0x8044F160
+	.sdata      start:0x804FF4F0 end:0x804FF538
+	.sdata2     start:0x80500940 end:0x80500978
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXBump.c:
+	.text       start:0x8033F588 end:0x8033FAA8
+	.sdata2     start:0x80500978 end:0x80500990
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTev.c:
+	.text       start:0x8033FAA8 end:0x80340104
+	.data       start:0x8044F160 end:0x8044F1D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPixel.c:
+	.text       start:0x80340104 end:0x8034073C
+	.data       start:0x8044F1D8 end:0x8044F1F8
+	.sdata2     start:0x80500990 end:0x805009F0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c:
+	.text       start:0x8034073C end:0x8034093C
+	.bss        start:0x804BB790 end:0x804BBD64
+	.sbss       start:0x804FFBF8 end:0x804FFBFC
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTransform.c:
+	.text       start:0x8034093C end:0x80340E88
+	.sdata2     start:0x805009F0 end:0x80500A04
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPerf.c:
+	.text       start:0x80340E88 end:0x80341AB4
+	.data       start:0x8044F1F8 end:0x8044F340
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIBios.c:
+	.text       start:0x80341AB4 end:0x80343490
+	.data       start:0x8044F340 end:0x8044F450
+	.bss        start:0x804BBD68 end:0x804BBE28
+	.sdata      start:0x804FF538 end:0x804FF570
+	.sbss       start:0x804FFC00 end:0x804FFC08
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIUart.c:
+	.text       start:0x80343490 end:0x80343A48
+	.sbss       start:0x804FFC08 end:0x804FFC18
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c:
+	.text       start:0x80343A48 end:0x803452A8
+	.data       start:0x8044F450 end:0x8044F568
+	.bss        start:0x804BBE28 end:0x804BC028
+	.sdata      start:0x804FF570 end:0x804FF588
+	.sbss       start:0x804FFC18 end:0x804FFC28
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c:
+	.text       start:0x803452A8 end:0x803453B0
+	.data       start:0x8044F568 end:0x8044F600
+	.sbss       start:0x804FFC28 end:0x804FFC30
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteering.c:
+	.text       start:0x803453B0 end:0x80345564
+	.data       start:0x8044F600 end:0x8044F610
+	.bss        start:0x804BC028 end:0x804BC0C8
+	.sbss       start:0x804FFC30 end:0x804FFC40
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringXfer.c:
+	.text       start:0x80345564 end:0x803457E4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c:
+	.text       start:0x803457E4 end:0x80345B50
+	.sbss       start:0x804FFC40 end:0x804FFC48
+
+egami/rcmp/dev/source/av/cmn/avplayer.cpp:
+	.text       start:0x803472B4 end:0x80348334
+
+egami/rcmp/dev/source/av/cmn/avsubtitle.cpp:
+	.text       start:0x80348334 end:0x80348334
+
+egami/rcmp/dev/source/av/cmn/audioplayer.cpp:
+	.text       start:0x80348334 end:0x80348640
+
+egami/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp:
+	.text       start:0x80348640 end:0x80348EE4
+
+egami/rcmp/dev/source/vd/gc/bigswizzler.cpp:
+	.text       start:0x80348EE4 end:0x8034939C
+
+egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp:
+	.text       start:0x8034939C end:0x803497E4
+	.bss        start:0x804BC0E0 end:0x804BC0F0
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp:
+	.text       start:0x8034983C end:0x8034A2F0
+	.bss        start:0x804BC0F0 end:0x804BC104
+	.sbss       start:0x804FFC6C end:0x804FFC74
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp:
+	.text       start:0x8034A348 end:0x8034A390
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp:
+	.text       start:0x8034A390 end:0x8034ADB0
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp:
+	.text       start:0x8034ADB0 end:0x8034ADE4
+	.rodata     start:0x8041045C end:0x80410468
+
+egami/rcmp/dev/source/decoder/cmn/maddec.cpp:
+	.text       start:0x8034ADE4 end:0x8034B900
+	.rodata     start:0x80410468 end:0x80411358
+	.bss        start:0x804BC104 end:0x804BDB04
+	.sbss       start:0x804FFC74 end:0x804FFC88
+
+egami/rcmp/dev/source/decoder/cmn/maddeca.cpp:
+	.text       start:0x8034B900 end:0x8034BAC4
+	.rodata     start:0x80411358 end:0x804114A8
+
+egami/rcmp/dev/source/decoder/cmn/madidct.cpp:
+	.text       start:0x8034BAC4 end:0x8034C0A4
+	.data       start:0x8044F62C end:0x8044F72C
+	.bss        start:0x804BDB04 end:0x804BDD04
+
+Packages/vp6/1.0.6/source/decode/cmn/allocator.cpp:
+	.text       start:0x8034C0A4 end:0x8034C160
+	.sdata      start:0x804FF5A0 end:0x804FF5A8
+
+Packages/vp6/1.0.6/source/decode/cmn/pb_globals.c:
+	.text       start:0x8034C160 end:0x8034C4E4
+	.data       start:0x8044F72C end:0x8044F754
+	.bss        start:0x804BDD04 end:0x804BDE04
+	.sbss       start:0x804FFC88 end:0x804FFC8C
+
+Packages/vp6/1.0.6/source/decode/cmn/postproc.c:
+	.text       start:0x8034C4E4 end:0x8034D1A8
+	.bss        start:0x804BDE04 end:0x804BE104
+	.sbss       start:0x804FFC8C end:0x804FFCF8
+
+Packages/vp6/1.0.6/source/decode/cmn/quantize.c:
+	.text       start:0x8034D1A8 end:0x8034D528
+	.rodata     start:0x804114A8 end:0x804119D0
+	.sbss       start:0x804FFCF8 end:0x804FFCFC
+
+Packages/vp6/1.0.6/source/decode/cmn/simpledeblocker.c:
+	.text       start:0x8034D528 end:0x8034D93C
+	.rodata     start:0x804119D0 end:0x80411AF4
+
+Packages/vp6/1.0.6/source/decode/cmn/vfwpbdll_if.c:
+	.text       start:0x8034D93C end:0x8034E180
+	.sdata      start:0x804FF5A8 end:0x804FF5B0
+
+Packages/vp6/1.0.6/source/decode/cmn/vputil.c:
+	.text       start:0x8034E180 end:0x8034E9F4
+	.data       start:0x8044F754 end:0x8044F794
+	.bss        start:0x804BE104 end:0x804BE46C
+	.sbss       start:0x804FFCFC end:0x804FFD2C
+
+Packages/vp6/1.0.6/source/decode/gc/doptsystemdependant.c:
+	.text       start:0x8034E9F4 end:0x8034EB4C
+
+Packages/vp6/1.0.6/source/decode/gc/DSystemDependant.c:
+	.text       start:0x8034EB4C end:0x8034EB64
+
+Packages/vp6/1.0.6/source/decode/gc/uoptsystemdependant.c:
+	.text       start:0x8034EB64 end:0x8034ECD0
+
+Packages/vp6/1.0.6/source/decode/cmn/duck_mem.cpp:
+	.text       start:0x8034ECD0 end:0x8034ED10
+
+Packages/vp6/1.0.6/source/decode/cmn/boolhuff.c:
+	.text       start:0x8034ED10 end:0x8034ED68
+
+Packages/vp6/1.0.6/source/decode/cmn/borders.c:
+	.text       start:0x8034ED68 end:0x8034F154
+
+Packages/vp6/1.0.6/source/decode/cmn/clamp.c:
+	.text       start:0x8034F154 end:0x8034F21C
+
+Packages/vp6/1.0.6/source/decode/cmn/deblock.c:
+	.text       start:0x8034F21C end:0x80351AC0
+	.data       start:0x8044F794 end:0x8044FA94
+	.sbss       start:0x804FFD2C end:0x804FFD3C
+
+Packages/vp6/1.0.6/source/decode/cmn/decodembs.c:
+	.text       start:0x80351AC0 end:0x8035305C
+	.rodata     start:0x80411AF4 end:0x80411CB8
+
+Packages/vp6/1.0.6/source/decode/cmn/decodemode.c:
+	.text       start:0x8035305C end:0x80353564
+	.rodata     start:0x80411CB8 end:0x804120C8
+
+Packages/vp6/1.0.6/source/decode/cmn/decodemv.c:
+	.text       start:0x80353564 end:0x80353734
+	.rodata     start:0x804120C8 end:0x80412108
+
+Packages/vp6/1.0.6/source/decode/cmn/DeInterlace.c:
+	.text       start:0x80353734 end:0x803537FC
+
+Packages/vp6/1.0.6/source/decode/cmn/dering.c:
+	.text       start:0x803537FC end:0x80354FF0
+	.data       start:0x8044FA94 end:0x8044FD94
+	.bss        start:0x804BE46C end:0x804BE5FC
+
+Packages/vp6/1.0.6/source/decode/cmn/DFrameR.c:
+	.text       start:0x80354FF0 end:0x803556B0
+
+Packages/vp6/1.0.6/source/decode/cmn/FrameIni.c:
+	.text       start:0x803556B0 end:0x80355CA8
+	.rodata     start:0x80412108 end:0x80412168
+
+Packages/vp6/1.0.6/source/decode/cmn/Huffman.c:
+	.text       start:0x80355CA8 end:0x80356028
+
+Packages/vp6/1.0.6/source/decode/cmn/idctpart.c:
+	.text       start:0x80356028 end:0x8035645C
+	.rodata     start:0x80412168 end:0x80412268
+
+Packages/vp6/1.0.6/source/decode/cmn/loopfilter.c:
+	.text       start:0x8035645C end:0x80356920
+	.data       start:0x8044FD94 end:0x80450094
+	.sbss       start:0x804FFD3C end:0x804FFD40
+
+Packages/vp6/1.0.6/source/decode/cmn/reconstruct.c:
+	.text       start:0x80356920 end:0x80356BB0
+
+Packages/vp6/1.0.6/source/decode/cmn/scale.c:
+	.text       start:0x80356BB0 end:0x80357864
+
+Packages/vp6/1.0.6/source/decode/cmn/TokenEntropy.c:
+	.text       start:0x80357864 end:0x80357928
+	.rodata     start:0x80412268 end:0x804124FC
+
+Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
+	.text       start:0x80357928 end:0x8035A830
+	.rodata     start:0x804124FC end:0x80412778
+	.data       start:0x80450094 end:0x80450174
+	.sdata      start:0x804FF5B0 end:0x804FF5B8
+
+Packages/vp6/1.0.6/source/decode/cmn/recon.c:
+	.text       start:0x8035A830 end:0x8035A9B0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c:
+	.text       start:0x8035A9B0 end:0x8035AA7C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saems.c:
+	.text       start:0x8035AA7C end:0x8035D4A0
+	.rodata     start:0x80412778 end:0x80412850
+	.data       start:0x80450174 end:0x804502C8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:
+	.text       start:0x8035D4A0 end:0x8035D6BC
+	.ctors      start:0x803C8BF0 end:0x803C8BF4
+	.bss        start:0x804BE5FC end:0x804BE634
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c:
+	.text       start:0x8035D6BC end:0x8035DCA4
+	.data       start:0x804502C8 end:0x804502CC
+	.bss        start:0x804BE634 end:0x804BE670
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c:
+	.text       start:0x8035DCA4 end:0x8035DFE4
+	.bss        start:0x804BE670 end:0x804BE690
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c:
+	.text       start:0x8035DFE4 end:0x8035E05C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c:
+	.text       start:0x8035E05C end:0x8035E650
+	.data       start:0x804502CC end:0x804502D0
+	.bss        start:0x804BE690 end:0x804BE69C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:
+	.text       start:0x8035E650 end:0x8035E6E8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c:
+	.text       start:0x8035E6E8 end:0x8035E9CC
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c:
+	.text       start:0x8035E9CC end:0x8035EA50
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c:
+	.text       start:0x8035EA50 end:0x8035F650
+	.data       start:0x804502D0 end:0x804502DC
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c:
+	.text       start:0x8035F650 end:0x8035F8E8
+	.bss        start:0x804BE69C end:0x804BE6B0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c:
+	.text       start:0x8035F8E8 end:0x8035F95C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c:
+	.text       start:0x8035F95C end:0x8035F974
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c:
+	.text       start:0x8035F974 end:0x8035FA0C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c:
+	.text       start:0x8035FA0C end:0x8035FBA0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c:
+	.text       start:0x8035FBA0 end:0x8035FBFC
+
+Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c:
+	.text       start:0x8035FBFC end:0x8035FC28
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c:
+	.text       start:0x8035FC28 end:0x8035FD34
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp:
+	.text       start:0x8035FD34 end:0x8035FDEC
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c:
+	.text       start:0x8035FDEC end:0x8035FDEC
+	.bss        start:0x804BE6B0 end:0x804BE8F4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c:
+	.text       start:0x8035FDEC end:0x8035FEF0
+	.rodata     start:0x80412850 end:0x80412860
+
+Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c:
+	.text       start:0x8035FEF0 end:0x8035FF58
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c:
+	.text       start:0x8035FF58 end:0x80360150
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c:
+	.text       start:0x80360150 end:0x80360150
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c:
+	.text       start:0x80360150 end:0x80360198
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c:
+	.text       start:0x80360198 end:0x803601D8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c:
+	.text       start:0x803601D8 end:0x80360550
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp:
+	.text       start:0x80360550 end:0x80360760
+	.rodata     start:0x80412860 end:0x80412870
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c:
+	.text       start:0x80360760 end:0x8036080C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c:
+	.text       start:0x8036080C end:0x803608A0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c:
+	.text       start:0x803608A0 end:0x80361480
+	.bss        start:0x804BE8F4 end:0x804BEC78
+
+Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c:
+	.text       start:0x80361480 end:0x803614D8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spoutlat.c:
+	.text       start:0x803614D8 end:0x80361510
+
+Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c:
+	.text       start:0x80361510 end:0x8036164C
+	.data       start:0x804502DC end:0x804502F8
+	.bss        start:0x804BEC78 end:0x804BEC90
+
+Speed/Indep/Libs/snd/9/source/library/cmn/srender.c:
+	.text       start:0x8036164C end:0x80361708
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sresopat.c:
+	.text       start:0x80361708 end:0x8036178C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sserver.c:
+	.text       start:0x8036178C end:0x80361B40
+	.data       start:0x804502F8 end:0x80450300
+	.bss        start:0x804BEC90 end:0x804BEC9C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssine.c:
+	.text       start:0x80361B6C end:0x80361BEC
+	.data       start:0x80450300 end:0x80450504
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sst.c:
+	.text       start:0x80361BEC end:0x80362E80
+	.data       start:0x80450504 end:0x80450528
+	.bss        start:0x804BEC9C end:0x804BED1C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sst3dpos.c:
+	.text       start:0x80362E80 end:0x80363134
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstautov.c:
+	.text       start:0x80363134 end:0x8036340C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstcrtap.c:
+	.text       start:0x8036340C end:0x8036344C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstfxlev.c:
+	.text       start:0x8036344C end:0x80363548
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstgetrp.c:
+	.text       start:0x80363548 end:0x803635C0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssthold.c:
+	.text       start:0x803635C0 end:0x80363618
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstlowp.c:
+	.text       start:0x80363618 end:0x80363668
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstop.c:
+	.text       start:0x80363668 end:0x803636C8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstovrhd.c:
+	.text       start:0x803636C8 end:0x80363754
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstpmult.c:
+	.text       start:0x80363754 end:0x803637B0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstqmem.c:
+	.text       start:0x803637B0 end:0x803637DC
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstqreqi.c:
+	.text       start:0x803637DC end:0x80363808
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstrmdry.cpp:
+	.text       start:0x80363808 end:0x80363858
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstrstat.c:
+	.text       start:0x80363858 end:0x80363A6C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstsetgl.c:
+	.text       start:0x80363A6C end:0x80363AB8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sststat.c:
+	.text       start:0x80363AB8 end:0x80363B98
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssttmul.c:
+	.text       start:0x80363B98 end:0x80363C04
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstvol.c:
+	.text       start:0x80363C04 end:0x80363E50
+	.rodata     start:0x80412908 end:0x80412AE8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp:
+	.text       start:0x80363E50 end:0x80364790
+	.data       start:0x80450528 end:0x80450530
+	.bss        start:0x804BED1C end:0x804BED68
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysinit.c:
+	.text       start:0x80364790 end:0x80364E14
+	.data       start:0x80450530 end:0x80450544
+	.bss        start:0x804BED68 end:0x804BED88
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysserv.c:
+	.text       start:0x80364E14 end:0x80364F54
+
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysveccsismutex.cpp:
+	.text       start:0x80364F54 end:0x80364FD0
+
+Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c:
+	.text       start:0x80364FD0 end:0x803658F4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c:
+	.text       start:0x803658F4 end:0x8036598C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c:
+	.text       start:0x8036598C end:0x80366030
+	.data       start:0x80450544 end:0x80450550
+
+Speed/Indep/Libs/snd/9/source/library/cmn/svecreal.cpp:
+	.text       start:0x80366030 end:0x803660C8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/svol.c:
+	.text       start:0x803660C8 end:0x80366270
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/lbmpeg.cpp:
+	.text       start:0x80366270 end:0x80366298
+	.data       start:0x80450550 end:0x80450558
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpeghufftables.cpp:
+	.text       start:0x803662C4 end:0x803662C4
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpegl3base.cpp:
+	.text       start:0x803662C4 end:0x803662C4
+	.rodata     start:0x80412AE8 end:0x80412CC8
+
+Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c:
+	.text       start:0x803662C4 end:0x8036641C
+
+Speed/Indep/Libs/snd/9/source/library/gc/sdspmix.c:
+	.text       start:0x8036641C end:0x80366C64
+	.data       start:0x80450558 end:0x80450D58
+	.bss        start:0x804BED88 end:0x804C03C0
+
+Speed/Indep/Libs/snd/9/source/library/gc/snddrv.c:
+	.text       start:0x80366C64 end:0x80369AF4
+	.data       start:0x80450D58 end:0x80450D68
+	.bss        start:0x804C03C0 end:0x804CC480
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c:
+	.text       start:0x80369AF4 end:0x8036A948
+	.data       start:0x80450D68 end:0x804513A4
+	.bss        start:0x804CC480 end:0x804CC494
+
+Speed/Indep/Libs/snd/9/source/library/mix/slinkmix.c:
+	.text       start:0x8036A948 end:0x8036A9CC
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixer.c:
+	.text       start:0x8036A9CC end:0x8036BB84
+	.bss        start:0x804CC494 end:0x804CC680
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixfilt.c:
+	.text       start:0x8036BB84 end:0x8036BC0C
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixfram.c:
+	.text       start:0x8036BC0C end:0x8036BC54
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixhip.c:
+	.text       start:0x8036BC54 end:0x8036BD24
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixlowp.c:
+	.text       start:0x8036BD24 end:0x8036BE70
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixptch.c:
+	.text       start:0x8036BE70 end:0x8036BF2C
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixtmul.c:
+	.text       start:0x8036BF2C end:0x8036BF68
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixvec.c:
+	.text       start:0x8036BF68 end:0x8036BF68
+	.bss        start:0x804CC680 end:0x804CC69C
+
+Speed/Indep/Libs/snd/9/source/library/mix/stretch.c:
+	.text       start:0x8036BF68 end:0x8036C8B4
+
+Speed/Indep/Libs/snd/9/source/library/mix/sx87d16.c:
+	.text       start:0x8036C8B4 end:0x8036C90C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/author.cpp:
+	.text       start:0x8036C90C end:0x8036C90C
+	.data       start:0x804513A4 end:0x804513E4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c:
+	.text       start:0x8036C90C end:0x8036D010
+	.bss        start:0x804CC69C end:0x804CC6B8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c:
+	.text       start:0x8036D010 end:0x8036D170
+	.data       start:0x804513E4 end:0x804514E4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sctlfilt.c:
+	.text       start:0x8036D170 end:0x8036D1D8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sdownmix.cpp:
+	.text       start:0x8036D1D8 end:0x8036D248
+	.rodata     start:0x80412CC8 end:0x80412D7C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sexithndl.c:
+	.text       start:0x8036D248 end:0x8036D268
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sformat.c:
+	.text       start:0x8036D268 end:0x8036D268
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sgetdata.c:
+	.text       start:0x8036D268 end:0x8036D2E8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sgettag.c:
+	.text       start:0x8036D2E8 end:0x8036D3D4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/slib.c:
+	.text       start:0x8036D3D4 end:0x8036D53C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/slinklst.c:
+	.text       start:0x8036D53C end:0x8036D668
+
+Speed/Indep/Libs/snd/9/source/library/cmn/smemhigh.cpp:
+	.text       start:0x8036D668 end:0x8036D688
+
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_cos.c:
+	.text       start:0x8036D688 end:0x8036D720
+
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_sin.c:
+	.text       start:0x8036D720 end:0x8036D7B4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/soutputmap.cpp:
+	.text       start:0x8036D7B4 end:0x8036D7B4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sover.c:
+	.text       start:0x8036D7B4 end:0x8036D7D8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spantoaz.c:
+	.text       start:0x8036D7D8 end:0x8036D7EC
+	.data       start:0x804514E4 end:0x804515E4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spat2hdr.c:
+	.text       start:0x8036D7EC end:0x8036DD08
+
+Speed/Indep/Libs/snd/9/source/library/cmn/spktctoh.c:
+	.text       start:0x8036DD08 end:0x8036DD90
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sprofvoc.c:
+	.text       start:0x8036DD90 end:0x8036DE54
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sreallocbuf.cpp:
+	.text       start:0x8036DE54 end:0x8036DEE8
+
+Speed/Indep/Libs/snd/9/source/library/cmn/srrange.c:
+	.text       start:0x8036DEE8 end:0x8036DF44
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp:
+	.text       start:0x8036DF44 end:0x8036DF5C
+	.data       start:0x804515E4 end:0x804515E8
+	.bss        start:0x804CC6B8 end:0x804CC6C0
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/setmemcpy.cpp:
+	.text       start:0x8036DF5C end:0x8036DF6C
+
+Speed/Indep/Libs/snd/9/source/library/gc/saramman.c:
+	.text       start:0x8036DF6C end:0x8036E48C
+	.bss        start:0x804CC6C0 end:0x804CC6D0
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfamplf.c:
+	.text       start:0x8036E48C end:0x8036E5A4
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfbpffir8.c:
+	.text       start:0x8036E5A4 end:0x8036E730
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfecho.c:
+	.text       start:0x8036E730 end:0x8036EA40
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfft24.c:
+	.text       start:0x8036EA40 end:0x8036EAB8
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfhpffir8.c:
+	.text       start:0x8036EAB8 end:0x8036EC10
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfilter.c:
+	.text       start:0x8036EC10 end:0x8036EDBC
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfir.c:
+	.text       start:0x8036EDBC end:0x8036F164
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfir8.c:
+	.text       start:0x8036F164 end:0x8036F250
+
+Speed/Indep/Libs/snd/9/source/library/mix/sflpf.c:
+	.text       start:0x8036F250 end:0x8036F408
+
+Speed/Indep/Libs/snd/9/source/library/mix/sflpffir8.c:
+	.text       start:0x8036F408 end:0x8036F560
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfmixer.c:
+	.text       start:0x8036F560 end:0x8036F6BC
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfreson.c:
+	.text       start:0x8036F6BC end:0x8036FA0C
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfrsf.c:
+	.text       start:0x8036FA0C end:0x8036FD48
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfsplit.c:
+	.text       start:0x8036FD48 end:0x8036FEC4
+
+Speed/Indep/Libs/snd/9/source/library/mix/sfsrc.c:
+	.text       start:0x8036FEC4 end:0x8036FF58
+
+Speed/Indep/Libs/snd/9/source/library/mix/sinit16.c:
+	.text       start:0x8036FF58 end:0x8036FFA0
+
+Speed/Indep/Libs/snd/9/source/library/mix/sinitut.c:
+	.text       start:0x8036FFA0 end:0x80370000
+
+Speed/Indep/Libs/snd/9/source/library/mix/sinitxa.c:
+	.text       start:0x80370000 end:0x80370048
+
+Speed/Indep/Libs/snd/9/source/library/mix/smixc.c:
+	.text       start:0x80370048 end:0x80370078
+
+Speed/Indep/Libs/snd/9/source/library/mix/supf.c:
+	.text       start:0x80370078 end:0x80370198
+
+Speed/Indep/Libs/snd/9/source/library/mix/suplf.c:
+	.text       start:0x80370198 end:0x803702A0
+
+Speed/Indep/Libs/snd/9/source/library/mix/supmutf.c:
+	.text       start:0x803702A0 end:0x80370464
+
+Speed/Indep/Libs/snd/9/source/library/mix/supmutlf.c:
+	.text       start:0x80370464 end:0x80370640
+
+Speed/Indep/Libs/snd/9/source/library/mix/supmutpf.c:
+	.text       start:0x80370640 end:0x80370954
+
+Speed/Indep/Libs/snd/9/source/library/mix/suppf.c:
+	.text       start:0x80370954 end:0x80370AF8
+
+Speed/Indep/Libs/snd/9/source/library/mix/supxaf.cpp:
+	.text       start:0x80370AF8 end:0x80370C50
+
+Speed/Indep/Libs/snd/9/source/library/mix/supxalf.cpp:
+	.text       start:0x80370C50 end:0x80370FE4
+
+Speed/Indep/Libs/snd/9/source/library/mix/supxapf.cpp:
+	.text       start:0x80370FE4 end:0x80371258
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp:
+	.text       start:0x80371258 end:0x80371460
+
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_mult16.c:
+	.text       start:0x80371460 end:0x80371494
+
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_root1x.c:
+	.text       start:0x80371494 end:0x80371524
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
+	.text       start:0x80371524 end:0x80371A48
+	.data       start:0x804515E8 end:0x80451A08
+
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp:
+	.text       start:0x80371A48 end:0x80372D10
+	.data       start:0x80451A08 end:0x80451E88
+
+Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c:
+	.text       start:0x80372D10 end:0x80372DD4
+
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c:
+	.text       start:0x80372DD4 end:0x80372ED0
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
+	.text       start:0x80381654 end:0x80381874
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_cc.cpp:
+	.text       start:0x80381874 end:0x80381A94
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp:
+	.text       start:0x80381A94 end:0x803844B4
+	.bss        start:0x804CCE80 end:0x804CCE94
+	.sdata      start:0x804FF610 end:0x804FF618
+	.sbss       start:0x804FFD40 end:0x804FFD44
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp:
+	.text       start:0x8038450C end:0x80384604
+	.data       start:0x80451F84 end:0x80451FBC
+	.bss        start:0x804CCE94 end:0x804CCEA0
+	.sdata      start:0x804FF618 end:0x804FF61C
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp:
+	.text       start:0x80384630 end:0x80385008
+	.bss        start:0x804CCEA0 end:0x804CCEC0
+	.sdata      start:0x804FF61C end:0x804FF620
+	.sbss       start:0x804FFD44 end:0x804FFD54
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/device.cpp:
+	.sdata      start:0x804FF620 end:0x804FF628
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp:
+	.text       start:0x80385034 end:0x8038510C
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp:
+	.text       start:0x8038510C end:0x803852B8
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/dvd_device.cpp:
+	.text       start:0x803852B8 end:0x80385CF0
+	.bss        start:0x804CCEC0 end:0x804D5000
+
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/hd_device.cpp:
+	.text       start:0x80385D48 end:0x80386024
+	.bss        start:0x804D5000 end:0x804D5018
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/inittmr.cpp:
+	.text       start:0x8038607C end:0x80386254
+	.bss        start:0x804D5018 end:0x804D5040
+	.sdata      start:0x804FF628 end:0x804FF630
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/signals.cpp:
+	.text       start:0x80386254 end:0x80386308
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/threads.cpp:
+	.text       start:0x80386308 end:0x803866CC
+	.sbss       start:0x804FFD54 end:0x804FFD58
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/timerthread.cpp:
+	.text       start:0x803866CC end:0x8038682C
+	.bss        start:0x804D5040 end:0x804D63F8
+	.sdata      start:0x804FF630 end:0x804FF640
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/exit.cpp:
+	.text       start:0x8038682C end:0x80386898
+	.data       start:0x80451FBC end:0x804520BC
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systemvars.cpp:
+	.data       start:0x804520BC end:0x804520FC
+	.sdata      start:0x804FF640 end:0x804FF660
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/mutex.cpp:
+	.text       start:0x80386898 end:0x8038693C
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp:
+	.text       start:0x8038693C end:0x80386B38
+	.bss        start:0x804D63F8 end:0x804D6540
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp:
+	.text       start:0x80386B38 end:0x80386B40
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/initvblt.cpp:
+	.text       start:0x80386B40 end:0x80386B9C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
+	.text       start:0x80387D88 end:0x80388450
+	.sdata      start:0x804FF660 end:0x804FF664
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp:
+	.text       start:0x80388450 end:0x80388B04
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp:
+	.text       start:0x80388B04 end:0x80388BC0
+	.sdata      start:0x804FF664 end:0x804FF670
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp:
+	.text       start:0x80388BC0 end:0x8038A5A0
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp:
+	.text       start:0x8038A5A0 end:0x8038D088
+	.sdata      start:0x804FF670 end:0x804FF674
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp:
+	.text       start:0x8038D088 end:0x8038D1B8
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp:
+	.text       start:0x8038D1B8 end:0x8038D624
+	.bss        start:0x804D6540 end:0x804D8E24
+	.sdata      start:0x804FF674 end:0x804FF67C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
+	.text       start:0x8038D624 end:0x8038DA18
+	.data       start:0x804520FC end:0x804524FC
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp:
+	.text       start:0x8038DA18 end:0x8038FD10
+	.sdata      start:0x804FF67C end:0x804FF68C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
+	.text       start:0x8038FD10 end:0x80391518
+	.bss        start:0x804D8E24 end:0x804D95E8
+	.sdata      start:0x804FF68C end:0x804FF6A8
+	.sbss       start:0x804FFD58 end:0x804FFD5C
+
+asd2:
+	.text       start:0x80391518 end:0x80391570
+	.ctors      start:0x803C8BF4 end:0x803C8C1C
+	.dtors      start:0x803C8C44 end:0x803C8C5C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
+	.text       start:0x80391570 end:0x80392910
+	.bss        start:0x804D95E8 end:0x804D9668
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp:
+	.text       start:0x80392910 end:0x80393AB8
+	.sbss       start:0x804FFD5C end:0x804FFD60
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp:
+	.text       start:0x80393AB8 end:0x80398988
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
+	.text       start:0x80398988 end:0x80398D08
+	.sdata      start:0x804FF6A8 end:0x804FF6AC
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
+	.text       start:0x80398D08 end:0x80398E40
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memcopy.cpp:
+	.text       start:0x80398E40 end:0x80399038
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp:
+	.text       start:0x80399038 end:0x8039917C
+
+Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
+	.text       start:0x8039917C end:0x80399560
+
+Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp:
+	.text       start:0x80399560 end:0x80399588
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
+	.text       start:0x80399588 end:0x80399738
+	.bss        start:0x804D9668 end:0x804DA668
+	.sdata      start:0x804FF6AC end:0x804FF6B0
+
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp:
+	.text       start:0x80399738 end:0x8039976C
+
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
+	.text       start:0x8039976C end:0x80399800
+
+Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
+	.text       start:0x80399800 end:0x8039989C
+	.data       start:0x804524FC end:0x804527FC
+
+Speed/Indep/Libs/realcore/6.24.00/source/debug/gc/printdrv.cpp:
+	.text       start:0x8039989C end:0x803998C8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_effect.cpp:
+	.text       start:0x803998C8 end:0x80399B28
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effectimp.cpp:
+	.text       start:0x80399B28 end:0x80399C4C
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp:
+	.text       start:0x80399C4C end:0x80399D18
+	.sdata      start:0x804FF6B0 end:0x804FF6B8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp:
+	.text       start:0x80399D18 end:0x80399EBC
+	.sdata      start:0x804FF6B8 end:0x804FF6C0
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_device.cpp:
+	.text       start:0x80399EBC end:0x80399FD8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_interface.cpp:
+	.text       start:0x80399FD8 end:0x8039A3C8
+	.bss        start:0x804DA668 end:0x804DA970
+	.sdata      start:0x804FF6C0 end:0x804FF6C8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_pad.cpp:
+	.text       start:0x8039A3C8 end:0x8039AA1C
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interfaceimp.cpp:
+	.text       start:0x8039AA1C end:0x8039ADF8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/device.cpp:
+	.text       start:0x8039ADF8 end:0x8039AF04
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effect.cpp:
+	.text       start:0x8039AF04 end:0x8039AF70
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/event.cpp:
+	.text       start:0x8039AF70 end:0x8039AFD8
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/eventqueue.cpp:
+	.text       start:0x8039AFD8 end:0x8039B238
+
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/itimer.cpp:
+	.text       start:0x8039B238 end:0x8039B258
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMessage.c:
+	.text       start:0x8039D230 end:0x8039D434
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/arq.c:
+	.text       start:0x8039D434 end:0x8039D8B8
+	.data       start:0x804528E0 end:0x80452928
+	.sdata      start:0x804FF890 end:0x804FF898
+	.sbss       start:0x804FFDA0 end:0x804FFDD0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c:
+	.text       start:0x8039D8B8 end:0x8039D95C
+	.data       start:0x80452928 end:0x8045296C
+	.sdata      start:0x804FF898 end:0x804FF8A0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c:
+	.text       start:0x8039D95C end:0x8039DE24
+	.bss        start:0x804DA970 end:0x804DAA70
+	.sbss       start:0x804FFDD0 end:0x804FFDD8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAux.c:
+	.text       start:0x8039DE24 end:0x8039E2B8
+	.bss        start:0x804DAA80 end:0x804DD780
+	.sbss       start:0x804FFDD8 end:0x804FFE10
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXCL.c:
+	.text       start:0x8039E2B8 end:0x8039E9F0
+	.bss        start:0x804DD780 end:0x804DDD80
+	.sbss       start:0x804FFE10 end:0x804FFE28
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXOut.c:
+	.text       start:0x8039E9F0 end:0x8039F1B8
+	.bss        start:0x804DDD80 end:0x804E2800
+	.sbss       start:0x804FFE28 end:0x804FFE60
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXSPB.c:
+	.text       start:0x8039F1B8 end:0x8039F680
+	.bss        start:0x804E2800 end:0x804E2838
+	.sbss       start:0x804FFE60 end:0x804FFE88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c:
+	.text       start:0x8039F680 end:0x803A067C
+	.data       start:0x80452970 end:0x80452A48
+	.bss        start:0x804E2840 end:0x804F4040
+	.sbss       start:0x804FFE88 end:0x804FFE98
+	.sdata2     start:0x80500C60 end:0x80500C98
+
+prodg_fixes.cpp:
+	.ctors      start:0x803C8B60 end:0x803C8B64 skip
+	.dtors      start:0x803C8C40 end:0x803C8C44 skip
+	.sdata2     start:0x80500C98 end:0x80500CA0 skip
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXComp.c:
+	.data       start:0x80452A60 end:0x804544A0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/DSPCode.c:
+	.data       start:0x804544A0 end:0x804563A0
+	.sdata      start:0x804FF8A0 end:0x804FF8A8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c:
+	.text       start:0x803A067C end:0x803A06C4
+	.sbss       start:0x804FFE98 end:0x804FFEA8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp.c:
+	.text       start:0x803A06C4 end:0x803A0954
+	.data       start:0x804563A0 end:0x80456420
+	.sdata      start:0x804FF8A8 end:0x804FF8B0
+	.sbss       start:0x804FFEA8 end:0x804FFEB0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_debug.c:
+	.text       start:0x803A0954 end:0x803A09A4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_task.c:
+	.text       start:0x803A09A4 end:0x803A1228
+	.data       start:0x80456420 end:0x80456560
+	.sbss       start:0x804FFEB0 end:0x804FFED8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDFormat.c:
+	.text       start:0x803A1228 end:0x803A1A18
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCreate.c:
+	.text       start:0x803A1A18 end:0x803A1DB0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDRead.c:
+	.text       start:0x803A1DB0 end:0x803A2224
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDWrite.c:
+	.text       start:0x803A2224 end:0x803A25A0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDelete.c:
+	.text       start:0x803A25A0 end:0x803A2910
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDStat.c:
+	.text       start:0x803A2910 end:0x803A2DD8
+
+Packages/eathread/1.1.0/source/eathread_semaphore.cpp:
+	.text       start:0x803A2DD8 end:0x803A3058
+
+Packages/eathread/1.1.0/source/eathread_thread.cpp:
+	.text       start:0x803A3058 end:0x803A30AC
+	.ctors      start:0x803C8C1C end:0x803C8C20
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c:
+	.text       start:0x803A30AC end:0x803A3190
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c:
+	.text       start:0x803A3190 end:0x803A3224
+	.rodata     start:0x80415154 end:0x80415160
+
+Speed/Indep/Libs/snd/9/source/library/cmn/sstgetpv.c:
+	.text       start:0x803A3224 end:0x803A32BC
+	.rodata     start:0x80415160 end:0x8041516C
+
+Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c:
+	.text       start:0x803A32BC end:0x803A3398
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSemaphore.c:
+	.text       start:0x803A4004 end:0x803A4180

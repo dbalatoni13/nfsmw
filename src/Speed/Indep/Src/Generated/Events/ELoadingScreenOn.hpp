@@ -22,7 +22,7 @@ class ELoadingScreenOn : public Event {
 
     ~ELoadingScreenOn() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     LoadingScreen::LoadingScreenTypes fLoadingType; // offset: 0x8, size 0x4

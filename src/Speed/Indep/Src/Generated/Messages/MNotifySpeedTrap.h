@@ -21,6 +21,10 @@ class MNotifySpeedTrap : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNotifySpeedTrap &message);
+
     MNotifySpeedTrap(GCollectionKey _TrapActivity, HSIMABLE _Racer, float _SpeedKmh)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fTrapActivity(_TrapActivity), fRacer(_Racer), fSpeedKmh(_SpeedKmh) {}
 
@@ -55,5 +59,45 @@ class MNotifySpeedTrap : public Hermes::Message {
     HSIMABLE fRacer;              // offset 0x14, size 0x4
     float fSpeedKmh;              // offset 0x18, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNotifySpeedTrap::HandleMessage_LuaBinding(const MNotifySpeedTrap &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNotifySpeedTrap::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MNotifySpeedTrap *message = static_cast<const MNotifySpeedTrap *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "TrapActivity");
+    GRuntimeInstance *pTrapActivity = message->fTrapActivity;
+
+    if (pTrapActivity != NULL) {
+        *static_cast<GRuntimeInstance **>(lua_newuserdata(luaState, sizeof(GRuntimeInstance *))) = pTrapActivity;
+        LuaBindery::AttachMetatable(luaState, "GRuntimeInstance");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "Racer");
+    if (ISimable::FindInstance(message->fRacer) != NULL) {
+        *static_cast<HSIMABLE *>(lua_newuserdata(luaState, sizeof(HSIMABLE))) = message->fRacer;
+        LuaBindery::AttachMetatable(luaState, "ISimable");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "SpeedKmh");
+    lua_pushnumber(luaState, message->fSpeedKmh);
+    lua_settable(luaState, -3);
+}
 
 #endif

@@ -96,12 +96,16 @@ enum RPMInterval {
     RPM6_INTERVAL = 5,
 };
 
+// Definida identica en EAXSound/EAXFrontEnd.hpp y en World/Car.hpp.
+#ifndef ENUM_HYDRAULICSTATE_DEFINED
+#define ENUM_HYDRAULICSTATE_DEFINED
 enum HydraulicState {
     HYDRAULICS_OFF = 0,
     HYDRAULICS_EXTENDED = 1,
     HYDRAULICS_EXTENDING = 2,
     HYDRAULICS_RELAXING = 3,
 };
+#endif
 
 // total size: 0x8
 class Car : public bTNode<Car> {

@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 
 bool SFXObj_NISStream::m_bNISAudioStreamReady = false;            // size: 0x1, address: 0x8041831C, Decl: 33
 bool SFXObj_NISStream::m_bNISButtonThroughAnimationReady = false; // size: 0x1, address: 0x80418320, Decl: 34
@@ -100,7 +101,9 @@ void GenerateNISAnimHashMap() {
 
 int GetCsisEventIndex(unsigned int hashid) {
     for (int n = 0; n < NUM_ELEMENTS(uNIS_STRINGHASHMAP); n++) {
-        if (uNIS_STRINGHASHMAP[n][2] == hashid) {
+        // La columna 0 es la que guarda bStringHash(name); la 2 guarda el puntero
+        // al literal, asi que comparar contra ella era comparar hash con direccion.
+        if (uNIS_STRINGHASHMAP[n][0] == hashid) {
             return n;
         }
     }
@@ -124,9 +127,9 @@ void SFXObj_NISStream::InitSFX() {
     SndBase::InitSFX();
     GenerateNISAnimHashMap();
     m_bNISAnimationReady = false;
-    m_bNISButtonThroughReady = false;
     m_bNISButtonThroughAnimationReady = false;
     m_bNISAudioStreamReady = false;
+    m_bNISButtonThroughReady = false;
     m_bBackupStreamCleared = true;
     g_pEAXSound->GetSndGameMode();
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
@@ -319,8 +322,8 @@ void SFXObj_NISStream::NISActivityDone() {
     this->SetDMIX_Input(6, 0);
     this->SetDMIX_Input(7, 0);
     this->m_mselapsedtimecb = nullptr;
-    this->m_mstimeelapsed = -1;
     this->m_mslengthofstream = -1;
+    this->m_mstimeelapsed = -1;
 
     // TODO magic
     int id = 0x40010010;

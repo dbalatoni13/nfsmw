@@ -22,9 +22,24 @@ struct DeltaSingleQMinRangef {
 
 // total size: 0xE
 struct DeltaSingleQMinRange {
-    void GetAlignment(float &c0, float &c1) {}
+    void GetAlignment(float &c0, float &c1) {
+        c0 = mConst0 * (2.0f * 3.1415927f / 65535.0f) + -3.1415927f;
+        c1 = mConst1 * (2.0f * 3.1415927f / 65535.0f) + -3.1415927f;
+    }
 
-    void UnQuantize(DeltaSingleQMinRangef &minRangef) {}
+    void UnQuantize(DeltaSingleQMinRangef &minRangef) {
+        const float RangeScale16Bit = 2.0f / 65535.0f;
+
+        minRangef.mMin[0] = mMin[0] * RangeScale16Bit - 1.0f;
+        minRangef.mMin[1] = mMin[1] * RangeScale16Bit - 1.0f;
+
+        minRangef.mRange[0] = mRange[0] * RangeScale16Bit;
+        minRangef.mRange[1] = mRange[1] * RangeScale16Bit;
+
+        minRangef.mIndex = mIndex;
+
+        GetAlignment(minRangef.mConst0, minRangef.mConst1);
+    }
 
     unsigned short mConst0;   // offset 0x0, size 0x2
     unsigned short mConst1;   // offset 0x2, size 0x2
@@ -35,7 +50,21 @@ struct DeltaSingleQMinRange {
 
 // total size: 0x2
 struct DeltaSingleQPhysical {
-    void UnQuantize(int index, UMath::Vector4 &q) const {}
+    void UnQuantize(int index, UMath::Vector4 &q) const {
+        const float RangeScale8Bit = 2.0f / 255.0f;
+
+        q.x = q.y = q.z = 0.0f;
+
+        if (index == 0) {
+            q.x = mV * RangeScale8Bit - 1.0f;
+        } else if (index == 1) {
+            q.y = mV * RangeScale8Bit - 1.0f;
+        } else {
+            q.z = mV * RangeScale8Bit - 1.0f;
+        }
+
+        q.w = mW * RangeScale8Bit - 1.0f;
+    }
 
     unsigned char mV; // offset 0x0, size 0x1
     unsigned char mW; // offset 0x1, size 0x1
@@ -43,7 +72,23 @@ struct DeltaSingleQPhysical {
 
 // total size: 0x1
 struct DeltaSingleQDelta {
-    void UnQuantize(const DeltaSingleQMinRangef &minRangef, UMath::Vector4 &q) {}
+    static float DeQuantize4Bit(int v) {
+        return v * (1.0f / 15.0f);
+    }
+
+    void UnQuantize(const DeltaSingleQMinRangef &minRangef, UMath::Vector4 &q) {
+        q.x = q.y = q.z = 0.0f;
+
+        if (minRangef.mIndex == 0) {
+            q.x = minRangef.mRange[0] * DeQuantize4Bit(mV) + minRangef.mMin[0];
+        } else if (minRangef.mIndex == 1) {
+            q.y = minRangef.mRange[0] * DeQuantize4Bit(mV) + minRangef.mMin[0];
+        } else {
+            q.z = minRangef.mRange[0] * DeQuantize4Bit(mV) + minRangef.mMin[0];
+        }
+
+        q.w = minRangef.mRange[1] * DeQuantize4Bit(mW) + minRangef.mMin[1];
+    }
 
     unsigned char mV : 4; // offset 0x0, size 0x1
     unsigned char mW : 4; // offset 0x0, size 0x1
@@ -51,10 +96,26 @@ struct DeltaSingleQDelta {
 
 // total size: 0x10
 struct DeltaSingleQ : public AnimMemoryMap {
-    static int ComputeSize(int numBones, int numConst, int numFrames, int binLen, bool useKeyFrames) {
-        // const int binSize;
-        // int s;
-        // int r;
+    unsigned int GetBinLength() const {
+        return 1 << mBinLengthPower;
+    }
+
+    unsigned int GetBinLengthPower() const {
+        return mBinLengthPower;
+    }
+
+    unsigned int GetBinLengthModMask() const {
+        unsigned int result = 0x7FFFFFFFU >> (31 - mBinLengthPower);
+        return result;
+    }
+
+    void GetArrays(DeltaSingleQMinRange *&minRanges, unsigned char *&binStart) {
+        minRanges = reinterpret_cast<DeltaSingleQMinRange *>(&this[1]);
+        binStart = &reinterpret_cast<unsigned char *>(minRanges)[mNumBones * sizeof(DeltaSingleQMinRange)];
+    }
+
+    int GetBinSize() const {
+        return AlignSize2(mNumBones * ((GetBinLength() - 1) * sizeof(DeltaSingleQDelta) + sizeof(DeltaSingleQPhysical)));
     }
 
     int GetNumFrames() const {
@@ -65,61 +126,29 @@ struct DeltaSingleQ : public AnimMemoryMap {
         }
     }
 
-    unsigned int GetBinLength() const {
-        return 1 << mBinLengthPower;
-    }
-
-    unsigned char GetBinLengthPower() const {
-        return mBinLengthPower;
-    }
-
-    unsigned int GetBinLengthModMask() const {
-        unsigned int result = 0x7FFFFFFFU >> (31 - mBinLengthPower);
-        return result;
-    }
-
-    void GetArrays(DeltaSingleQMinRange *&minRanges, unsigned char *&binStart) {}
-
-    int GetBinSize() const {
-        // TODO
-        // return AlignSize2(3 * ((GetBinLength() - 1) * mNumBones));
-    }
-
     DeltaSingleQMinRange *GetMinRange() {
         unsigned char *memBytes = reinterpret_cast<unsigned char *>(&this[1]);
         return reinterpret_cast<DeltaSingleQMinRange *>(memBytes);
     }
 
     unsigned char *GetBin(int binIdx) {
-        // const int bs = GetBinSize();
-        // unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetMinRange())[mNumBones * sizeof(DeltaSingleQMinRange)];
-        // return &memPos[binIdx * bs];
+        const int bs = GetBinSize();
+        unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetMinRange())[mNumBones * sizeof(DeltaSingleQMinRange)];
+        return &memPos[binIdx * bs];
     }
 
     DeltaSingleQPhysical *GetPhysical(unsigned char *binData) {
         return reinterpret_cast<DeltaSingleQPhysical *>(binData);
     }
 
-    DeltaSingleQDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
-
-    unsigned short *GetConstBoneIdx() {
-        unsigned int binLen = GetBinLength();
-        const int binSize = GetBinSize();
-        // TODO it's out of line
-        // int numBins = mNumFrames >> GetBinLengthPower(); // r8
-        // // get to the end of the bins
-        // unsigned char *s = &GetBin(0)[binSize * numBins]; // r11
-        // int r = mNumFrames & GetBinLengthModMask();       // r31
-
-        // if (r > 0) {
-        //     s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(intptr_ts) + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
-        // }
-
-        return reinterpret_cast<unsigned short *>(nullptr);
+    DeltaSingleQDelta *GetDelta(unsigned char *binData, int deltaIdx) {
+        return &reinterpret_cast<DeltaSingleQDelta *>(&GetPhysical(binData)[mNumBones])[deltaIdx * mNumBones];
     }
 
-    float *GetConstPhysical() {
-        // return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
+    static int ComputeSize(int numKeys, int numBones, int binLen, bool useKeyFrames) {
+        // const int binSize;
+        // int s;
+        // int r;
     }
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2

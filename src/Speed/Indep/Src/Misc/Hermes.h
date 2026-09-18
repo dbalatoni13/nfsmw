@@ -10,12 +10,14 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+struct lua_State;
+
 inline void *DefaultTableAllocFunc(size_t bytes) {
-    return AttribAlloc::Allocate(bytes, "TODO");
+    return AttribAlloc::Allocate(bytes, "Attrib::vechashmap");
 }
 
 inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
-    AttribAlloc::Free(ptr, bytes, "TODO");
+    AttribAlloc::Free(ptr, bytes, "Attrib::vechashmap");
 }
 
 namespace Hermes {
@@ -84,9 +86,13 @@ class Handler {
         }
     };
 
+    // total size: 0x4
     template <typename MessageT> struct StaticHandler {
+        void (*Handler)(const MessageT &); // offset 0x0, size 0x4
+
         static void Call(const Message *msg, Hermes::Handler *handler) {
-            StaticHandler<MessageT> *pstatichandler;
+            StaticHandler<MessageT> *pstatichandler = reinterpret_cast<StaticHandler<MessageT> *>(handler);
+            pstatichandler->Handler(*static_cast<const MessageT *>(msg));
         }
     };
 
@@ -94,10 +100,10 @@ class Handler {
     static HHANDLER Create(Class *that, void (Class::*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
         MemberHandler<MessageT, Class, V> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, V> *>(&h);
-        pmemberhandler->Handler = handler;
         pmemberhandler->that = that;
+        pmemberhandler->Handler = handler;
 
-        h.CallFn = pmemberhandler->Call;
+        h.CallFn = &MemberHandler<MessageT, Class, V>::Call;
         h.mKind = MessageT::_GetKind();
         h.mKey = reinterpret_cast<HHANDLER>(mKeyNext++);
         h.mID = id;
@@ -108,8 +114,9 @@ class Handler {
     template <typename MessageT> static HHANDLER Create(void (*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
         StaticHandler<MessageT> *pstatichandler = reinterpret_cast<StaticHandler<MessageT> *>(&h);
+        pstatichandler->Handler = handler;
 
-        h.CallFn = pstatichandler->Call;
+        h.CallFn = &StaticHandler<MessageT>::Call;
         h.mKind = MessageT::_GetKind();
         h.mKey = reinterpret_cast<HHANDLER>(mKeyNext++);
         h.mID = id;

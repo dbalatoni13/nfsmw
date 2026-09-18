@@ -12,7 +12,7 @@ struct visualrgbtweaker : Instance {
     typedef UMath::Matrix4 TypeOf_red;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("visualrgbtweaker");
+    USE_ATTRIB_ALLOC("Attrib::Gen::visualrgbtweaker");
     visualrgbtweaker(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     visualrgbtweaker(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -30,10 +30,10 @@ struct visualrgbtweaker : Instance {
         return 0xaf1837ca;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xaf1837ca, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

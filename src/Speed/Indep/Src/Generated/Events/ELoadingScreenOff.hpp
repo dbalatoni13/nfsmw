@@ -19,7 +19,7 @@ class ELoadingScreenOff : public Event {
 
     ~ELoadingScreenOff() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void ELoadingScreenOff_MakeEvent_Callback(const void *staticData);

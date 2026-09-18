@@ -24,7 +24,7 @@ class ENISWorldAnimTrigger : public Event {
 
     ~ENISWorldAnimTrigger() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     const char *fAnimTreeName; // offset: 0x8, size 0x4
@@ -34,5 +34,7 @@ class ENISWorldAnimTrigger : public Event {
 };
 
 void ENISWorldAnimTrigger_MakeEvent_Callback(const void *staticData);
+int ENISWorldAnimTrigger_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISWorldAnimTrigger_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

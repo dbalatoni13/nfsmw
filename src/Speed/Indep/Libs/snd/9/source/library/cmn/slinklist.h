@@ -1,9 +1,59 @@
 #ifndef SLINKLIST_H
 #define SLINKLIST_H
 
+#include <cstddef>
+
+// total size: 0x4
+typedef struct CListNode {
+private:
+    CListNode *pnext; // offset 0x0, size 0x4
+
+public:
+    inline void SetNext(CListNode *pnode) {
+        this->pnext = pnode;
+    }
+
+    inline CListNode *GetNext() {
+        return this->pnext;
+    }
+} CListNode;
+
+// total size: 0x4
+class CListStack {
+private:
+    CListNode *phead; // offset 0x0, size 0x4
+
+public:
+    CListStack() : phead(NULL) {}
+
+    void Reset() {
+        this->phead = NULL;
+    }
+
+    bool IsEmpty() {
+        return this->phead == NULL;
+    }
+
+    CListNode *GetHead() { return phead; }
+
+    void Push(CListNode *pnode) {
+        pnode->SetNext(this->phead);
+        this->phead = pnode;
+    }
+
+    CListNode *Pop() {
+        CListNode *pnode = this->phead;
+
+        if (pnode != NULL) {
+            this->phead = pnode->GetNext();
+        }
+
+        return pnode;
+    }
+};
+
 // total size: 0x8
 // Decl: 24
-#include <cstddef>
 typedef struct CListDNode {
 private:
     CListDNode *pnext; // offset 0x0, size 0x4
@@ -36,7 +86,9 @@ private:
 public:
     CListDStack() : phead(NULL) {} // Decl: 104
 
-    void Reset() {} // Decl: 106
+    void Reset() {
+        this->phead = NULL;
+    } // Decl: 106
 
     bool IsEmpty() {
         return this->phead == NULL;
@@ -70,6 +122,67 @@ public:
             ptempnode->SetPrev(pnode->GetPrev());
         }
     } // Decl: 148
+};
+
+// total size: 0xC
+class CListQueue {
+private:
+    CListNode *phead;  // offset 0x0, size 0x4
+    CListNode *ptail;  // offset 0x4, size 0x4
+    int entries;       // offset 0x8, size 0x4
+
+public:
+    CListQueue() : phead(NULL), ptail(NULL), entries(0) {}
+
+    void Reset() {
+        this->phead = NULL;
+        this->ptail = NULL;
+        this->entries = 0;
+    }
+
+    bool IsEmpty() {
+        return this->phead == NULL;
+    }
+
+    CListNode *GetHead() { return phead; }
+
+    CListNode *GetTail() { return ptail; }
+
+    int GetEntries() { return entries; }
+
+    void Push(CListNode *pnode) {
+        pnode->SetNext(this->phead);
+        this->phead = pnode;
+        if (this->ptail == NULL) {
+            this->ptail = pnode;
+        }
+        this->entries++;
+    }
+
+    void PushTail(CListNode *pnode) {
+        pnode->SetNext(NULL);
+        if (this->ptail != NULL) {
+            this->ptail->SetNext(pnode);
+        } else {
+            this->phead = pnode;
+        }
+        this->ptail = pnode;
+        this->entries++;
+    }
+
+    CListNode *Pop() {
+        CListNode *pnode = this->phead;
+
+        if (pnode != NULL) {
+            this->phead = pnode->GetNext();
+            if (this->phead == NULL) {
+                this->ptail = NULL;
+            }
+            this->entries--;
+        }
+
+        return pnode;
+    }
 };
 
 #endif

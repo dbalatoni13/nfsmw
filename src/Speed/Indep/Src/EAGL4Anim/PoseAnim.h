@@ -13,7 +13,9 @@ namespace EAGL4Anim {
 struct PoseAnim : public AnimMemoryMap {
     static int ComputeSize(int numKeys) {}
 
-    int GetNumFrames() const {}
+    int GetNumFrames() const {
+        return 0;
+    }
 
     static int GetFnOffset() {
         return 16;

@@ -7,13 +7,6 @@
 
 #include "EcstasyData.hpp"
 
-enum VIDEO_MODE {
-    MODE_PAL = 0,
-    MODE_PAL60 = 1,
-    MODE_NTSC = 2,
-    NUM_VIDEO_MODES = 3,
-};
-
 class eView;
 class eRenderTarget;
 

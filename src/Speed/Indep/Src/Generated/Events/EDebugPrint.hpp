@@ -21,12 +21,14 @@ class EDebugPrint : public Event {
 
     ~EDebugPrint() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     const char *fDebugMsg; // offset: 0x8, size 0x4
 };
 
 void EDebugPrint_MakeEvent_Callback(const void *staticData);
+int EDebugPrint_MakeEvent_LuaBinding(struct lua_State *L);
+void EDebugPrint_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -37,6 +37,21 @@ CSTATE_Base::~CSTATE_Base() {
 int DEBUGPRINT_MIXERCONNECT; // Decl: 46
 
 void CSTATE_Base::DisconnectMixMap() {
+#ifdef EA_BUILD_A124
+    SndBase *CurSFXOBj = this->m_pHeadSFXObj;
+    while (CurSFXOBj != nullptr) {
+        CurSFXOBj->SetOutputsPtr(nullptr);
+        CurSFXOBj->SetInputsPtr(nullptr);
+        CurSFXOBj = CurSFXOBj->m_pNextSFX;
+    }
+
+    SndBase *CurSFXCtl = this->m_pHeadSFXCTL;
+    while (CurSFXCtl != nullptr) {
+        CurSFXCtl->SetInputsPtr(nullptr);
+        CurSFXCtl->SetOutputsPtr(nullptr);
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+#else
     SndBase *CurSFXOBj = this->m_pHeadSFXObj;
     while (CurSFXOBj != nullptr) {
         int *pIn = CurSFXOBj->GetInputBlockPtr();
@@ -80,6 +95,7 @@ void CSTATE_Base::DisconnectMixMap() {
 
         CurSFXCtl = CurSFXCtl->m_pNextSFX;
     }
+#endif
 }
 
 void CSTATE_Base::SafeConnectOrphanObjects() {

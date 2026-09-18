@@ -74,6 +74,8 @@ void AIActionRam::OnBehaviorChange(const UCrc32 &mechanic) {
     }
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionRam("AIActionRam", AIActionRam::Construct);
+
 AIAction *AIActionRam::Construct(AIActionParams *params) {
     return new AIActionRam(params, 0.1f);
 }
@@ -235,8 +237,7 @@ void AIActionRam::Update(float dT) {
         float steercounterseparation = (-steerdotseparation) / UMath::Length(steer);
 
         if (steercounterseparation > 0.0001f) {
-            float longweight = (KPH2MPS(55.0f) - steercounterseparation) / KPH2MPS(55.0f);
-            longweight = bClamp(longweight, 0.0f, 1.0f);
+            float longweight = bClamp((KPH2MPS(55.0f) - steercounterseparation) / KPH2MPS(55.0f), 0.0f, 1.0f);
             UMath::Vector3 steerlong;
             UMath::Vector3 steerlat;
 
@@ -269,10 +270,11 @@ void AIActionRam::Update(float dT) {
         float max_accel = targetai->GetAcceleration(speed) * accelmult;
 
         mLimiter.update(speed, max_speed, max_accel, dT);
-        desired_speed = bMin(desired_speed, mLimiter.get_speed_limit());
+        max_speed = mLimiter.get_speed_limit();
+        desired_speed = bMin(desired_speed, max_speed);
     }
 
-    float closeenoughspeed = (1.0f - aggression) * KPH2MPS(0.2f) + KPH2MPS(0.5f);
+    float closeenoughspeed = KPH2MPS(0.5f) + (1.0f - aggression) * KPH2MPS(0.2f);
     if (ispullover && UMath::Length(seek) < closeenoughspeed) {
         mIInput->SetControlGas(0.0f);
         mIInput->SetControlBrake(1.0f);

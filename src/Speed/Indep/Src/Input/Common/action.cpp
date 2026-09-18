@@ -143,7 +143,8 @@ StringToNumberEntry GameActionToStringTable[] = {
     { ACTION_PLUGGED, const_cast<char *>("ACTION_PLUGGED") },
     { ACTION_UNPLUGGED, const_cast<char *>("ACTION_UNPLUGGED") },
     { ACTION_FLUSH, const_cast<char *>("ACTION_FLUSH") },
-    { MAX_ACTIONID, const_cast<char *>("MAX_ACTIONID") },
+    // El objetivo NO tiene entrada para MAX_ACTIONID: su ultimo valor real es
+    // 0x89 (ACTION_FLUSH) y detras va el centinela. La tabla mide 1.112 B.
     { 0, nullptr }
 };
 
@@ -159,7 +160,7 @@ ActionData::ActionData(int id, float data, int slot) {
     this->slot = slot;
 }
 
-char *getActionIdString(ActionID actionID) {
+char *getActionIDString(ActionID actionID) {
     char *ais = GameActionConverter.ConvertNumberToString(actionID);
 
     return ais;

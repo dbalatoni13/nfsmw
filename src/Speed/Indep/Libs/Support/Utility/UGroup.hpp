@@ -28,8 +28,18 @@ struct TagStruct {
     unsigned int data[3]; // offset 0x4, size 0xC
 };
 
+struct UGroupResolverData {
+    unsigned int fNumParts;            // offset 0x0, size 0x4
+    const unsigned int *fPartOffsets;  // offset 0x4, size 0x4
+    const void *const *fPartBases;     // offset 0x8, size 0x4
+    unsigned int fDeltaAddress;        // offset 0xC, size 0x4
+
+    void *ConvertOffsetToPointer(const void *basePtr, unsigned int offset, void *pointer) const;
+};
+
 class UData {
   public:
+    void ResolveOffsets(const UGroupResolverData &resolver) const;
     // total size: 0x10
     unsigned int fTag;           // offset 0x0, size 0x4
     unsigned int fIndexed : 1;   // offset 0x4, size 0x4
@@ -69,13 +79,33 @@ class UGroup {
 
     // total size: 0xC
     class Processor {
-      private:
-        bool mSkipData;   // offset 0x0, size 0x1
-        bool mSkipGroups; // offset 0x4, size 0x1
+      public:
+        unsigned int mSkipData;   // offset 0x0, size 0x4
+        unsigned int mSkipGroups; // offset 0x4, size 0x4
+
+        Processor() {
+            mSkipData = 0;
+            mSkipGroups = 0;
+        }
+
+        // Cuerpo EN CLASE: en GCC 2.9 un virtual inline se emite en `finish_file`,
+        // al FINAL de la unidad de traduccion, que es donde los tiene el objetivo
+        // (0x8019A100..0x8019A114). Definidos fuera salian 20 B antes y descolocaban
+        // las 169 funciones siguientes de zFoundation.
+        virtual bool StartGroup(const UGroup *group) {
+            return true;
+        }
+        virtual bool ProcessData(const UGroup *group, const UData *data) {
+            return true;
+        }
+        virtual void EndGroup(const UGroup *group) {
+        }
     };
 
     static const UGroup *Deserialize(const void *serializedData, bool resolveOffsets, unsigned int deltaAddress);
     static const UGroup *Deserialize(unsigned int numParts, const unsigned int *dataLengths, const void **serializedData, unsigned int deltaAddress);
+    void ResolveOffsets(const UGroupResolverData &resolver) const;
+    void ProcessBreadthFirst(UGroup::Processor &processor) const;
     unsigned int GroupCountType(unsigned int type) const;
     const UGroup *GroupLocateFirst(unsigned int type, unsigned int baseIndex, unsigned int maxIndex) const;
     const UGroup *GroupLocateTag(unsigned int typeIndexTag) const;

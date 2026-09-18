@@ -16,6 +16,13 @@
 #define LUALIB_API LUA_API
 #endif
 
+// Igual que lua.h: la API de Lua sale SIN manglar en el ELF (lua_dobuffer,
+// luaL_loadbuffer...). Sin este guard, una TU C++ que incluya esta cabecera
+// (GHandler.cpp) emite el bl al simbolo manglado, que no existe.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct luaL_reg {
     const char *name;
     lua_CFunction func;
@@ -118,5 +125,9 @@ LUALIB_API int lua_dobuffer(lua_State *L, const char *buff, size_t sz, const cha
 #define luaL_check_long luaL_checklong
 #define luaL_opt_int luaL_optint
 #define luaL_opt_long luaL_optlong
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

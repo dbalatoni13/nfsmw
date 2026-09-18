@@ -32,6 +32,9 @@ class cSTICH_PlayBack;
 // total size: 0xBC
 // Decl: 131
 class EAXSound : public AudioMemBase {
+    friend int LoaderSoundStichs(struct bChunk *);
+    friend int UnloaderSoundStichs(struct bChunk *);
+
   public:
     EAXSound(void);
     virtual ~EAXSound();
@@ -98,8 +101,8 @@ class EAXSound : public AudioMemBase {
     void StartNewGamePlay();
     void InitializeFrontEnd();
     void InitializeInGame();
-    void LoadInGameSoundBanks(void (*callback)(), int32 callback_param);
-    void LoadFrontEndSoundBanks(void (*callback)(), int32 callback_param);
+    void LoadInGameSoundBanks(void (*callback)(int), int callback_param);
+    void LoadFrontEndSoundBanks(void (*callback)(int), int callback_param);
     void UnloadFrontEndSoundBanks();
     void UnLoadInGameSoundBanks();
     void EnterPauseMenu(eSNDPAUSE_REASON pause_reason);
@@ -178,7 +181,9 @@ class EAXSound : public AudioMemBase {
 
     float GetCurMusicVolume();
 
-    void PlayCameraSnapShot() {} // Decl: 317
+    void PlayCameraSnapShot() {
+        this->bPlayCameraSnapShot = true;
+    } // Decl: 317
 
     bool PauseFadeComplete() {} // Decl: 326
 
@@ -197,6 +202,35 @@ class EAXSound : public AudioMemBase {
     void ReStartRace(bool bIs321);
 
     void RefreshLocalAttr();
+
+    cSTICH_PlayBack *GetSTICHPlayback() const {
+        return this->m_pSTICH_Playback;
+    }
+    AudioSettings *GetCurrentAudioSettings() const {
+        return this->m_pCurAudioSettings;
+    }
+    eSndGameMode GetSndGameMode() const {
+        return this->m_eSndGameMode;
+    }
+    eSndGameMode GetPrevSndGameMode() const {
+        return this->m_prevSndGameMode;
+    }
+    eSndGameMode GetSoundGameMode() const {
+        return this->m_eSndGameMode;
+    }
+#ifndef EA_BUILD_A124
+    bool IsPauseMainFNG() const {
+        return this->m_bPause_MainFNG;
+    }
+#endif
+#ifndef EA_BUILD_A124
+    void SetPauseMainFNG(bool pauseMainFNG) {
+        this->m_bPause_MainFNG = pauseMainFNG;
+    }
+#endif
+    EAXS_StreamManager *GetStreamManager() const {
+        return this->m_pStreamManager;
+    }
 
     static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) {
         return m_pStateMgr[estate];
@@ -219,7 +253,9 @@ class EAXSound : public AudioMemBase {
 
     int m_nDebugStreamState;            // offset 0x30, size 0x4, Decl: 331
     AudioSettings *m_pCurAudioSettings; // offset 0x34, size 0x4
+#ifndef EA_BUILD_A124
     bool m_bPause_MainFNG;              // offset 0x38, size 0x1, Decl: 333
+#endif
 
   private:
     void *m_pMemoryPoolMem;     // offset 0x3C, size 0x4, Decl: 339
@@ -232,7 +268,9 @@ class EAXSound : public AudioMemBase {
     int m_startingLoopVolume; // offset 0x50, size 0x4, Decl: 348
 
     bool m_bAudioIsPaused;   // offset 0x54, size 0x1, Decl: 350
+#ifndef EA_BUILD_A124
     bool m_X360_UI_Override; // offset 0x58, size 0x1
+#endif
 
     char *m_pcsCsisName;                 // offset 0x5C, size 0x4, Decl: 359
     Sound::stSongInfo *m_pNewSongInfoSt; // offset 0x60, size 0x4
@@ -278,7 +316,8 @@ class EAXSound : public AudioMemBase {
 // total size: 0x18
 // Decl: 422
 struct SND_Params {
-    // TODO it's sus that only these are initialized
+    // Solo Vol y Pitch: medido, inicializar los seis cuesta 3.132 B en seis
+    // funciones de zEAXSound2 (CARSFX_PreColWoosh, BottomOut, TrafficWoosh...).
     SND_Params()
         : Vol(0x7FFF),     //
           Pitch(0x1000) {} // Decl: 423
@@ -312,5 +351,8 @@ extern int32 eDisableFixUpTables;
 extern int32 eDirtySolids;
 extern int32 eDirtyTextures;
 extern int32 eDirtyAnimations;
+
+void FESoundControl(bool bOn, const char *name);
+void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
 
 #endif

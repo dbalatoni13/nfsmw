@@ -9,7 +9,7 @@
         return sizeof(_PKT_);                                                                                                                        \
     }                                                                                                                                                \
     static unsigned SType() {                                                                                                                        \
-        static UCrc32 hash(_NAME_);                                                                                                                  \
+        static UCrc32 hash(_NAME_);                                                                                                  \
         return hash.GetValue();                                                                                                                      \
     }                                                                                                                                                \
     unsigned Type() override {                                                                                                                       \
@@ -18,6 +18,13 @@
 
 namespace Sim {
 
+enum ConnStatus {
+    CONNSTATUS_INVALID = -1,
+    CONNSTATUS_CONNECTING = 0,
+    CONNSTATUS_READY = 1,
+    CONNSTATUS_OTHER = 4,
+};
+
 class Packet {
   public:
     template <typename T> static T *Cast(Packet *pkt) {
@@ -25,11 +32,11 @@ class Packet {
     }
 
     // Virtual functions
-    virtual UCrc32 ConnectionClass();
+    virtual UCrc32 ConnectionClass() = 0;
     virtual unsigned int Compress(Packet *to) const;
     virtual unsigned int Decompress(Packet *to) const;
-    virtual unsigned int Type();
-    virtual unsigned int Size();
+    virtual unsigned int Type() = 0;
+    virtual unsigned int Size() = 0;
 
   protected:
     Packet() {}

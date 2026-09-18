@@ -39,7 +39,12 @@ class cStitchLoop {
 
 // total size: 0x20
 
-class cSampleWarpper : public UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> {
+class cSampleWarpper;
+typedef UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> cSampleListSet;
+
+class cSampleWarpper : public cSampleListSet {
+    friend class cStichWrapper;
+
   public:
     enum eSTITCH_PLAY_STATUS {
         eSTITCH_PLAY_STATUS_OFF = 0,
@@ -123,12 +128,25 @@ class cStichWrapper : public AudioMemBase {
 struct SampleQueueItem {
     cSampleWarpper *pSample; // offset 0x0, size 0x4
     cStichWrapper *pStitch;  // offset 0x4, size 0x4
+
+    SampleQueueItem()
+        : pSample(nullptr), //
+          pStitch(nullptr) {}
+
+    bool operator==(const SampleQueueItem &compareto) const {
+        if (this->pSample != compareto.pSample) {
+            return false;
+        }
+        return this->pStitch == compareto.pStitch;
+    }
 };
 
 // total size: 0x1C
 
 class cSTICH_PlayBack : public AudioMemBase {
   public:
+    void DEBUG_Update(float t);
+
     cSTICH_PlayBack();
     ~cSTICH_PlayBack() override;
 
@@ -136,8 +154,10 @@ class cSTICH_PlayBack : public AudioMemBase {
     void DestroyAllStichs();
     SND_Stich &GetStich(STICH_TYPE StichType, int Index);
 
-    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
-        return StichList[StichType];
+    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType);
+
+    static UTL::FixedVector<SampleQueueItem, 43> &GetQueueList(STICH_TYPE type) {
+        return mQueuedSampleList[type];
     }
 
     void Update(float t);
@@ -151,6 +171,8 @@ class cSTICH_PlayBack : public AudioMemBase {
     static SlotPool *mStitchSlotPool;
 
   private:
+    friend class cStichWrapper;
+    friend class cSampleWarpper;
     static UTL::FixedVector<SampleQueueItem, 43> mQueuedSampleList[3];
     bPList<SND_Stich> StichList[3]; // offset 0x4, size 0x18
 };

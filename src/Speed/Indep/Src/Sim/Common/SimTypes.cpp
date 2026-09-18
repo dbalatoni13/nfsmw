@@ -83,3 +83,5 @@ void Attachments::DetachAll() {
 }
 
 }; // namespace Sim
+
+IMPLEMENT_COUNTABLE(Sim::Connection)

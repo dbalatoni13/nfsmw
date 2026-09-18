@@ -263,3 +263,30 @@
 /* 80003464 00000464  4E 80 00 20 */	blr
 .endfn __init_vm
 .endfn __premain
+
+# 0x80439490..0x804394D0 | size: 0x40
+.data
+.balign 8
+
+# .data:0x0 | 0x80439490 | size: 0x1C
+.obj lbl_80439490, global
+	.string "Waiting for SN Debugger...\n"
+.endobj lbl_80439490
+
+# .data:0x1C | 0x804394AC | size: 0x4
+.obj gap_06_804394AC_data, global
+.hidden gap_06_804394AC_data
+	.4byte 0x00000000
+.endobj gap_06_804394AC_data
+
+# .data:0x20 | 0x804394B0 | size: 0x18
+.obj lbl_804394B0, global
+	.string "<< libsn version %d >>\n"
+.endobj lbl_804394B0
+
+# .data:0x38 | 0x804394C8 | size: 0x8
+.obj gap_06_804394C8_data, global
+.hidden gap_06_804394C8_data
+	.4byte 0x00000000
+	.4byte 0x00000000
+.endobj gap_06_804394C8_data

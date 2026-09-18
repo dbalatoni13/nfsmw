@@ -118,10 +118,73 @@ int PATH_clearallevents(int projects);
 
 int PATH_volume(int tracks, signed char scale);
 
+int PATH_status(int trackhandle, PATHSTATUS *psps);
+PATHTRACKPLAYSTATUS PATH_trackstatus(unsigned int trackhandle);
+
+namespace Path {
+class IPathTrack;
+}
+
+int PATH_jump(int trackhandle, int node);
+int PATH_latency(int trackhandle, int latency);
+int PATH_fade(int tracks, int fadeto, int ms, int fadetype);
+int PATH_sfxsendfade(int tracks, int fadeto, int ms, int fadetype);
+int PATH_milliseconds();
+int PATH_numprojects();
+int PATH_numtracks(unsigned int projects);
+int PATH_numevents(int project);
+int PATH_inservice();
+int PATH_shutdown();
+int PATH_addmapfile(char *pmap);
+int PATH_addnamfile(char *pmap, char *pnamfile);
+int PATH_destroy(int trackhandle);
+int PATH_setnamedvalue(int projects, char *name, int value);
+int PATH_getnamedvalue(int projects, char *name, int *value);
+int PATH_createstreamtrack(int trackhandle, char *musfilename, int latency);
+int PATH_createbanktrack(int trackhandle, char *musfilename, int maxsubbanks);
+Path::IPathTrack *PATH_createstreamimp(int trackhandle, int maxrequests, float buffertime);
+Path::IPathTrack *PATH_createbankimp(int trackhandle);
+Path::IPathTrack *PATH_detachstreamimp(int trackhandle);
+Path::IPathTrack *PATH_gettrackimp(int trackhandle);
+int PATH_attachstreamimp(int trackhandle, Path::IPathTrack *trackimp);
+int PATH_cachestreamdata(int trackhandle, char *mem, int bytes);
+int PATH_overheadbuffer(int trackhandle, int ms);
+int PATH_loadbank(int trackhandle, int subbanknum);
+int PATH_loadbanksync(int trackhandle, int subbanknum);
+int PATH_unloadbank(int trackhandle, int subbank);
+int PATH_subbankstatus(int trackhandle, int subbanknum);
+int PATH_verifymusfile(int trackhandle, int subbanknum, char *musfilepath);
+int PATH_defaultfxbus(int fxbus);
+void PATH_callbacks(SongProgressCallback progresscb, EventReleaseCallback eventcb, EventActionCallback actioncb);
+void PATH_serviceinterval(int projects, int taskinterval, int timerinterval);
+void PATH_seedrandom(unsigned int gameSeed);
+void PATH_setautoverify(int setauto);
+void PATH_setdebugchannels(int mode, int channels);
+int PATH_getdebugchannels();
+char *PATH_version();
+void PATH_vectortosnd();
+
+#ifdef USEREALCORE
+#ifdef __cplusplus
+namespace EA {
+struct TagValuePair;
+namespace Allocator {
+class IAllocator;
+}
+} // namespace EA
+
+void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValuePair &flags);
+#endif
+void PATH_vectortoreal5();
+void PATH_vectortoreal5async();
+void PATH_vectortoreal6();
+void PATH_vectortoreal6async();
+#else
 #define PATH_vectortoreal5 ERROR - Must #define USEREALCORE to use this function      // Decl: 319
 #define PATH_vectortoreal5async ERROR - Must #define USEREALCORE to use this function // Decl: 320
 #define PATH_vectortoreal6 ERROR - Must #define USEREALCORE to use this function      // Decl: 321
 #define PATH_vectortoreal6async ERROR - Must #define USEREALCORE to use this function // Decl: 322
+#endif
 
 #define PATH_vectortorwaudiocore ERROR - Must #define USERWAUDIOCORE to use this function // Decl: 346
 

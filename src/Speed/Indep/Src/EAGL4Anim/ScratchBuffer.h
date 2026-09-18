@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "eagl4supportdef.h"
+
 #include "types.h"
 
 namespace EAGL4Anim {
@@ -12,7 +14,10 @@ namespace EAGL4Anim {
 // total size: 0xC
 class ScratchBuffer {
   public:
-    ScratchBuffer() {}
+    ScratchBuffer()
+        : mBuffer(nullptr), //
+          mSize(0),        //
+          mRefCount(0) {}
 
     // void *operator new(size_t size) {}
 
@@ -28,7 +33,9 @@ class ScratchBuffer {
 
     // void *operator new(size_t, void *ptr) {}
 
-    void *GetBuffer() {}
+    void *GetBuffer() {
+        return mBuffer;
+    }
 
     unsigned int GetSize() const {}
 
@@ -47,6 +54,8 @@ class ScratchBuffer {
 };
 
 class ScratchBufferHelper {
+    friend class ScratchBuffer;
+
   private:
     static ScratchBuffer mScratchBuffers[3]; // size: 0x24
 };

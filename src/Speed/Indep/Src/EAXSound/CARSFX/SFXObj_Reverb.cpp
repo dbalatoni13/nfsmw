@@ -31,6 +31,14 @@ bool SFXObj_Reverb::bUnavailable = true;       // Decl: 92
 SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4]; // Decl: 94
 
 SFXObj_Reverb::SFXObj_Reverb() : CARSFX() {
+#ifdef EA_BUILD_A124
+    if (this->m_EchoBuffer == nullptr) {
+        this->m_EchoBuffer = gAudioMemoryManager.AllocateMemory(0xA000, "ReverbBuffer", false);
+        this->m_UnusedBuffer = this->m_EchoBuffer;
+        this->bUnavailable = false;
+    }
+#endif
+
     for (int n = 0; n < NUM_ELEMENTS(this->m_pFXEditPatch); n++) {
         this->m_pFXEditPatch[n] = nullptr;
     }
@@ -41,7 +49,11 @@ SFXObj_Reverb::~SFXObj_Reverb() {
 }
 
 int SFXObj_Reverb::GetController(int Index) {
+#ifdef EA_BUILD_A124
+    return Index == 0 ? 6 : -1;
+#else
     return Index != 0 ? -1 : 6;
+#endif
 }
 
 void SFXObj_Reverb::AttachController(SFXCTL *psfxctl) {
@@ -82,27 +94,31 @@ void SFXObj_Reverb::InitSFX() {
     this->Enable();
     if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
         if (this->m_pFXEditModule[0] != nullptr) {
-            // this->m_pFXEditModule[0]->Release();
+            this->m_pFXEditModule[0]->Release();
             this->m_pFXEditModule[0] = nullptr;
         }
-        // Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
-        // m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[3]);
+        Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, &m_pFXEditModule[0]);
+        m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[3]);
     } else {
         if (this->m_pFXEditModule[0] != nullptr) {
-            // m_pFXEditModule[0]->Release();
-            this->m_pFXEditModule[0] = nullptr;
+            m_pFXEditModule[0]->Release();
+            m_pFXEditModule[0] = nullptr;
         }
-        // Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, m_pFXEditModule);
-        // this->m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[8]);
+        Snd::GlobalFxProcessor::CreateInstance(Snd::DEVICE_MAIN, 0, &m_pFXEditModule[0]);
+        this->m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[8]);
         m_pTunnelCtl->SetCurrentReverbType(RVRB_HILLS, 0);
     }
 }
 
 void SFXObj_Reverb::UpdateParams(float t) {
-    if (IsEnabled() && m_pTunnelCtl->m_IsLeadCar && g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW) {
-        int ndmixverb = this->GetDMixOutput(0, DMX_VOL);
-        this->m_pTunnelCtl->m_AEMSWetVol = ndmixverb * m_pTunnelCtl->m_AEMSWetVol >> 15;
-        this->m_pTunnelCtl->m_GinsuWetVol = ndmixverb * m_pTunnelCtl->m_GinsuWetVol >> 15;
+    if (IsEnabled()) {
+        if (m_pTunnelCtl->m_IsLeadCar) {
+            if (g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW) {
+                int ndmixverb = this->GetDMixOutput(0, DMX_VOL);
+                this->m_pTunnelCtl->m_AEMSWetVol = ndmixverb * m_pTunnelCtl->m_AEMSWetVol >> 15;
+                this->m_pTunnelCtl->m_GinsuWetVol = ndmixverb * m_pTunnelCtl->m_GinsuWetVol >> 15;
+            }
+        }
     }
 }
 
@@ -110,22 +126,22 @@ void SFXObj_Reverb::UpdateParams(float t) {
 void SFXObj_Reverb::ProcessUpdate() {
     if (IsEnabled() && m_pTunnelCtl->m_IsLeadCar && g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW &&
         m_pTunnelCtl->bIsReadyForSwitch && (m_pFXEditModule[0] != nullptr)) {
-        // SNDSYS_service();
-        // m_pFXEditModule[0]->Reset();
-        // m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[m_pTunnelCtl->m_ReverbType]);
+        SNDSYS_service();
+        m_pFXEditModule[0]->Reset();
+        m_pFXEditModule[0]->SetCustom(m_pFXEditPatch[m_pTunnelCtl->m_ReverbType]);
     }
 }
 
 // TODO
 void SFXObj_Reverb::Destroy() {
     if (this->m_pFXEditModule[0] != nullptr) {
-        // this->m_pFXEditModule[0]->Release();
+        this->m_pFXEditModule[0]->Release();
         this->m_pFXEditModule[0] = nullptr;
     }
 
     if (this->m_pFXEditModule[1] != nullptr) {
-        // m_pFXEditModule[1]->Release();
-        this->m_pFXEditModule[1] = nullptr;
+        m_pFXEditModule[1]->Release();
+        m_pFXEditModule[1] = nullptr;
     }
 
     for (int n = 0; n < NUM_ELEMENTS(this->m_pFXEditPatch); n++) {

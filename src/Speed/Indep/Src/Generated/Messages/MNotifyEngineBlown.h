@@ -21,6 +21,10 @@ class MNotifyEngineBlown : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNotifyEngineBlown &message);
+
     MNotifyEngineBlown(HSIMABLE _Racer) : Hermes::Message(_GetKind(), _GetSize(), 0), fRacer(_Racer) {}
 
     ~MNotifyEngineBlown() {}
@@ -36,5 +40,30 @@ class MNotifyEngineBlown : public Hermes::Message {
   private:
     HSIMABLE fRacer; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNotifyEngineBlown::HandleMessage_LuaBinding(const MNotifyEngineBlown &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNotifyEngineBlown::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MNotifyEngineBlown *message = static_cast<const MNotifyEngineBlown *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "Racer");
+    if (ISimable::FindInstance(message->fRacer) != NULL) {
+        *static_cast<HSIMABLE *>(lua_newuserdata(luaState, sizeof(HSIMABLE))) = message->fRacer;
+        LuaBindery::AttachMetatable(luaState, "ISimable");
+    } else {
+        lua_pushnil(luaState);
+    }
+    lua_settable(luaState, -3);
+}
 
 #endif

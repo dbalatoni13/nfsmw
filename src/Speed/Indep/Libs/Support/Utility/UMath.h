@@ -11,6 +11,11 @@
 #include "UVectorMath.hpp"
 #elif defined(EA_PLATFORM_GAMECUBE) && !GAMECUBE_USE_CPU
 #include "UVectorMathGC.hpp"
+#elif defined(__ANDROID__)
+// Port Android: CPU.hpp tiene TODO en C portable; las funciones que alli son
+// TODO (VU0_sqrt, VU0_rsqrt, VU0_v3lengthsquare) se resuelven como stubs
+// portables en port/.../platform_stubs.cpp del proyecto Android.
+#include "UVectorMathCPU.hpp"
 #else
 #include "UVectorMathCPU.hpp"
 #endif
@@ -66,6 +71,10 @@ inline float ASinr(const float x) {
 
 float Ceil(const float x);
 
+float Mod(const float x, const float e);
+
+bool IsNaN(const float f);
+
 inline float Distance(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distance(a, b);
 }
@@ -95,6 +104,10 @@ inline void Clear(Vector3 &r) {
     *reinterpret_cast<uint32 *>(&r.y) = 0;
     *reinterpret_cast<uint32 *>(&r.z) = 0;
 #endif
+}
+
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    r = a;
 }
 
 inline void Copy(const Matrix4 &a, Matrix4 &r) {
@@ -149,6 +162,14 @@ inline void RotateTranslate(const Vector4 *a, const Matrix4 &m, Vector4 *r, int 
     VU0_MATRIX4_vect4mult(a, m, r, count);
 }
 
+inline void Init(Matrix4 &m) {
+    VU0_MATRIX4Init(m);
+}
+
+inline void Init(Vector4 &a) {
+    VU0_v4Init(a);
+}
+
 inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
     VU0_MATRIX4Init(m, xx, yy, zz);
 }
@@ -181,13 +202,16 @@ inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
+inline void Unitxyz(Vector4 &a) {
+    VU0_v4unitxyz(a, a);
+}
+
 inline void MultXRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
     MATRIX4_multxrot(&m, a, &r);
 }
 
 inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
-    r = m;
-    MATRIX4_multyrot(&r, a, &r);
+    MATRIX4_multyrot(&m, a, &r);
 }
 
 inline void MultZRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
@@ -200,6 +224,12 @@ inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
 }
 #else
 void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
+#ifdef EA_PLATFORM_PLAYSTATION2
+// En PS2 estas dos tambien son funciones de verdad y no inline; las dos
+// estan en el DWARF y en los simbolos de PS2.
+void QuaternionToEuler(const Vector4 &q, Vector3 &e);
+void Slerp(const Vector4 &a, const Vector4 &b, float t, Vector4 &r);
+#endif
 #endif
 
 inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
@@ -257,8 +287,28 @@ inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 
     VU0_v3addscale(a, b, s, r);
 }
 
+inline void AddScale(const Vector4 &a, const Vector4 &b, const float s, Vector4 &r) {
+    VU0_v4addscale(a, b, s, r);
+}
+
+inline void AddScalexyz(const Vector4 &a, const Vector4 &b, const float s, Vector4 &r) {
+    VU0_v4addscalexyz(a, b, s, r);
+}
+
+inline void Mean(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addscale(a, b, 0.5f, r);
+}
+
+inline void Meanxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addscalexyz(a, b, 0.5f, r);
+}
+
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
+}
+
+inline void Sub(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4sub(a, b, r);
 }
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
@@ -340,6 +390,10 @@ inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
     VU0_MATRIX3x4dotprod(a, b, r);
 }
 
+inline float Dot(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4dotprod(a, b);
+}
+
 inline float Dotxyz(const Vector4 &a, const Vector4 &b) {
     return VU0_v4dotprodxyz(a, b);
 }
@@ -359,6 +413,10 @@ inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
 #endif
+
+inline void UnitCrossxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4unitcrossprodxyz(a, b, r);
+}
 
 inline float Normalize(Vector3 &r) {
     float m = VU0_v3length(r);
@@ -435,6 +493,10 @@ inline float Length(const Vector3 &a) {
     return VU0_v3length(a);
 }
 
+inline float Length(const Vector4 &a) {
+    return VU0_v4length(a);
+}
+
 inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
     VU0_m4toquat(m, q);
 }
@@ -485,6 +547,16 @@ inline void Lerp(const Vector2 &a, const Vector2 &b, const float t, Vector2 &r) 
 
 inline float Cross(const Vector2 &a, const Vector2 &b) {
     return a.x * b.y - b.x * a.y;
+}
+
+inline float CrossXZ(const Vector4 &a, const Vector4 &b) {
+    return a.x * b.z - b.x * a.z;
+}
+
+float VU0_v4lengthxz(const UMath::Vector4 &a);
+
+inline float LengthXZ(const Vector4 &a) {
+    return VU0_v4lengthxz(a);
 }
 
 inline void Lerp(const Vector3 &a, const Vector3 &b, const float t, Vector3 &r) {
@@ -569,6 +641,18 @@ struct UQuat : public UMath::Vector4 {
         return *this;
     }
 
+    // El volcado DWARF del original lo declara AQUI, justo antes de
+    // BuildDeltaAxis; en GCC 2.9 el orden de declaracion decide que cuerpo
+    // esta disponible para expandirse dentro de cual.
+    void BuildAxisAngle(const UMath::Vector3 &normal, float angle) {
+        float a = angle * 0.5f;
+        float s = UMath::Sinr(a);
+        x = normal.x * s;
+        y = normal.y * s;
+        z = normal.z * s;
+        w = UMath::Cosr(a);
+    }
+
     void BuildDeltaAxis(const UMath::Vector3 &normal1, const UMath::Vector3 &normal2) {
         const float angle = UMath::Dot(normal1, normal2);
         if (angle > 0.99999f) {
@@ -593,5 +677,9 @@ struct UQuat : public UMath::Vector4 {
         w = s * 0.5f;
     }
 };
+
+inline Angle ACosa(const float x) {
+    return VU0_ACos(x);
+}
 
 #endif

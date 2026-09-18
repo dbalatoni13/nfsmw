@@ -16,7 +16,15 @@ float ASTAR_METRIC_SCALE = 0.25f;
 // total size: 0x14
 class AStarNode : public bTNode<AStarNode> {
   public:
-    USE_SLOTALLOC(AStarNodeSlotPool);
+    // El ctor de AStarSearch y Service llaman a bMalloc__FP8SlotPool en el ELF,
+    // no a bOMalloc: este operator new usa bMalloc (como el de AStarSearch).
+    void *operator new(size_t size) {
+        return bMalloc(AStarNodeSlotPool);
+    }
+    void *operator new(size_t size, const char *name) {
+        return bMalloc(AStarNodeSlotPool);
+    }
+    void operator delete(void *ptr);
 
     AStarNode() {}
 
@@ -58,6 +66,10 @@ class AStarNode : public bTNode<AStarNode> {
     unsigned short fActualCost;    // offset 0xE, size 0x2
     unsigned short fEstimatedCost; // offset 0x10, size 0x2
 };
+
+void AStarNode::operator delete(void *ptr) {
+    bFree(AStarNodeSlotPool, ptr);
+}
 
 enum AStarSearchState {
     ASTAR_SEARCHING = 0,
@@ -469,7 +481,8 @@ float AStarSearch::Service(float time_limit_ms) {
     }
     if (Joylog::IsCapturing()) {
         // TODO
-        Joylog::AddData(reinterpret_cast<int32 &>(elapsed_ms), 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
+        float logged = elapsed_ms;
+        Joylog::AddData(reinterpret_cast<int32 &>(logged), 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
     } else if (Joylog::IsReplaying()) {
         // TODO
         int fake = Joylog::GetData(32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
@@ -527,7 +540,7 @@ void PathFinder::ServiceAll() {
 }
 
 bool PathFinder::OnTask(HSIMTASK htask, float elapsed_seconds) {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
     if (htask != mSimTask) {
         Object::OnTask(htask, elapsed_seconds);
         return false;

@@ -29,9 +29,16 @@ void (*NFSMixMap::mMapReadyCB)() = nullptr;
 
 NFSMixMap::NFSMixMap() : AudioMemBase() {
     this->m_pStateProcs = nullptr;
-    this->m_fDeltaTimeRatio[1] = 0.0f;
+#ifdef EA_BUILD_A124
+    this->m_fDeltaTimeRatio[0] = 1.0f;
     this->m_nStateMapCount = 0;
-    this->m_fDeltaTimeRatio[0] = 0.0f;
+    this->m_fDeltaTimeRatio[1] = 1.0f;
+#else
+// ps2_fixes pone 0.0f aqui para Black Edition; lo nuestro es lo que reproduce el DOL.
+    this->m_fDeltaTimeRatio[1] = 1.0f;
+    this->m_nStateMapCount = 0;
+    this->m_fDeltaTimeRatio[0] = 1.0f;
+#endif
 }
 
 NFSMixMap::~NFSMixMap() {}
@@ -1243,8 +1250,7 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
 
         {
             int Q15Val = 0x7FFF - pmxdp->pudata->pstCurveData->Q15Output;
-            Q15Val = (Q15Val * pmxdp->psdata->nRatio) >> 15;
-            nout = 0x7FFF - Q15Val;
+            nout = 0x7FFF - ((Q15Val * pmxdp->psdata->nRatio) >> 15);
         }
 
         {
@@ -1641,7 +1647,7 @@ void NFSMixMap::UpdateATREvent(stEvtMixCtlProc *pProc) {
         return;
     }
 
-    float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+    float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32768.0f;
 
     pProc->pData_U->output = static_cast<int>(nratio * static_cast<float>(nSwing));
     return;
@@ -1660,13 +1666,11 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
         nSwing |= 0xFFFF0000;
     }
 
-    float nratio = pProc->pData_U->msTimeElapsed;
+    float elapsed = pProc->pData_U->msTimeElapsed;
 
-    if (nratio < ftstage_0) {
-        nratio = (nratio * 32767.0f) / ftstage_0;
-
+    if (elapsed < ftstage_0) {
         {
-            int ndt = static_cast<int>(nratio);
+            int ndt = static_cast<int>((elapsed * 32767.0f) / ftstage_0);
 
             if (nSwing < 0) {
                 pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
@@ -1674,14 +1678,12 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
                 pProc->pData_U->qoutput = 0x7FFF - NFSMixShape::GetCurveOutput(ncurvestage_0, ndt, false);
             }
         }
-    } else if ((nratio - ftstage_0) > ftstage_1) {
-        nratio = nratio - (ftstage_0 + ftstage_1);
+    } else if ((elapsed - ftstage_0) > ftstage_1) {
+        float nratio = elapsed - (ftstage_0 + ftstage_1);
 
         if (nratio < ftstage_2) {
-            nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
-
             {
-                int ndt = static_cast<int>(nratio);
+                int ndt = static_cast<int>(32767.0f - ((nratio * 32767.0f) / ftstage_2));
 
                 if (nSwing < 0) {
                     pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
@@ -1697,7 +1699,8 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
         pProc->pData_U->qoutput = 0;
     }
 
-    pProc->pData_U->output = static_cast<int>(((32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f) * static_cast<float>(nSwing));
+    float noutratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+    pProc->pData_U->output = static_cast<int>(noutratio * static_cast<float>(nSwing));
 }
 
 void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
@@ -1734,8 +1737,8 @@ void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
         pProc->pData_U->qoutput = 0x7FFF;
     }
 
-    nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
-    pProc->pData_U->output = static_cast<int>(nratio * static_cast<float>(nSwing));
+    float noutratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+    pProc->pData_U->output = static_cast<int>(noutratio * static_cast<float>(nSwing));
 }
 
 float DOPPLER_SMOOTHING_FACTOR = 0.2f; // size: 0x4, address: 0x80418A2C, Decl: 4039
@@ -1796,7 +1799,7 @@ void NFSMixMap::Update3DMixCtls() {
                     fdist[0] = static_cast<float>(p3Dproc->p3DMixCtlData_U->pInputs[0]) * 0.01f;
                     break;
                 default:
-                    fdist[0] = -1.00000006f;
+                    fdist[0] = -1.0f;
                     break;
             }
             fdist[1] = fdist[0];

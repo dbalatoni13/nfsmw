@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 
 // total size: 0x48
@@ -65,11 +66,13 @@ AIActionHeliExit::AIActionHeliExit(AIActionParams *params, float score)
     mIRigidBody = params->mOwner->GetRigidBody();
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeliExit("AIActionHeliExit", AIActionHeliExit::Construct);
+
 AIAction *AIActionHeliExit::Construct(AIActionParams *params) {
     return new AIActionHeliExit(params, 0.0f);
 }
 
-float Exit_Height;
+float Exit_Height = 25.0f;
 
 bool AIActionHeliExit::IsFinished() {
     IRigidBody *player_rigid_body = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();

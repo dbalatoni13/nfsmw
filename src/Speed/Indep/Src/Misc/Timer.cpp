@@ -26,10 +26,10 @@ int RealTimeElapsedQuantized = 0;
 float RealTimeElapsedFrame = 0;
 float RealTimeElapsedError = 0;
 Timer RealTimer;
-float RealTimeElapsed;
+float RealTimeElapsed = RealTimeFramesElapsed * (1.0f / 30.0f);
 int32 RealLoopCounter = 0;
 float DefaultLimitMinimumVideoTimeElapsed = 1.0f / 60.0f;
-float LimitMinimumVideoTimeElapsed;
+float LimitMinimumVideoTimeElapsed = DefaultLimitMinimumVideoTimeElapsed;
 float MaxTicksPerTimestep = 4.0f;
 
 VIDEO_MODE GetVideoMode() {
@@ -53,11 +53,11 @@ VIDEO_MODE GetBuildRegionVideoMode() {
 }
 
 float GetRealTimeElapsedFromQuantized(int real_time_elapsed_quantized) {
-    return static_cast<float>(real_time_elapsed_quantized) * (1.0f / 3600.0f);
+    return static_cast<float>(real_time_elapsed_quantized) * 0.00027777778f;
 }
 
 int GetQuantizedRealTimeElapsed(float real_time_elapsed) {
-    return static_cast<int>(real_time_elapsed * 3600.0f + 0.5f);
+    return static_cast<int>(real_time_elapsed * 3.6e+03f + 0.5f);
 }
 
 void PrepareRealTimestep(float video_time_elapsed) {
@@ -72,9 +72,9 @@ void PrepareRealTimestep(float video_time_elapsed) {
         video_time_elapsed = video_time_elapsed + RealTimeElapsedError;
         if (!TheOnlineManager.IsOnlineRace()) {
             if (GetVideoMode() == MODE_PAL) {
-                video_time_elapsed = bMin(video_time_elapsed, MaxTicksPerTimestep * (1.0f / 50.0f));
+                video_time_elapsed = bMin(video_time_elapsed, MaxTicksPerTimestep * 0.02f);
             } else {
-                video_time_elapsed = bMin(video_time_elapsed, MaxTicksPerTimestep * (1.0f / 60.0f));
+                video_time_elapsed = bMin(video_time_elapsed, MaxTicksPerTimestep * 0.016666668f);
             }
         }
         quantized_video_time_elapsed = GetQuantizedRealTimeElapsed(video_time_elapsed);
@@ -139,8 +139,8 @@ void PrepareRealTimestep(float video_time_elapsed) {
 }
 
 void AdvanceRealTime() {
-    int frames_elapsed_60hz = static_cast<int>((RealTimeElapsedFrame + RealTimeElapsed) * 60.0f);
-    RealTimeElapsedFrame = (RealTimeElapsedFrame + RealTimeElapsed) - static_cast<float>(frames_elapsed_60hz) * (1.0f / 60.0f);
+    int frames_elapsed_60hz = static_cast<int>((RealTimeElapsedFrame + RealTimeElapsed) * 6e+01f);
+    RealTimeElapsedFrame = (RealTimeElapsedFrame + RealTimeElapsed) - static_cast<float>(frames_elapsed_60hz) * 0.016666668f;
     if (frames_elapsed_60hz == 0) {
         frames_elapsed_60hz = 1;
     }
@@ -184,11 +184,11 @@ void AdvanceWorldTime() {
     if (NeedToPrepareWorldTimestep == 0) {
         NeedToPrepareWorldTimestep = 1;
         if (WorldTimeElapsed != 0.0f) {
-            int frames_elapsed_60hz = static_cast<int>((WorldTimeElapsedFrame + WorldTimeElapsed) * 60.0f);
+            int frames_elapsed_60hz = static_cast<int>((WorldTimeElapsedFrame + WorldTimeElapsed) * 6e+01f);
             WorldTimeFramesElapsed = frames_elapsed_60hz;
             WorldTimeFrames += frames_elapsed_60hz;
             WorldTime = WorldTimeFrames;
-            WorldTimeElapsedFrame = WorldTimeElapsedFrame + WorldTimeElapsed - static_cast<float>(frames_elapsed_60hz) * (1.0f / 60.0f);
+            WorldTimeElapsedFrame = WorldTimeElapsedFrame + WorldTimeElapsed - static_cast<float>(frames_elapsed_60hz) * 0.016666668f;
             WorldTimer.SetTime(Sim::GetTime());
             WorldTimeElapsed = 0.0f;
             WorldLoopCounter++;

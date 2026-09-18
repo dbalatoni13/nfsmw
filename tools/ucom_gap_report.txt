@@ -1,0 +1,303 @@
+==============================================================================
+UCOM.h : 72 simbolos, 45 sin casar, 54124 bytes pendientes
+==============================================================================
+  11168B   99.6% linea:422   zWorld               __static_initialization_and_destruction_0
+   9380B   16.3% linea:422   zAI                  __static_initialization_and_destruction_0
+   7996B    3.8% linea:422   zPhysics             __static_initialization_and_destruction_0
+   4544B   10.2% linea:422   zEcstasy             __static_initialization_and_destruction_0
+   4464B   49.3% linea:422   zPhysicsBehaviors    __static_initialization_and_destruction_0
+   3604B    9.6% linea:422   zCamera              __static_initialization_and_destruction_0
+   2116B   15.1% linea:422   zSpeech              __static_initialization_and_destruction_0
+   1956B    4.0% linea:422   zSim                 __static_initialization_and_destruction_0
+   1472B   53.9% linea:422   zWorld2              __static_initialization_and_destruction_0
+   1444B   44.2% linea:422   zMisc                __static_initialization_and_destruction_0
+   1304B   31.8% linea:422   zMain                __static_initialization_and_destruction_0
+    588B   46.9% linea:422   zAnim                __static_initialization_and_destruction_0
+    480B   47.3% linea:422   zFe2                 __static_initialization_and_destruction_0
+    340B    0.0% linea:422   zPlatform            __static_initialization_and_destruction_0
+    300B   26.5% linea:422   zGameplay            __static_initialization_and_destruction_0
+    224B    0.0% linea:419   zSpeech              Speech::SpeechHashIDMap::~SpeechHashIDMap(void)
+    224B    0.0% linea:419   zSpeech              Speech::EventHistory::~EventHistory(void)
+    220B   73.6% linea:422   zFe                  __static_initialization_and_destruction_0
+    208B   59.5% linea:422   zFeOverlay           __static_initialization_and_destruction_0
+    180B    0.0% linea:422   zCamera              UTL::Collections::Listable<IDebugWatchCar, 2>::List::~List(void)
+    132B    0.0% linea:419   zSpeech              Speech::SPCHEventList::~SPCHEventList(void)
+    124B    0.0% linea:451   zSim                 UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32>::CreateInstance(UCrc32, Sim::Param)
+    124B    0.0% linea:451   zAI                  UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(UCrc32, Sim::Param
+    124B    0.0% linea:451   zAI                  UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32, Sim::Param)
+     96B    0.0% linea:451   zSim                 UTL::COM::Factory<Sim::Packet *, int, UCrc32>::CreateInstance(UCrc32, Sim::Packet *)
+     96B    0.0% linea:451   zSim                 UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::CreateInstance(
+     96B    0.0% linea:451   zPhysics             UTL::COM::Factory<BehaviorParams const &, Behavior, UCrc32>::CreateInstance(UCrc32, Beha
+     96B    0.0% linea:451   zMain                UTL::COM::Factory<int, InputDevice, UCrc32>::CreateInstance(UCrc32, int)
+     96B    0.0% linea:451   zCamera              UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::CreateInstance(UCrc32
+     96B    0.0% linea:451   zAI                  UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::CreateInstance(UCrc32, ISimable *)
+     96B    0.0% linea:451   zAI                  UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::CreateInstance(UCrc32, AIActionPa
+     92B    0.0% linea:451   zAI                  UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned int>::Cre
+     80B    0.0% linea:422   zLua                 __static_initialization_and_destruction_0
+     80B    0.0% linea:422   zGameModes           __static_initialization_and_destruction_0
+     44B    0.0% linea:422   zPlatform            global constructors keyed to snProfilerEnable
+     44B    0.0% linea:422   zLua                 global constructors keyed to LuaRealloc
+     44B    0.0% linea:422   zGameModes           global constructors keyed to aEmotionalSummaryTypeStrings
+     44B    0.0% linea:422   zFeOverlay           global constructors keyed to RenderLookAtPoint
+     44B    0.0% linea:422   zEcstasy             global constructors keyed to ePolySlotPool
+     44B    0.0% linea:422   zCamera              global constructors keyed to Camera::StopUpdating
+     44B    0.0% linea:422   zAnim                CAnimBank::_GLOBAL_.I.
+     44B    0.0% linea:419   zWorld2              global constructors keyed to Tweak_colliderDraws
+     44B    0.0% linea:419   zSpeech              global constructors keyed to VALIDATE_SED_GENERATE
+     44B    0.0% linea:419   zEAXSound            global constructors keyed to DEBUG_360MEM
+     44B    0.0% linea:419   zAI                  global constructors keyed to AITrafficManager::mTrafficMinSpawnDist
+
+==============================================================================
+UTLVector.h : 428 simbolos, 250 sin casar, 24308 bytes pendientes
+==============================================================================
+   9284B   60.1% linea:231   zEAXSound            __static_initialization_and_destruction_0
+    372B    0.0% linea:203   zPhysics             UTL::Vector<PVehicle::ManageNode, 16>::reserve(unsigned int)
+    344B    0.0% linea:183   zPhysics             UTL::Vector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16>::pu
+    340B    0.0% linea:183   zPhysics             UTL::Vector<IVehicle *, 16>::push_back(IVehicle *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<ISpikeable *, 16>::push_back(ISpikeable *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<ISimpleBody *, 16>::push_back(ISimpleBody *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<IRigidBody *, 16>::push_back(IRigidBody *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<IRecordablePlayer *, 16>::push_back(IRecordablePlayer *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<IModel *, 16>::push_back(IModel *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<IInputPlayer *, 16>::push_back(IInputPlayer *const &)
+    340B    0.0% linea:183   zPhysics             UTL::Vector<ICollisionBody *, 16>::push_back(ICollisionBody *const &)
+    340B    0.0% linea:183   zFe2                 UTL::Vector<IHud *, 16>::push_back(IHud *const &)
+    340B    0.0% linea:183   zCamera              UTL::Vector<ITrafficCenter *, 16>::push_back(ITrafficCenter *const &)
+    340B    0.0% linea:183   zCamera              UTL::Vector<IDebugWatchCar *, 16>::push_back(IDebugWatchCar *const &)
+    340B    0.0% linea:183   zCamera              UTL::Vector<CameraAI::Director *, 16>::push_back(CameraAI::Director *const &)
+    340B    0.0% linea:183   zAI                  UTL::Vector<IRoadBlock *, 16>::push_back(IRoadBlock *const &)
+    332B    0.0% linea:203   zPhysics             UTL::Vector<Sim::IEntity *, 16>::reserve(unsigned int)
+    332B    0.0% linea:203   zPhysics             UTL::Vector<IPlayer *, 16>::reserve(unsigned int)
+    332B    0.0% linea:203   zAI                  UTL::Vector<unsigned int, 16>::reserve(unsigned int)
+    180B    0.0% linea:704   zSpeech              UTL::FixedVector<Speech::SpeechEventPair, 264, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zSpeech              UTL::FixedVector<Speech::HistoryPair, 264, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 434, 
+    180B    0.0% linea:704   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 8, 16>
+    180B    0.0% linea:704   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 40,
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<Sim::IEntity *, 8, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<PVehicle::ManageNode, 10, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<ISimpleBody *, 96, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<IRigidBody *, 160, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<IPlayer *, 8, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<IExplosion *, 96, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<IDisposable *, 160, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zPhysics             UTL::FixedVector<ICollisionBody *, 160, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zCamera              UTL::FixedVector<IDebugWatchCar *, 2, 16>::~FixedVector(void)
+    180B    0.0% linea:704   zCamera              UTL::FixedVector<CameraAI::Director *, 2, 16>::~FixedVector(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<Smackable, 160>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IVehicleCache, 18>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<ITrafficCenter, 8>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<ISpikeable, 10>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<ISimpleBody, 96>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IRoadBlock, 8>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IRigidBody, 160>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IRecordablePlayer, 8>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IPursuit, 8>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IModel, 434>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IInputPlayer, 8>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IHud, 2>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IExplosion, 96>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<IDisposable, 160>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Listable<ICollisionBody, 160>::List::~List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Instanceable<HSIMABLE__ *, ISimable, 160>::_List::~_List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Instanceable<HMODEL__ *, IModel, 434>::_List::~_List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Instanceable<HCAUSE__ *, ICause, 10>::_List::~_List(void)
+    180B    0.0% linea:212   zPhysics             UTL::Collections::Instanceable<HACTIVITY__ *, Sim::IActivity, 40>::_List::~_List(void)
+     52B    0.0% linea:91    zSpeech              UTL::Vector<Speech::SpeechEventPair, 16>::~Vector(void)
+     52B    0.0% linea:91    zSpeech              UTL::Vector<Speech::HistoryPair, 16>::~Vector(void)
+     52B    0.0% linea:91    zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 16>::~Vect
+     52B    0.0% linea:91    zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 16>::~Vecto
+     52B    0.0% linea:91    zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 16>::~Ve
+     52B    0.0% linea:91    zPhysics             UTL::Vector<Sim::IEntity *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<PVehicle::ManageNode, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<ISimpleBody *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<IRigidBody *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<IPlayer *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<IExplosion *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<IDisposable *, 16>::~Vector(void)
+     52B    0.0% linea:91    zPhysics             UTL::Vector<ICollisionBody *, 16>::~Vector(void)
+     52B    0.0% linea:91    zCamera              UTL::Vector<IDebugWatchCar *, 16>::~Vector(void)
+     52B    0.0% linea:91    zCamera              UTL::Vector<CameraAI::Director *, 16>::~Vector(void)
+     52B    0.0% linea:91    zAI                  UTL::Vector<unsigned int, 16>::~Vector(void)
+     32B    0.0% linea:563   zSpeech              UTL::Vector<Speech::SpeechEventPair, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zSpeech              UTL::Vector<Speech::HistoryPair, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 16>::GetGr
+     32B    0.0% linea:563   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 16>::GetGro
+     32B    0.0% linea:563   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 16>::Get
+     32B    0.0% linea:563   zPhysics             UTL::Vector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16>::Ge
+     32B    0.0% linea:563   zPhysics             UTL::Vector<Smackable *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<Sim::IEntity *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<PVehicle::ManageNode, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IVehicleCache *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<ITrafficCenter *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<ISpikeable *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<ISimpleBody *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IRoadBlock *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IRigidBody *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IRecordablePlayer *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IPursuit *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IPlayer *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IModel *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IInputPlayer *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IHud *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IExplosion *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<IDisposable *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zPhysics             UTL::Vector<ICollisionBody *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zCamera              UTL::Vector<IDebugWatchCar *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zCamera              UTL::Vector<CameraAI::Director *, 16>::GetGrowSize(unsigned int) const
+     32B    0.0% linea:563   zAI                  UTL::Vector<unsigned int, 16>::GetGrowSize(unsigned int) const
+     24B    0.0% linea:118   zCamera              Count__Q33UTL11Collectionst11ListableSet4Z7IPlayeri8Z11ePlayerListUi311ePlayerList
+     24B    0.0% linea:118   zAI                  Count__Q33UTL11Collectionst11ListableSet4Z8IVehiclei10Z12eVehicleListUi1012eVehicleList
+     12B    0.0% linea:570   zSpeech              UTL::Vector<Speech::SpeechEventPair, 16>::GetMaxCapacity(void) const
+     12B    0.0% linea:570   zSpeech              UTL::Vector<Speech::HistoryPair, 16>::GetMaxCapacity(void) const
+     12B    0.0% linea:570   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 16>::GetMa
+     12B    0.0% linea:570   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 16>::GetMax
+     12B    0.0% linea:570   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 16>::Get
+     12B    0.0% linea:570   zPhysics             UTL::Vector<PVehicle::ManageNode, 16>::GetMaxCapacity(void) const
+     12B    0.0% linea:570   zCamera              UTL::Vector<IDebugWatchCar *, 16>::GetMaxCapacity(void) const
+     12B    0.0% linea:570   zCamera              UTL::Vector<CameraAI::Director *, 16>::GetMaxCapacity(void) const
+     12B    0.0% linea:570   zAI                  UTL::Vector<unsigned int, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:763   zSpeech              UTL::FixedVector<Speech::SpeechEventPair, 264, 16>::AllocVectorSpace(unsigned int, unsig
+      8B    0.0% linea:763   zSpeech              UTL::FixedVector<Speech::HistoryPair, 264, 16>::AllocVectorSpace(unsigned int, unsigned 
+      8B    0.0% linea:763   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 434, 
+      8B    0.0% linea:763   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 8, 16>
+      8B    0.0% linea:763   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 40,
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 40, 16>::AllocVectorSpace(unsigned int, u
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 160, 16>::AllocVectorSpace(unsigned int, 
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 10, 16>::AllocVectorSpace(unsigned int, u
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<Smackable *, 160, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<Sim::IEntity *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<PVehicle::ManageNode, 10, 16>::AllocVectorSpace(unsigned int, unsigned 
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IVehicleCache *, 18, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<ITrafficCenter *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<ISpikeable *, 10, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<ISimpleBody *, 96, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IRoadBlock *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IRigidBody *, 160, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IRecordablePlayer *, 8, 16>::AllocVectorSpace(unsigned int, unsigned in
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IPursuit *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IPlayer *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IModel *, 434, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IInputPlayer *, 8, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IHud *, 2, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IExplosion *, 96, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<IDisposable *, 160, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zPhysics             UTL::FixedVector<ICollisionBody *, 160, 16>::AllocVectorSpace(unsigned int, unsigned int
+      8B    0.0% linea:763   zCamera              UTL::FixedVector<IDebugWatchCar *, 2, 16>::AllocVectorSpace(unsigned int, unsigned int)
+      8B    0.0% linea:763   zCamera              UTL::FixedVector<CameraAI::Director *, 2, 16>::AllocVectorSpace(unsigned int, unsigned i
+      8B    0.0% linea:756   zSpeech              UTL::FixedVector<Speech::SpeechEventPair, 264, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zSpeech              UTL::FixedVector<Speech::HistoryPair, 264, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 434, 
+      8B    0.0% linea:756   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 8, 16>
+      8B    0.0% linea:756   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 40,
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 40, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 160, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 10, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<Smackable *, 160, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<Sim::IEntity *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<PVehicle::ManageNode, 10, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IVehicleCache *, 18, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<ITrafficCenter *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<ISpikeable *, 10, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<ISimpleBody *, 96, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IRoadBlock *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IRigidBody *, 160, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IRecordablePlayer *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IPursuit *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IPlayer *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IModel *, 434, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IInputPlayer *, 8, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IHud *, 2, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IExplosion *, 96, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<IDisposable *, 160, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zPhysics             UTL::FixedVector<ICollisionBody *, 160, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zCamera              UTL::FixedVector<IDebugWatchCar *, 2, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:756   zCamera              UTL::FixedVector<CameraAI::Director *, 2, 16>::GetMaxCapacity(void) const
+      8B    0.0% linea:750   zSpeech              UTL::FixedVector<Speech::SpeechEventPair, 264, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zSpeech              UTL::FixedVector<Speech::HistoryPair, 264, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 434, 
+      8B    0.0% linea:750   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 8, 16>
+      8B    0.0% linea:750   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 40,
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 40, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 160, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 10, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<Smackable *, 160, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<Sim::IEntity *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<PVehicle::ManageNode, 10, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IVehicleCache *, 18, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<ITrafficCenter *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<ISpikeable *, 10, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<ISimpleBody *, 96, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IRoadBlock *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IRigidBody *, 160, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IRecordablePlayer *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IPursuit *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IPlayer *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IModel *, 434, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IInputPlayer *, 8, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IHud *, 2, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IExplosion *, 96, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<IDisposable *, 160, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zPhysics             UTL::FixedVector<ICollisionBody *, 160, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zCamera              UTL::FixedVector<IDebugWatchCar *, 2, 16>::GetGrowSize(unsigned int) const
+      8B    0.0% linea:750   zCamera              UTL::FixedVector<CameraAI::Director *, 2, 16>::GetGrowSize(unsigned int) const
+      4B    0.0% linea:766   zSpeech              UTL::FixedVector<Speech::SpeechEventPair, 264, 16>::FreeVectorSpace(Speech::SpeechEventP
+      4B    0.0% linea:766   zSpeech              UTL::FixedVector<Speech::HistoryPair, 264, 16>::FreeVectorSpace(Speech::HistoryPair *, u
+      4B    0.0% linea:766   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 434, 
+      4B    0.0% linea:766   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 8, 16>
+      4B    0.0% linea:766   zSim                 UTL::FixedVector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 40,
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 40, 16>::FreeVectorSpace(UTL::Collections
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 160, 16>::FreeVectorSpace(UTL::Collection
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<UTL::Collections::_KeyedNode, 10, 16>::FreeVectorSpace(UTL::Collections
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<Smackable *, 160, 16>::FreeVectorSpace(Smackable **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<Sim::IEntity *, 8, 16>::FreeVectorSpace(Sim::IEntity **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<PVehicle::ManageNode, 10, 16>::FreeVectorSpace(PVehicle::ManageNode *, 
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IVehicleCache *, 18, 16>::FreeVectorSpace(IVehicleCache **, unsigned in
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<ITrafficCenter *, 8, 16>::FreeVectorSpace(ITrafficCenter **, unsigned i
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<ISpikeable *, 10, 16>::FreeVectorSpace(ISpikeable **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<ISimpleBody *, 96, 16>::FreeVectorSpace(ISimpleBody **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IRoadBlock *, 8, 16>::FreeVectorSpace(IRoadBlock **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IRigidBody *, 160, 16>::FreeVectorSpace(IRigidBody **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IRecordablePlayer *, 8, 16>::FreeVectorSpace(IRecordablePlayer **, unsi
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IPursuit *, 8, 16>::FreeVectorSpace(IPursuit **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IPlayer *, 8, 16>::FreeVectorSpace(IPlayer **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IModel *, 434, 16>::FreeVectorSpace(IModel **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IInputPlayer *, 8, 16>::FreeVectorSpace(IInputPlayer **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IHud *, 2, 16>::FreeVectorSpace(IHud **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IExplosion *, 96, 16>::FreeVectorSpace(IExplosion **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<IDisposable *, 160, 16>::FreeVectorSpace(IDisposable **, unsigned int)
+      4B    0.0% linea:766   zPhysics             UTL::FixedVector<ICollisionBody *, 160, 16>::FreeVectorSpace(ICollisionBody **, unsigned
+      4B    0.0% linea:766   zCamera              UTL::FixedVector<IDebugWatchCar *, 2, 16>::FreeVectorSpace(IDebugWatchCar **, unsigned i
+      4B    0.0% linea:766   zCamera              UTL::FixedVector<CameraAI::Director *, 2, 16>::FreeVectorSpace(CameraAI::Director **, un
+      4B    0.0% linea:575   zSpeech              UTL::Vector<Speech::SpeechEventPair, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zSpeech              UTL::Vector<Speech::HistoryPair, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Model, 434>::Collector::_Node, 16>::OnGro
+      4B    0.0% linea:575   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector::_Node, 16>::OnGrow
+      4B    0.0% linea:575   zSim                 UTL::Vector<UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector::_Node, 16>::OnG
+      4B    0.0% linea:575   zPhysics             UTL::Vector<UTL::Collections::GarbageNode<PhysicsObject, 160>::Collector::_Node, 16>::On
+      4B    0.0% linea:575   zPhysics             UTL::Vector<Smackable *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<Sim::IEntity *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<PVehicle::ManageNode, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IVehicleCache *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<ITrafficCenter *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<ISpikeable *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<ISimpleBody *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IRoadBlock *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IRigidBody *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IRecordablePlayer *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IPursuit *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IPlayer *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IModel *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IInputPlayer *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IHud *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IExplosion *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<IDisposable *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zPhysics             UTL::Vector<ICollisionBody *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zCamera              UTL::Vector<IDebugWatchCar *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zCamera              UTL::Vector<CameraAI::Director *, 16>::OnGrowRequest(unsigned int)
+      4B    0.0% linea:575   zAI                  UTL::Vector<unsigned int, 16>::OnGrowRequest(unsigned int)
+

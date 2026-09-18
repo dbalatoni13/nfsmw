@@ -1,119 +1,260 @@
-#ifndef _SPEECH_MANAGER_H_
+#ifndef EAXSOUND_STREAM_SPEECHMANAGER_H
+#define EAXSOUND_STREAM_SPEECHMANAGER_H
+
 #define _SPEECH_MANAGER_H_
 
-#include "SpeechModule.hpp"
-#include "Speed/Indep/Src/Speech/EAXCharacter.h"
-#include "Speed/Indep/Src/EAXSound/Clump.h"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
-#include "csis/csis.h"
-#include "spch/spch.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Speech/EAXCharacter.h"
+#include "Speed/Indep/Src/Speech/SpeechCache.h"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
+#include "SpeechModule.hpp"
+
+struct InterfaceId;
+struct FunctionHandle;
+struct SlotPool;
+namespace Csis {
+struct InterfaceId;
+struct FunctionHandle;
+}
+
+
+
+struct CLUMP_IDX_FILEtag;
+
+namespace Csis {
+static inline Result CacheHandlesEventsNIS() {
+    gNIS_Select_StartHandle.Set(&NIS_Select_StartId);
+    gSoundFX_SelectHandle.Set(&SoundFX_SelectId);
+    gNIS_Select_BlacklistHandle.Set(&NIS_Select_BlacklistId);
+    gNIS_Select_EndHandle.Set(&NIS_Select_EndId);
+    return RESULT_OK;
+}
+}
 
 namespace Speech {
 
-// total size: 0x1
-// Decl: 91
-struct Manager {
-    static void Destroy();                                              // Decl: 93
-    static int SampleRequestCallback(SPCHType_SampleRequestData *data); // Decl: 94
-    static void ToggleSpeech(bool status);                              // Decl: 95
-    static void Init(SPEECH_MODE mode);                                 // Decl: 96
-    static void Init2();                                                // Decl: 97
+enum SpeechValRtnType {
+    kKeepEvt = 0,
+    kIntEvt = 1,
+    kDitchEvt = 2,
+    kEvtNotFound = 3,
+    kDeferEvt = 4,
+    MAX_RETURN_TYPES = 5,
+};
 
-    static int LoadSpeechBank(CLUMP_IDX_FILE *index, int &type, int &number, SPEECH_BANK *sb);   // Decl: 100
-    static int AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *module);        // Decl: 101
-    static void AttachSFXOBJ(SpeechModuleIndex idx, SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype); // Decl: 102
-    static bool IsPlaying(SpeechModuleIndex idx);                                                // Decl: 103
-    static void SetSpeechMode(SPEECH_MODE mode) {}                                               // Decl: 104
-    static SPEECH_MODE GetSpeechMode() {}                                                        // Decl: 105
-    static bool SpeechDisabled() {}                                                              // Decl: 106
-    static int GetChannel(SpeechModuleIndex x) {}                                                // Decl: 107
-    static struct Timer GetTimeSinceLastEvent(SpeechModuleIndex idx);                            // Decl: 108
-    static float GetDeadAir() {}                                                                 // Decl: 109
-    static void PurgeSpeech(int channel);                                                        // Decl: 110
-    static void Update(float t);                                                                 // Decl: 111
-    static void DoNothing();                                                                     // Decl: 112
-    static float GetStep() {}                                                                    // Decl: 113
-    static Module *GetSpeechModule(int nindex);                                                  // Decl: 114
+struct ScheduledSpeechEvent;
 
-    static void SpchLibAbort(const char *format); // Decl: 117
-    static int GetTicker();                       // Decl: 118
+struct SPCHSampleRequest {
+    SPCHType_SampleRequestData data; // offset 0x0, size 0x20
+    ScheduledSpeechEvent *owner;     // offset 0x20, size 0x4
+    unsigned int offset;             // offset 0x24, size 0x4
+    unsigned char sample_index;      // offset 0x28, size 0x1
 
-    static int TestSentenceRuleCallback(EventSpec *eventInfo, int ruleID, int parmValue, int userNum); // Decl: 128
-    static void SetSentenceRuleCallback(EventSpec *eventInfo, int ruleID, int parmValue, int userNum); // Decl: 129
-    static SPCHType_EventRuleResult EventRuleCallback(EventSpec *eventInfo);                           // Decl: 130
+    bool operator<(const SPCHSampleRequest &from) const {
+        return offset < from.offset;
+    }
+};
 
-    static int ReparmCallback(int ruleID, unsigned int *parms); // Decl: 131
+DECLARE_CONTAINER_TYPE(SampleReqList);
 
-    static void Deduce(); // Decl: 135
+class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {
+  public:
+};
 
-    // static SpeechValRtnType PreValidate(ScheduledSpeechEvent &evt); // Decl: 136
-    // static SpeechValRtnType PostValidate(ScheduledSpeechEvent *evt, unsigned int mask); // Decl: 137
-    // static  ScheduledSpeechEvent *GetNextEvent(); // Decl: 138
-    // static float IsEventDead( ScheduledSpeechEvent *evt); // Decl: 139
+struct History {
+    History() {
+        this->time = Timer(0);
+        this->count = 0;
+        this->speakers = 0;
+    }
 
-    // static bool IsCacheable(SPCHType_1_EventID event_id); // Decl: 142
-    // static ScheduledSpeechEvent *GetCurrentSpeechEvent() {} // Decl: 143
+    void Touch(unsigned short spkrID) {
+        this->time = WorldTimer;
+        this->count = this->count + 1;
+        if (spkrID < 10 && ((((this->speakers >> spkrID) ^ 1) & 1) != 0)) {
+            this->speakers = static_cast<unsigned short>(this->speakers | (1 << spkrID));
+        }
+    }
 
-    // static ScheduledSpeechEvent *GetCorrelatedEvent(SpeechSampleData *sample); // Decl: 145
-    // static SampleReqList &GetSampleRequests() {} // Decl: 146
+    Timer time;             // offset 0x0, size 0x4
+    unsigned short count;   // offset 0x4, size 0x2
+    unsigned short speakers; // offset 0x6, size 0x2
+};
 
-    // static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int size, void *data, const Csis::InterfaceId &iid, Csis::FunctionHandle &fh,
-    //                                                   EAXCharacter *actor); // Decl: 150
-    // static Csis::Result IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only); // Decl: 151
-    // static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete); // Decl: 152
-    static bool HasBeenSaid(SPCHType_1_EventID event_id); // Decl: 153
-    static bool IsCopSpeechBusy();                        // Decl: 154
-    // static EventHistory &GetHistory() {}                  // Decl: 155
-    // static SpeechHashIDMap &GetHashIDMap() {}             // Decl: 156
-    static SPCHType_1_EventID GetLastEventID() {} // Decl: 157
-    // static void Expire(ScheduledSpeechEvent *event);     // Decl: 158
-    static void ClearPlayback();                                 // Decl: 159
-    static void ResetGlobalHistory();                            // Decl: 160
-    static bool IsQueued(SPCHType_1_EventID evtID, int indices); // Decl: 161
-    static bool IsCopSpeechPlaying(SPCHType_1_EventID event_id); // Decl: 162
-    static int FlushSpeechForActor(EAXCharacter *actor);         // Decl: 163
-    static short GetLastSpeakerID() {}                           // Decl: 164
+struct HistoryPair {
+    HistoryPair() : id(kSPCH1_EventID_MaxEventID), history() {}
 
-  private:
-    static bool RecallSpeechEvent(SPCHType_1_EventID recall_id); // Decl: 165
-    static short m_frameindex;                                   // size: 0x2, address: 0x804359B4, Decl: 166
+    SPCHType_1_EventID id; // offset 0x0, size 0x4
+    History history;       // offset 0x4, size 0x8
 
-    static void Speech_Done();     // Decl: 180
-    static void PopulateHashMap(); // Decl: 181
+    bool operator<(const HistoryPair &rhs) const {
+        return id < rhs.id;
+    }
+};
 
-    static void ServiceFilteredEvents();                         // Decl: 183
-    static bool ServiceInterruptEvents();                        // Decl: 184
-    static void CalcProbPlayback();                              // Decl: 185
-    static bool CanPlayback(Attrib::Gen::speech &event_attribs); // Decl: 186
+struct SpeechEventPair {
+    unsigned int hash;     // offset 0x0, size 0x4
+    SPCHType_1_EventID id; // offset 0x4, size 0x4
 
-    template <typename T> static void ScheduleSpeech(T &data, const Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+    bool operator<(const SpeechEventPair &rhs) const {
+        return id < rhs.id;
+    }
+};
 
-    static Module *m_SpeechModule[2];                  // size: 0x8, address: 0x80435980, Decl: 188
-    static enum SPEECH_MODE m_speechMode;              // size: 0x4, address: 0x80435988, Decl: 192
-    static int m_numberSpeechBanks;                    // size: 0x4, address: 0x8043598C, Decl: 193
-    static bool m_SPEECH_initted;                      // size: 0x1, address: 0x80435990, Decl: 194
-    static char *m_SPEECH_bankPtrMem;                  // size: 0x4, address: 0x80435994, Decl: 195
-    static bool m_speechDisable;                       // size: 0x1, address: 0x80435998, Decl: 196
-    static float m_clock_in_ms;                        // size: 0x4, address: 0x804359A4, Decl: 197
-    static int m_gameSpeechInitted;                    // size: 0x4, address: 0x8043599C, Decl: 198
-    static int m_NISAudioInitted;                      // size: 0x4, address: 0x804359A0, Decl: 199
-    static float m_timestep;                           // size: 0x4, address: 0x804359A8, Decl: 201
-    static float m_deadair;                            // size: 0x4, address: 0x804359AC, Decl: 202
-    static float mProbPlayback;                        // size: 0x4, address: 0x804359B8, Decl: 203
-    static struct EventHistory mGlobalHistory;         // size: 0xC74, address: 0x80499484, Decl: 207 // TODO
-    static struct SPCHEventList mEvtHistory;           // size: 0xC, address: 0x80498C24, Decl: 208 // TODO
-    static struct SchedSpchEvents mEvents[4];          // size: 0x50, address: 0x80498BD4, Decl: 209 // TODO
-    static struct SpeechHashIDMap mHashMap;            // size: 0x854, address: 0x80498C30, Decl: 210 // TODO
-    static struct ScheduledSpeechEvent *mCurrentEvent; // size: 0x4, address: 0x804359B0, Decl: 211 // TODO
-    static struct SampleReqList mSampleRequests;       // size: 0x14, address: 0x8049A0F8, Decl: 212 // TODO
-    static Timer mSampleReqTimer;                      // size: 0x4, address: 0x8049A10C, Decl: 213
-    static short mLastSpeakerID;                       // size: 0x2, address: 0x804359BC, Decl: 214
+struct SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
+  public:
+    SpeechHashIDMap() {}
+
+    void Add(unsigned int hash, SPCHType_1_EventID id);
+    SPCHType_1_EventID GetID(unsigned int hash);
+    unsigned int GetHash(SPCHType_1_EventID id);
+};
+
+struct EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public AudioMemBase {
+  public:
+    EventHistory() {}
+
+    void Init();
+    History *Find(SPCHType_1_EventID id);
+    int GetCount(SPCHType_1_EventID id);
+    Timer GetTime(SPCHType_1_EventID id);
+    bool HasSaid(unsigned short speakerID, SPCHType_1_EventID id);
+    unsigned short GetSpeakers(SPCHType_1_EventID id);
+    History *Touch(SPCHType_1_EventID id, unsigned short speaker);
+    void Reset();
+};
+
+DECLARE_CONTAINER_TYPE(SchedSpchEvents);
+
+struct SchedSpchEvents : public UTL::Std::vector<ScheduledSpeechEvent *, _type_SchedSpchEvents>, public AudioMemBase {
+  public:
+    SchedSpchEvents() {}
+    virtual ~SchedSpchEvents() {}
+};
+
+struct SPCHEventList : public UTL::Std::list<SPCHType_1_EventID, _type_list>, public AudioMemBase {
+  public:
+};
+
+struct ScheduledSpeechEvent {
+    Csis::InterfaceId *iid;             // offset 0x0, size 0x4
+    Csis::FunctionHandle *fh;           // offset 0x4, size 0x4
+    SPCHType_1_EventID ID;              // offset 0x8, size 0x4
+    EAXCharacter *actor;                // offset 0xC, size 0x4
+    Timer entry_time;                   // offset 0x10, size 0x4
+    Timer playback_time;                // offset 0x14, size 0x4
+    Timer finish_time;                  // offset 0x18, size 0x4
+    SpeechSampleData *assoc_samples[7]; // offset 0x1C, size 0x1C
+    unsigned char assoc_samples_count;  // offset 0x38, size 0x1
+    unsigned char assoc_samples_prep;   // offset 0x39, size 0x1
+    unsigned char curndx;               // offset 0x3A, size 0x1
+    unsigned char priority;             // offset 0x3B, size 0x1
+    short frameindex;                   // offset 0x3C, size 0x2
+    short flags;                        // offset 0x3E, size 0x2
+
+    ScheduledSpeechEvent();
+    ~ScheduledSpeechEvent();
+
+    static void *operator new(unsigned int base_size, unsigned int xtra);
+    static void operator delete(void *ptr);
+
+    static bool sort_nested_priority(const ScheduledSpeechEvent *lhs, const ScheduledSpeechEvent *rhs);
+    void AddSample(SpeechSampleData *sample, unsigned char specific_index);
+    void *GetData(unsigned int *datasize);
+    unsigned char ReserveSample();
+};
+
+class Manager {
+  public:
+    template <typename T>
+    static void ScheduleSpeech(T &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+
+    static int FlushSpeechForActor(EAXCharacter *actor);
+    static int GetGlobalHistoryCount(SPCHType_1_EventID id);
+    static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+    static int IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only);
+    static int TestSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
+    static int ReparmCallback(int rule_id, unsigned int *parms);
+    static void SetSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
+    static SPCHType_EventRuleResult EventRuleCallback(EventSpec *event_info);
+    static void ClearPlayback();
+    static void Init(SPEECH_MODE mode);
+    static void Init(int mode) { Init(static_cast<SPEECH_MODE>(mode)); }
+    static void Init2();
+    static void Destroy();
+    static void Deduce();
+    static void Update(float dt);
+    static Module *GetSpeechModule(int id);
+    static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
+    static bool IsPlaying(SpeechModuleIndex module);
+    static bool IsCopSpeechPlaying(SPCHType_1_EventID event);
+    static bool IsCopSpeechBusy();
+    static Timer GetTimeSinceLastEvent(SpeechModuleIndex module);
+    static void SpchLibAbort(const char *format, ...);
+    static int SampleRequestCallback(SPCHType_SampleRequestData *data);
+    static int LoadSpeechBank(CLUMP_IDX_FILEtag *index, int &type, int &number, SPEECH_BANK *sb);
+    static int AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *module);
+    static int GetTicker();
+    static void PopulateHashMap();
+    static bool IsCacheable(SPCHType_1_EventID event_id);
+    static bool HasBeenSaid(SPCHType_1_EventID event_id);
+    static bool ServiceInterruptEvents();
+    static void ServiceFilteredEvents();
+    static bool RecallSpeechEvent(SPCHType_1_EventID recall_id);
+    static void ResetGlobalHistory();
+    static void Expire(ScheduledSpeechEvent *event);
+    static bool IsQueued(SPCHType_1_EventID evtID, int indices);
+    static float IsEventDead(ScheduledSpeechEvent *evt);
+    static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete);
+    static ScheduledSpeechEvent *GetNextEvent();
+    static SpeechValRtnType PostValidate(ScheduledSpeechEvent *evt, unsigned int mask);
+    static SpeechValRtnType PreValidate(ScheduledSpeechEvent &evt);
+    static bool CanPlayback(Attrib::Gen::speech &event_attribs);
+    static void CalcProbPlayback();
+    static SPCHType_1_EventID GetLastEventID() {
+        if (mEvtHistory.empty()) {
+            return kSPCH1_EventID_MaxEventID;
+        }
+        return mEvtHistory.front();
+    }
+    static EventHistory &GetHistory() { return mGlobalHistory; }
+    static SpeechHashIDMap &GetHashIDMap() { return mHashMap; }
+    static SampleReqList &GetSampleRequests() { return mSampleRequests; }
+
+    static Module *m_SpeechModule[NUM_SPEECH_MODULES];
+    static SPEECH_MODE m_speechMode;
+    static int m_numberSpeechBanks;
+    static int m_SPEECH_initted;
+    static char *m_SPEECH_bankPtrMem;
+    static int m_speechDisable;
+    static int m_gameSpeechInitted;
+    static int m_NISAudioInitted;
+    static float m_clock_in_ms;
+    static float m_timestep;
+    static float m_deadair;
+    static ScheduledSpeechEvent *mCurrentEvent;
+    static short m_frameindex;
+    static float mProbPlayback;
+    static short mLastSpeakerID;
+    static SchedSpchEvents mEvents[4];
+    static SPCHEventList mEvtHistory;
+    static SpeechHashIDMap mHashMap;
+    static EventHistory mGlobalHistory;
+    static SampleReqList mSampleRequests;
+    static Timer mSampleReqTimer;
 };
 
 }; // namespace Speech
 
-// Decl: 225
-#define SCHEDULE_SPEECH(_EVENT_, _DATA_, _CALLER_)                                                                                                   \
-    Manager::ScheduleSpeech<Csis::_EVENT_##Struct>(_DATA_, Csis::_EVENT_##Id, Csis::g##_EVENT_##Handle, _CALLER_)
+#ifndef SCHEDULE_SPEECH
+#define SCHEDULE_SPEECH(_EVENT_, _DATA_, _CALLER_)                                                                                                         Speech::Manager::ScheduleSpeech<Csis::_EVENT_##Struct>(_DATA_, Csis::_EVENT_##Id, Csis::g##_EVENT_##Handle, _CALLER_)
+#endif
 
 #endif

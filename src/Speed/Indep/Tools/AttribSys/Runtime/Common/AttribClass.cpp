@@ -1,9 +1,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 #include <algorithm>
-
 
 namespace Attrib {
 

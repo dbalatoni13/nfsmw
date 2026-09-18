@@ -5,8 +5,10 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/FixedPoint.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
+class GActivity;
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 enum Context {
@@ -16,9 +18,28 @@ enum Context {
     kRaceContext_Count = 3,
 };
 
-class GVault;
+#include "GVault.h"
+
 class GRaceCustom;
 class GRaceParameters;
+
+typedef union { // 0x4
+    float mBestTime;
+    float mBestCash;
+    unsigned int mBestPoints;
+    float mBestSpeed;
+} GHighScoresUnion;
+
+// total size: 0x10
+struct GRaceSaveInfo {
+    unsigned int mRaceHash;       // offset 0x0, size 0x4
+    unsigned int mFlags;          // offset 0x4, size 0x4
+    GHighScoresUnion mHighScores; // offset 0x8, size 0x4
+    FixedPoint<unsigned short, 10, 2> mTopSpeed;     // offset 0xC, size 0x2
+    FixedPoint<unsigned short, 10, 2> mAverageSpeed; // offset 0xE, size 0x2
+
+    GRaceSaveInfo() {}
+};
 
 // total size: 0x1C
 class GRaceBin {
@@ -92,6 +113,8 @@ class GRaceBin {
     void RefreshProgress();
 
   protected:
+    friend class GRaceDatabase;
+
     unsigned int Serialize(unsigned char *dest);
 
     unsigned int Deserialize(unsigned char *src);
@@ -108,6 +131,14 @@ class GRaceBin {
 // total size: 0x40
 class GRaceDatabase {
   public:
+    bool IsOnlineRaceUnlocked(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kUnlocked_Online);
+    }
+
+    const char *GetFinalEpicChaseRace() const {
+        return "1.8.1";
+    }
+
     enum ScoreFlags {
         kCompleted_ContextQuickRace = 1 << 0,
         kCompleted_ContextCareer = 1 << 1,
@@ -119,11 +150,90 @@ class GRaceDatabase {
 
     static void Init();
 
+  private:
+    GRaceDatabase();
+
+    void BuildBinList();
+    unsigned int StoreBinList(GRaceBin *list);
+    void BuildRaceList();
+    unsigned int StoreRaceList(GRaceParameters *list);
+    void BuildScoreList();
+    friend class GManager;
+    unsigned int SerializeBins(unsigned char *dest);
+    unsigned int DeserializeBins(unsigned char *src);
+    void RefreshBinProgress();
+    bool CollectionIsRaceActivity(Attrib::Gen::gameplay &instanceObj);
+    bool CollectionIsRaceBin(Attrib::Gen::gameplay &instanceObj);
+    void DestroyCustomRace(GRaceCustom *custom);
+
+  public:
+    void UpdateRaceScore(bool setComplete);
+
     GRaceCustom *GetStartupRace();
     void SetStartupRace(GRaceCustom *custom, GRace::Context context);
+    void ClearStartupRace(); // ClearStartupRace__13GRaceDatabase @ 0x801A45BC
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
+    GRaceParameters *GetRaceFromActivity(GActivity *activity);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
+    GRaceBin *GetBinNumber(int number);
+    bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
+    const char *GetNextDDayRace();
+    GRaceSaveInfo *GetScoreInfo(unsigned int eventHash);
+    void LoadBestScores(GRaceSaveInfo *entries, unsigned int count);
+    void SimulateDDayComplete();
+    void ClearRaceScores();
+    void NotifyVaultLoaded(GVault *vault);
+    void NotifyVaultUnloading(GVault *vault);
+    GRaceParameters *GetRaceFromKey(unsigned int collectionKey);
+    unsigned int GetBinCount();
+    GRaceBin *GetBin(unsigned int index);
+    Context GetStartupRaceContext();
+    void ResetCareerCompleteFlag(unsigned int eventHash);
+    unsigned int GetRaceCount();
+    GRaceParameters *GetRaceParameters(unsigned int index);
+
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    bool IsQuickRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextQuickRace);
+    }
+
+    bool IsCareerRaceUnlocked(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kUnlocked_Career);
+    }
+
+    bool IsQuickRaceUnlocked(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kUnlocked_QuickRace);
+    }
+
+    const char *GetBurgerKingRace() const {
+        return "19.8.31";
+    }
+
+    const char *GetDDayStartRace() const {
+        return sDDayRaces[0];
+    }
+
+    const char *GetDDayEndRace() const {
+        return "16.2.1";
+    }
+
+    const char *GetFinalBossRace() const {
+        return "1.2.3";
+    }
+
+    GRaceSaveInfo *GetScoreInfo() {
+        return mRaceScoreInfo;
+    }
+
+    unsigned int GetScoreInfoCount() {
+        return mRaceCountStatic;
+    }
+
+    static const char sDDayRaces[5][8];
 
     static GRaceDatabase &Get() {
         return *mObj;

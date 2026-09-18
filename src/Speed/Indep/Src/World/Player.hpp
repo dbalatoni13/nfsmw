@@ -1,6 +1,9 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
+
 enum PlayerZones {
     PLAYER_ZONE_NONE = 0,
     PLAYER_ZONE_FREEZE = 1,

@@ -28,7 +28,7 @@ struct nos : Instance {
     typedef EA::Reflection::Float TypeOf_TORQUE_BOOST;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("nos");
+    USE_ATTRIB_ALLOC("Attrib::Gen::nos");
     nos(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
@@ -55,10 +55,10 @@ struct nos : Instance {
         return 0xb1669f64;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xb1669f64, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

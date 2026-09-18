@@ -21,7 +21,7 @@ class ENISReattach : public Event {
 
     ~ENISReattach() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fRepairDamage; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ENISReattach : public Event {
 };
 
 void ENISReattach_MakeEvent_Callback(const void *staticData);
+int ENISReattach_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISReattach_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

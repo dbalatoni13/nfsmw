@@ -7,3 +7,5 @@ Sim::IActivity *CareerGame::Construct(Sim::Param params) {
 CareerGame::CareerGame(Sim::Param params) : QuickGame(params) {}
 
 CareerGame::~CareerGame() {}
+
+BIND_ACTIVITY_FACTORY(CareerGame)

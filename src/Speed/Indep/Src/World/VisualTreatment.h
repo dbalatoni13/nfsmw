@@ -104,4 +104,18 @@ class IVisualTreatment {
 void OpenVisualTreatment();
 void CloseVisualTreatment();
 
+
+#ifdef EA_PLATFORM_GAMECUBE
+struct IVisualTreatmentPlat : public IVisualTreatment {
+    IVisualTreatmentPlat();
+    ~IVisualTreatmentPlat();
+
+    void SetupCaptureTextures();
+    void RenderMWVisualLook(eView *view);
+    void UpdateIndirectTexture();
+};
+
+extern IVisualTreatmentPlat *pVisualTreatmentPlat;
+#endif
+
 #endif

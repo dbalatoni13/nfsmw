@@ -19,6 +19,7 @@ void cPoint::SplineSeek(tCubic1D *p, float time, float fDClamp, float fDDClamp) 
             float interval = time / p->duration;
             p->time = p->time + interval;
             if (p->time > 1.0f) {
+                p->time = 1.0f;
                 p->Snap();
             }
             float t = p->time;
@@ -32,6 +33,9 @@ void cPoint::SplineSeek(tCubic1D *p, float time, float fDClamp, float fDDClamp) 
 }
 
 void cPoint::SplineSeek(tCubic2D *cubic, float dt) {
-    SplineSeek(&cubic->x, dt, 1.0f, 1.0f);
-    SplineSeek(&cubic->y, dt, 1.0f, 1.0f);
+    SplineSeek(&cubic->x, dt, 0.0f, 0.0f);
+    SplineSeek(&cubic->y, dt, 0.0f, 0.0f);
 }
+
+// STRIPPED
+cPoint::~cPoint() {}

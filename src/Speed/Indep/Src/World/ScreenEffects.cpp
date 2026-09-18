@@ -13,48 +13,53 @@
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-static unsigned int FACflush = 0;
 ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 
 // TODO move these
 extern eModel *pVisibleZoneBoundaryModel;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
-extern float GlareFalloff;
-extern float GlareFallon;
-extern float TUNHEIGHT;
-extern int debugflash;
+int debugflash = 0;
 extern TrackPathZone *zoneB[2];
+#ifdef EA_BUILD_A124
+extern float DarkFalloff;
+extern float DarkFallon;
+extern int tunnelDark;
+#endif
 
 void InitScreenEFX();
 
+#ifdef EA_BUILD_A124
+void Unique(ScreenEffectType, ScreenEffectDB *);
+#endif
+
 ScreenEffectDB::ScreenEffectDB() {
-    SE_time = 0.0f;
+    this->SE_time = 0.0f;
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        SE_inf[i].active = 0;
-        SE_data[i].r = 0.0f;
-        SE_data[i].g = 0.0f;
-        SE_data[i].b = 0.0f;
-        SE_data[i].a = 0.0f;
+        this->SE_inf[i].active = 0;
+        this->SE_data[i].r = 0.0f;
+        this->SE_data[i].g = 0.0f;
+        this->SE_data[i].b = 0.0f;
+        this->SE_data[i].a = 0.0f;
         for (int j = 0; j < 14; j++) {
-            SE_data[i].data[j] = 0.0f;
+            this->SE_data[i].data[j] = 0.0f;
         }
-        SE_data[i].intensity = 0.0f;
-        SE_data[i].UpdateFnc = nullptr;
-        numType[i] = 0;
+        this->SE_data[i].intensity = 0.0f;
+        this->SE_data[i].UpdateFnc = nullptr;
+        this->numType[i] = 0;
     }
     InitScreenEFX();
 }
 void ScreenEffectDB::Update(float deltatime) {
-    SE_time += deltatime;
+    this->SE_time += deltatime;
 
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        if (IsActive(static_cast<ScreenEffectType>(i)) == 1) {
-            SE_inf[i].frameNum++;
-            switch (GetController(static_cast<ScreenEffectType>(i))) {
+        if (this->IsActive(static_cast<ScreenEffectType>(i)) == 1) {
+            this->SE_inf[i].frameNum++;
+            switch (this->GetController(static_cast<ScreenEffectType>(i))) {
                 case SEC_FRAME:
                 case SEC_FUNCTION:
-                    RemoveScreenEffect(static_cast<ScreenEffectType>(i));
+                    this->RemoveScreenEffect(static_cast<ScreenEffectType>(i));
                     break;
                 default:
                     break;
@@ -71,50 +76,58 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, flo
     info.g = g;
     info.b = b;
     info.UpdateFnc = nullptr;
-    AddScreenEffect(type, &info, 1, SEC_FRAME);
+    this->AddScreenEffect(type, &info, 1, SEC_FRAME);
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller) {
     if (lock != 0) {
         if (info != nullptr) {
-            SE_data[type] = *info;
+            this->SE_data[type] = *info;
         }
-        numType[type] = 1;
+        this->numType[type] = 1;
     } else {
-        numType[type]++;
-        float influence = static_cast<float>(numType[type]) / static_cast<float>(numType[type] + 1);
+        this->numType[type]++;
+        float influence = static_cast<float>(this->numType[type]) / static_cast<float>(this->numType[type] + 1);
         float invFluence = 1.0f - influence;
 
-        SE_data[type].r = influence * SE_data[type].r + invFluence * info->r;
-        SE_data[type].g = influence * SE_data[type].g + invFluence * info->g;
-        SE_data[type].b = influence * SE_data[type].b + invFluence * info->b;
-        SE_data[type].a = influence * SE_data[type].a + invFluence * info->a;
-        SE_data[type].intensity = influence * SE_data[type].intensity + invFluence * info->intensity;
+        this->SE_data[type].r = influence * this->SE_data[type].r + invFluence * info->r;
+        this->SE_data[type].g = influence * this->SE_data[type].g + invFluence * info->g;
+        this->SE_data[type].b = influence * this->SE_data[type].b + invFluence * info->b;
+        this->SE_data[type].a = influence * this->SE_data[type].a + invFluence * info->a;
+        this->SE_data[type].intensity = influence * this->SE_data[type].intensity + invFluence * info->intensity;
     }
 
-    SE_inf[type].active = 1;
-    if (SE_data[type].UpdateFnc != nullptr) {
-        SE_data[type].UpdateFnc(type, this);
+    this->SE_inf[type].active = 1;
+    if (this->SE_data[type].UpdateFnc != nullptr) {
+        this->SE_data[type].UpdateFnc(type, this);
     } else {
-        SetController(type, controller);
+        this->SetController(type, controller);
     }
 
-    if (SE_data[type].intensity < 0.01f) {
-        SE_inf[type].active = 0;
+    if (this->SE_data[type].intensity < 0.01f) {
+        this->SE_inf[type].active = 0;
     }
 }
 
 void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
-    AddPaletteEffect(&SE_PaletteFile[palette]);
+    this->AddPaletteEffect(&SE_PaletteFile[palette]);
 }
 
 void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
     for (int i = 0; i < palette->NumEffects; i++) {
-        AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
+        this->AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
     }
 }
 
-void InitScreenEFX() {}
+void InitScreenEFX() {
+#ifdef EA_BUILD_A124
+    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].intensity = 0.5f;
+    SE_PaletteFile[EFX_UNIQUE].SE_type[0] = SE_VISUAL_SIG;
+    SE_PaletteFile[EFX_UNIQUE].SE_Controller[0] = SEC_FUNCTION;
+    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].UpdateFnc = Unique;
+    SE_PaletteFile[EFX_UNIQUE].NumEffects = 1;
+#endif
+}
 
 ParameterAccessorBlendByDistance TintSunRiseAccessor[2] = {"Screen Tint SunRise", "Screen Tint SunRise"};
 ParameterAccessorBlendByDistance TintMiddayAccessor[2] = {"Screen Tint Midday", "Screen Tint Midday"};
@@ -129,6 +142,11 @@ void TickSFX() {
     }
 }
 
+static unsigned int FACflush = 0;
+float GlareFalloff = 0.0199999996f;
+float GlareFallon = 0.0399999991f;
+float TUNHEIGHT = 10.0f;
+
 void UpdateAllScreenEFX() {
     for (int i = 1; i < 3; i++) {
         eView *view = eGetView(i, false);
@@ -138,6 +156,9 @@ void UpdateAllScreenEFX() {
                 debugflash = 0;
                 eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_CAMERA_FLASH);
             }
+#ifdef EA_BUILD_A124
+            eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_UNIQUE);
+#endif
         }
     }
 }
@@ -154,6 +175,62 @@ unsigned int QueryFlushAccumulationBuffer() {
     return FACflush;
 }
 void DoTinting(eView *view) {
+#ifdef EA_BUILD_A124
+    ScreenEffectDef SE_def;
+    float intense = view->Precipitation->GetCloudIntensity();
+
+    if (0.0f < intense) {
+        unsigned int r;
+        unsigned int g;
+        unsigned int b;
+        view->Precipitation->GetPrecipFogColour(&r, &g, &b);
+        SE_def.r = static_cast<float>(r);
+        SE_def.g = static_cast<float>(g);
+        SE_def.b = static_cast<float>(b);
+        SE_def.a = 128.0f;
+        SE_def.UpdateFnc = nullptr;
+        SE_def.intensity = intense;
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
+    } else if (AmIinATunnel(view, 0) != 0) {
+        SE_def.data[0] = 0.0f;
+        SE_def.data[1] = 0.0f;
+
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 0.0f) {
+            SE_def.data[0] = 1.0f;
+            SE_def.data[1] = 0.01f;
+        }
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 1.0f) {
+            if (view->ScreenEffects->GetDATA(SE_TINT, 1) < 1.0f) {
+                SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+                SE_def.data[1] = view->ScreenEffects->GetDATA(SE_TINT, 1) + DarkFallon;
+            } else {
+                SE_def.data[0] = 2.0f;
+                SE_def.data[1] = 1.0f;
+            }
+        }
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 2.0f) {
+            SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+            if (0.0f < view->ScreenEffects->GetDATA(SE_TINT, 1)) {
+                SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+                SE_def.data[1] = view->ScreenEffects->GetDATA(SE_TINT, 1) - DarkFalloff;
+            } else {
+                SE_def.data[0] = 2.0f;
+                SE_def.data[1] = 0.0f;
+            }
+        }
+
+        SE_def.r = static_cast<float>(tunnelDark);
+        SE_def.g = SE_def.r;
+        SE_def.b = SE_def.r;
+        SE_def.a = 128.0f;
+        SE_def.intensity = SE_def.data[1];
+        SE_def.UpdateFnc = nullptr;
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
+    } else {
+        view->ScreenEffects->SetDATA(SE_TINT, 0.0f, 0);
+        return;
+    }
+#else
     ScreenEffectDef SE_def;
     unsigned int r;
     unsigned int g;
@@ -182,6 +259,7 @@ void DoTinting(eView *view) {
         SE_def.b = static_cast<float>(b);
         view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
     }
+#endif
 }
 
 // UNSOLVED, functionally matching, just regswaps: https://decomp.me/scratch/Ar2tQ
@@ -300,14 +378,14 @@ void DoTunnelBloom(eView *view) {
                 zoneB[vIndex] = zone;
                 {
                     bVector2 r = p0 - twoDpos;
-                    bVector2 v(p1.y - p0.y, p0.x - p1.x);
+                    bVector2 v(p1.y - p0.y, -(p1.x - p0.x));
                     bNormalize(&v, &v);
                     len = bDot(&v, &r);
                     len = bAbs(len);
                 }
 
                 if (len < 17.0f) {
-                    SE_def.data[1] = view->ScreenEffects->GetDATA(SE_GLARE, 1) * (len / 1.7f);
+                    SE_def.data[1] = view->ScreenEffects->GetDATA(SE_GLARE, 1) * (len / 17.0f);
                 } else {
                     if (view->ScreenEffects->GetDATA(SE_GLARE, 1) < 1.0f) {
                         SE_def.data[1] = view->ScreenEffects->GetDATA(SE_GLARE, 1) + GlareFallon;

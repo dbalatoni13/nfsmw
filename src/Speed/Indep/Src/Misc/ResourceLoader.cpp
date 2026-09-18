@@ -9,6 +9,23 @@
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/Src/Animation/AnimScene.hpp"
+#include "Speed/Indep/Src/World/WeatherMan.hpp"
+int LoaderQuickSpline(bChunk *pChunk);
+int UnloaderQuickSpline(bChunk *pChunk);
+int LoaderFEngFont(bChunk *chunk);              // FEngFont.cpp
+int LoaderEAGLAnimations(bChunk *chunk);        // AnimBank.cpp
+int LoaderEAGLSkeletons(bChunk *chunk);         // AnimSkeleton.cpp
+int LoaderAnimDirectoryData(bChunk *chunk);     // AnimDirectory.cpp
+int LoaderWorldAnimEntityData(bChunk *chunk);   // AnimEntity_WorldEntity.cpp
+int LoaderWorldAnimDirectoryData(bChunk *chunk); // AnimEntity_WorldEntity.cpp
+int LoaderWorldAnimTreeMarker(bChunk *chunk);   // AnimEntity_WorldEntity.cpp
+int LoaderWorldAnimInstanceEntry(bChunk *chunk); // WorldAnimInstanceDirectory.cpp
+int LoaderLanguage(bChunk *chunk);              // Localize.cpp
+int LoaderFEngPackage(bChunk *chunk);           // FEPackageManager.cpp
+int LoaderICECameras(bChunk *chunk);            // ICEManager.cpp
+int LoaderSoundStichs(bChunk *chunk);           // STICH_Loader.cpp
+int UnloaderSoundStichs(bChunk *chunk);         // STICH_Loader.cpp
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -16,13 +33,62 @@
 
 #define LOADER_AMOUNT (26)
 
-bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];
-bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
+// Loader hooks implemented by their owning units (external relocations
+// in the shipped object).
+int LoaderAnimDirectoryData(bChunk *chunk);
+int LoaderBounds(bChunk *chunk);
+int LoaderCarInfo(bChunk *chunk);
+int LoaderColourCube(bChunk *chunk);
+int LoaderEAGLAnimations(bChunk *chunk);
+int LoaderEAGLSkeletons(bChunk *chunk);
+int LoaderEventManager(bChunk *chunk);
+int LoaderFEPresetCars(bChunk *chunk);
+int LoaderFEngFont(bChunk *chunk);
+int LoaderFEngPackage(bChunk *chunk);
+int LoaderICECameras(bChunk *chunk);
+int LoaderLanguage(bChunk *chunk);
+int LoaderParameterMaps(bChunk *chunk);
+int LoaderSun(bChunk *chunk);
+int LoaderTrigger(bChunk *chunk);
+int LoaderVisibleSections(bChunk *chunk);
+int LoaderWCollisionPack(bChunk *chunk);
+int LoaderWeatherMan(bChunk *chunk);
+int LoaderWorldAnimDirectoryData(bChunk *chunk);
+int LoaderWorldAnimEntityData(bChunk *chunk);
+int LoaderWorldAnimInstanceEntry(bChunk *chunk);
+int LoaderWorldAnimTreeMarker(bChunk *chunk);
+int UnloaderAnimDirectoryData(bChunk *chunk);
+int UnloaderBounds(bChunk *chunk);
+int UnloaderCarInfo(bChunk *chunk);
+int UnloaderColourCube(bChunk *chunk);
+int UnloaderEAGLAnimations(bChunk *chunk);
+int UnloaderEAGLSkeletons(bChunk *chunk);
+int UnloaderEventManager(bChunk *chunk);
+int UnloaderFEPresetCars(bChunk *chunk);
+int UnloaderFEngFont(bChunk *chunk);
+int UnloaderFEngPackage(bChunk *chunk);
+int UnloaderICECameras(bChunk *chunk);
+int UnloaderLanguage(bChunk *chunk);
+int UnloaderParameterMaps(bChunk *chunk);
+int UnloaderStub(bChunk *chunk);
+int UnloaderSun(bChunk *chunk);
+int UnloaderTrigger(bChunk *chunk);
+int UnloaderVisibleSections(bChunk *chunk);
+int UnloaderWCollisionPack(bChunk *chunk);
+int UnloaderWorldAnimDirectoryData(bChunk *chunk);
+int UnloaderWorldAnimEntityData(bChunk *chunk);
+int UnloaderWorldAnimInstanceEntry(bChunk *chunk);
+int UnloaderWorldAnimTreeMarker(bChunk *chunk);
+
+static int LoaderStub(bChunk *chunk);
+
+bChunkLoaderFunction LoaderTable[LOADER_AMOUNT] = {LoaderFEngFont, LoaderEventManager, LoaderVisibleSections, LoaderEAGLAnimations, LoaderEAGLSkeletons, LoaderAnimSceneData, LoaderAnimDirectoryData, LoaderWorldAnimEntityData, LoaderWorldAnimDirectoryData, LoaderWorldAnimTreeMarker, LoaderWorldAnimInstanceEntry, LoaderSun, LoaderCarInfo, LoaderLanguage, LoaderWeatherMan, LoaderFEngPackage, LoaderQuickSpline, LoaderICECameras, LoaderSoundStichs, LoaderFEPresetCars, LoaderParameterMaps, LoaderWCollisionPack, LoaderBounds, LoaderTrigger, LoaderColourCube, LoaderStub};
+bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT] = {UnloaderFEngFont, UnloaderEventManager, UnloaderVisibleSections, UnloaderEAGLAnimations, UnloaderEAGLSkeletons, UnloaderAnimSceneData, UnloaderAnimDirectoryData, UnloaderWorldAnimEntityData, UnloaderWorldAnimDirectoryData, UnloaderWorldAnimTreeMarker, UnloaderWorldAnimInstanceEntry, UnloaderSun, UnloaderCarInfo, UnloaderLanguage, UnloaderWeatherMan, UnloaderFEngPackage, UnloaderQuickSpline, UnloaderICECameras, UnloaderSoundStichs, UnloaderFEPresetCars, UnloaderParameterMaps, UnloaderWCollisionPack, UnloaderBounds, UnloaderTrigger, UnloaderColourCube, LoaderStub};
 
 static int LoaderStub(bChunk *chunk) {
     switch (chunk->ID) {
-        case BCHUNK_SMOKEABLES:
-        case BCHUNK_STYLE_MOMENTS_INFO:
+        case BCHUNK_SPEED_SMOKEABLE_INFO:
+        case BCHUNK_SPEED_STYLE_MOMENT_TABLE:
         case 0x34b00:
             return 1;
         default:
@@ -103,7 +169,7 @@ void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name) {
             bChunk *chunk = prev_chunk_table[(num_prev_chunks - 1 - n) % max_prev_chunks];
             const char *chunkname = GetChunkName(chunk->GetID());
             uint32 start_time = bGetTicker();
-            if (CallChunkLoader(chunk) == 0) {
+            if (CallChunkUnloader(chunk) == 0) {
                 bBreak();
             }
             last_chunk = chunk;
@@ -116,8 +182,8 @@ void ScratchPadMemCpy(void *dest, const void *src, unsigned int numbytes) {
     bOverlappedMemCpy(dest, src, numbytes);
 }
 
-float MoveChunkMemcpyTime;
-float MoveChunkMemcpyAmount; // BUG (float)
+float MoveChunkMemcpyTime = 0;
+float MoveChunkMemcpyAmount = 0.0f; // BUG (float)
 
 void MoveChunksRange(bChunk *source_chunks, int sizeof_chunks, int movement_offset, const char *debug_name) {
     UnloadChunks(source_chunks, sizeof_chunks, debug_name);
@@ -193,7 +259,7 @@ void EndianSwapChunkHeadersRecursive(bChunk *chunks, int32 sizeof_chunks) {
 }
 
 int PrintChunks;
-int PrintChunkLevel;
+int PrintChunkLevel = 0;
 
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk) {
     for (bChunk *chunk = first_chunk; chunk < last_chunk; chunk = chunk->GetNext()) {
@@ -280,7 +346,7 @@ void ClobberPermChunks(bChunk *source_chunks, int source_chunks_size) {
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name) {
     bChunk *chunks = *ppchunks;
     int sizeof_chunks = *psizeof_chunks;
-    if (!chunks || sizeof_chunks == 0) {
+    if ((chunks == nullptr) || (sizeof_chunks == 0)) {
         return false;
     }
     int sizeof_perm_chunks = SplitPermTempChunks(false, chunks, sizeof_chunks, nullptr, 0, 0);
@@ -289,7 +355,7 @@ bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_p
         LoadChunks(chunks, sizeof_chunks, debug_name);
         return false;
     } else {
-        bChunk *perm_chunks = (bChunk *)bMalloc(sizeof_perm_chunks, "TODO", __LINE__, allocation_params);
+        bChunk *perm_chunks = static_cast<bChunk *>(bMalloc(sizeof_perm_chunks, debug_name, 0, allocation_params));
         bChunk *temp_chunks = chunks;
 
         SplitPermTempChunks(false, temp_chunks, sizeof_chunks, reinterpret_cast<uint8 *>(perm_chunks), 0, 0);
@@ -321,7 +387,7 @@ void PostLoadFixup() {
 // STRIPPED
 void HotChunksPostLoadFixup() {}
 
-SlotPool *ResourceFileSlotPool;
+SlotPool *ResourceFileSlotPool = 0;
 
 void InitResourceLoader() {
     ResourceFileSlotPool = bNewSlotPool(80, 80, "ResourceFileSlotPool", 0);
@@ -400,7 +466,7 @@ void ResourceFile::FreeMemory() {
     }
 }
 
-int NumResourcesBeingLoaded;
+int NumResourcesBeingLoaded = 0;
 
 void ResourceFile::BeginLoading(void (*callback)(void *), void *callback_param) {
     Callback = callback;
@@ -516,14 +582,14 @@ struct DelayedResourceCallback {
     void *Param;               // offset 0x4, size 0x4
 };
 
-int NumDelayedResourceCallbacks;
+int NumDelayedResourceCallbacks = 0;
 DelayedResourceCallback DelayedResourceCallbacks[8];
 
 int ServiceResourceLoading() {
-    ProfileNode profile_node("TODO", 0);
+    ProfileNode profile_node;
 
     while (NumDelayedResourceCallbacks != 0) {
-        ProfileNode profile_node("TODO", 0);
+        ProfileNode profile_node;
         DelayedResourceCallback drc = DelayedResourceCallbacks[0];
 
         if (NumDelayedResourceCallbacks > 1) {
@@ -585,7 +651,7 @@ ResourceFile *FindResourceFile(ResourceFileType type) {
     return nullptr;
 }
 
-int CurrentlyHotChunking;
+int CurrentlyHotChunking = 0;
 
 bool IsCurrentlyHotChunking() {
     return CurrentlyHotChunking;
@@ -660,7 +726,7 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
 
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
-                void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
+                void *realloc = bMalloc(sizeofchunks, allocation_params);
                 LZDecompress(compressed_data, static_cast<uint8 *>(realloc));
                 old_memory = realloc;
             }
@@ -669,7 +735,7 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
         }
     }
 
-    void *new_mem = bMalloc(sizeofchunks, "TODO", 0, GetVirtualMemoryAllocParams());
+    void *new_mem = bMalloc(sizeofchunks, GetVirtualMemoryAllocParams());
     bMemCpy(new_mem, old_memory, sizeofchunks);
     vm_file->mVirtMemAddr = new_mem;
 
@@ -715,7 +781,7 @@ VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool us
     if (use_trackstreampool_as_temp) {
         memory_file = TheTrackStreamer.AllocateUserMemory(vm_file_size, temp_name, 0);
     } else {
-        memory_file = bMalloc(vm_file_size, "TODO", 0, 0x2040);
+        memory_file = bMalloc(vm_file_size, 0x2040);
     }
     vm_file->mCompressed = compressed;
     vm_file->mUsedTrackPool = use_trackstreampool_as_temp;

@@ -19,9 +19,11 @@ class EResetPlayerCar : public Event {
 
     ~EResetPlayerCar() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EResetPlayerCar_MakeEvent_Callback(const void *staticData);
+int EResetPlayerCar_MakeEvent_LuaBinding(struct lua_State *L);
+void EResetPlayerCar_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

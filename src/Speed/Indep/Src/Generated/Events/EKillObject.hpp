@@ -19,7 +19,7 @@ class EKillObject : public Event {
 
     ~EKillObject() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4
@@ -27,5 +27,7 @@ class EKillObject : public Event {
 };
 
 void EKillObject_MakeEvent_Callback(const void *staticData);
+int EKillObject_MakeEvent_LuaBinding(struct lua_State *L);
+void EKillObject_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

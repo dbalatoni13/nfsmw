@@ -12,6 +12,15 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+/* La API de Lua tiene enlace C en el original: symbols.txt lista 136 simbolos
+   lua_* sin decorar y ninguno manglado. Sin este guard, las TU C++ que incluyen
+   este header emiten las llamadas con el nombre manglado (lua_gettop__FP9lua_State
+   en vez de lua_gettop). zLua.cpp ya envuelve los .c en extern "C", asi que las
+   definiciones ya eran correctas; faltaba el lado de las llamadas. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LUA_VERSION "Lua 5.0.1"
 #define LUA_COPYRIGHT "Copyright (C) 1994-2003 Tecgraf, PUC-Rio"
 #define LUA_AUTHORS "R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
@@ -124,6 +133,7 @@ LUA_API const char *lua_tostring(lua_State *L, int idx);
 LUA_API size_t lua_strlen(lua_State *L, int idx);
 LUA_API lua_CFunction lua_tocfunction(lua_State *L, int idx);
 LUA_API void *lua_touserdata(lua_State *L, int idx);
+LUA_API unsigned int lua_userdatalen(lua_State *L, int idx);
 LUA_API lua_State *lua_tothread(lua_State *L, int idx);
 LUA_API const void *lua_topointer(lua_State *L, int idx);
 
@@ -317,6 +327,10 @@ struct lua_Debug {
 };
 
 /* }====================================================================== */
+
+#ifdef __cplusplus
+}
+#endif
 
 /******************************************************************************
  * Copyright (C) 1994-2003 Tecgraf, PUC-Rio.  All rights reserved.

@@ -12,6 +12,8 @@
 
 namespace EAGL4 {
 
+void MultMatrix(const UMath::Matrix4 *a, const UMath::Matrix4 *b, UMath::Matrix4 *result);
+
 // total size: 0x40
 struct ATTRIBUTE_ALIGN(32) Transform {
     enum Axis {

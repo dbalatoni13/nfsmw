@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+class GMarker;
+
 // total size: 0x24
 class EPlayRaceNIS : public Event {
   public:
@@ -28,7 +30,7 @@ class EPlayRaceNIS : public Event {
 
     ~EPlayRaceNIS() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     GMarker *fStartMarker;  // offset: 0x8, size 0x4
@@ -41,5 +43,7 @@ class EPlayRaceNIS : public Event {
 };
 
 void EPlayRaceNIS_MakeEvent_Callback(const void *staticData);
+int EPlayRaceNIS_MakeEvent_LuaBinding(struct lua_State *L);
+void EPlayRaceNIS_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

@@ -7,7 +7,10 @@
 
 namespace UMath {
 
-extern float Infinity;
+// `const` y `extern` a la vez: el objetivo la emite como `_5UMath.Infinity,
+// global`, o sea enlace externo, y un `const` de namespace sin `extern` lo
+// tendria interno. Se define en UMath.cpp con init dinamica.
+extern const float Infinity; // size: 0x4, address: 0x80473E20
 
 // total size: 0x8
 struct Vector2 {
@@ -43,7 +46,11 @@ struct Vector3 {
 };
 
 // total size: 0x10
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_XENON)
+struct Vector4 {
+#else
 struct ALIGNVEC Vector4 {
+#endif
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
@@ -123,6 +130,15 @@ inline const Vector3 *Vector4To3(const Vector4 *c4) {
     return reinterpret_cast<const Vector3 *>(c4);
 }
 
+inline Vector4 Vector3To4(const Vector3 &c3, const float w) {
+    Vector4 r;
+    r.x = c3.x;
+    r.y = c3.y;
+    r.z = c3.z;
+    r.w = w;
+    return r;
+}
+
 inline Vector2 Vector2Make(float x, float y) {
     Vector2 c;
     c.x = x;
@@ -167,6 +183,11 @@ typedef Vector4 Quaternion;
 // TODO move?
 inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
     bConvertToBond(reinterpret_cast<bVector3 &>(dest), v);
+    return dest;
+}
+
+inline UMath::Vector3 &bConvertFromBond(UMath::Vector3 &dest, const bVector3 &v) {
+    bConvertFromBond(reinterpret_cast<bVector3 &>(dest), v);
     return dest;
 }
 

@@ -16,15 +16,13 @@
 
 // Decl: 26
 #define DECLARE_STATETYPE()                                                                                                                          \
-  protected:                                                                                                                                         \
+  public:                                                                                                                                         \
     static CSTATE_Base::StateInfo s_StateInfo;                                                                                                       \
                                                                                                                                                      \
   public:                                                                                                                                            \
     CSTATE_Base::StateInfo *GetStateInfo() const override;                                                                                           \
     const char *GetStateName() const override;                                                                                                       \
-    static CSTATE_Base::StateInfo *GetStaticStateInfo() {                                                                                            \
-        return &s_StateInfo;                                                                                                                         \
-    }                                                                                                                                                \
+    static CSTATE_Base::StateInfo *GetStaticStateInfo();                                                                                            \
     static CSTATE_Base *CreateState(uint32 allocator);
 
 // Decl: 37
@@ -38,9 +36,9 @@
     }                                                                                                                                                \
     CSTATE_Base *theClass::CreateState(uint32 allocator) {                                                                                           \
         if (allocator == 0)                                                                                                                          \
-            return new (GetStaticStateInfo()->stateName, false) theClass;                                                                            \
+            return new (theClass::s_StateInfo.stateName, false) theClass;                                                                            \
         else                                                                                                                                         \
-            return new (GetStaticStateInfo()->stateName, true) theClass;                                                                             \
+            return new (theClass::s_StateInfo.stateName, true) theClass;                                                                             \
     }
 
 // Decl: 46
@@ -53,10 +51,10 @@
         return s_StateInfo.stateName;                                                                                                                \
     }                                                                                                                                                \
     CSTATE_Base *theClass::CreateState(uint32 allocator) {                                                                                           \
-        return new (GetStaticStateInfo()->stateName) theClass;                                                                                       \
+        return new (theClass::s_StateInfo.stateName) theClass;                                                                                       \
     }
 
-#define STATEINFO(classType) classType::GetStaticStateInfo() // Decl: 53
+#define STATEINFO(classType) (&classType::s_StateInfo) // Decl: 53
 
 class SndBase;
 class SFXCTL;
@@ -105,9 +103,7 @@ class CSTATE_Base : public AudioMemBase {
   public:
     virtual CSTATE_Base::StateInfo *GetStateInfo() const;
     virtual const char *GetStateName() const;
-    static CSTATE_Base::StateInfo *GetStaticStateInfo() {
-        return &s_StateInfo;
-    }
+    static CSTATE_Base::StateInfo *GetStaticStateInfo();
     static CSTATE_Base *CreateState(uint32 allocator);
 
     void ForceCreateSFXCtrls(int iSFXCtrls);

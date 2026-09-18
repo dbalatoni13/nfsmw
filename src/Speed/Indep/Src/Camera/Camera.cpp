@@ -9,6 +9,19 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
+int Camera::StopUpdating = 0;
+
+static int cameralink = 0;
+
+JollyRancherResponsePacket Camera::JollyRancherResponse; // .bss: 0x8045AAE4
+
+int bStreamingPositionFromICE = 0;      // .data: 0x804164C4
+static const float kJRCaffeineRate = 0.4f; // .data: 0x804164C8
+int JR2ServerExists = 0;                // .data: 0x804164CC
+int WeHaveCheckedIfJR2ServerExists = 0; // .data: 0x804164D0
+int LastUpdateTimeCaffeine = 0;         // .data: 0x804164D4
+int32 LastUpdateTimeJR2 = 0;            // .data: 0x804164D8
+
 Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000), ElapsedTime(1.0f), RenderDash(0), bClearVelocity(false) {
     bMatrix4 m;
 
@@ -32,14 +45,14 @@ Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000
     m.v2.w = 100.0f;
     m.v3.w = 1.0f;
 
-    SetFocalDistance(0.0f);
-    SetTargetDistance(10.0f);
-    SetDepthOfField(0.0f);
+    CurrentKey.FocalDistance = 0.0f;
+    CurrentKey.TargetDistance = 10.0f;
+    CurrentKey.DepthOfField = 0.0f;
 
     SetNearZ(0.5f);
     SetFarZ(10000.0f);
 
-    SetFieldOfView(0x36FB);
+    CurrentKey.FieldOfView = 0x36FB;
     CurrentKey.LB_height = 0.0f;
 
     SetSimTimeMultiplier(1.0f);
@@ -56,7 +69,6 @@ Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000
 }
 
 void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
-    static int cameralink;
     if (StopUpdating)
         return;
 
@@ -206,6 +218,8 @@ float Noise(float x) {
 
     return total;
 }
+
+static bAngle aBaselineFovNoise = bDegToAng(60.0f); // .bss: 0x8045AB34
 
 unsigned short Camera::FovRelativeAngle(unsigned short a) {
     float f = bSin(a) * bSin(static_cast<unsigned short>(CurrentKey.FieldOfView >> 1)) / bSin(static_cast<unsigned short>(aBaselineFovNoise >> 1));

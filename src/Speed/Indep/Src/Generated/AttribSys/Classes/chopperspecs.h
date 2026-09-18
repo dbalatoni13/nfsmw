@@ -60,7 +60,7 @@ struct chopperspecs : Instance {
     typedef EA::Reflection::Float TypeOf_YAW_STRENGTH_REAR;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("chopperspecs");
+    USE_ATTRIB_ALLOC("Attrib::Gen::chopperspecs");
     chopperspecs(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -88,10 +88,10 @@ struct chopperspecs : Instance {
         return 0x5d898ee7;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x5d898ee7, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

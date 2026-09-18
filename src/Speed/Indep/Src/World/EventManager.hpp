@@ -128,5 +128,7 @@ typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
 void emEventManagerInit();
 void emProcessAllEvents();
 emEvent **emTriggerEventsInSection(bVector3 *position, int section_number);
+int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask);
+void emRemoveHandler(EVENT_HANDLER_FUNC function);
 
 #endif

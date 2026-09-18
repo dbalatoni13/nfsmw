@@ -1,0 +1,554 @@
+================================================================================
+zEcstasy :: __static_initialization_and_destruction_0  (4.544 B, hoy 22,55%)
+Globales que faltan / sobran, con tipos del DWARF, valores del .s y ORDEN.
+ANALISIS SOLO - no se ha tocado ni compilado nada del repo.
+================================================================================
+
+FUENTES
+  build/GOWE69/asm/Speed/Indep/SourceLists/zEcstasy.s
+      .text  lineas 38258-39411   (la funcion entera)
+      .bss   lineas 47940-48450   (ORDEN DE DECLARACION real)
+      .rodata lineas 45010-45275  (constantes agrupadas)
+  symbols/mw_dwarfdump.nothpp   CU unico: D:/mw/Speed/Indep/SourceLists/zEcstasy.cpp
+  symbols/debug_lines.txt       LINEA DE FUENTE de cada store  <- la clave
+  orig/GOWE69/NFSMWRELEASE.ELF  patron de bits exacto de cada literal
+
+--------------------------------------------------------------------------------
+0. EL ORDEN GLOBAL (leido del .bss del objetivo = la especificacion)
+   * = falta o esta mal en nuestro arbol
+--------------------------------------------------------------------------------
+  kFloatScaleUp/Down            UVectorMath.h:166..170   YA LO TENEMOS
+  UnattachedModelList/Moved     eModel.cpp:43            OK
+  SolidListHeaderList/Invalid/SolidList/SolidLoadedTable/
+  bChunkLoaderSolidList/StreamingSolidPackLoader
+                                eSolid.cpp:81,82,1440,1471   OK
+* RunTimeLightFlarePackHeader   eLight.cpp:123           FALTA
+  LightFlarePackList            eLight.cpp:124           OK
+  LightPackList                 eLight.cpp:125           OK
+  LightMaterialList             eLight.cpp:126           OK
+  DefaultLightMaterialData      (sin ctor)               OK
+* LightPositionVFE0/1/2, LightPositionFE0/1/2, LightColourFE0/1/2,
+  AmbientColourFE, AmbientColourIG, LightDirection0, LightColour0
+                                                         FALTAN (13 bVector3)
+  bChunkLoaderLightMaterial/Flares/Lights   eLight.cpp:580,581,582   OK
+* DynamicLightPackList          eLight.cpp:597           FALTA
+* ShaperLights{GCSpecial,Default,BackRoom,CarLot,CShop,QRace,Safehouse,
+   CarsInGame,Characters,CharactersBackup,Scenery,WorldObjects}   FALTAN LAS 12
+  PoolLightFlareList[50]  -> bucle vacio li r31,0x31     OK
+  eViews[22]                    eView.cpp:42             OK
+  TexturePackList/AnimPack/VRAMDataHeader/LoadedTable  Texture.cpp:60,61,62  OK
+  3 bChunkLoader + StreamingTexturePackLoader  Texture.cpp:631,632,633,1419  OK
+  SunPosition (sin ctor)                                 OK
+  gDefragFixer                  DefragFixer.hpp:20       OK
+* PalNFS01IntDfScale            EcstasyE.cpp:162         FALTA EL INICIALIZADOR
+* g_ParticleStats               EcstasyE.cpp:407/408     FALTA EL CTOR
+  FlailerCamera/Player1/Player2/Player1RVM  EcstasyE.cpp:610-613  OK (SOBRAN 2 mas)
+* RenderTargetTextureInfos[17]  EcstasyE.cpp:652         TENEMOS [15]
+* aBaselineFovMip / aBaselineFovZ   EcstasyE.cpp:665,666 FALTAN
+  SpecularMap                   EcstasyE.cpp:767         OK
+  QSizeI8_Z8/ScratchPad/AccumulationI8  EcstasyE.cpp:768,769,771   OK
+* SafezoneHeight_PAL            EcstasyE.cpp:5926        FALTA
+* g_TextureBucketList[16]       EcstasyEx.cpp:2462       ESTA EN eViewPlat.cpp
+* tP[2][48] / tPC / tN[2][48] / tNC   EcstasyEx.cpp:3105,3106   FALTAN
+* MyLightPos[3]                 EcstasyEx.cpp:3952       FALTA
+* eLamb                         eLightE.cpp:~62          FALTA EL INICIALIZADOR
+  eLdir[3]                      eLightE.cpp:63           OK (bucle vacio)
+  eLpos[3]                      eLightE.cpp:64           OK (bucle vacio)
+* eLspec[3]                     eLightE.cpp:65           FALTA (3er bucle vacio)
+* eLdiff[3]                     eLightE.cpp:66           FALTA EL INICIALIZADOR
+* hack_man_matrix               eEnvMapE.cpp:~51         FALTA LA DEFINICION
+* envmap_fakeup                 eEnvMapE.cpp:~52         FALTA EL INICIALIZADOR
+  TheOnlyEnvMap                 eEnvMapE.cpp:53          OK
+* SphereMap                     eEnvMapE.cpp:55          ESTA EN EcstasyE.cpp
+  ViewPlatInfoTable[22]         eViewPlat.cpp:39         OK pero CTOR OUT-OF-LINE
+* SpriteManager                 eSprites.hpp:74 (ctor)   FALTA
+  _13EmitterSystem.mLoader/mLibLoader/mTexPageLoader
+                                EmitterSystem.cpp:119,120,121   OK
+  gEmitterSystem                EmitterSystem.cpp:175    OK
+
+--------------------------------------------------------------------------------
+1. eLight.hpp -- LOS DOS CTORES DE eShaperLightRig  (DENTRO DE LA CLASE)
+--------------------------------------------------------------------------------
+DWARF (volcado linea 199268) los lista DENTRO de la clase, antes de los miembros:
+    inline eShaperLightRig();
+    inline eShaperLightRig(ESHAPER_LIGHT_MODE l0_camera_space, float l0_theta,
+        float l0_phi, float l0_red, float l0_green, float l0_blue, float l0_scale,
+        ... lo mismo para l1, l2, l3 ...);
+
+Regla "en clase = inline en GCC 2.9": tienen que ir dentro del cuerpo de la clase.
+El mapa de lineas da el cuerpo EXACTO, sentencia a sentencia:
+
+    eLight.hpp:856 -> linea de declaracion del ctor (todos los lis/addi del prologo)
+    eLight.hpp:857 -> position  (stores 0x74/0x78/0x7C, via bMath.hpp:905 = bFill)
+    eLight.hpp:858 -> NameHash          (stw +0x00)
+    eLight.hpp:859 -> NumOverideSlots   (stw +0x84)
+    eLight.hpp:860 -> Lights[0]  7 stores 0x04..0x1C   UNA SOLA LINEA FISICA
+    eLight.hpp:861 -> Lights[1]  7 stores 0x20..0x38   UNA SOLA LINEA FISICA
+    eLight.hpp:862 -> Lights[2]  7 stores 0x3C..0x54   UNA SOLA LINEA FISICA
+    eLight.hpp:863 -> Lights[3]  7 stores 0x58..0x70   UNA SOLA LINEA FISICA
+
+PRUEBA de que `position` es una ASIGNACION y no lista de inicializacion: en
+0x80116240 hay `stfs f31, 0x8(r1) / 0xc(r1) / 0x10(r1)` = un bVector3 TEMPORAL de
+pila, materializado una sola vez para las 12 (CSE). Una lista de inicializacion
+construye en sitio y no crea temporal.
+
+PEGAR dentro de `class eShaperLightRig` (eLight.hpp:368-374), detras de `public:`
+y ANTES de los miembros:
+
+    eShaperLightRig() {}
+
+    eShaperLightRig(ESHAPER_LIGHT_MODE l0_camera_space, float l0_theta, float l0_phi, float l0_red, float l0_green, float l0_blue, float l0_scale, ESHAPER_LIGHT_MODE l1_camera_space, float l1_theta, float l1_phi, float l1_red, float l1_green, float l1_blue, float l1_scale, ESHAPER_LIGHT_MODE l2_camera_space, float l2_theta, float l2_phi, float l2_red, float l2_green, float l2_blue, float l2_scale, ESHAPER_LIGHT_MODE l3_camera_space, float l3_theta, float l3_phi, float l3_red, float l3_green, float l3_blue, float l3_scale) {
+        position = bVector3(0.0f, 0.0f, 0.0f);
+        NameHash = 0;
+        NumOverideSlots = 0;
+        Lights[0].CameraSpace = l0_camera_space; Lights[0].Theta = l0_theta; Lights[0].Phi = l0_phi; Lights[0].Red = l0_red; Lights[0].Green = l0_green; Lights[0].Blue = l0_blue; Lights[0].Scale = l0_scale;
+        Lights[1].CameraSpace = l1_camera_space; Lights[1].Theta = l1_theta; Lights[1].Phi = l1_phi; Lights[1].Red = l1_red; Lights[1].Green = l1_green; Lights[1].Blue = l1_blue; Lights[1].Scale = l1_scale;
+        Lights[2].CameraSpace = l2_camera_space; Lights[2].Theta = l2_theta; Lights[2].Phi = l2_phi; Lights[2].Red = l2_red; Lights[2].Green = l2_green; Lights[2].Blue = l2_blue; Lights[2].Scale = l2_scale;
+        Lights[3].CameraSpace = l3_camera_space; Lights[3].Theta = l3_theta; Lights[3].Phi = l3_phi; Lights[3].Red = l3_red; Lights[3].Green = l3_green; Lights[3].Blue = l3_blue; Lights[3].Scale = l3_scale;
+    }
+
+AVISO: anadir el ctor por defecto convierte eShaperLightRig en no-POD. Cualquier
+otro global/array de ese tipo en otras unidades empezara a emitir ctores vacios.
+Medir la UNIDAD ENTERA (y las vecinas), no solo esta funcion.
+
+--------------------------------------------------------------------------------
+2. eLight.cpp -- RunTimeLightFlarePackHeader   (eLight.cpp:123)
+--------------------------------------------------------------------------------
+DWARF: `struct eLightFlarePackHeader RunTimeLightFlarePackHeader; size 0x60`
+Codigo emitido: SOLO `stw base+0x58, 0x5C(base)` y `stw base+0x58, 0x58(base)`
+= el ctor del miembro `bTList<eLightFlare> LightFlareList` (offset 0x58).
+La clase ya existe en eLight.hpp:143 con ese miembro; no hay que tocarla.
+
+INSERTAR en src/Speed/Indep/Src/Ecstasy/eLight.cpp, INMEDIATAMENTE ANTES de la
+linea 21 (`bTList<eLightFlarePackHeader> LightFlarePackList;`):
+
+    eLightFlarePackHeader RunTimeLightFlarePackHeader;
+
+--------------------------------------------------------------------------------
+3. eLight.cpp -- LOS 13 bVector3 DE LUZ
+--------------------------------------------------------------------------------
+DWARF: TODOS son `struct bVector3` de 0x10 B, NO bVector4. Tres stfs cada uno,
+via `bVector3(float,float,float)` -> `bFill` (bMath.hpp:948 / 905).
+Valores extraidos del asm por script (verificados, no transcritos a mano).
+
+INSERTAR en eLight.cpp justo DESPUES de `float MAXreflectionStretch = 10.0f;`
+(linea 40). ORDEN EXACTO (es el del .bss, 0x80460E8C..0x80460F5C):
+
+    bVector3 LightPositionVFE0(0.0f, -1.25f, -5.0f);
+    bVector3 LightPositionVFE1(-5.0f, -1.0f, 0.0f);
+    bVector3 LightPositionVFE2(5.0f, -1.8f, 2.8f);
+    bVector3 LightPositionFE0(0.0f, -5.0f, 5.0f);
+    bVector3 LightPositionFE1(4.3f, 2.5f, 2.5f);
+    bVector3 LightPositionFE2(-4.3f, 2.5f, 2.5f);
+    bVector3 LightColourFE0(128.0f, 128.0f, 128.0f);
+    bVector3 LightColourFE1(64.0f, 64.0f, 64.0f);
+    bVector3 LightColourFE2(64.0f, 64.0f, 64.0f);
+    bVector3 AmbientColourFE(0.0f, 0.0f, 0.0f);
+    bVector3 AmbientColourIG(0.0f, 0.0f, 0.0f);
+    bVector3 LightDirection0(-0.74f, 0.0f, 0.55f);
+    bVector3 LightColour0(80.0f, 80.0f, 80.0f);
+
+El DWARF intercala `float AmbientLightScale;` entre AmbientColourIG y
+LightDirection0, y `float Light0Distance;` detras de LightColour0 (los dos con
+address 0xFFFFFFFF, o sea eliminados). No mueven .bss; si se anaden, ahi.
+
+--------------------------------------------------------------------------------
+4. eLight.cpp -- DynamicLightPackList + LAS 12 ShaperLights
+--------------------------------------------------------------------------------
+INSERTAR justo DESPUES de la linea 115 (`bChunkLoader bChunkLoaderLights(...)`).
+El orden es literal (.bss 0x80460F8C..0x804615F4) y PoolLightFlareList (linea 645)
+tiene que quedar detras de todas ellas, como ya esta.
+
+    bTList<eDynamicLightPack> DynamicLightPackList;
+
+    int PrintLightQuery = 0;   // el DWARF lo pone aqui (0x8041A66C); hoy no existe
+
+    eShaperLightRig ShaperLightsGCSpecial(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_OPPOSITE_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_CAMERA_SPACE, 240.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f);
+
+    eShaperLightRig ShaperLightsDefault(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_OPPOSITE_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_CAMERA_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    eShaperLightRig ShaperLightsBackRoom(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_WORLD_SPACE, 90.0f, 48.0f, 1.0f, 1.0f, 0.95f, 0.98f,
+        LIGHT_WORLD_SPACE, 134.0f, 185.0f, 0.83f, 0.83f, 1.0f, 0.5f,
+        LIGHT_WORLD_SPACE, 27.0f, 175.0f, 0.83f, 0.83f, 1.0f, 0.35f);
+
+    eShaperLightRig ShaperLightsCarLot(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_WORLD_SPACE, -90.0f, 48.0f, 1.0f, 1.0f, 0.95f, 0.98f,
+        LIGHT_WORLD_SPACE, -134.0f, 185.0f, 0.83f, 0.83f, 1.0f, 0.5f,
+        LIGHT_WORLD_SPACE, -27.0f, 175.0f, 0.83f, 0.83f, 1.0f, 0.35f);
+
+    eShaperLightRig ShaperLightsCShop(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_WORLD_SPACE, 90.0f, 48.0f, 1.0f, 1.0f, 0.95f, 0.98f,
+        LIGHT_WORLD_SPACE, 134.0f, 185.0f, 0.83f, 0.83f, 1.0f, 0.5f,
+        LIGHT_WORLD_SPACE, 27.0f, 175.0f, 0.83f, 0.83f, 1.0f, 0.35f);
+
+    eShaperLightRig ShaperLightsQRace(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_WORLD_SPACE, 90.0f, 48.0f, 1.0f, 1.0f, 0.95f, 0.98f,
+        LIGHT_WORLD_SPACE, 134.0f, 185.0f, 0.83f, 0.83f, 1.0f, 0.5f,
+        LIGHT_WORLD_SPACE, 27.0f, 175.0f, 0.83f, 0.83f, 1.0f, 0.35f);
+
+    eShaperLightRig ShaperLightsSafehouse(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_WORLD_SPACE, 90.0f, 48.0f, 1.0f, 1.0f, 0.95f, 0.98f,
+        LIGHT_WORLD_SPACE, 134.0f, 185.0f, 0.83f, 0.83f, 1.0f, 0.5f,
+        LIGHT_WORLD_SPACE, 27.0f, 175.0f, 0.83f, 0.83f, 1.0f, 0.35f);
+
+    eShaperLightRig ShaperLightsCarsInGame(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 350.0f, 0.85f, 0.9f, 1.0f, 1.5f,
+        LIGHT_SUN_DIRECTION, 50.0f, 220.0f, 0.55f, 0.6f, 1.0f, 0.7f,
+        LIGHT_SUN_DIRECTION, 310.0f, 220.0f, 0.65f, 0.7f, 1.0f, 0.9f);
+
+    eShaperLightRig ShaperLightsCharacters(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_CAMERA_SPACE, 122.9f, 194.0f, 0.5f, 0.5f, 0.5f, 0.53f,
+        LIGHT_CAMERA_SPACE, 28.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.59f,
+        LIGHT_CAMERA_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    eShaperLightRig ShaperLightsCharactersBackup(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+        LIGHT_CAMERA_SPACE, 30.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.63f,
+        LIGHT_CAMERA_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    eShaperLightRig ShaperLightsScenery(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_OPPOSITE_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_CAMERA_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    eShaperLightRig ShaperLightsWorldObjects(
+        LIGHT_WORLD_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        LIGHT_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_OPPOSITE_SUN_DIRECTION, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,
+        LIGHT_CAMERA_SPACE, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+Los doce llevan ademas NameHash = 0, NumOverideSlots = 0 y position = (0,0,0):
+eso lo pone el ctor, no la lista de argumentos.
+Faltan `extern` en eLight.hpp para Default, Scenery y WorldObjects (los otros
+siete ya estan). GCSpecial y CharactersBackup el DWARF los declara SOLO en el
+.cpp, sin extern en la cabecera.
+
+--------------------------------------------------------------------------------
+5. EcstasyE.cpp -- PalNFS01IntDfScale (GXRenderModeObj 0x3C, EcstasyE.cpp:162)
+--------------------------------------------------------------------------------
+Codigo: `memset(temp_de_pila, 0, 0x3C)` + rellenar campos + copiar 0x3C B al
+global. Es el patron exacto de un inicializador agregado con elementos NO
+constantes. Campos leidos del asm (offsets de GXRenderModeObj):
+
+    +0x00 viTVmode        = 4                   (VI_TVMODE_PAL_INT)
+    +0x04 fbWidth         = 640
+    +0x06 efbHeight       = (u16)efbHcrt        (lhz efbHcrt+2)
+    +0x08 xfbHeight       = (u16)xfbHcrt        (lhz xfbHcrt+2)
+    +0x0A viXOrigin       = 40
+    +0x0C viYOrigin       = (574 - xfbHcrt) / 2 (subfic 0x23E, srwi 31, add, srawi 1
+                                                 = division ENTERA CON SIGNO por 2)
+    +0x0E viWidth         = 640
+    +0x10 viHeight        = (u16)xfbHcrt
+    +0x14 xFBmode         = 1                   (VI_XFBMODE_DF)
+    +0x18 field_rendering = 0   (no se escribe: lo deja el memset)
+    +0x19 aa              = 0   (idem)
+    +0x1A sample_pattern[12][2] = todos 6
+    +0x32 vfilter[7]      = { 8, 8, 10, 12, 10, 8, 8 }
+
+SUSTITUIR EcstasyE.cpp:237 (`GXRenderModeObj PalNFS01IntDfScale; // size: 0x3C`):
+
+    GXRenderModeObj PalNFS01IntDfScale = {VI_TVMODE_PAL_INT, 640, (u16)efbHcrt, (u16)xfbHcrt, 40, (574 - xfbHcrt) / 2, 640, (u16)xfbHcrt, VI_XFBMODE_DF, 0, 0, {{6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}, {6, 6}}, {8, 8, 10, 12, 10, 8, 8}};
+
+TODO EN LA LINEA DE LA DECLARACION: el mapa de lineas pone las ~70 instrucciones
+en EcstasyE.cpp:162 sin cambiar de linea ni una vez.
+La llamada es `bl memset` con `crclr cr1eq` delante (o sea `memset`, no `bMemSet`).
+
+--------------------------------------------------------------------------------
+6. EcstasyE.cpp -- g_ParticleStats (decl del ctor en 407, cuerpo en 408)
+--------------------------------------------------------------------------------
+8 `stw` de cero (offsets 0x00..0x1C), TODOS en la linea 408; el lis/addi de la
+direccion en la 407. Ese patron (direccion en la linea del ctor, cuerpo en la
+siguiente) es el de un ctor INLINE declarado en clase con el cuerpo en UNA linea.
+
+Dentro de `struct ParticleSystemStats` (EcstasyE.cpp:271-281), detras del ultimo
+miembro:
+
+    ParticleSystemStats()
+    { num_particles = 0; max_num_particles = 0; num_particle_textures = 0; max_num_particle_textures = 0; num_emitters = 0; max_num_emitters = 0; num_groups = 0; max_num_groups = 0; }
+
+y la definicion pasa a `static` (DWARF: `static struct ParticleSystemStats g_ParticleStats;`):
+
+    static ParticleSystemStats g_ParticleStats;
+
+--------------------------------------------------------------------------------
+7. EcstasyE.cpp -- LO QUE SOBRA Y EL ORDEN
+--------------------------------------------------------------------------------
+7a) SOBRAN (no estan ni en el .bss ni en el DWARF del objetivo, y NADIE los usa
+    en el arbol: verificado con grep). Cuatro `bl` de ctor de mas:
+        EcstasyE.cpp:156  Camera Player1HeadlightCamera;
+        EcstasyE.cpp:157  Camera Player2HeadlightCamera;
+        EcstasyE.cpp:254  cReflectMap ReflectMap;
+        EcstasyE.cpp:255  cQuarterSizeMap QuarterSizeMap;
+
+7b) ORDEN: en el objetivo PalNFS01IntDfScale (162) y g_ParticleStats (407) van
+    ANTES de las camaras (610-613). En nuestro fichero las camaras estan en la
+    152, antes de las dos. MOVER el bloque de 4 camaras a DESPUES de
+    g_ParticleStats.
+
+7c) EcstasyE.cpp:1416  `TextureInfo RenderTargetTextureInfos[15];` -> `[17]`
+    DWARF: `struct TextureInfo RenderTargetTextureInfos[17]; size 0x83C`.
+    Objetivo `li r9, 0x10` = 17 pasadas; nuestro `li r9, 0xe` = 15.
+    Va inmediatamente detras de las 4 camaras.
+
+7d) aBaselineFovMip / aBaselineFovZ  (EcstasyE.cpp:665 y 666)
+    DWARF: `static const unsigned short` (2 B), .bss 0x804661C4 / 0x804661C6.
+    Codigo: `li r9,0x4000 ; sth aBaselineFovMip` y `li r0,0x238e ; sth aBaselineFovZ`.
+    Los DOS `li` llevan la linea bMath.hpp:132, que cae dentro de
+    `inline int bMax(int a, int b)` (justo en el `return a;`). O sea: el
+    inicializador es una LLAMADA A UNA INLINE. Eso es lo que impide que el
+    front-end lo pliegue y obliga a la inicializacion dinamica -- un literal
+    pelado se plegaria y NO emitiria codigo. Insertar delante de SpecularMap:
+
+        static const int bBaselineFov = 0;         // se pliegan (sin direccion en DWARF)
+        static const int bUseFastBaselineFov = 0;
+        static const unsigned short aBaselineFovMip = bMax(0x4000, 0);
+        static const unsigned short aBaselineFovZ = bMax(0x238E, 0);
+
+    Lo MEDIDO es: tipo u16, valores 0x4000 y 0x238E, y que el valor sale del
+    `return a;` de bMax(int,int). La forma del argumento es reconstruccion.
+
+7e) MOVER `cSphereMap SphereMap;` (EcstasyE.cpp:2255) a eEnvMapE.cpp (seccion 10)
+    y dejar aqui solo el `extern`. Los otros cuatro se quedan juntos, en este
+    orden, justo detras de aBaselineFovZ:
+        cSpecularMap SpecularMap;            // 767
+        cQuarterSizeMap QSizeI8_Z8;          // 768
+        cQuarterSizeMap QSizeScratchPad;     // 769
+        cQuarterSizeMap QSizeAccumulationI8; // 771
+
+7f) SafezoneHeight_PAL (EcstasyE.cpp:5926), .bss 0x80466304, detras de
+    QSizeAccumulationI8. DWARF: `static const float`.
+    Codigo: (float)xfbHcrt (conversion int->double->float) -> fsubs -> fmuls 0.5
+    -> fdivs por el mismo (float)xfbHcrt (una sola conversion, CSE).
+    Literal exacto del ELF: 0x43E7E561 = 463.79202f. OJO: 463.792f da 0x43E7E560
+    (un ULP de menos) y rompe el DOL aunque matched_code no lo vea.
+
+        static const bool TweakShowSafezone = false;
+        static const float SafezoneWidth_NTSC = 0.0f;   // los tres se pliegan
+        static const float SafezoneHeight_NTSC = 0.0f;  // (sin direccion en DWARF)
+        static const float SafezoneWidth_PAL = 0.0f;
+        static const float SafezoneHeight_PAL = ((float)xfbHcrt - 463.79202f) * 0.5f / (float)xfbHcrt;
+
+--------------------------------------------------------------------------------
+8. EcstasyEx.cpp -- g_TextureBucketList, tP/tPC/tN/tNC, MyLightPos
+--------------------------------------------------------------------------------
+8a) MOVER de eViewPlat.cpp:274 a EcstasyEx.cpp (linea 2462 en el original),
+    ANTES de tP/tN:
+        bTList<eTextureBucket> g_TextureBucketList[16];
+    y dejar en eViewPlat.cpp:
+        extern bTList<eTextureBucket> g_TextureBucketList[16];
+
+8b) EcstasyEx.cpp:3105 y 3106. DWARF (el volcado imprime las dimensiones AL REVES):
+        static struct bVector3 tP[48][2]   -> en fuente:  static bVector3 tP[2][48];
+        static struct bVector3 tPC;
+        static struct bVector3 tN[48][2]   -> en fuente:  static bVector3 tN[2][48];
+        static struct bVector3 tNC;
+        static struct eVect3i16 tT[48][2]  -> static eVect3i16 tT[2][48];  (otra seccion)
+    tP y tN emiten los dos bucles anidados 2x48 del objetivo (`li r9,0x1` fuera,
+    `li r9,0x2f` dentro). tPC/tNC no emiten nada (un solo bVector3, ctor vacio).
+
+8c) EcstasyEx.cpp:3952 (detras de tNC, delante de eLamb en .bss):
+        bVector4 MyLightPos[3] = {bVector4(0.0f, 10.0f, 0.0f, 0.0f), bVector4(0.0f, -10.0f, 0.0f, 0.0f), bVector4(0.0f, 0.0f, 10.0f, 0.0f)};
+    (12 stfs verificados: +00=0 +04=10 +08=0 +0C=0 | +10=0 +14=-10 +18=0 +1C=0 |
+     +20=0 +24=0 +28=10 +2C=0)
+
+--------------------------------------------------------------------------------
+9. eLightE.cpp -- eLamb / eLdir / eLpos / eLspec / eLdiff  (lineas 62..66)
+--------------------------------------------------------------------------------
+El mapa de lineas dice: lineas 63, 64 y 65 = TRES bucles vacios de 3 elementos
+(bMath.hpp:990 = ctor por defecto de bVector4); linea 66 = eLdiff CON valores.
+El DWARF confirma el array que nos falta: `struct bVector4 eLspec[3];` con
+address 0xFFFFFFFF -- el enlazador se comio el ALMACENAMIENTO (el bucle vacio no
+toca memoria, asi que nadie referencia la direccion) pero EL BUCLE SIGUE EMITIDO.
+Hoy nuestros tres bucles son eLdir/eLpos/eLdiff; hay que anadir eLspec y dar
+valores a eLdiff, para que los tres bucles sean eLdir/eLpos/eLspec.
+
+SUSTITUIR eLightE.cpp lineas 11-14 por:
+
+    bVector4 eLamb(128.0f, 128.0f, 128.0f, 0.0f);
+    bVector4 eLdir[3];
+    bVector4 eLpos[3];
+    bVector4 eLspec[3];
+    bVector4 eLdiff[3] = {bVector4(128.0f, 128.0f, 128.0f, 0.0f), bVector4(192.0f, 192.0f, 192.0f, 0.0f), bVector4(96.0f, 96.0f, 96.0f, 0.0f)};
+
+--------------------------------------------------------------------------------
+10. eEnvMapE.cpp -- hack_man_matrix, envmap_fakeup, TheOnlyEnvMap, SphereMap
+--------------------------------------------------------------------------------
+Orden de .bss: eLdiff, hack_man_matrix (0x40), envmap_fakeup (0x10),
+TheOnlyEnvMap (0xF78), ..., SphereMap (0x140).
+Lineas del original: ~51 hack_man_matrix, ~52 envmap_fakeup, 53 TheOnlyEnvMap,
+55 SphereMap.
+
+SUSTITUIR eEnvMapE.cpp:247 (`bVector3 envmap_fakeup;`) por:
+
+    bMatrix4 hack_man_matrix;
+    bVector3 envmap_fakeup(0.0f, 0.0f, 1.0f);
+
+MOVER `eEnvMap TheOnlyEnvMap;` (hoy en la 308) justo detras, y anadir a
+continuacion (viene de EcstasyE.cpp:2255):
+
+    cSphereMap SphereMap;
+
+Con eso el `bl __10cSphereMap` cae DESPUES del bucle de camaras de TheOnlyEnvMap,
+como en el objetivo, en vez de antes de SpecularMap.
+(hack_man_matrix no emite codigo: bMatrix4 tiene ctor vacio. Solo mueve .bss.)
+
+--------------------------------------------------------------------------------
+11. eViewPlat.hpp -- ctor EN CLASE de eViewPlatInfo (eViewPlat.hpp:40)
+--------------------------------------------------------------------------------
+Objetivo: NO existe `__13eViewPlatInfo`. Por cada uno de los 22 elementos emite
+un bucle vacio de 6 (ClippingPlanes[6]) + `stfs 1.0f, 0x110` + `stfs 1.0f, 0x10C`,
+TODO en eViewPlat.hpp:40 -> ctor inline DENTRO de la clase, cuerpo en UNA linea.
+Nosotros emitimos `bl __13eViewPlatInfo`: es la regla "en clase = inline".
+El comentario de nuestro eViewPlat.hpp:29 ("el tipo es POD") es FALSO: bMatrix4 y
+bVector4 tienen ctor, asi que GCC ya sintetiza uno out-of-line.
+
+ANADIR dentro de `struct eViewPlatInfo` (eViewPlat.hpp:15-46), detras de
+`bVector4 ClippingPlanes[6];`, y borrar el comentario de las lineas 28-30:
+
+    eViewPlatInfo() { aspect = 1.0f; fovscl = 1.0f; }
+
+(el orden emitido es 0x110 y luego 0x10C; si no casa, probar
+ `{ fovscl = 1.0f; aspect = 1.0f; }` -- SIEMPRE en la misma linea fisica.)
+
+--------------------------------------------------------------------------------
+12. eSprites.hpp + eViewPlat.cpp -- eSpriteManager SpriteManager
+--------------------------------------------------------------------------------
+DWARF (volcado linea 724392): `struct eSpriteManager`, 0x1C B
+    bool bBatching;             // 0x00
+    unsigned int bufferLength;  // 0x04
+    unsigned int packetLength;  // 0x08
+    unsigned int *pBuffer;      // 0x0C
+    unsigned int *baseBuffer;   // 0x10
+    unsigned int *endBuffer;    // 0x14
+    unsigned int *lastInline;   // 0x18
+    inline eSpriteManager();  inline ~eSpriteManager();
+    bool StartBatch(eView *view, TextureInfo *texture_info, bMatrix4 *local_world, int numElements);
+    void AddSprite(eSprite *sprite);
+    void EndBatch();
+    void RenderSprite(eSprite *sprite, TextureInfo *texture_info, bMatrix4 *local_world);
+
+Codigo emitido: SIETE `stw` de 0 (0x18, 0x00, 0x04, 0x08, 0x0C, 0x10, 0x14),
+TODOS en eSprites.hpp:74 -> ctor inline de UNA linea.
+OJO: el store del offset 0 es `stw`, NO `stb`, aunque bBatching sea `bool` de 1 B.
+Eso apunta a un borrado en bloque, no a asignaciones campo a campo:
+
+    eSpriteManager() { memset(this, 0, sizeof(eSpriteManager)); }
+
+HAY QUE MEDIRLO: si sale una llamada en vez de las 7 palabras, la alternativa es
+campo a campo forzando que el primer store sea de palabra. Es solo 28 B: baja
+prioridad. La clase va en src/Speed/Indep/Src/Ecstasy/eSprites.hpp (hoy es un
+stub vacio) con el ctor en la LINEA 74 del fichero, y la definicion al final de
+src/Speed/GameCube/Src/Ecstasy/eViewPlat.cpp (detras de todo lo demas, antes de
+que empiece eVisualTreatment.cpp en el SourceList):
+
+    eSpriteManager SpriteManager;
+
+--------------------------------------------------------------------------------
+13. LO QUE INICIALIZAMOS DE MAS O EN OTRO ORDEN (diff con fndiff.py)
+--------------------------------------------------------------------------------
+DE MAS:
+  - Player1HeadlightCamera, Player2HeadlightCamera   (2 x `bl __6Camera`)
+  - ReflectMap        (`bl __11cReflectMap`)
+  - QuarterSizeMap    (`bl __15cQuarterSizeMap`)
+  - 22 x `bl __13eViewPlatInfo`  -> tiene que ser inline (seccion 11)
+
+EN OTRO ORDEN:
+  - SphereMap: nuestro ctor va ANTES de SpecularMap; en el objetivo va DESPUES
+    del bucle de camaras de TheOnlyEnvMap.
+  - g_TextureBucketList: nuestro bucle va detras de ViewPlatInfoTable; en el
+    objetivo va detras de SafezoneHeight_PAL y delante de tP/tN.
+  - Las 4 camaras van antes de PalNFS01IntDfScale/g_ParticleStats; deberian ir
+    despues.
+  - RenderTargetTextureInfos: 15 -> 17 elementos.
+  - TexturePackList / TextureAnimPackList / TextureVRAMDataHeaderList: el orden
+    de DECLARACION ya es correcto (Texture.cpp:60,61,62); lo unico que difiere es
+    el reparto r9/r10/r11. NO tocar: es planificacion, se arregla cuando el resto
+    de la funcion case.
+
+REPARTO DE BYTES QUE FALTAN (1.200 B nuestros contra 4.544 B):
+  12 ShaperLights   12 x 33 stores + direcciones   ~1.900 B  <- el grueso
+  PalNFS01IntDfScale                               ~  460 B
+  13 bVector3 de luz                               ~  330 B
+  MyLightPos + eLamb + eLdiff + envmap_fakeup      ~  200 B
+  g_ParticleStats + SpriteManager                  ~   80 B
+  ViewPlatInfoTable inline + tP/tN + eLspec        ~   80 B
+  SafezoneHeight_PAL + aBaselineFov*               ~   80 B
+  RunTimeLightFlarePackHeader + DynamicLightPackList ~ 40 B
+
+--------------------------------------------------------------------------------
+14. TIPOS: comprobados en el DWARF, no supuestos
+--------------------------------------------------------------------------------
+  bVector3 (0x10 B) para los 13 globales de luz     -- NO bVector4
+  bVector4 para MyLightPos[3], eLamb, eLdir[3], eLpos[3], eLspec[3], eLdiff[3]
+  bVector3 para envmap_fakeup, tP, tPC, tN, tNC
+  static const unsigned short para aBaselineFovMip / aBaselineFovZ   -- NO int
+  static const float para SafezoneHeight_PAL
+  eShaperLightRig (0x88) x12, con enum ESHAPER_LIGHT_MODE en CameraSpace
+  eLightFlarePackHeader (0x60) para RunTimeLightFlarePackHeader
+  bTList<eDynamicLightPack> para DynamicLightPackList
+  eSpriteManager (0x1C) para SpriteManager -- bBatching es `bool` de 1 B
+  GXRenderModeObj (0x3C) para PalNFS01IntDfScale
+  TextureInfo[17] para RenderTargetTextureInfos
+
+Discrepancias `int` <-> `bool` en el MISMO fichero (no afectan a esta funcion
+pero si al resto de la unidad, y cuestan un registro salvado donde se usen):
+  DWARF `bool IsPal50Mode; size 0x1`  <->  nuestro `int IsPal50Mode = 0;`  (EcstasyE.cpp:229)
+  DWARF `static const bool TweakShowSafezone;`  (no existe en el arbol)
+  DWARF `static const bool EnableSunRender / EnableLetterBoxes`  <->  ya son bool, OK
+
+--------------------------------------------------------------------------------
+15. LITERALES: patron de bits exacto leido del ELF
+--------------------------------------------------------------------------------
+803DF438 3F800000 1.0     803DF43C 00000000 0.0     803DF440 BFA00000 -1.25
+803DF444 C0A00000 -5.0    803DF448 BF800000 -1.0    803DF44C 40A00000 5.0
+803DF450 BFE66666 -1.8    803DF454 40333333 2.8     803DF458 4089999A 4.3
+803DF45C 40200000 2.5     803DF460 C089999A -4.3    803DF464 43000000 128
+803DF468 42800000 64      803DF46C BF3D70A4 -0.74   803DF470 3F0CCCCD 0.55
+803DF474 42A00000 80      803DF478 3E4CCCCD 0.2     803DF47C 43700000 240
+803DF480 42B40000 90      803DF484 42400000 48      803DF488 3F733333 0.95
+803DF48C 3F7AE148 0.98    803DF490 43060000 134     803DF494 43390000 185
+803DF498 3F547AE1 0.83    803DF49C 3F000000 0.5     803DF4A0 41D80000 27
+803DF4A4 432F0000 175     803DF4A8 3EB33333 0.35    803DF4AC C2B40000 -90
+803DF4B0 C3060000 -134    803DF4B4 C1D80000 -27     803DF4B8 43AF0000 350
+803DF4BC 3F59999A 0.85    803DF4C0 3F666666 0.9     803DF4C4 3FC00000 1.5
+803DF4C8 42480000 50      803DF4CC 435C0000 220     803DF4D0 3F19999A 0.6
+803DF4D4 3F333333 0.7     803DF4D8 439B0000 310     803DF4DC 3F266666 0.65
+803DF4E0 42F5CCCD 122.9   803DF4E4 43420000 194     803DF4E8 3F07AE14 0.53
+803DF4EC 41E00000 28      803DF4F0 3F170A3D 0.59    803DF4F4 41F0CCCD 30.1
+803DF4F8 3F2147AE 0.63    803DF508 43E7E561 463.79202
+803DF50C 41200000 10      803DF510 C1200000 -10     803DF514 43400000 192
+803DF518 42C00000 96
+803DF500 4330000080000000 (magico int->double, lo pone GCC solo)
+
+--------------------------------------------------------------------------------
+16. ORDEN SUGERIDO DE ATAQUE (por bytes y por riesgo)
+--------------------------------------------------------------------------------
+  1. Secciones 1+4  (ctores de eShaperLightRig + las 12 rigs)  ~1.900 B
+     Es el bloque grande y no depende de nada mas. Medir la unidad ENTERA por el
+     cambio de cabecera (eShaperLightRig pasa a no-POD).
+  2. Seccion 3  (13 bVector3)  ~330 B, riesgo cero.
+  3. Secciones 2 y 4a (RunTimeLightFlarePackHeader, DynamicLightPackList) ~40 B.
+  4. Seccion 7a  (borrar los 4 objetos que sobran) -- quita 4 llamadas.
+  5. Seccion 5  (PalNFS01IntDfScale)  ~460 B.
+  6. Secciones 6, 7b, 7c, 7d, 7e, 7f  (EcstasyE.cpp: ctor, orden, [17], fov, safezone).
+  7. Secciones 8, 9, 10  (EcstasyEx / eLightE / eEnvMapE).
+  8. Secciones 11 y 12  (eViewPlatInfo inline, SpriteManager) -- las de mas riesgo
+     por cabecera compartida; medir aisladas.

@@ -13,15 +13,25 @@ namespace EAGL4Anim {
 // total size: 0x8
 class RawEventChannel : public AnimMemoryMap {
   public:
-    int GetNumEvents() const {}
+    int GetNumEvents() const {
+        return mNumEvents;
+    }
 
-    void SetNumEvents(int n) {}
+    void SetNumEvents(int n) {
+        mNumEvents = n;
+    }
 
-    struct Event *GetEvents() {}
+    struct Event *GetEvents() {
+        return reinterpret_cast<Event *>(reinterpret_cast<unsigned char *>(this) + 8);
+    }
 
-    int GetSize() const {}
+    int GetSize() const {
+        return ComputeSize(mNumEvents);
+    }
 
-    static int ComputeSize(int numEvents) {}
+    static int ComputeSize(int numEvents) {
+        return 0x8 + numEvents * 0x10;
+    }
 
     void Eval(float previousTime, float currentTime, int &currentIdx, float &cacheCurrentTime, EventHandler **eventHandlers, void *extraData);
 

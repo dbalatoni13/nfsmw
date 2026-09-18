@@ -151,10 +151,5 @@ void RefSpec::Clean() const {
     }
 }
 
-Attribute::~Attribute() {
-    if (mInstance) {
-        mInstance->Unlock();
-    }
-}
 
 }; // namespace Attrib

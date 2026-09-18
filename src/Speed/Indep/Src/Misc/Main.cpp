@@ -52,8 +52,12 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Stomper.hpp"
 #include "bFile.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
 
 int ExitTheGameFlag = false;
+int frames_elapsed;
+int loop_ticker;
 static int32 last_frame_count = 0;
 int32 CurrentLoopCounter = 0;
 uint32 TimeDifferenceInMicroseconds = 0;
@@ -62,20 +66,12 @@ float TimeDifferenceInSeconds = 0.0f;
 float MicrosecondsToMiliseconds = 0.001f;
 float MilisecondsToSeconds = 1000.0f;
 
-// TODO
-// OUTSIDE ZMISC //
-extern int frames_elapsed;
-extern int loop_ticker;
-
 // zFoundation
 extern void (*UFoundation_AssertMessage)(const char *, ...);
 
 ////
 
-bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
-
 #ifdef EA_PLATFORM_PLAYSTATION2
-void bMonitorService();
 #endif
 
 class RaceStarter {
@@ -128,7 +124,7 @@ void InitializeEverything(int argc, char **argv) {
     bReserveMemoryPool(7);
     bReserveMemoryPool(8);
     bMemoryCreatePersistentPool(0x1000);
-    bInitTicker(60000.0f);
+    bInitTicker(6e+04f);
     InitializeEverythingTicks = bGetTicker();
     bInitSharedStringPool(0x8000);
     InitPlatform();
@@ -172,10 +168,10 @@ void InitializeEverything(int argc, char **argv) {
     IOModule::GetIOModule().EnableUpdating(true);
     EventManager::Init();
     Hermes::System::Init();
-    Scheduler::Init(0.016666668f);
+    Scheduler::Init(0.016666668f); // scaf-data r71: bloque +0x7A4
     WWorld::Init();
-    EventSequencer::Init(0.0f);
-#ifdef MILESTONE_OPT
+    EventSequencer::Init(0.0f); // scaf-data r71: bloque +0x7A8
+#ifdef MILESTONE_BUILD
     InitScreenPrintf();
     DebugMenuInit();
 #endif
@@ -312,10 +308,10 @@ void Main_SkipFrame(int numToSkip) {
     gFramesToSkip = bMax(numToSkip, gFramesToSkip);
 }
 
-int RenderTimingStart;
-int RenderTimingEnd;
-int FrameTimingStartTime;
-int FrameTimingEndTime;
+int RenderTimingStart = 0;
+int RenderTimingEnd = 0;
+int FrameTimingStartTime = 0;
+int FrameTimingEndTime = 0;
 
 extern float HackTime;
 
@@ -328,7 +324,7 @@ void Main_DisplayFrame() {
         FrameTimingStartTime = FrameTimingEndTime;
         FrameTimingEndTime = bGetTicker();
         RenderTimingStart = bGetTicker();
-        profile_node.Begin("eDisplayFrame()", 0);
+        profile_node.Begin("eDisplayFrame()", 0); // scaf-data r71: $LC414 solo vivo por DWARF
         eDisplayFrame();
         RenderTimingEnd = bGetTicker();
         HackTime += timeStep;
@@ -485,8 +481,8 @@ int MainThreadFunction(int argc, char **argv)
             loop_ticker = current_tick;
         } else if (milliseconds > minumum_time_step) {
             loop_ticker = current_tick;
-            if (milliseconds > 32000.0f)
-                milliseconds = 32000.0f;
+            if (milliseconds > 3.2e+04f)
+                milliseconds = 3.2e+04f;
 
             milliseconds_fix = (bFix)(milliseconds * 65536.0f); // this is used on other platforms
 

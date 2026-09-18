@@ -37,18 +37,15 @@ template <typename T> class ScratchPtr {
     static T mRAMBuffer[T::MaxInstances];
 };
 
-// UNSOLVED
 template <typename T> T **ScratchPtr<T>::_Alloc() {
-    for (int i = 0; i < sizeof(mPointer) / sizeof(T *); ++i) {
+    for (unsigned int i = 0; i < sizeof(mPointer) / sizeof(T *); ++i) {
         if (mPointer[i] == nullptr) {
-            T *spbuffer;
             if (mWorkSpace == nullptr) {
-                spbuffer = &mRAMBuffer[i];
+                mPointer[i] = &mRAMBuffer[i];
             } else {
-                spbuffer = &reinterpret_cast<T *>(mWorkSpace)[i];
+                T *spbuffer = reinterpret_cast<T *>(mWorkSpace);
+                mPointer[i] = &spbuffer[i];
             }
-            // TODO
-            mPointer[i] = spbuffer;
             return &mPointer[i];
         }
     }
@@ -71,7 +68,7 @@ template <typename T> void ScratchPtr<T>::Pop() {}
 
 #define IMPLEMENT_SCRATCHPTR(DATATYPE)                                                                                                               \
     template <> void *ScratchPtr<DATATYPE>::mWorkSpace = NULL;                                                                                       \
-    template <> ALIGNVEC DATATYPE ScratchPtr<DATATYPE>::mRAMBuffer[DATATYPE::MaxInstances] = {};                                                     \
-    template <> ALIGNVEC DATATYPE *ScratchPtr<DATATYPE>::mPointer[DATATYPE::MaxInstances] = {};
+    ALIGNVEC DATATYPE ScratchPtr<DATATYPE>::mRAMBuffer[DATATYPE::MaxInstances];                                                                      \
+    template <> ALIGNVEC DATATYPE *ScratchPtr<DATATYPE>::mPointer[DATATYPE::MaxInstances];
 
 #endif

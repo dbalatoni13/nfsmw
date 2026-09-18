@@ -21,13 +21,27 @@
 
 #include "Speed/GameCube/Src/Ecstasy/EcstasyEx.cpp"
 
+#include "Speed/GameCube/Src/Ecstasy/eLightE.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/eEnvMapE.cpp"
+
 #include "Speed/GameCube/Src/Ecstasy/eMathE.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/eMatrixE.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/ePShader.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/eVShader.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eStrip.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/eVisualTreatment.cpp"
+
 #endif
+#include "Speed/Indep/Src/Generated/TexturePacks/TexEnumGen_ParticleTextures.cpp"
 
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.cpp"

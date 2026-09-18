@@ -67,6 +67,16 @@ class WorldModel : public bTNode<WorldModel> {
         this->mEnabled = f;
     }
 
+    void SetAddLighting(bool f) {
+        this->mAddLighting = f;
+    }
+
+#ifndef EA_BUILD_A124
+    void SetCastsShadow(unsigned char f) {
+        this->mCastsShadow = f;
+    }
+#endif
+
     bool CanRenderInSplitScreen() {
         return this->mRenderInSplitScreen;
     }

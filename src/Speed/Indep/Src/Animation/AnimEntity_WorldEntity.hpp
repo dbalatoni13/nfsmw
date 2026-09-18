@@ -96,6 +96,27 @@ class CWorldAnimEntity : public IAnimEntity {
     CWorldAnimEntityTree *mAnimTree;  // offset 0x20, size 0x4
 };
 
+// total size: 0x58
+class WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
+  public:
+    void *operator new(size_t size, const char *debug_name);
+    void operator delete(void *ptr);
+
+    WorldAnimEntityTreeInfo() {}
+
+    WorldAnimEntityTreeInfo(uint32 treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges);
+
+    virtual ~WorldAnimEntityTreeInfo();
+
+  private:
+    friend class WorldAnimInstanceDirectory;
+    friend class CAnimWorldScene;
+
+    uint32 tree_name_hash;                                       // offset 0x8, size 0x4
+    bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
+    WorldAnimNamedRange named_ranges[4];                         // offset 0x14, size 0x40
+};
+
 // total size: 0x2C
 class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
   public:
@@ -126,27 +147,6 @@ class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
     uint32 stop_trigger_hash;                                  // offset 0x1C, size 0x4
     WorldAnimInstance *mInstanceData;                          // offset 0x20, size 0x4
     eControlScenarioType mControlScenarioType;                 // offset 0x24, size 0x4
-};
-
-// total size: 0x58
-class WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
-  public:
-    void *operator new(size_t size, const char *debug_name);
-    void operator delete(void *ptr);
-
-    WorldAnimEntityTreeInfo() {}
-
-    WorldAnimEntityTreeInfo(uint32 treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges);
-
-    virtual ~WorldAnimEntityTreeInfo();
-
-  private:
-    friend class WorldAnimInstanceDirectory;
-    friend class CAnimWorldScene;
-
-    uint32 tree_name_hash;                                       // offset 0x8, size 0x4
-    bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
-    WorldAnimNamedRange named_ranges[4];                         // offset 0x14, size 0x40
 };
 
 // total size: 0x50

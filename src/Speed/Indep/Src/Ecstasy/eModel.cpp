@@ -14,18 +14,18 @@ struct ReplacementTextureTableFixup {
     int16 RefCount;                                     // offset 0x6, size 0x2
 };
 
-int NumReplacementTextureTableFixups;
 ReplacementTextureTableFixup ReplacementTextureTableFixups[182];
 bTList<eModel> UnattachedModelList;
 bTList<eModel> MovedModelList;
-SlotPool *eModelSlotPool;
-float MaxNotifyTimeLoad;
-float MaxNotifyTimeUnload;
-float TotalNotifyTimeLoad;
-float TotalNotifyTimeUnload;
-float TotalNotifyTime;
-int NumNotifyLoads;
-int NumNotifyUnloads;
+SlotPool *eModelSlotPool = 0;
+int NumReplacementTextureTableFixups = 0;
+float MaxNotifyTimeLoad = 0;
+float MaxNotifyTimeUnload = 0;
+float TotalNotifyTimeLoad = 0;
+float TotalNotifyTimeUnload = 0;
+float TotalNotifyTime = 0;
+int NumNotifyLoads = 0;
+int NumNotifyUnloads = 0;
 
 void AddReplacementTextureTableFixup(eReplacementTextureTable *r, int num) {
     ReplacementTextureTableFixup *free_fixup = nullptr;
@@ -278,6 +278,39 @@ void NotifySolidLoader(eSolidListHeader *solid_list_header) {
         TotalNotifyTimeLoad += time;
         TotalNotifyTime = TotalNotifyTimeLoad + TotalNotifyTimeUnload;
         NumNotifyLoads++;
+    }
+}
+
+void NotifySolidUnloader(eSolid *solid) {
+    if (GetChunkMovementOffset() != 0) {
+        while (!solid->ModelList.IsEmpty()) {
+            eModel *model = solid->ModelList.RemoveHead();
+            MovedModelList.AddTail(model);
+            eSolid *moved_solid = reinterpret_cast<eSolid *>(reinterpret_cast<char *>(solid) + GetChunkMovementOffset());
+            model->SetMovedSolid(moved_solid);
+        }
+    } else {
+        uint32 start_time = bGetTicker();
+        int debug_print;
+
+        if (!solid->ModelList.IsEmpty()) {
+            eSolid *new_solid = nullptr;
+
+            if (solid->Flags & 0x100) {
+                new_solid = eFindSolid(solid->NameHash);
+            }
+
+            while (!solid->ModelList.IsEmpty()) {
+                eModel *model = solid->ModelList.GetHead();
+                model->ConnectSolid(new_solid);
+            }
+        }
+
+        float time = bGetTickerDifference(start_time, bGetTicker());
+        MaxNotifyTimeUnload = bMax(MaxNotifyTimeUnload, time);
+        TotalNotifyTimeUnload += time;
+        TotalNotifyTime = TotalNotifyTimeLoad + TotalNotifyTimeUnload;
+        NumNotifyUnloads++;
     }
 }
 

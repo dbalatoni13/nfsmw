@@ -28,7 +28,7 @@ struct visuallook : Instance {
     typedef EA::Reflection::Float TypeOf_DetailMapIntensity;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("visuallook");
+    USE_ATTRIB_ALLOC("Attrib::Gen::visuallook");
     visuallook(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -56,10 +56,10 @@ struct visuallook : Instance {
         return 0x339f7d3d;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x339f7d3d, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

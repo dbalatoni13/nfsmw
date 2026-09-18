@@ -20,7 +20,11 @@ CARSFX_Rain::~CARSFX_Rain() {
 }
 
 int CARSFX_Rain::GetController(int Index) {
+#ifdef EA_BUILD_A124
+    return Index == 0 ? 6 : -1;
+#else
     return Index != 0 ? -1 : 6;
+#endif
 }
 
 void CARSFX_Rain::AttachController(SFXCTL *psfxctl) {
@@ -49,12 +53,22 @@ void CARSFX_Rain::Play() {
 }
 
 void CARSFX_Rain::Stop() {
+#ifdef EA_BUILD_A124
+    Csis::FX_Weather *pCsisRain = this->m_pCsisRain;
+    if (pCsisRain != nullptr) {
+        pCsisRain->SetRain_on_off(1);
+        this->bFadingOut = true;
+        this->m_fTimeLeftToFadeOut = 10.0f;
+        pCsisRain->CommitMemberData();
+    }
+#else
     if (this->m_pCsisRain != nullptr) {
         this->bFadingOut = true;
         this->m_fTimeLeftToFadeOut = 10.0f;
         this->m_pCsisRain->SetRain_on_off(1);
         this->m_pCsisRain->CommitMemberData();
     }
+#endif
 }
 
 void CARSFX_Rain::Destroy() {
@@ -70,7 +84,11 @@ void CARSFX_Rain::QueueWeatherStream() {
 
     int nweathertype = 0;
     if (Speech::Manager::GetSpeechModule(0)->DonePlaying() == true) {
+#ifdef EA_BUILD_A124
+        if (this->m_fWeatherIntensity < 0.5) {
+#else
         if (this->m_fWeatherIntensity < 0.5f) {
+#endif
             nweathertype = 1;
             // TODO aud_moment_strm::key_thunder_distant
             MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x016C4FA1).Send(UCrc32("MomentStrm"));
@@ -88,10 +106,16 @@ void CARSFX_Rain::UpdateParams(float t) {
     eView *view = eGetView(1, false);
     if (view != nullptr) {
         this->m_fPrevWeatherIntensity = this->m_fWeatherIntensity;
+#ifdef EA_BUILD_A124
+        this->m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
+#else
         this->m_fWeatherIntensity = (view->Precipitation != nullptr) ? view->Precipitation->GetRainIntensity() : 0.0f;
+#endif
+#ifndef EA_BUILD_A124
     } else {
         this->m_fPrevWeatherIntensity = 0.0f;
         this->m_fWeatherIntensity = 0.0f;
+#endif
     }
 
     if (0.01f < this->m_fWeatherIntensity) {

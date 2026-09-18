@@ -1,4 +1,5 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribHashMap.h"
 
 namespace Attrib {
 
@@ -18,6 +19,14 @@ Attribute::Attribute(const Instance &instance, const Collection *collection, Nod
     }
     if (mInstance) {
         mInstance->Lock();
+    }
+}
+
+// POSICION: el objetivo define ~Attribute aqui (attribute.cpp:35), entre el
+// constructor de tres argumentos y operator=, no al final de AttribSupport.cpp.
+Attribute::~Attribute() {
+    if (mInstance) {
+        mInstance->Unlock();
     }
 }
 

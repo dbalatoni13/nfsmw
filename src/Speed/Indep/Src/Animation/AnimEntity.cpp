@@ -7,7 +7,7 @@ IAnimEntity *CAnimEntityFactory::CreateAnimEntity(int anim_entity_type) {
         case eAnimEntityType_BasicCharacter:
             return new ("CBasicCharacterAnimEntity", 0) CBasicCharacterAnimEntity();
         case eAnimEntityType_Prop:
-            return new ("CPopAnimEntity", 0) CPropAnimEntity();
+            return new ("CPropAnimEntity", 0) CPropAnimEntity();
         case eAnimEntityType_None:
         default:
             return nullptr;

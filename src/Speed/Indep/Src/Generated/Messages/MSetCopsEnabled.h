@@ -20,6 +20,10 @@ class MSetCopsEnabled : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MSetCopsEnabled &message);
+
     MSetCopsEnabled(bool _CopsEnabled) : Hermes::Message(_GetKind(), _GetSize(), 0), fCopsEnabled(_CopsEnabled) {}
 
     ~MSetCopsEnabled() {}
@@ -35,5 +39,25 @@ class MSetCopsEnabled : public Hermes::Message {
   private:
     bool fCopsEnabled; // offset 0x10, size 0x1
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MSetCopsEnabled::HandleMessage_LuaBinding(const MSetCopsEnabled &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MSetCopsEnabled::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MSetCopsEnabled *message = static_cast<const MSetCopsEnabled *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "CopsEnabled");
+    lua_pushboolean(luaState, message->fCopsEnabled);
+    lua_settable(luaState, -3);
+}
 
 #endif

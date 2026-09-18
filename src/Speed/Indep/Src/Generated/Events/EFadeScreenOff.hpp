@@ -21,7 +21,7 @@ class EFadeScreenOff : public Event {
 
     ~EFadeScreenOff() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fDurationScript; // offset: 0x8, size 0x4

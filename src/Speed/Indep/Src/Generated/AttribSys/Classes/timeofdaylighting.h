@@ -35,7 +35,7 @@ struct timeofdaylighting : Instance {
     typedef UMath::Vector4 TypeOf_SpecularColour;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("timeofdaylighting");
+    USE_ATTRIB_ALLOC("Attrib::Gen::timeofdaylighting");
     timeofdaylighting(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -63,10 +63,10 @@ struct timeofdaylighting : Instance {
         return 0x399ed882;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x399ed882, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

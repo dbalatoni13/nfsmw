@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+class GRuntimeInstance;
+
 // total size: 0x10
 class ERequestEventInfoDialog : public Event {
   public:
@@ -22,7 +24,7 @@ class ERequestEventInfoDialog : public Event {
 
     ~ERequestEventInfoDialog() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fJoyPort;                    // offset: 0x8, size 0x4
@@ -30,5 +32,7 @@ class ERequestEventInfoDialog : public Event {
 };
 
 void ERequestEventInfoDialog_MakeEvent_Callback(const void *staticData);
+int ERequestEventInfoDialog_MakeEvent_LuaBinding(struct lua_State *L);
+void ERequestEventInfoDialog_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

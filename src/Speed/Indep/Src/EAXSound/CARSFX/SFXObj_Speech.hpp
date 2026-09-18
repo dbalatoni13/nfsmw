@@ -22,8 +22,8 @@ class SFXObj_Speech : public CARSFX {
     void AttachController(SFXCTL *psfxctl) override;
 
     SFXCTL_3DObjPos *m_pActorPos; // offset 0x28, size 0x4, Decl: 26
-    bVector3 fPosition;           // offset 0x2C, size 0x10, Decl: 27
-    bool bFresh;                  // offset 0x3C, size 0x1, Decl: 28
+    ALIGNVEC bVector3 fPosition;  // offset 0x2C, size 0x10, Decl: 27
+    bool bFresh;                  // offset 0x40, size 0x1, Decl: 28
     EAX_CarState *m_pClosestCar;  // offset 0x40, size 0x4, Decl: 29
 };
 

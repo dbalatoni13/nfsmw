@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Main/Event.h"
 
 // total size: 0x10
@@ -22,7 +23,7 @@ class EShowTimeExtension : public Event {
 
     ~EShowTimeExtension() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     IPlayer *fPlayer;  // offset: 0x8, size 0x4
@@ -30,5 +31,7 @@ class EShowTimeExtension : public Event {
 };
 
 void EShowTimeExtension_MakeEvent_Callback(const void *staticData);
+int EShowTimeExtension_MakeEvent_LuaBinding(struct lua_State *L);
+void EShowTimeExtension_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

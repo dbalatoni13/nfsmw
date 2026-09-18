@@ -20,6 +20,10 @@ class MNISComplete : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNISComplete &message);
+
     MNISComplete(const char *_NISName) : Hermes::Message(_GetKind(), _GetSize(), 0), fNISName(_NISName) {}
 
     ~MNISComplete() {}
@@ -35,5 +39,25 @@ class MNISComplete : public Hermes::Message {
   private:
     const char *fNISName; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNISComplete::HandleMessage_LuaBinding(const MNISComplete &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNISComplete::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MNISComplete *message = static_cast<const MNISComplete *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "NISName");
+    lua_pushstring(luaState, message->fNISName);
+    lua_settable(luaState, -3);
+}
 
 #endif

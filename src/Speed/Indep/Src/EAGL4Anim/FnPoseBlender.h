@@ -7,6 +7,7 @@
 
 #include "FnAnim.h"
 #include "Skeleton.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -28,7 +29,9 @@ class FnPoseBlender : public FnAnim {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -55,6 +58,14 @@ class FnPoseBlender : public FnAnim {
     bool GetResetBuffers(int i) const {}
 
     void Init(Skeleton *skel, float *poseBuffer0, float *poseBuffer1) {}
+
+    void LinearBlendF3(float w, bool anim0, float *pose0, bool anim1, float *pose1, float *out) {}
+
+    void QuatBlendF4(float w, bool anim0, float *pose0, bool anim1, float *pose1, float *out) {}
+
+    static void GetMaxXZProjectAxis(const EAGL4::Transform &mat, UMath::Vector4 &axis, int &whichAxis) {}
+
+    static void XZProjectAxis(const EAGL4::Transform &mat, UMath::Vector4 &axis, int whichAxis) {}
 
     static void BlendQ(int numBones, float w, const float *pose0, const float *pose1, float *result, const BoneMask *boneMask);
 
@@ -87,14 +98,6 @@ class FnPoseBlender : public FnAnim {
     static void XZProjectAlign(const EAGL4::Transform &from, const EAGL4::Transform &to, EAGL4::Transform &alignMat);
 
   private:
-    static void GetMaxXZProjectAxis(const EAGL4::Transform &mat, UMath::Vector4 &axis, int &whichAxis) {}
-
-    static void XZProjectAxis(const EAGL4::Transform &mat, UMath::Vector4 &axis, int whichAxis) {}
-
-    void LinearBlendF3(float w, bool anim0, float *pose0, bool anim1, float *pose1, float *out) {}
-
-    void QuatBlendF4(float w, bool anim0, float *pose0, bool anim1, float *pose1, float *out) {}
-
     Skeleton *mpSkel;              // offset 0xC, size 0x4
     float *mPose[2];               // offset 0x10, size 0x8
     FnAnim *mAnim[2];              // offset 0x18, size 0x8

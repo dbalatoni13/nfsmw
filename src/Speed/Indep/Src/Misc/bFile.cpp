@@ -3,6 +3,10 @@
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/systask.h"
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/threads.h"
+// Esta TU llama a las FILESYS_* con enlace C++ (FILESYS_close__FiiPv, ...), como
+// el original. Sin esto el header las declara extern "C" y los bl salen al
+// simbolo sin manglar, que en el ELF no existe.
+#define REALCORE_FILESYS_CXX_LINKAGE
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/filesys.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -19,7 +23,7 @@ static const int bFileSlowReadCount = 0;
 static const int DetectBusyLoopInServiceFileSystem = 0;
 
 // TODO move
-extern MUTEX bFileMutex;
+MUTEX bFileMutex;
 extern FileStats gFileStats;
 
 void bSyncTaskRun() {
@@ -658,7 +662,7 @@ bFile::~bFile() {
 }
 
 // TODO maybe higher
-inline void DetectMicropause(int start_tick, const char *text, const char *filename) {}
+inline void DetectMicropause(int start_tick, const char *filename) {}
 
 inline void CheckForFatalDiscError() {}
 
@@ -760,7 +764,7 @@ void bFile::ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *
         FILESYS_callbackop(fop, bFile::CallbackFunctionRead);
     }
     Position += num_bytes;
-    DetectMicropause(ticks, "%s - %s", Filename);
+    DetectMicropause(ticks, Filename);
 }
 
 void bFile::FlushWriteBuffer() {
@@ -861,7 +865,7 @@ void bInitFileSystem() {
     if (!bFileSlotPool) {
         MUTEX_create(&bFileMutex);
         unsigned int slot_size = 64;
-        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile", 0);
+        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile System", 0);
     }
 }
 
@@ -944,10 +948,10 @@ int bFileExists(const char *filename) {
     if (f) {
         int size = f->GetFileSize();
         bClose(f);
-        DetectMicropause(ticks, "%s - %s", "bFileExists()");
+        DetectMicropause(ticks, "bFileExists()");
         result = size + 1;
     }
-    DetectMicropause(ticks, "%s - %s", "bFileExists()");
+    DetectMicropause(ticks, "bFileExists()");
     return result;
 }
 

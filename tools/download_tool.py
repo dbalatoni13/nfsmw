@@ -53,6 +53,10 @@ def mips_binutils_url(tag):
 
 
 def compilers_url(tag: str) -> str:
+    return f"https://github.com/dbalatoni13/compilers/releases/download/compilers_{tag}/compilers_{tag}.zip"
+
+
+def msvc_url(tag: str) -> str:
     return f"https://files.decomp.dev/compilers_{tag}.zip"
 
 
@@ -70,6 +74,22 @@ def dtk_url(tag: str) -> str:
 
     repo = "https://github.com/dbalatoni13/decomp-toolkit"
     return f"{repo}/releases/download/{tag}/dtk-{system}-{arch}{suffix}"
+
+
+def delink_url(tag: str) -> str:
+    uname = platform.uname()
+    suffix = ""
+    system = uname.system.lower()
+    if system == "darwin":
+        system = "macos"
+    elif system == "windows":
+        suffix = ".exe"
+    arch = uname.machine.lower()
+    if arch == "amd64":
+        arch = "x86_64"
+
+    repo = "https://github.com/dbalatoni13/delink"
+    return f"{repo}/releases/download/{tag}/delink-{system}-{arch}{suffix}"
 
 
 def objdiff_cli_url(tag: str) -> str:
@@ -110,6 +130,7 @@ TOOLS: Dict[str, Callable[[str], str]] = {
     "compilers": compilers_url,
     "dtk": dtk_url,
     "jeff": dtk_url,
+    "delink": delink_url,
     "objdiff-cli": objdiff_cli_url,
     "sjiswrap": sjiswrap_url,
     "wibo": wibo_url,
@@ -143,6 +164,15 @@ def main() -> None:
     url = TOOLS[args.tool](args.tag)
     output = Path(args.output)
 
+    # r79: nuestro, conservado al adoptar el de upstream. Permite que varios
+    # procesos usen la herramienta a la vez sin volver a bajarla.
+    if output.is_dir() and any(output.iterdir()):
+        print(f"{output} already present, skipping download")
+        st = os.stat(output)
+        os.utime(output, None)
+        os.chmod(output, st.st_mode | stat.S_IEXEC)
+        return
+
     print(f"Downloading {url} to {output}")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
@@ -165,12 +195,13 @@ def main() -> None:
         ) as response:
             download(url, response, output)
 
-    if args.tool == "compilers":
-        patch_toolchain = Path(__file__).with_name("patch-toolchain.py")
-        subprocess.run(
-            [sys.executable, str(patch_toolchain), "--all", str(output)],
-            check=True,
-        )
+    # Not needed now because we download our custom compilers.zip
+    # if args.tool == "compilers":
+    #     patch_toolchain = Path(__file__).with_name("patch-toolchain.py")
+    #     subprocess.run(
+    #         [sys.executable, str(patch_toolchain), "--all", str(output)],
+    #         check=True,
+    #     )
 
 
 if __name__ == "__main__":

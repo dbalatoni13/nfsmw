@@ -21,7 +21,7 @@ class EForceCarStop : public Event {
 
     ~EForceCarStop() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     int fStopInstantly; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class EForceCarStop : public Event {
 };
 
 void EForceCarStop_MakeEvent_Callback(const void *staticData);
+int EForceCarStop_MakeEvent_LuaBinding(struct lua_State *L);
+void EForceCarStop_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

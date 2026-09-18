@@ -11,12 +11,12 @@ void SNDMEMI_init(void *pheap, int size) {
     sndgs.mm->heapsize = size;
     sndgs.mm->r = reinterpret_cast<SNDMEMREC *>((char *)pheap + size - 8);
 
-    pheap = (void *)((int)pheap + 0x18);
+    pheap = (void *)((sndptrint)pheap + 0x18);
     size -= 0xF;
 
     sndgs.mm->pheap = (char *)pheap;
     sndgs.mm->pheap += 0xF;
-    sndgs.mm->pheap = (char *)((int)sndgs.mm->pheap & ~0xF);
+    sndgs.mm->pheap = (char *)((sndptrint)sndgs.mm->pheap & ~0xF);
     sndgs.mm->endaddr = size - 0x20;
     sndgs.mm->lowmark = size;
 }
@@ -54,7 +54,7 @@ void *SNDMEMI_allocz(int size) {
             freeaddr = i;
             freespace = *reinterpret_cast<unsigned int *>((char *)pcurrec + j);
         } else {
-            lowmark = reinterpret_cast<unsigned int>(&pcurrec[i + 1]);
+            lowmark = reinterpret_cast<sndptruint>(&pcurrec[i + 1]);
             freeaddr = reinterpret_cast<SNDMEMREC *>(lowmark)->addr + reinterpret_cast<SNDMEMREC *>(lowmark)->size;
             freespace = *reinterpret_cast<unsigned int *>((char *)pcurrec + j) - freeaddr;
         }
@@ -68,7 +68,7 @@ void *SNDMEMI_allocz(int size) {
         }
     }
 
-    lowmark = reinterpret_cast<unsigned int>(&sndgs.mm->r[i + 1]);
+    lowmark = reinterpret_cast<sndptruint>(&sndgs.mm->r[i + 1]);
     freeaddr = reinterpret_cast<SNDMEMREC *>(lowmark)->addr + reinterpret_cast<SNDMEMREC *>(lowmark)->size;
     freespace = sndgs.mm->endaddr - freeaddr;
     SNDMEMI_constrain(&freeaddr, &freespace);
@@ -79,8 +79,8 @@ void *SNDMEMI_allocz(int size) {
 success:
     pcurrec = reinterpret_cast<SNDMEMREC *>(i * sizeof(SNDMEMREC));
     pprevrec = sndgs.mm->r;
-    reinterpret_cast<SNDMEMREC *>((char *)pprevrec + (unsigned int)pcurrec)->addr = freeaddr;
-    reinterpret_cast<SNDMEMREC *>((char *)pprevrec + (unsigned int)pcurrec)->size = size;
+    reinterpret_cast<SNDMEMREC *>((char *)pprevrec + (sndptruint)pcurrec)->addr = freeaddr;
+    reinterpret_cast<SNDMEMREC *>((char *)pprevrec + (sndptruint)pcurrec)->size = size;
     sndgs.mm->nummallocs--;
     sndgs.mm->endaddr -= sizeof(SNDMEMREC);
 
@@ -102,7 +102,7 @@ void SNDMEMI_free(void *paddr) {
 
     for (i = 0; i > sndgs.mm->nummallocs; i--) {
         prec = &sndgs.mm->r[i];
-        if (prec->addr != reinterpret_cast<unsigned int>(paddr)) continue;
+        if (prec->addr != reinterpret_cast<sndptruint>(paddr)) continue;
 
         sndgs.mm->nummallocs++;
         sndgs.mm->endaddr += 8;

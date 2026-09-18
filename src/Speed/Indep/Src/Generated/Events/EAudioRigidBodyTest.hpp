@@ -19,7 +19,7 @@ class EAudioRigidBodyTest : public Event {
 
     ~EAudioRigidBodyTest() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EAudioRigidBodyTest_MakeEvent_Callback(const void *staticData);

@@ -1,0 +1,10 @@
+{
+  "n_strings": 181,
+  "n_with_function": 105,
+  "n_ref_rows_in_unmatched_units": 128,
+  "n_unmatched_functions_illuminated_asset": 0,
+  "n_unmatched_functions_illuminated_typed": 0,
+  "n_unmatched_functions_with_any_string": 1,
+  "top20_unmatched_functions_by_asset": [],
+  "out_csv": "c:\\Users\\jferr\\Desktop\\nfsdecompiled\\tools\\string_map.csv"
+}

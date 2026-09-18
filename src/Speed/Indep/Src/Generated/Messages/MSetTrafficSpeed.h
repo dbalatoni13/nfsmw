@@ -20,6 +20,10 @@ class MSetTrafficSpeed : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MSetTrafficSpeed &message);
+
     MSetTrafficSpeed(float _SpeedDefault, float _SpeedHighway, unsigned int _FixSpeed)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fSpeedDefault(_SpeedDefault), fSpeedHighway(_SpeedHighway), fFixSpeed(_FixSpeed) {}
 
@@ -54,5 +58,33 @@ class MSetTrafficSpeed : public Hermes::Message {
     float fSpeedHighway;    // offset 0x14, size 0x4
     unsigned int fFixSpeed; // offset 0x18, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MSetTrafficSpeed::HandleMessage_LuaBinding(const MSetTrafficSpeed &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MSetTrafficSpeed::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MSetTrafficSpeed *message = static_cast<const MSetTrafficSpeed *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "SpeedDefault");
+    lua_pushnumber(luaState, message->fSpeedDefault);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "SpeedHighway");
+    lua_pushnumber(luaState, message->fSpeedHighway);
+    lua_settable(luaState, -3);
+
+    lua_pushstring(luaState, "FixSpeed");
+    lua_pushnumber(luaState, message->fFixSpeed);
+    lua_settable(luaState, -3);
+}
 
 #endif

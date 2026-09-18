@@ -4,9 +4,12 @@
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
+// Esta cabecera NO usa WGridManagedDynamicElem: solo necesita WGridNodeElemTag.
+// Incluir WGridManagedDynamicElem.h aqui instanciaba _List_base<...>::clear en
+// toda TU que la incluyese (zGameplay, zMisc, zPhysics), robandoselo a zSim.
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
+#include "Speed/Indep/Src/World/Common/WGridNode.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
-#include "WGridManagedDynamicElem.h"
 #include "WTrigger.h"
 #include "WCollisionPack.h"
 #include "WCollision.h"

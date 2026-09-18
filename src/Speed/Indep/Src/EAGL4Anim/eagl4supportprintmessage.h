@@ -5,24 +5,6 @@
 #pragma once
 #endif
 
-// TODO is this here?
-enum PRINTCHANNEL {
-    PRINT_ALL = 0,
-    PRINT_REAL = 1,
-    PRINT_ALERT = 2,
-    PRINT_DEBUG = 3,
-    PRINT_STD = 4,
-    PRINT_SYSTEM = 5,
-    PRINT_CODEC = 6,
-    PRINT_MATH = 7,
-    PRINT_MEM = 8,
-    PRINT_FILE = 9,
-    PRINT_STREAM = 10,
-    PRINT_INPUT = 11,
-    PRINT_EAGLCORE = 12,
-    PRINT_EAGLANIM = 13,
-    PRINT_EAGLREND = 14,
-    PRINT_USER_CHANNEL = 32,
-};
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
 
 #endif

@@ -71,6 +71,8 @@ class GameFlowManager {
     GameFlowState CurrentGameFlowState; // offset 0x20, size 0x4
 };
 
+extern const char *LoadingBootName;
+
 extern GameFlowManager TheGameFlowManager; // size: 0x24
 
 inline bool IsGameFlowInFrontEnd() {
@@ -81,6 +83,14 @@ inline bool IsGameFlowInGame() {
     return TheGameFlowManager.IsInGame();
 }
 
+inline bool IsGameFlowLoadingGame() {
+    return TheGameFlowManager.IsLoading();
+}
+
+inline bool IsGameFlowPaused() {
+    return TheGameFlowManager.IsPaused();
+}
+
 inline void ResetCapturedLoadingTimes() {}
 
 inline void CaptureLoadingTime(const char *name) {}
@@ -88,7 +98,10 @@ inline void CaptureLoadingTime(const char *name) {}
 inline void PrintCapturedLoadingTime(const char *from_name, const char *display_name) {}
 
 void LoadGlobalAChunks();
+
+void Main_SkipFrame(int numToSkip);
 void LoadGlobalChunks();
+const char *GetLoadingScreenPackageName();
 void BootLoadingScreen();
 void UnloadFrontEndVault();
 void MaybeDoMemoryProfile();
@@ -100,14 +113,16 @@ void CheckLeakDetector(const char *debug_name);
 // total size: 0x20
 class RegionLoader {
   public:
+    RegionLoader() {
+        Phase = 0;
+    }
+
     void BeginLoading();
     void LoadHandler();
     void FinishedLoading();
     void Unload();
 
-    static void LoadHandler(intptr_t object) {
-        reinterpret_cast<RegionLoader *>(object)->LoadHandler();
-    }
+    static void LoadHandler(intptr_t object);
 
   private:
     int Phase;                                // offset 0x0, size 0x4
@@ -123,6 +138,10 @@ class RegionLoader {
 // total size: 0x4
 class TrackLoader {
   public:
+    TrackLoader() {
+        Phase = 0;
+    }
+
     void BeginLoading();
     void LoadHandler();
     void FinishedLoading();
@@ -133,6 +152,10 @@ class TrackLoader {
   private:
     int Phase; // offset 0x0, size 0x4
 };
+
+void EnableBarrierSceneryGroup(const char *group_name, bool flip_artwork);
+
+void RedoTopologyAndSceneryGroups();
 
 extern RegionLoader TheRegionLoader;
 extern TrackLoader TheTrackLoader;

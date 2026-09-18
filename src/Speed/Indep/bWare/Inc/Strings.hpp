@@ -86,6 +86,7 @@ int bStrNICmp(const char *s1, const char *s2, int n);
 int bStrICmp(const char *s1, const char *s2);
 const char *bAllocateSharedString(const char *s);
 void bFreeSharedString(const char *s);
+unsigned int bStringHashUpper(const char *text);
 unsigned int bStringHash(const char *text);
 unsigned int bStringHash(const char *text, int prefix_hash);
 int bStrToLong(const char *s);
@@ -93,15 +94,28 @@ float bStrToFloat(const char *s);
 int bStrLen(const char *s);
 int bStrLen(const unsigned short *s);
 char *bStrStr(const char *s1, const char *s2);
+// Definida en bWare/Src/Strings.cpp:440 y nunca declarada.
+char *bStrIStr(const char *s1, const char *s2);
 char *bStrCpy(char *to, const char *from);
 char *bStrCat(char *to, const char *from);
-char *bStrCat(char *dest, const char *src1, const char *src2);
+char *bStrCat(char *to, const char *s1, const char *s2);
 char *bStrCopy(char *to, const char *from);
+unsigned short *bStrCpy(unsigned short *to, const char *from);
+unsigned short *bStrCpy(unsigned short *to, const unsigned short *from);
 int bMatchNameWithWildcard(const char *wild, const char *string);
 
 inline char bToUpper(char c) {
     if (c >= 'a' && c <= 'z') {
         c &= 0x5f;
+    }
+    return c;
+}
+
+char *bToUpper(char *s);
+
+inline char bToLower(char c) {
+    if (c >= 'A' && c <= 'Z') {
+        c |= 0x20;
     }
     return c;
 }

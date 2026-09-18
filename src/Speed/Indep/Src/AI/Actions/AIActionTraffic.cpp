@@ -1,14 +1,23 @@
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Sim/Util.h"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed);
 
 // total size: 0x48
 class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision::IListener {
@@ -104,6 +113,11 @@ AIActionTraffic::~AIActionTraffic() {
     delete mDefaultPursuitLevelAttrib;
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionTraffic("AIActionTraffic", AIActionTraffic::Construct);
+
+float aAIStoppingDist[2] = {3.0f, 50.0f};
+Table aAIStoppingDistTable(aAIStoppingDist, 2, 0.0f, 80.0f);
+
 AIAction *AIActionTraffic::Construct(AIActionParams *params) {
     return new AIActionTraffic(params, 0.1f);
 }
@@ -126,7 +140,6 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
         switch (vehicle->GetDriverClass()) {
             // TODO
             case DRIVER_HUMAN:
-            case DRIVER_TRAFFIC:
             case DRIVER_COP:
             case DRIVER_RACER:
                 if (mIsTractor) {
@@ -137,11 +150,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
                     mAccidentTimer = 3.0f;
                 }
                 break;
-            case DRIVER_NONE:
-                break;
-            case DRIVER_NIS:
-                break;
-            case DRIVER_REMOTE:
+            default:
                 break;
         }
     }
@@ -199,6 +208,91 @@ void AIActionTraffic::BeginAction(float dT) {
 }
 
 void AIActionTraffic::FinishAction(float dT) {}
+
+float AIActionTraffic::ComputeSpeed(float current_speed, float dT) {
+    if (GetAI()->GetDriveToNav()->HitDeadEnd()) {
+        return 0.0f;
+    }
+
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(road_nav->GetSegmentInd());
+
+    bool is_cop = GetVehicle()->GetDriverClass() == DRIVER_COP;
+    const float posted_speed = roadNetwork.GetSegmentNumTrafficLanes(*segment) > 3 ? mTargetSpeedHighway : mTargetSpeedDefault;
+    float desired_speed = posted_speed;
+
+    if (!mFixedSpeed) {
+        float curvature = GetAI()->GetDriveToNav()->CookieTrailCurvature(mRigidBody->GetPosition(), mRigidBody->GetLinearVelocity());
+        float speed_limit = GetSpeedLimitForCurvature(is_cop ? 1.6f : 0.6f, curvature, posted_speed);
+        desired_speed = bMin(posted_speed, speed_limit);
+
+        if (road_nav->IsOccludedByAvoidable() != 0 && !road_nav->IsOccludedFromBehind()) {
+            float mass = mRigidBody->GetMass();
+            if (mIsTractor) {
+                mass += mass;
+            }
+
+            float my_length = mRigidBody->GetRadius();
+            my_length += my_length;
+            float dist_to_occlusion = UMath::Max(UMath::Distance(road_nav->GetApexPosition(), mRigidBody->GetPosition()) - my_length, 0.0f);
+
+            float stopping_distance = aAIStoppingDistTable.GetValue(current_speed * UMath::Max(mass * 0.0005f, 1.0f));
+
+            if (dist_to_occlusion < stopping_distance) {
+                desired_speed = bClamp(road_nav->GetOccludingTrailSpeed() * dist_to_occlusion / stopping_distance, 0.0f, desired_speed);
+                desired_speed = bMin(desired_speed, current_speed);
+            }
+        }
+    }
+
+    if (!is_cop) {
+        desired_speed = bMin(desired_speed, current_speed + (dT + dT));
+    }
+    return desired_speed;
+}
+
+void AIActionTraffic::UpdateNavPos(float lookAheadDistance) {
+    WRoadNav *nav_point = GetAI()->GetDriveToNav();
+
+    bool pull_over = nPullOverState != eNO_PULL_OVER;
+    if (!pull_over) {
+        if (!nav_point->HitDeadEnd()) {
+            UMath::Vector3 navPos = nav_point->GetPosition();
+            UMath::Vector3 carPosition = mRigidBody->GetPosition();
+            UMath::Vector3 carToNav;
+            UMath::Vector3 navForwardVector = nav_point->GetForwardVector();
+            UMath::Unit(navForwardVector);
+
+            UMath::Sub(navPos, carPosition, carToNav);
+            float length = UMath::Normalize(carToNav);
+            float distToNav = length * UMath::Dot(navForwardVector, carToNav);
+
+            UMath::Vector3 targetVec = UMath::Vector3::kZero;
+
+            AITarget *aitarget = GetAI()->GetTarget();
+            if (aitarget && aitarget->IsValid()) {
+                UMath::Vector3 targetPos = aitarget->GetPosition();
+                UMath::Sub(targetPos, carPosition, targetVec);
+                UMath::Normalize(targetVec);
+            }
+
+            if (distToNav < lookAheadDistance) {
+                nav_point->IncNavPosition(lookAheadDistance - distToNav, targetVec, lookAheadDistance);
+            }
+        }
+
+        nav_point->UpdateOccludedPosition(true);
+    }
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mNavMatrix);
+
+    UMath::Vector3 nav_direction = nav_point->GetForwardVector();
+    if (UMath::Normalize(nav_direction) > 1e-06f) {
+        mNavMatrix = Util_GenerateMatrix(nav_direction, nullptr);
+        mNavMatrix.v3 = UMath::Vector4Make(!pull_over ? nav_point->GetOccludedPosition() : nav_point->GetPosition(), 1.0f);
+    }
+}
 
 bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav) {
     return false;

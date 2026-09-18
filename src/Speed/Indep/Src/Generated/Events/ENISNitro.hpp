@@ -21,7 +21,7 @@ class ENISNitro : public Event {
 
     ~ENISNitro() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     unsigned int fOn; // offset: 0x8, size 0x4
@@ -30,5 +30,7 @@ class ENISNitro : public Event {
 };
 
 void ENISNitro_MakeEvent_Callback(const void *staticData);
+int ENISNitro_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISNitro_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

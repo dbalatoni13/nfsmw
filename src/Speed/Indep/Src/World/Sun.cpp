@@ -10,13 +10,14 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "TimeOfDay.hpp"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 
-SunChunkInfo *SunInfoTable;
-int NumSunInfo;
-SunChunkInfo *SunInfo;
+SunChunkInfo *SunInfoTable = 0;
+int NumSunInfo = 0;
+SunChunkInfo *SunInfo = 0;
 TextureInfo *SunTextures[5];
 bVector3 SunPosition;
-float WorldLightDirectionVector[4];
+extern float WorldLightDirectionVector[4];
 
 int LoaderSun(bChunk *chunk) {
     if (chunk->GetID() != BCHUNK_SUN_INFOS) {
@@ -98,11 +99,11 @@ int UnloaderSun(bChunk *chunk) {
 
 void SunTrackLoader(void) {
     SetCurrentSunInfo();
-    SunTextures[0] = GetTextureInfo(BINHASH(SUNCENTER), 1, 0);
-    SunTextures[1] = GetTextureInfo(BINHASH(SUNHALO), 1, 0);
-    SunTextures[2] = GetTextureInfo(BINHASH(SUNMAJORRAYS), 1, 0);
-    SunTextures[3] = GetTextureInfo(BINHASH(SUNMINORRAYS), 1, 0);
-    SunTextures[4] = GetTextureInfo(BINHASH(SUNRING), 1, 0);
+    SunTextures[0] = GetTextureInfo(STRINGHASH_SUNCENTER, 1, 0);
+    SunTextures[1] = GetTextureInfo(STRINGHASH_SUNHALO, 1, 0);
+    SunTextures[2] = GetTextureInfo(STRINGHASH_SUNMAJORRAYS, 1, 0);
+    SunTextures[3] = GetTextureInfo(STRINGHASH_SUNMINORRAYS, 1, 0);
+    SunTextures[4] = GetTextureInfo(STRINGHASH_SUNRING, 1, 0);
 }
 
 void SunTrackUnloader(void) {

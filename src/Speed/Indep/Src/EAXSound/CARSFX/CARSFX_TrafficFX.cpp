@@ -185,8 +185,9 @@ void CARSFX_TrafficHorn::UpdateParams(float t) {
                 }
             }
         }
-    } else if ((this->HornDuration + this->tHornBegin <= this->m_pStateBase->GetCurTime() || !this->SND_PlayingHonk) && !this->AIPlayingHonk) {
-        if (!this->IsEndingHonk) {
+    } else {
+        if (this->HornDuration + this->tHornBegin > this->m_pStateBase->GetCurTime() && this->SND_PlayingHonk) {
+        } else if (!this->AIPlayingHonk && !this->IsEndingHonk) {
             this->EndCarHonk();
         }
     }

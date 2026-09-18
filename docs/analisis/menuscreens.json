@@ -1,0 +1,226 @@
+{
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.cpp": {
+  "hunks": 4,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.cpp": {
+  "hunks": 31,
+  "aportan": 4
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feIconScrollerMenu.cpp": {
+  "hunks": 30,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.cpp": {
+  "hunks": 30,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.cpp": {
+  "hunks": 18,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPKg_PostRace.cpp": {
+  "hunks": 87,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp": {
+  "hunks": 16,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FEpkg_MU_Keyboard.cpp": {
+  "hunks": 26,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/FeBustedOverlay.hpp": {
+  "hunks": 1,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.cpp": {
+  "hunks": 23,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMS.cpp": {
+  "hunks": 10,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMSMessage.cpp": {
+  "hunks": 5,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.cpp": {
+  "hunks": 47,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.cpp": {
+  "hunks": 11,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.cpp": {
+  "hunks": 7,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.cpp": {
+  "hunks": 11,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.cpp": {
+  "hunks": 50,
+  "aportan": 5
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp": {
+  "hunks": 7,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.cpp": {
+  "hunks": 55,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.cpp": {
+  "hunks": 10,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.hpp": {
+  "hunks": 1,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerManager.cpp": {
+  "hunks": 2,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiInfractions.cpp": {
+  "hunks": 8,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiMarkerSelect.cpp": {
+  "hunks": 14,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetCTS.cpp": {
+  "hunks": 2,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetLogin.cpp": {
+  "hunks": 3,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetMain.cpp": {
+  "hunks": 3,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetPD.cpp": {
+  "hunks": 3,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRS.cpp": {
+  "hunks": 5,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRS.hpp": {
+  "hunks": 1,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRankingsDetail.cpp": {
+  "hunks": 8,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetTEP.cpp": {
+  "hunks": 11,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetUS.cpp": {
+  "hunks": 1,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetVD.cpp": {
+  "hunks": 3,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetBounty.cpp": {
+  "hunks": 15,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMain.cpp": {
+  "hunks": 16,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMilestones.cpp": {
+  "hunks": 12,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.cpp": {
+  "hunks": 238,
+  "aportan": 9
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.cpp": {
+  "hunks": 60,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/DebugCarCustomize.cpp": {
+  "hunks": 21,
+  "aportan": 7
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/MyCarsManager.cpp": {
+  "hunks": 16,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiCredits.cpp": {
+  "hunks": 5,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiEATraxJukebox.cpp": {
+  "hunks": 21,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsController.cpp": {
+  "hunks": 15,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.cpp": {
+  "hunks": 3,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsScreen.cpp": {
+  "hunks": 23,
+  "aportan": 8
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsTrailers.cpp": {
+  "hunks": 3,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.cpp": {
+  "hunks": 6,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.cpp": {
+  "hunks": 57,
+  "aportan": 8
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRChallengeSeries.cpp": {
+  "hunks": 12,
+  "aportan": 3
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.cpp": {
+  "hunks": 7,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.cpp": {
+  "hunks": 6,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRPressStart.cpp": {
+  "hunks": 7,
+  "aportan": 1
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackOptions.cpp": {
+  "hunks": 20,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.cpp": {
+  "hunks": 20,
+  "aportan": 2
+ },
+ "src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.cpp": {
+  "hunks": 12,
+  "aportan": 3
+ }
+}

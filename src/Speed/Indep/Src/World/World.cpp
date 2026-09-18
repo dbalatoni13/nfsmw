@@ -16,7 +16,6 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
-#include "Speed/Indep/Src/Animation/AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
@@ -188,41 +187,41 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
     const char *regionName = TrackInfo::GetLoadedTrackInfo()->RegionName;
     float rotInitialVec = 0.0f;
 
-    if (strcasecmp(regionName, "L2RA") == 0) {
+    if (stricmp(regionName, "L2RA") == 0) {
         startLoc.x = -2510.0f;
         startLoc.y = 151.0f;
         startLoc.z = 1767.0f;
         rotInitialVec = 0.15f;
-    } else if (strcasecmp(regionName, "L2RB") == 0) {
+    } else if (stricmp(regionName, "L2RB") == 0) {
         startLoc.x = 0.0f;
         startLoc.y = 21.0f;
         startLoc.z = 0.0f;
-    } else if (strcasecmp(regionName, "L2RC") == 0) {
+    } else if (stricmp(regionName, "L2RC") == 0) {
         startLoc.x = 0.0f;
         startLoc.y = 21.0f;
         startLoc.z = 0.0f;
-    } else if (strcasecmp(regionName, "L2RD") == 0) {
+    } else if (stricmp(regionName, "L2RD") == 0) {
         startLoc.x = 16.0f;
         startLoc.y = 457.0f;
         startLoc.z = 43.0f;
         rotInitialVec = 0.63f;
-    } else if (strcasecmp(regionName, "L2RE") == 0) {
+    } else if (stricmp(regionName, "L2RE") == 0) {
         startLoc.x = 16.0f;
         startLoc.y = 457.0f;
         startLoc.z = 43.0f;
-    } else if (strcasecmp(regionName, "L2RG") == 0) {
+    } else if (stricmp(regionName, "L2RG") == 0) {
         startLoc.x = 2036.0f;
         startLoc.y = 70.0f;
         startLoc.z = -2010.0f;
-    } else if (strcasecmp(regionName, "L4RA") == 0) {
+    } else if (stricmp(regionName, "L4RA") == 0) {
         startLoc.x = 30.0f;
         startLoc.y = 20.0f;
         startLoc.z = 40.0f;
-    } else if (strcasecmp(regionName, "L5RD") == 0) {
+    } else if (stricmp(regionName, "L5RD") == 0) {
         startLoc.x = -20.0f;
         startLoc.y = 2.0f;
         startLoc.z = 100.0f;
-    } else if (strcasecmp(regionName, "L2RX") == 0) {
+    } else if (stricmp(regionName, "L2RX") == 0) {
         startLoc.x = -2510.0f;
         startLoc.y = 151.0f;
         startLoc.z = 1773.0f;
@@ -232,9 +231,9 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
     initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
 
     if (rotInitialVec != 0.0f) {
-        UMath::Matrix4 rotMat;
+        UMath::Matrix4 rotMat = UMath::Matrix4::kIdentity;
 
-        UMath::MultYRot(UMath::Matrix4::kIdentity, rotInitialVec, rotMat);
+        UMath::MultYRot(rotMat, rotInitialVec, rotMat);
         UMath::Rotate(initialVec, rotMat, initialVec);
     }
 
@@ -255,9 +254,8 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
 }
 
 static void HideNonRaceSmackable(IModel *model) {
-    ISceneryModel *scenery = (ISceneryModel *)model;
-
-    if (scenery->QueryInterface(&scenery)) {
+    ISceneryModel *scenery;
+    if (model->QueryInterface(&scenery)) {
         if (scenery->IsExcluded(4)) {
             model->ReleaseModel();
         }
@@ -275,8 +273,8 @@ void World_RestoreProps() {
 
     for (IExplosion::List::const_iterator e = IExplosion::GetList().begin(); e != IExplosion::GetList().end(); e++) {
         IExplosion *explosion = *e;
-        ISimable *isimable = (ISimable *)explosion;
-        if (isimable->QueryInterface(&isimable)) {
+        ISimable *isimable;
+        if (explosion->QueryInterface(&isimable)) {
             isimable->Kill();
         }
     }
@@ -288,6 +286,7 @@ void World_RestoreProps() {
 #ifndef EA_BUILD_A124
     GManager::Get().RestorePursuitBreakerIcons(-1);
 #endif
+    void ResetWorldAnimations();
     ResetWorldAnimations();
     ResetPropTimers();
 }
@@ -304,6 +303,8 @@ void World_Service() {
     }
 
     UglyTimestepHack = 0.0f;
+
+    void ServiceSpaceNodes();
     ServiceSpaceNodes();
     TheTrackStreamer.ServiceGameState();
 
@@ -317,6 +318,9 @@ void World_Service() {
 static void World_Init() {
     ResetWorldTime();
     TheICEManager.Resolve();
+
+    // Decl: 736
+    void EstablishRemoteCaffeineConnection();
     EstablishRemoteCaffeineConnection();
     TrackPathInitRemoteCaffeineConnection();
     InitCarEffects();

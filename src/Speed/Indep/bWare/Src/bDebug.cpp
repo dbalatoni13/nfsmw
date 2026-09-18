@@ -19,17 +19,17 @@ void bFigureOutPSX2Platform();
 int EnableReleasePrintf = false;
 bool (*UserPutStringFunction)(int, const char *) = nullptr;
 bool InUserPutStringFunction = false;
+void (*SendPacketFunction)(struct bFunkPacketHeader *, const void *, int) = 0;
+void (*ServiceMonitorFunction)() = 0;
 
 #ifdef EA_PLATFORM_PLAYSTATION2
 static int NextNewFileCheckerID = 1;
 int NewFileCheckResult = 0;
-// void (*SendPacketFunction)(/* parameters unknown */);
-// void (*ServiceMonitorFunction)(/* parameters unknown */);
 // bList bFunkServerList;
 int bSuperBenderConnected = false;
 #endif
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 float bCodeineVersion = 0.0f;
 #endif
 

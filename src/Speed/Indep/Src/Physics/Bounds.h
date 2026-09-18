@@ -6,7 +6,13 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+
+DECLARE_CONTAINER_TYPE(CollisionBoundsTable);
 
 namespace CollisionGeometry {
 
@@ -35,6 +41,12 @@ struct _V3c {
         to.z = static_cast<float>(z) / COLLISION_GEOM_VECTOR_PRESSICION;
     }
 
+    void EndianSwap() {
+        bPlatEndianSwap(&x);
+        bPlatEndianSwap(&y);
+        bPlatEndianSwap(&z);
+    }
+
   private:
     int16 x; // offset 0x0, size 0x2
     int16 y; // offset 0x2, size 0x2
@@ -48,6 +60,13 @@ struct _Q4c {
         to.y = static_cast<float>(this->y) / COLLISION_GEOM_QUAT_PRECISION;
         to.z = static_cast<float>(this->z) / COLLISION_GEOM_QUAT_PRECISION;
         to.w = static_cast<float>(this->w) / COLLISION_GEOM_QUAT_PRECISION;
+    }
+
+    void EndianSwap() {
+        bPlatEndianSwap(&x);
+        bPlatEndianSwap(&y);
+        bPlatEndianSwap(&z);
+        bPlatEndianSwap(&w);
     }
 
   private:
@@ -76,6 +95,18 @@ struct Bounds {
 
     void GetOrientation(UMath::Vector4 &to) const {
         this->fOrientation.Decompress(to);
+    }
+
+    void GetPosition(UMath::Vector3 &to) const {
+        fPosition.Decompress(to);
+    }
+
+    void GetTransform(UMath::Matrix4 &matrix) const {
+        UMath::Vector4 orientation;
+
+        GetOrientation(orientation);
+        UMath::QuaternionToMatrix4(orientation, matrix);
+        GetPosition(UMath::Vector4To3(matrix.v3));
     }
 
     void GetPivot(UMath::Vector3 &to) const {
@@ -115,21 +146,34 @@ class IBoundable : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IBoundable);
 
-    virtual const CollisionGeometry::Bounds *GetGeometryNode() const;
+    virtual const CollisionGeometry::Bounds *GetGeometryNode() const = 0;
     virtual bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset, const SimSurface &material,
-                                       const UMath::Vector4 &orient, CollisionGeometry::BoundFlags boundFlags);
+                                       const UMath::Vector4 &orient, CollisionGeometry::BoundFlags boundFlags) = 0;
     virtual bool AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const SimSurface &material,
-                                  CollisionGeometry::BoundFlags flags, bool persistant);
+                                  CollisionGeometry::BoundFlags flags, bool persistant) = 0;
 };
 
 // total size: 0x10
 struct Collection : public BoundsHeader {
+    inline Bounds *const BoundsList() const {
+        return (Bounds *)(this + 1);
+    }
+
+    inline PCloudHeader *GetPointClouds() const {
+        return (PCloudHeader *)(BoundsList() + fNumBounds);
+    }
+
     Bounds *const GetRoot() const;
     const Bounds *GetChild(const Bounds *parent, unsigned int idx) const;
     const Bounds *GetChild(const Bounds *parent, UCrc32 name) const;
 
+    const PCloud *GetPointCloud(const Bounds *parent) const;
     Bounds *const GetBounds(UCrc32 hash_name) const;
+    void Init();
     bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
+
+  private:
+    bool AddNode(IBoundable *irbc, const Bounds *node, const SimSurface &defsurface, bool parsechildren) const;
 };
 
 inline const Bounds *Bounds::GetChild(unsigned int idx) const {

@@ -29,7 +29,9 @@ class SndCamera {
     static bVector2 *GetWorldCamPos(int nPlayer) {
         return &m_WorldCamPos[nPlayer];
     } // Decl: 30
-    static bVector2 *GetAvgCamDir(int nPlayer) {} // Decl: 31
+    static bVector2 *GetAvgCamDir(int nPlayer) {
+        return &m_AvergeCamDir[nPlayer];
+    } // Decl: 31
     static bVector2 *GetWorldCarPos(int nPlayer) {
         return &m_WorldCarPos[nPlayer];
     } // Decl: 32
@@ -47,7 +49,9 @@ class SndCamera {
     static bVector3 *GetV3WorldCarVel(int nPlayer) {
         return &m_v3WorldCarVel[nPlayer];
     } // Decl: 38
-    static bVector3 *GetWorldCamVel(int nPlayer) {} // Decl: 39
+    static bVector3 *GetWorldCamVel(int nPlayer) {
+        return &m_v3WorldCamVel[nPlayer];
+    } // Decl: 39
     static eCamStates GetCurCamState(int nPlayer) {
         return m_CurCamState[nPlayer];
     } // Decl: 40
@@ -55,7 +59,9 @@ class SndCamera {
         return m_PrevCamState[nPlayer];
     } // Decl: 41
 
-    static bVector3 *GetNormCarDir3(int nPlayer) {} // Decl: 44
+    static bVector3 *GetNormCarDir3(int nPlayer) {
+        return &m_v3WorldCarDir[nPlayer];
+    } // Decl: 44
     static bVector3 *GetWorldCarPos3(int nPlayer) {
         return &m_v3WorldCarPos[nPlayer];
     } // Decl: 45

@@ -19,9 +19,11 @@ class EDDaySpeech : public Event {
 
     ~EDDaySpeech() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 };
 
 void EDDaySpeech_MakeEvent_Callback(const void *staticData);
+int EDDaySpeech_MakeEvent_LuaBinding(struct lua_State *L);
+void EDDaySpeech_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

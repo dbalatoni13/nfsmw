@@ -5,11 +5,18 @@
 
 template <typename T, int N> struct BitArray {
     static const int kBitsPerWord = sizeof(T) * 8; // TODO this doesn't exist
+    static const int kNumWords = (N + kBitsPerWord - 1) / kBitsPerWord;
     T Words[(N + kBitsPerWord - 1) / kBitsPerWord];
 
     BitArray() {
         for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = 0;
+        }
+    }
+
+    BitArray(const BitArray &src) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+            Words[i] = src.Words[i];
         }
     }
 
@@ -42,9 +49,18 @@ template <typename T, int N> struct BitArray {
     }
 
     void Clear() {
-        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = 0;
         }
+    }
+
+    bool AnySet() const {
+        for (int i = 0; i < kNumWords; i++) {
+            if (Words[i] != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 };
 

@@ -16,7 +16,7 @@ struct visuallooktransition : Instance {
     typedef EA::Reflection::Float TypeOf_uves_pulse_trigger;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("visuallooktransition");
+    USE_ATTRIB_ALLOC("Attrib::Gen::visuallooktransition");
     visuallooktransition(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
     visuallooktransition(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
@@ -34,10 +34,10 @@ struct visuallooktransition : Instance {
         return 0x0f409aa6;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0x0f409aa6, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

@@ -68,3 +68,6 @@ void CloseService(HSIMSERVICE hservice) {
 }
 
 }; // namespace Sim
+
+template <>
+UTL::COM::Factory<Sim::Packet *, int, UCrc32>::Prototype *UTL::COM::Factory<Sim::Packet *, int, UCrc32>::Prototype::mHead = NULL;

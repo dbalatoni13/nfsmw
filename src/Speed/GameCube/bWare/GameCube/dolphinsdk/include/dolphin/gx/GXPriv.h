@@ -561,12 +561,12 @@ typedef struct __GXData_struct {
   u32 dirtyState;
 } GXData;
 
-extern GXData* gx;
+extern GXData* __GXData;
 extern u16 *__memReg;
 extern u16 *__peReg;
 extern u16 *__cpReg;
 extern u32 *__piReg;
-// #define gx __GXData
+#define gx __GXData
 
 /* GXMisc.c */
 

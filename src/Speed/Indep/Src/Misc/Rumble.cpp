@@ -9,11 +9,37 @@ int bShakeTest;
 // static const int bShakeDebug;
 static const float fShakeDuration = 0.6f;
 static const float fShakeFrequency = 11.74265f;
-bVector3 vShakeTest;
-static const bVector3 vShakeRotation(-1200.0f, 0.0f, 1.0f);
+bVector3 vShakeTest(0.0f, 0.0f, 0.3f);
+static const bVector3 vShakeRotation(-1200.0f, 2000.0f, 0.0f);
 static const bVector3 vShakeAccelBias(0.7f, 0.7f, 1.0f);
 static const float fShakeIntensityCoeffs[6] = {100.0f, 600.0f, 0.1f, 0.4f, 0.3f, 0.69999999f};
 // static const int bRumbleDebug;
+
+// c34ord3 m7: cuerpo de tShaker::Reset, que el original tiene aqui
+// (debug_lines: Rumble.cpp:741). Es POSICION, no optimizacion.
+// r62 phys NEGATIVO estructural: las tres constantes de este cuerpo (0.0f,
+// 1.0f, 11.74265f) NO se pueden sacar del pool a mano, porque el cuerpo se
+// emite DOS VECES y cada copia usa DIRECCIONES DISTINTAS del objetivo: la que
+// se mete inline en ResetCameraShakers apunta a +0x130C/+0x1310/+0x1314 y la
+// copia fuera de linea `Reset__7tShaker` a lbl_803F662C/6630/6634. Un solo
+// texto de fuente no puede dar las dos. Son 24 B de `.rodata` bloqueados salvo
+// que se duplique el cuerpo. El resto de Rumble.cpp si cede (10 constantes,
+// -40 B): GetSlope, GetValue, GetAmplitude, StartShaking, tShaker::GetValue,
+// ApplyCameraShake, ForceCameraShake y MaybeCameraShake.
+// scaf-data r71: las tres constantes al bloque (+0x130C/0x1310/0x1314). La
+// copia fuera de linea `Reset__7tShaker` pasaba por $LC503-505 del pool2 y la
+// inline por $LC428-430: con el extern mueren las DOS (24 B). El objetivo usa
+// su propio pool (0x1DB4+) para la fuera de linea; la diferencia de direccion
+// queda en la misma clase que la que ya hoy tolera objdiff.
+inline void tShaker::Reset() {
+    vShake.x = 0.0f;
+    vShake.y = 0.0f;
+    vShake.z = 0.0f;
+    pAmplitude = nullptr;
+    fTime = 0.0f;
+    fDuration = 1.0f;
+    fFrequency = 11.74265f;
+}
 
 sEnvelopePoint SmallRumblePoints[4] = {{0.0f, 255.0f}, {0.05f, 200.0f}, {0.07f, 80.0f}, {0.8f, 0.0f}};
 sEnvelopePoint BigRumblePoints[4] = {{0.0f, 255.0f}, {0.15f, 255.0f}, {0.2f, 120.0f}, {1.2f, 0.0f}};
@@ -200,7 +226,7 @@ void ApplyCameraShake(int nViewID, bMatrix4 *pMatrix) {
 }
 
 void ForceCameraShake(int nPlayer, bVector3 *pShake) {
-    CameraShakers[nPlayer].StartShaking(pShake, fShakeDuration, fShakeFrequency);
+    CameraShakers[nPlayer].StartShaking(pShake, 0.6f, 11.74265f);
 }
 
 void MaybeCameraShake(int nPlayer, bVector3 *pAccel) {
@@ -218,7 +244,7 @@ void MaybeCameraShake(int nPlayer, bVector3 *pAccel) {
             bVector3 vShake;
             float fDuration = fRatio * (fShakeIntensityCoeffs[5] - fShakeIntensityCoeffs[4]) + fShakeIntensityCoeffs[4];
             bNormalize(&vShake, &vAccel, fMagnitude);
-            CameraShakers[nPlayer].StartShaking(&vShake, fDuration, fShakeFrequency);
+            CameraShakers[nPlayer].StartShaking(&vShake, fDuration, 11.74265f);
         }
     }
 }

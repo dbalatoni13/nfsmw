@@ -20,6 +20,10 @@ class MNotifyRaceTimeSecTick : public Hermes::Message {
         return k;
     }
 
+    static void BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase);
+
+    static void HandleMessage_LuaBinding(const MNotifyRaceTimeSecTick &message);
+
     MNotifyRaceTimeSecTick(float _TimeElapsed) : Hermes::Message(_GetKind(), _GetSize(), 0), fTimeElapsed(_TimeElapsed) {}
 
     ~MNotifyRaceTimeSecTick() {}
@@ -35,5 +39,25 @@ class MNotifyRaceTimeSecTick : public Hermes::Message {
   private:
     float fTimeElapsed; // offset 0x10, size 0x4
 };
+
+
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
+
+inline void MNotifyRaceTimeSecTick::HandleMessage_LuaBinding(const MNotifyRaceTimeSecTick &message) {
+    LuaMessageDeliveryInfo info(_GetKind(), &message, BuildMessageTable);
+
+    LuaPostOffice::Get().RouteMessage(&info);
+}
+
+inline void MNotifyRaceTimeSecTick::BuildMessageTable(lua_State *luaState, const Hermes::Message *messageBase) {
+    const MNotifyRaceTimeSecTick *message = static_cast<const MNotifyRaceTimeSecTick *>(messageBase);
+
+    lua_newtable(luaState);
+
+    lua_pushstring(luaState, "TimeElapsed");
+    lua_pushnumber(luaState, message->fTimeElapsed);
+    lua_settable(luaState, -3);
+}
 
 #endif

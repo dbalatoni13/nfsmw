@@ -55,7 +55,7 @@ struct shiftpattern : Instance {
     typedef EA::Reflection::UInt32 TypeOf_Up_Vol_Shift;
 
     static Key ClassKey();
-    USE_ATTRIB_ALLOC("shiftpattern");
+    USE_ATTRIB_ALLOC("Attrib::Gen::shiftpattern");
     shiftpattern(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
@@ -83,10 +83,10 @@ struct shiftpattern : Instance {
         return 0xdb01b754;
     }
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
-        ModifyInternal(0xdb01b754, dynamicCollectionKey, spaceForAdditionalAttributes);
+        ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
     }
     Key GenerateUniqueKey(const char *name, bool registerName) const {
-        return GenerateUniqueKey(name, registerName);
+        return GUKeyInternal(ClassKey(), name, registerName);
     }
     void Change(const Collection *c) {
         Instance::Change(c);

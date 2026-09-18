@@ -5,6 +5,8 @@
 #define NO_SKILL_LEVEL -1
 #define PLAYER_SKILL_LEVEL -2
 
+void GPS_Disengage();
+
 enum eTrafficDensity {
     eTRAFFICDENSITY_OFF = 0,
     eTRAFFICDENSITY_LOW = 1,

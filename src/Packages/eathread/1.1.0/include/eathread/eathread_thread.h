@@ -5,10 +5,10 @@
 #include "eathread/powerpc/eathread_atomic_powerpc.h"
 #include "types.h"
 
-typedef unsigned long long ThreadId;
-
 namespace EA {
 namespace Thread {
+
+typedef OSThread *ThreadId;
 
 struct EAThreadDynamicData {
     EAThreadDynamicData() ; // Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:74

@@ -66,7 +66,9 @@ inline int FLOAT2INT(float f) {
     return static_cast<int>(f);
 }
 
-inline int FloatAsInt(const float &f) {}
+inline int FloatAsInt(const float &f) {
+    return *reinterpret_cast<const int *>(&f);
+}
 
 #define XBOX_USE_CPU 0     // Decl: 113
 #define GAMECUBE_USE_CPU 0 // Decl: 114
@@ -83,6 +85,7 @@ inline float IntAsFloat(const int &i) {
 inline int FloatSignBit(const float &f) {}
 
 inline float FloatAbs(const float &f) {}
+
 
 static const int kFloatOneAsInt = 0x3F800000;              // Decl: Carbon: 166
 static const float kFloatScaleUp = IntAsFloat(0x00800000); // Decl: Carbon: 167
@@ -186,6 +189,54 @@ class UTransform {
 
   private:
     static const UTransform fgIdentityTransform; // size: 0x40, address: 0x80473E24
+};
+
+// total size: 0x10
+class USphere {
+  public:
+    USphere() {}
+
+    USphere(float x, float y, float z, float r) {
+        fPosition.x = x;
+        fPosition.y = y;
+        fPosition.z = z;
+        fRadius = r;
+    }
+
+    USphere(const UMath::Vector3 &p, float r) {
+        fPosition = p;
+        fRadius = r;
+    }
+
+    USphere(const UMath::Vector4 &p, float r) {
+        fPosition.x = p.x;
+        fPosition.y = p.y;
+        fPosition.z = p.z;
+        fRadius = r;
+    }
+
+    USphere(const UMath::Vector4 &s) {
+        fPosition.x = s.x;
+        fPosition.y = s.y;
+        fPosition.z = s.z;
+        fRadius = s.w;
+    }
+
+    const USphere &operator=(const USphere &s) {
+        fPosition = s.fPosition;
+        fRadius = s.fRadius;
+        return *this;
+    }
+
+    static const USphere &Null() {
+        return fgNullSphere;
+    }
+
+    UMath::Vector3 fPosition; // offset 0x0, size 0xC
+    float fRadius;            // offset 0xC, size 0x4
+
+  private:
+    static const USphere fgNullSphere; // size: 0x10, address: 0x80473E64
 };
 
 // Decl: Carbon: 346, GC MW: 426
@@ -295,12 +346,17 @@ void VU0_v4scalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vec
 void VU0_v4add(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+float VU0_v4dotprod(const UMath::Vector4 &a, const UMath::Vector4 &b);
+void VU0_v4addscale(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result);
+void VU0_v4addscalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result);
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest);
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest);
 
 void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::Vector3 &result);
+void VU0_v3quatrotate_xlate(const UMath::Vector4 &q, const UMath::Vector3 &v, const UMath::Vector3 &t, UMath::Vector3 &result);
 
 void VU0_m4toquat(const UMath::Matrix4 &mat, UMath::Vector4 &result);
 void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
@@ -319,6 +375,11 @@ void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath:
 // Decl: Carbon: 789, GC MW: 868
 inline float VU0_ASin(float x) {
     return asinf(x) / (float)M_TWOPI;
+}
+
+// Decl: Carbon: ~794, GC MW: 873
+inline float VU0_ACos(float x) {
+    return acosf(x) / (float)M_TWOPI;
 }
 
 // Decl: Carbon: 800, GC MW: 878

@@ -24,7 +24,7 @@ class ENISNukeSmack : public Event {
 
     ~ENISNukeSmack() override;
 
-    const char *GetEventName() override;
+    const char *GetEventName() const override;
 
   private:
     float fPositionX; // offset: 0x8, size 0x4
@@ -34,5 +34,7 @@ class ENISNukeSmack : public Event {
 };
 
 void ENISNukeSmack_MakeEvent_Callback(const void *staticData);
+int ENISNukeSmack_MakeEvent_LuaBinding(struct lua_State *L);
+void ENISNukeSmack_ResolveEvent_Callback(void *event, const struct UGroup *group);
 
 #endif

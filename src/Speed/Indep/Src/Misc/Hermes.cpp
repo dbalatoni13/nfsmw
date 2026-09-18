@@ -48,7 +48,7 @@ void PortMessage::HandleMessage(Message *msg) {
 }
 
 void System::Init() {
-    mObj = new ("TODO", __LINE__) System();
+    mObj = new ("Hermes::System", __LINE__) System();
 }
 
 uint64_t System::CreateKey(UCrc32 port, UCrc32 messageID) {
@@ -104,7 +104,7 @@ HHANDLER Handler::_AddToPort(UCrc32 port) {
         uint64_t key = System::Get().CreateKey(port, mKind);
         PortMessage *pm = System::Get().FindPortMessage(key);
         if (!pm) {
-            pm = new ("TODO") PortMessage();
+            pm = new ("Hermes PortMessage") PortMessage();
             System::Get().AddPortMessage(key, pm);
         }
         PortKey pk;

@@ -13,6 +13,8 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 
 // total size: 0x74
+struct SimpleRigidBodyInit;
+
 class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, public bTNode<SimpleRigidBody>, public Debugable {
   public:
     // total size: 0x40
@@ -235,6 +237,8 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     static SimCollisionMap mCollisionMap[Sim::MaxSimpleBodies];
     static SimpleRigidBody *mMaps[Sim::MaxSimpleBodies];
     static unsigned int mCount;
+
+    friend struct SimpleRigidBodyInit;
 
     ScratchPtr<Volatile> mData; // offset 0x70, size 0x4
 };
