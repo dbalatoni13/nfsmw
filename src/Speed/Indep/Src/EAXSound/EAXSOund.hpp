@@ -686,8 +686,6 @@ void InitializeSoundDriver();
 
 bool g_EAXIsPaused(void);
 
-void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
-
 void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
 
 void FESoundControl(bool bOn, const char *name);

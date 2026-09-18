@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -134,6 +136,8 @@ PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
     mSlowdownTimer = RealTimer;
 
     CameraAI::StartCinematicSlowdown(EVIEW_PLAYER1, 0.75f);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_FADEOUT, "CinemSlow");
     new EMomentStrm(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, 0x9FE1EE17);
 }
@@ -148,6 +152,8 @@ PhotoFinishScreen::~PhotoFinishScreen() {
 
     TheICEManager.SetGenericCameraToPlay("", "");
     new ESndGameState(7, false);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(false, SNDSTATE_PAUSE, "PhotoFin");
     mActive = false;
 }
@@ -156,13 +162,13 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
     switch (msg) {
         case __PAD_ACCEPT__:
             if (fResultType == FERESULTTYPE_SPEEDTRAP) {
-                extern int foo; // TODO: idk
-
                 new EUnPause();
                 new EAutoSave();
 
-                MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
+                MFlowReadyForOutro().Post(UCrc32(UCRC32_Gameplay));
                 SoundPause(false, eSNDPAUSE_PHOTOFINISH);
+
+                void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
                 SetSoundControlState(false, SNDSTATE_STOP_MUSIC, "PhotoFinish");
                 return;
             }
@@ -199,7 +205,7 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
                     } else if (num_unfinished_races == 1) {
                         cFEng::Get()->QueuePackagePop(1);
 
-                        MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
+                        MFlowReadyForOutro().Post(UCrc32(UCRC32_Gameplay));
                         return;
                     }
 
@@ -210,7 +216,7 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
 
                 new EUnPause();
 
-                MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
+                MFlowReadyForOutro().Post(UCrc32(UCRC32_Gameplay));
                 return;
             }
 
@@ -241,7 +247,6 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
             new EUnPause();
             return;
         case FEMSG_SCREEN_TICK: {
-
             if ((mSlowdownTimer.IsSet() != 0) && (RealTimer - mSlowdownTimer).GetSeconds() >= 0.75f) {
                 mSlowdownTimer.UnSet();
                 mIceCamTimer = RealTimer;
@@ -261,8 +266,6 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
             }
 
             if ((mIceCamTimer.IsSet() != 0) && (RealTimer - mIceCamTimer).GetSeconds() >= 0.75f) {
-                extern ICEManager TheICEManager; // TODO: /shrug
-
                 mIceCamTimer.UnSet();
 
                 if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x0013C37B)) {
@@ -297,6 +300,8 @@ void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
 
                 new ESndGameState(7, true);
                 SoundPause(true, eSNDPAUSE_PHOTOFINISH);
+
+                void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
                 SetSoundControlState(false, SNDSTATE_FADEOUT, "CinemSlow");
                 SetSoundControlState(true, SNDSTATE_PAUSE, "PhotoFinish");
             }

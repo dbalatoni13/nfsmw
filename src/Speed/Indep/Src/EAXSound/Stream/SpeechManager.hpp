@@ -10,6 +10,13 @@
 
 namespace Speech {
 
+// total size: 0xC
+// Decl: 45
+class SPCHEventList : public UTL::Std::list<SPCHType_1_EventID, _type_list>, public AudioMemBase {
+  public:
+    SPCHEventList() {}
+};
+
 // total size: 0x854
 // Decl: 52
 struct SpeechHashIDMap : public UTL::FixedVector<Speech::SpeechEventPair, 264, 16>, public AudioMemBase {
@@ -84,12 +91,12 @@ struct Manager {
         return mSampleRequests;
     }
 
-    // static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int size, void *data, const Csis::InterfaceId &iid, Csis::FunctionHandle &fh,
-    //                                                   EAXCharacter *actor); // Decl: 150
-    // static Csis::Result IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only); // Decl: 151
-    // static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete); // Decl: 152
-    static bool HasBeenSaid(SPCHType_1_EventID event_id); // Decl: 153
-    static bool IsCopSpeechBusy();                        // Decl: 154
+    static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int size, void *data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh,
+                                                      EAXCharacter *actor);               // Decl: 150
+    static Csis::Result IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only);   // Decl: 151
+    static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete); // Decl: 152
+    static bool HasBeenSaid(SPCHType_1_EventID event_id);                                 // Decl: 153
+    static bool IsCopSpeechBusy();                                                        // Decl: 154
     static EventHistory &GetHistory() {
         return mGlobalHistory;
     } // Decl: 155
@@ -120,7 +127,7 @@ struct Manager {
     template <typename T> static void ScheduleSpeech(T &data, const Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
 
     static Module *m_SpeechModule[2];           // size: 0x8, address: 0x80435980, Decl: 188
-    static enum SPEECH_MODE m_speechMode;       // size: 0x4, address: 0x80435988, Decl: 192
+    static SPEECH_MODE m_speechMode;            // size: 0x4, address: 0x80435988, Decl: 192
     static int m_numberSpeechBanks;             // size: 0x4, address: 0x8043598C, Decl: 193
     static bool m_SPEECH_initted;               // size: 0x1, address: 0x80435990, Decl: 194
     static char *m_SPEECH_bankPtrMem;           // size: 0x4, address: 0x80435994, Decl: 195
@@ -132,8 +139,8 @@ struct Manager {
     static float m_deadair;                     // size: 0x4, address: 0x804359AC, Decl: 202
     static float mProbPlayback;                 // size: 0x4, address: 0x804359B8, Decl: 203
     static EventHistory mGlobalHistory;         // size: 0xC74, address: 0x80499484, Decl: 207 // TODO
-    static struct SPCHEventList mEvtHistory;    // size: 0xC, address: 0x80498C24, Decl: 208 // TODO
-    static struct SchedSpchEvents mEvents[4];   // size: 0x50, address: 0x80498BD4, Decl: 209 // TODO
+    static SPCHEventList mEvtHistory;           // size: 0xC, address: 0x80498C24, Decl: 208 // TODO
+    static SchedSpchEvents mEvents[4];          // size: 0x50, address: 0x80498BD4, Decl: 209 // TODO
     static SpeechHashIDMap mHashMap;            // size: 0x854, address: 0x80498C30, Decl: 210 // TODO
     static ScheduledSpeechEvent *mCurrentEvent; // size: 0x4, address: 0x804359B0, Decl: 211 // TODO
     static SampleReqList mSampleRequests;       // size: 0x14, address: 0x8049A0F8, Decl: 212 // TODO

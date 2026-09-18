@@ -817,7 +817,7 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
                 if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career && !ddayRace) {
                     if (playerDone) {
                         GRaceStatus::Get().RaceAbandoned();
-                        MNotifyRaceAbandoned().Post(0x20d60dbf);
+                        MNotifyRaceAbandoned().Post(UCRC32_Gameplay);
                     }
 
                     new EUnPause();
@@ -1028,7 +1028,7 @@ PostRacePursuitScreen::PostRacePursuitScreen(ScreenConstructorData *sd)
 PostRacePursuitScreen::~PostRacePursuitScreen() {
     if (GetPursuitData().mExitToSafehouse != 0) {
         GetPursuitData().mExitToSafehouse = 0;
-        MEnterSafeHouse("safehouse").Post(0x20D60DBF);
+        MEnterSafeHouse("safehouse").Post(UCRC32_Gameplay);
     }
 }
 

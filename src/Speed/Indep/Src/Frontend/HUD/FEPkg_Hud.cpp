@@ -325,6 +325,7 @@ void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pk
 
 void HudResourceManager::LoadingCompleteCallback() {
     mPhase++;
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     if (mPhase == 1) {
         char minimap_texture_name[64];
         char texture_name[32];
@@ -359,6 +360,7 @@ void HudResourceManager::LoadingCompleteCallback() {
     } else if (mPhase == 3) {
         TheHudResourceManager.mHudResourcesState = HRM_LOADED;
         cFEng::Get()->MakeLoadedPackagesDirty();
+
         SetSoundControlState(false, SNDSTATE_STOP_MUSIC, "HUDLoaded");
     }
 }

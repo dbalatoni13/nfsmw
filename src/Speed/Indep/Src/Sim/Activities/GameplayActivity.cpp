@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySimTick.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
@@ -66,8 +67,7 @@ bool GameplayActivity::OnTask(HSIMTASK task, float dT) {
     if (task == mUpdateTask) {
         float simTime = Sim::GetTime();
         float simTimeStep = Sim::GetTimeStep();
-        // TODO magic
-        MNotifySimTick(simTime, simTimeStep).Post(UCrc32(0x20d60dbf));
+        MNotifySimTick(simTime, simTimeStep).Post(UCrc32(UCRC32_Gameplay));
         GManager::Get().Update(dT);
         return true;
     } else {

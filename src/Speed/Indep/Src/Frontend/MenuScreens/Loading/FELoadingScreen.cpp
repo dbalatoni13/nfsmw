@@ -32,6 +32,7 @@ LoadingScreen::LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
     }
 
     new ESndGameState(10, true);
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_OFF, "FELoad");
 }
 LoadingScreen::~LoadingScreen() {
@@ -40,6 +41,7 @@ LoadingScreen::~LoadingScreen() {
     }
 
     new ESndGameState(10, false);
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(false, SNDSTATE_OFF, "FELoad");
 }
 

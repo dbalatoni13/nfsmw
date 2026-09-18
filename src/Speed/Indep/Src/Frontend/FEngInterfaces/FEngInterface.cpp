@@ -103,11 +103,15 @@ void cFEng::PauseAllSystems() {
         UTL::Collections::Singleton<INIS>::Get()->Pause();
     }
     SoundPause(true, ePAUSE_ERROR);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_ERROR, "PauseAllSystems");
 }
 
 void cFEng::ResumeAllSystems(bool flushActions) {
     SoundPause(false, ePAUSE_ERROR);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(false, SNDSTATE_ERROR, "PauseAllSystems");
     if (UTL::Collections::Singleton<INIS>::Get()) {
         UTL::Collections::Singleton<INIS>::Get()->UnPause();

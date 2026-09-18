@@ -1,6 +1,7 @@
 #ifndef ANIMATION_ANIMCANDIDATES_H
 #define ANIMATION_ANIMCANDIDATES_H
 
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -288,5 +289,15 @@ class CAnimCandidateData {
 };
 
 extern CAnimCandidateData *TheAnimCandidateData;
+
+extern Attrib::Key SpecialCarList1[8];
+extern Attrib::Key SpecialCarList2[8];
+extern Attrib::Key SpecialCarList3[8];
+extern Attrib::Key SpecialCarList4[8];
+extern Attrib::Key SpecialCarList5[8];
+extern Attrib::Key SpecialCarList6[8];
+extern Attrib::Key SpecialCarList7[8];
+extern Attrib::Key SpecialCarList8[8];
+extern Attrib::Key SpecialCarList9[8];
 
 #endif

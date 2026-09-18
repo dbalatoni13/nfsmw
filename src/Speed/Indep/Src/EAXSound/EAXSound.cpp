@@ -204,6 +204,7 @@ bool EAXSound::IsNISStreamQueued() {
 }
 
 void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 void EAXSound::NISFinished() {
     if (IsSoundEnabled == 0 || IsAudioStreamingEnabled == 0) {

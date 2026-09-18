@@ -88,7 +88,7 @@ void PauseMenu::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 par
                         if (GRaceStatus::Exists()) {
                             GRaceStatus::Get().RaceAbandoned();
                         }
-                        MNotifyRaceAbandoned().Post(0x20d60dbf);
+                        MNotifyRaceAbandoned().Post(UCRC32_Gameplay);
                         break;
                     }
                     case 0x0506202D:

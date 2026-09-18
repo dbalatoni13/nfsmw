@@ -2,6 +2,7 @@
 // MovieScreen destructor
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
@@ -18,20 +19,22 @@ struct MovieScreenData {
 };
 
 static MovieScreenData MovieData[10] = {
-    {"LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
-    {"LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
-    {"LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
-    {"MW_LS_IntroFMV.fng", "intro_movie", 0x72CF9F38, 1, 0},
-    {"MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
-    {"WS_LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
-    {"WS_LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
-    {"WS_LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
-    {"WS_LS_IntroFMV.fng", "intro_movie", 0x58BCF5B6, 1, 0},
-    {"WS_MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
+    {"LS_EALogo.fng", "ealogo", 0x58BCF5B6, false, false},
+    {"LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, false, false},
+    {"LS_PSA.fng", "psa", 0x58BCF5B6, true, true},
+    {"MW_LS_IntroFMV.fng", "intro_movie", 0x72CF9F38, true, false},
+    {"MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, true, false},
+    {"WS_LS_EALogo.fng", "ealogo", 0x58BCF5B6, false, false},
+    {"WS_LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, false, false},
+    {"WS_LS_PSA.fng", "psa", 0x58BCF5B6, true, true},
+    {"WS_LS_IntroFMV.fng", "intro_movie", 0x58BCF5B6, true, false},
+    {"WS_MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, true, false},
 };
 
-MovieScreen::MovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), bByPassable(0), mSubtitler() {
+MovieScreen::MovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), bByPassable(false), mSubtitler() {
     new ESndGameState(1, true);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_FMV, "MovieScreen");
     for (int i = 0; i < 10; i++) {
         if (bStrICmp(GetPackageName(), MovieData[i].PackageName) == 0) {
@@ -48,6 +51,7 @@ void MovieScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 pa
     mSubtitler.Update(msg);
     bool movie_is_finished = false;
 
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     switch (msg) {
         case 0xc3960eb9:
             new ESndGameState(1, false);
@@ -67,7 +71,6 @@ void MovieScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 pa
 
             if (bypassable) {
                 new ESndGameState(1, false);
-                SetSoundControlState(false, SNDSTATE_FMV, "MovieScreen");
                 if (IsDebugPlayMovie) {
                     movie_is_finished = true;
                     cFEng::Get()->QueuePackagePop(1);

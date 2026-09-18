@@ -119,7 +119,7 @@ void InGameAnyTutorialScreen::LaunchMovie(const char *filename, const char *pack
 
 void InGameAnyTutorialScreen::DismissMovie() {
     gInGameMoviePlaying = false;
-    MNotifyMovieFinished().Post(0x20d60dbf);
+    MNotifyMovieFinished().Post(UCRC32_Gameplay);
     cFEng::Get()->QueuePackagePop(0);
     cFEng::Get()->QueueGameMessage(0xc3960eb9, PackageFilename, 0xff);
     new EFadeScreenOn(false);

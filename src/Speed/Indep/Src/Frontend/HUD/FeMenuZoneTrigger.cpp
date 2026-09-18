@@ -87,7 +87,7 @@ void MenuZoneTrigger::RequestEventInfoDialog(int port) {
 
 void MenuZoneTrigger::RequestZoneInfoDialog(int port) {
     if (bStrCmp(mZoneType, "safehouse") == 0 || bStrCmp(mZoneType, "carlot") == 0 || bStrCmp(mZoneType, "customshop") == 0) {
-        MEnterSafeHouse(mZoneType).Post(0x20D60DBF);
+        MEnterSafeHouse(mZoneType).Post(UCRC32_Gameplay);
     }
 }
 
