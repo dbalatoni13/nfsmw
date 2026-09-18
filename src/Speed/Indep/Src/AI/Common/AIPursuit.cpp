@@ -1957,7 +1957,7 @@ bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
                 }
             }
 
-            MPerpBusted(this->mTarget->GetSimable()->GetOwnerHandle()).Send(UCrc32(0x20d60dbf));
+            MPerpBusted(this->mTarget->GetSimable()->GetOwnerHandle()).Send(UCrc32(UCRC32_Gameplay));
         } else {
             this->BailPursuit();
 

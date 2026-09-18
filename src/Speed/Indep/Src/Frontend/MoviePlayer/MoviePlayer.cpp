@@ -404,11 +404,13 @@ void MoviePlayer::Update() {
         movie_done = joylog_movie_done;
     }
     Joylog::AddData(movie_done, 4, JOYLOG_CHANNEL_MOVIE_PLAYER_STATUS);
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     if (movie_done != 0) {
         fStatus = fLiveStatus;
         eWaitUntilRenderingDone();
         cFEng::Get()->QueueGameMessage(0xc3960eb9, nullptr, 0xff);
         SoundPause(false, eSNDPAUSE_MOVIE);
+
         SetSoundControlState(false, SNDSTATE_PAUSE, "movie_done");
         if (fPlayer != nullptr) {
             delete fPlayer;

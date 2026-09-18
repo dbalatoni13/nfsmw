@@ -137,6 +137,15 @@ struct SPCHSampleRequest {
     // bool operator<(const Speech::SPCHSampleRequest &from) const {} // Decl: 201
 };
 
+DECLARE_CONTAINER_TYPE(SchedSpchEvents);
+
+// total size: 0x14
+// Decl: 206
+class SchedSpchEvents : public UTL::Std::vector<Speech::ScheduledSpeechEvent *, Speech::_type_SchedSpchEvents>, public AudioMemBase {
+  public:
+    SchedSpchEvents() {}
+};
+
 DECLARE_CONTAINER_TYPE(SampleReqList);
 
 // total size: 0x14

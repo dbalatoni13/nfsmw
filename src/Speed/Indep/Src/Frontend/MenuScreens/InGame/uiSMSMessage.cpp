@@ -16,6 +16,8 @@ uiSMSMessage::uiSMSMessage(ScreenConstructorData *sd) : MenuScreen(sd), ScrollBa
     the_msg = reinterpret_cast<SMSMessage *>(sd->Arg);
     new ESndGameState(0xd, true);
     SoundPause(true, eSNDPAUSE_SMS_MESSAGE);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(false, SNDSTATE_FE_UPSCREEN, "SMSMesUnPause");
     SetSoundControlState(true, SNDSTATE_FE_SMS_MESSAGE, "SMSMes");
     Setup();
@@ -24,6 +26,8 @@ uiSMSMessage::uiSMSMessage(ScreenConstructorData *sd) : MenuScreen(sd), ScrollBa
 uiSMSMessage::~uiSMSMessage() {
     new ESndGameState(0xd, false);
     SoundPause(false, eSNDPAUSE_SMS_MESSAGE);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_FE_UPSCREEN, "SMSMesPause");
     SetSoundControlState(false, SNDSTATE_FE_SMS_MESSAGE, "SMSMes");
 }

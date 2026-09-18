@@ -94,11 +94,11 @@ EngageEventDialog::~EngageEventDialog() {
 }
 
 void EngageEventDialog::NotifyTheGameAcceptEvent() {
-    MAcceptEnterCareerEvent().Post(0x20d60dbf);
+    MAcceptEnterCareerEvent().Post(UCRC32_Gameplay);
 }
 
 void EngageEventDialog::NotifyTheGameDeclineEvent() {
-    MDeclineEnterCareerEvent().Post(0x20d60dbf);
+    MDeclineEnterCareerEvent().Post(UCRC32_Gameplay);
 }
 
 // STRIPPED

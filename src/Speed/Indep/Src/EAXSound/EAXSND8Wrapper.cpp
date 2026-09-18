@@ -1,3 +1,4 @@
+#include "Speed/Indep/Src/EAXSound/CSISAllocator.h"
 #include "Speed/Indep/Src/EAXSound/EAXSND8Wrapper.hpp"
 #include "EAXAudioParams.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
