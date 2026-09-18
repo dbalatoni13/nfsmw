@@ -351,8 +351,7 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 
     void DisableRendering() {
         for (int n = 0; n < this->GetNumObjects(); n++) {
-            SceneryOverrideInfo *override_info = this->GetOverrideInfo(n);
-            override_info->SetExcludeFlags(0xFFFF, 0x10);
+            this->GetOverrideInfo(n)->SetExcludeFlags(0xFFFF, 0x10);
         }
     }
 

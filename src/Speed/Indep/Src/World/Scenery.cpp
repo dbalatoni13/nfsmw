@@ -52,9 +52,9 @@ class PrecullerBooBooManager {
         return (*p & this->GetBit(n)) != 0;
     }
 
-    int GetSectionNumber(bVector3 &position) {
-        int nx = (static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F;
-        int ny = (static_cast<int>(position.y) & 0xFE0) << 2;
+    int GetSectionNumber(bVector3 &pos) {
+        int nx = (static_cast<unsigned int>(static_cast<int>(pos.x)) >> 5) & 0x7F;
+        int ny = (static_cast<int>(pos.y) & 0xFE0) << 2;
         return ny | nx;
     }
 
@@ -70,13 +70,12 @@ class PrecullerBooBooManager {
     uint8 BitField[0x800];
 };
 
-// TODO move these?
-extern float EnvMapShadowExtraHeight;
-extern int CurrentZoneNumber;
-extern int SeeulatorToolActive;
-extern int ScenerySectionToBlink;
-extern int SeeulatorRefreshTrackStreamer;
-extern int ShowSectionBoarder;
+float EnvMapShadowExtraHeight = 2.0f;
+int CurrentZoneNumber = -1;
+int SeeulatorToolActive = 0;
+int ScenerySectionToBlink = 0;
+int ShowSectionBoarder = 0;
+int SeeulatorRefreshTrackStreamer = 0;
 
 bTList<ScenerySectionHeader> ScenerySectionHeaderList;
 HashToHeirarchyMap HeirarchyMap;
@@ -238,8 +237,8 @@ void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork) {
     }
 }
 
-void DisableSceneryGroup(unsigned int name_hash) {
-    SceneryGroup *group = FindSceneryGroup(name_hash);
+void DisableSceneryGroup(unsigned int group_name_hash) {
+    SceneryGroup *group = FindSceneryGroup(group_name_hash);
     if (group != nullptr) {
         group->DisableRendering();
         SceneryGroupEnabledTable[group->GroupNumber] = 0;
@@ -597,6 +596,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
 
     int point_number;
+    position.z = 0.0f;
     for (point_number = 0; point_number < boundary->GetNumPoints(); point_number++) {
         bVector2 normal = *boundary->GetPoint((point_number + 1) % boundary->GetNumPoints()) - *boundary->GetPoint(point_number);
         float length = bLength(&normal);
@@ -653,9 +653,9 @@ void CloseVisibleZones() {
     }
 }
 
-int IsInTable(short *section_numbers, int num_sections, int section_number) {
-    for (int i = 0; i < num_sections; i++) {
-        if (section_numbers[i] == section_number) {
+int IsInTable(short *table, int num_entries, int entry) {
+    for (int i = 0; i < num_entries; i++) {
+        if (table[i] == entry) {
             return i;
         }
     }
@@ -963,6 +963,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
                 num_sections_to_draw = ToggleIsInTable(sections_to_draw, num_sections_to_draw, max_sections_to_draw, ScenerySectionToBlink);
             }
             if (SeeulatorToolActive && SeeulatorRefreshTrackStreamer != 0) {
+                void RefreshTrackStreamer();
                 RefreshTrackStreamer();
                 SeeulatorRefreshTrackStreamer = 0;
             }
