@@ -9,11 +9,11 @@ class ISceneryModel : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(ISceneryModel);
 
-    virtual unsigned int GetSpawnerID() {}
-    virtual void RestoreScene();
-    virtual bool GetSceneryTransform(UMath::Matrix4) const;
-    virtual void WakeUp();
-    virtual bool IsExcluded(unsigned int scenery_exclusion_flag) {}
+    virtual bool GetSceneryTransform(UMath::Matrix4 &matrix) const = 0;
+    virtual void RestoreScene() = 0;
+    virtual unsigned int GetSpawnerID() const = 0;
+    virtual void WakeUp() = 0;
+    virtual bool IsExcluded(unsigned int scenery_exclusion_flag) const = 0;
 };
 
 #endif

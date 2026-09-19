@@ -56,6 +56,7 @@ template <typename T, int U> class Listable {
 
     typedef void (*ForEachFunc)(pointer);
     typedef bool (*ComparisonFunc)(pointer, pointer);
+    typedef bool (*ConstComparisonFunc)(const T *, const T *);
 
   protected:
     Listable() {
@@ -83,6 +84,10 @@ template <typename T, int U> class Listable {
     }
 
     static void Sort(ComparisonFunc pred) {
+        std::sort(_mTable.begin(), _mTable.end(), pred);
+    }
+
+    static void Sort(ConstComparisonFunc pred) {
         std::sort(_mTable.begin(), _mTable.end(), pred);
     }
 

@@ -92,7 +92,9 @@ struct Info {
         objBsurface = nullptr;
     }
 
-    CollisionType Type() const {}
+    CollisionType Type() const {
+        return static_cast<CollisionType>(this->type);
+    }
 
     UMath::Vector3 position;               // offset 0x0, size 0xC
     const Attrib::Collection *objAsurface; // offset 0xC, size 0x4

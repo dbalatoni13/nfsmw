@@ -5,6 +5,7 @@
 
 namespace Physics {
 
+// total size: 0x1C
 struct Tunings {
     enum Path {
         STEERING = 0,
@@ -17,12 +18,13 @@ struct Tunings {
         MAX_TUNINGS = 7,
     };
 
-    static float LowerLimit(Path path);
-    static float UpperLimit(Path path);
-
     Tunings() {
         Default();
     }
+
+    static float LowerLimit(Path path);
+
+    static float UpperLimit(Path path);
 
     void Default() {
         bMemSet(this, 0, sizeof(*this));

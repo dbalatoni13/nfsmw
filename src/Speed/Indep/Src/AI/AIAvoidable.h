@@ -46,7 +46,9 @@ class ALIGN_16 AIAvoidable {
     virtual ~AIAvoidable();
     virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) = 0;
 
-    // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
+    void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {
+        mUnk = pUnk;
+    }
 
   private:
     static void OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT);
