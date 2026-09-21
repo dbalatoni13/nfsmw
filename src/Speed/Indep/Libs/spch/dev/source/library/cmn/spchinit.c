@@ -108,9 +108,9 @@ int SPCH_Init(int (*sampleRequest)(SPCHType_SampleRequestData *), unsigned int g
     }
     iSPCH_InitCallbacks();
     gCallbacks.request = sampleRequest;
-    gSPCH_AddEvent = SPCH_AddEventV;
-    gDataRate = sampleDataRate;
     gGameNum = gameSeed;
+    gDataRate = sampleDataRate;
+    gSPCH_AddEvent = SPCH_AddEventV;
     iSPCH_InitRandom(gameSeed);
     iSPCH_InitSentenceChoice();
     SPCH_SetPreLoadTicks(0);

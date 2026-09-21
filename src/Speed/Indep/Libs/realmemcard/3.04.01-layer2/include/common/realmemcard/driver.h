@@ -115,7 +115,7 @@ inline void Realmc::CmnFileDescriptor::Init(const CardID &cardID, const FileInfo
 }
 
 inline void Realmc::GcFileHeader::Init(unsigned int userDataSize, unsigned int iplDataSize) {
-    this->mFileSize = userDataSize + 0x10 + iplDataSize;
+    this->mFileSize = 0x10 + iplDataSize + userDataSize;
     this->mUserDataSize = userDataSize;
     this->mIplDataSize = iplDataSize;
     this->mIplDataChecksum = 0;

@@ -21,21 +21,25 @@ static int GetVersionNumber(const short *&pMsg) {
 }
 
 void InterfaceImp::CheckMessageCompatibility() {
-    const short *clientVersion;
-    const short *serverVersion;
+    const short *pMsgVer;
+    const short *pMinRealMCVer;
+    int version;
+    int major;
+    int minor;
+    int patch;
 
-    clientVersion = reinterpret_cast<const short *>(this->mISystem.mGetStrCallback(1));
-    serverVersion = reinterpret_cast<const short *>(this->mISystem.mGetStrCallback(2));
-    GetVersionNumber(clientVersion);
-    GetVersionNumber(clientVersion);
-    GetVersionNumber(clientVersion);
-    GetVersionNumber(serverVersion);
-    GetVersionNumber(serverVersion);
-    GetVersionNumber(serverVersion);
+    pMsgVer = reinterpret_cast<const short *>(this->mISystem.mGetStrCallback(1));
+    pMinRealMCVer = reinterpret_cast<const short *>(this->mISystem.mGetStrCallback(2));
+    GetVersionNumber(pMsgVer);
+    GetVersionNumber(pMsgVer);
+    GetVersionNumber(pMsgVer);
+    GetVersionNumber(pMinRealMCVer);
+    GetVersionNumber(pMinRealMCVer);
+    GetVersionNumber(pMinRealMCVer);
 }
 
-InterfaceImp::InterfaceImp(const SystemInterface &iSystem) {
-    this->mISystem = iSystem;
+InterfaceImp::InterfaceImp(const SystemInterface &iSystem)
+    : mISystem(iSystem) {
     this->mMutex = nullptr;
     this->mRefcount = 1;
     this->mISystem.mAllocator->AddRef();

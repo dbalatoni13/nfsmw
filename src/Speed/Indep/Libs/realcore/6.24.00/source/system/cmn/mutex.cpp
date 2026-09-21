@@ -7,22 +7,30 @@
 
 namespace RealSystem {
 
+struct MutexPrivate {
+    unsigned int signature;
+    OSMutex mutex;
+};
+
 Mutex::Mutex() {
     MEM_clear(this, sizeof(Mutex));
 }
 
 void Mutex::Create() {
-    OSInitMutex(reinterpret_cast<OSMutex *>(this->mBuf + 4));
+    MutexPrivate *m = reinterpret_cast<MutexPrivate *>(this->mBuf);
+    OSInitMutex(&m->mutex);
 }
 
 void Mutex::Destroy() {}
 
 void Mutex::Lock() {
-    OSLockMutex(reinterpret_cast<OSMutex *>(this->mBuf + 4));
+    MutexPrivate *m = reinterpret_cast<MutexPrivate *>(this->mBuf);
+    OSLockMutex(&m->mutex);
 }
 
 void Mutex::Unlock() {
-    OSUnlockMutex(reinterpret_cast<OSMutex *>(this->mBuf + 4));
+    MutexPrivate *m = reinterpret_cast<MutexPrivate *>(this->mBuf);
+    OSUnlockMutex(&m->mutex);
 }
 
 };

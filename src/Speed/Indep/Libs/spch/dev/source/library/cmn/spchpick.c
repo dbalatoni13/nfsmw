@@ -61,13 +61,8 @@ static int iSPCH_TestBit(unsigned char *bitArray, int bitIndex) {
     int bit;
     int result;
 
-    if (bitIndex < 0) {
-        byteIndex = bitIndex + 7;
-    } else {
-        byteIndex = bitIndex;
-    }
-    byteIndex >>= 3;
-    bit = bitIndex - byteIndex * 8;
+    byteIndex = bitIndex / 8;
+    bit = bitIndex % 8;
     mask = 1 << bit;
     result = bitArray[byteIndex] & mask;
     return result;
@@ -123,8 +118,8 @@ unsigned int iSPCH_DecodeWeight(unsigned char weight) {
     exp = weight >> 5;
     mant = weight & 0x1F;
     unsigned int num;
-    num = multiple[exp];
-    return mant * num;
+    num = mant * multiple[exp];
+    return num;
 }
 
 int iSPCH_OneChosen(unsigned int inChannel) {
@@ -195,6 +190,7 @@ static void iSPCH_PostMatchParmValue(VoxSentence *sentence, VoxPhrase *phrase, u
     } while (i < numFilters);
 }
 
+// NON_MATCHING: normalized DWARF is exact; bit-shift mask and constant hoisting still differ.
 static int iSPCH_MatchSample(VoxSentence *sentence, VoxPhrase *phrase, unsigned int *parms, unsigned char *sampleParms) {
     int i;
     int numRules;
@@ -217,43 +213,43 @@ static int iSPCH_MatchSample(VoxSentence *sentence, VoxPhrase *phrase, unsigned 
         if (static_cast<unsigned int>(sampleParmValue) > 0x1F) {
             goto abort;
         }
-        sampleParmBitFlags = 1 << (sampleParmValue & 0x3F);
+        sampleParmBitFlags = 1u << (sampleParmValue & 0x3F);
         eventParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->eventParmIndex;
         if ((sampleParmBitFlags & iSPCH_GetPhraseParmInfo(phrase, i)->matchValues) != 0) {
-            if (eventParmIndex != 0 && eventParmIndex != 0xFE) {
-                if (eventParmIndex == 0xFF) {
-                    int matchParmIndex;
+            if (eventParmIndex == 0 || eventParmIndex == 0xFE) {
+                match = 1;
+            } else if (eventParmIndex == 0xFF) {
+                int matchParmIndex;
 
-                    matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->matchParmIndex;
-                    if ((matchParmIndex & 0x80) != 0) {
-                        int *matchParmIO;
+                matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, i)->matchParmIndex;
+                if ((matchParmIndex & 0x80) != 0) {
+                    int *matchParmIO;
 
-                        matchParmIndex &= 0x7F;
-                        matchParmIO = VoxSentence_GetMatchParmIO(sentence);
-                        matchValue = matchParmIO[matchParmIndex];
-                        if ((sampleParmBitFlags & matchValue) == 0) {
-                            goto abort;
-                        }
-                    } else {
-                        EventSpec eventSpec;
-                        unsigned char *globalMatchParmArray;
-
-                        eventSpec = *reinterpret_cast<EventSpec *>(parms);
-                        if (iSPCH_GetGlobalMatchParmsArray(&eventSpec, &globalMatchParmArray) == 0 ||
-                            sampleParmValue != globalMatchParmArray[matchParmIndex]) {
-                            goto abort;
-                        }
+                    matchParmIndex &= 0x7F;
+                    matchParmIO = VoxSentence_GetMatchParmIO(sentence);
+                    matchValue = matchParmIO[matchParmIndex];
+                    if ((sampleParmBitFlags & matchValue) != 0) {
+                        match = 1;
                     }
                 } else {
-                    unsigned int inParm;
+                    EventSpec eventSpec;
+                    unsigned char *globalMatchParmArray;
 
-                    inParm = parms[eventParmIndex];
-                    if ((sampleParmBitFlags & inParm) == 0) {
-                        goto abort;
+                    eventSpec = *reinterpret_cast<EventSpec *>(parms);
+                    if (iSPCH_GetGlobalMatchParmsArray(&eventSpec, &globalMatchParmArray) != 0) {
+                        if (sampleParmValue == globalMatchParmArray[matchParmIndex]) {
+                            match = 1;
+                        }
                     }
                 }
+            } else {
+                unsigned int inParm;
+
+                inParm = parms[eventParmIndex];
+                if ((sampleParmBitFlags & inParm) != 0) {
+                    match = 1;
+                }
             }
-            match = 1;
         }
         if (match == 0) {
             goto abort;
@@ -370,15 +366,13 @@ static int iSPCH_CheckFrequency(VoxSentence *sentence) {
 }
 
 inline unsigned short iSPCH_MakeValidParmsMask(VoxEvent *event, unsigned int *parms) {
-    unsigned short testMask;
-    unsigned short validParmsMask;
+    unsigned short testMask = 1;
+    unsigned short validParmsMask = 0;
     unsigned int parmTypesMask;
     int i;
     unsigned int parmValue;
 
-    testMask = 1;
     parmTypesMask = VoxEvent_GetParmTypesMask(event);
-    validParmsMask = 0;
     i = 0;
     do {
         parmValue = parms[i + 1];
@@ -391,6 +385,7 @@ inline unsigned short iSPCH_MakeValidParmsMask(VoxEvent *event, unsigned int *pa
     return validParmsMask;
 }
 
+// NON_MATCHING: mask initialization recovers local ownership; caller and inline address lifetimes still differ.
 int iSPCH_ChooseSentence(unsigned int *parms) {
     char sentenceOrder[100];
     SentencePickInfo pickInfo;
@@ -670,15 +665,9 @@ static void iSPCH_ClearCycleBit(VOXBANKHDR *bank, int sampleIndex) {
     int byteIndex;
     int bit;
 
-    byteIndex = sampleIndex;
-    if (sampleIndex < 0) {
-        byteIndex = sampleIndex + 7;
-    } else {
-        byteIndex = sampleIndex;
-    }
+    byteIndex = sampleIndex / 8;
+    bit = sampleIndex % 8;
     bankBits = BANKHDR_GetCycleBitsAddr(bank);
-    byteIndex >>= 3;
-    bit = sampleIndex - byteIndex * 8;
     mask = ~(1 << bit);
     byteIndex++;
     bankBits[byteIndex] &= mask;
@@ -788,7 +777,8 @@ static int iSPCH_ChooseSamples(SentencePickInfo *sentenceInfo, VoxSentence *sent
     }
         numParms = bank->parmFlags & 0x7F;
         sampleSize = numParms + 2;
-        sampleData = reinterpret_cast<unsigned char *>(bank) + 0xE;
+        sampleData = reinterpret_cast<unsigned char *>(bank + 1);
+        sampleData += 2;
         i = 0;
         if (numMatches < numSamples) {
             do {
@@ -819,7 +809,9 @@ static int iSPCH_ChooseSamples(SentencePickInfo *sentenceInfo, VoxSentence *sent
                 numMatches = 1;
             }
             if (postMatchParms != 0) {
-                iSPCH_PostMatchParmValue(sentence, phrase, reinterpret_cast<unsigned char *>(&bank[1]) + secondChoice * sampleSize + 2);
+                sampleData = reinterpret_cast<unsigned char *>(bank + 1);
+                sampleData += secondChoice * sampleSize;
+                iSPCH_PostMatchParmValue(sentence, phrase, sampleData + 2);
             }
         }
 abort:
@@ -1054,11 +1046,11 @@ static int iSPCH_IterateChoice(VoxSentence *sentence, SentencePickInfo *sentence
     numPhrases = VoxSentence_GetNumPhrases(sentence);
     lastIndex = numPhrases - 1;
     phraseInfo = &sentenceInfo->phraseInfo[lastIndex];
-    lastPick = phraseInfo->numPicks + phraseInfo->pickStart;
+    numPicks = phraseInfo->numPicks;
+    lastPick = phraseInfo->pickStart + numPicks;
     do {
-        numPicks = phraseInfo->pickedIndex + 1;
-        phraseInfo->pickedIndex = static_cast<unsigned char>(numPicks);
-        if (static_cast<unsigned char>(numPicks) < lastPick) {
+        phraseInfo->pickedIndex++;
+        if (phraseInfo->pickedIndex < lastPick) {
             doneIterate = 1;
         } else {
             lastIndex--;
@@ -1068,7 +1060,8 @@ static int iSPCH_IterateChoice(VoxSentence *sentence, SentencePickInfo *sentence
                 done = 1;
             }
             phraseInfo = &sentenceInfo->phraseInfo[lastIndex];
-            lastPick = phraseInfo->numPicks + phraseInfo->pickStart;
+            numPicks = phraseInfo->numPicks;
+            lastPick = phraseInfo->pickStart + numPicks;
         }
     } while (doneIterate == 0);
     return done;
@@ -1245,6 +1238,8 @@ abort:
     ;
 }
 
+// NON_MATCHING: normalized DWARF is exact; loop-invariant address generation still differs.
+// NON_MATCHING: request field order follows retail source lines; global and callback scheduling still differ.
 static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, EventSpec *eventSpec) {
     VOXBANKHDR *bank;
     SPCHType_SampleRequestData sampleRequestData;
@@ -1304,20 +1299,19 @@ static int iSPCH_MakeSampleRequests(VoxEvent *event, VoxSentence *sentence, Even
                     unsigned int dataOffset;
                     int bankBytes;
 
-                    bankBytes = (bank->blockSize + 1) << 8;
-                    dataOffset = bank->bankBlocks * bankBytes;
+                    bankBytes = bank->bankBlocks * ((bank->blockSize + 1) << 8);
+                    dataOffset = sampleOffset;
                     if (phraseChoice->subBankIndex != -1) {
-                        dataOffset *= phraseChoice->subBankIndex;
-                        sampleOffset += dataOffset;
+                        dataOffset += phraseChoice->subBankIndex * bankBytes;
                     }
                     totalBytes += sampleBytes;
                     sampleRequestData.bankNum = bankHandle;
-                    sampleRequestData.sampleOffset = sampleOffset;
+                    sampleRequestData.sampleOffset = dataOffset;
                     sampleRequestData.numBytes = sampleBytes;
                     sampleRequestData.eventSpec = *eventSpec;
+                    sampleRequestData.datID = datID;
                     sampleRequestData.channel = channel;
-                    sampleRequestData.subID = datID;
-                    sampleRequestData.datID = bank->subID;
+                    sampleRequestData.subID = bank->subID;
                     if (i == 0) {
                         sampleRequestData.interruptFlag = VoxEvent_GetInterruptFlag(event);
                     } else {
@@ -1362,6 +1356,7 @@ abort:
     return numPhrases;
 }
 
+// NON_MATCHING: normalized DWARF is exact; one indexed-load operand order differs.
 int iSPCH_ChooseSingleSentence(int choice) {
     unsigned int *parms;
     int validSentence;
@@ -1369,8 +1364,8 @@ int iSPCH_ChooseSingleSentence(int choice) {
     int retry;
 
     validSentence = 0;
-    parms = gVoxEvents.events[choice].memParms;
-    if (parms != 0) {
+    if (gVoxEvents.events[choice].memParms != 0) {
+        parms = gVoxEvents.events[choice].memParms;
         validSentence = iSPCH_ChooseSentence(parms);
         if (validSentence == 0 && gCallbacks.reparm != 0) {
             count = 0;

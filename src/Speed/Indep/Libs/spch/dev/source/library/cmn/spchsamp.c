@@ -34,21 +34,21 @@ int iSPCH_GetSampleSizeData(VOXBANKHDR *hdr, int sampleIndex, unsigned int *samp
     if (sampleIndex >= hdr->numSamples) {
         goto abort;
     }
-    sampleSize = hdr->parmFlags & 0x7F;
-    numParms = sampleSize + 2;
+    numParms = hdr->parmFlags & 0x7F;
+    sampleSize = numParms + 2;
+    sampleData = reinterpret_cast<unsigned char *>(hdr + 1);
+    sampleData += sampleIndex * sampleSize;
     blockSize = (hdr->blockSize + 1) << 8;
-    sampleData = reinterpret_cast<unsigned char *>(&hdr[1]);
-    sampleData += sampleIndex * numParms;
     offset = (sampleData[0] << 8) + sampleData[1];
     offset *= blockSize;
+    nextSampleData = sampleData + sampleSize;
     nextIndex = sampleIndex + 1;
-    nextSampleData = sampleData + numParms;
     if (nextIndex >= hdr->numSamples) {
-        endOffset = hdr->bankBlocks;
+        endOffset = hdr->bankBlocks * blockSize;
     } else {
         endOffset = (nextSampleData[0] << 8) + nextSampleData[1];
+        endOffset *= blockSize;
     }
-    endOffset *= blockSize;
     *sampleOffset = offset;
     *dataBytes = endOffset - offset;
     result = 1;

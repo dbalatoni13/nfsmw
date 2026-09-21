@@ -214,7 +214,7 @@ void ASYNCFILE_init(int requests, int memtype) {
             EA::TagValuePair(EA::Allocator::ATT_FILE,
                              "d:/packages/realcore/6.24.00/source/file/cmn/hlafile.cpp") +
             EA::TagValuePair(EA::Allocator::ATT_LINE, 498)));
-    freequeue.tail = request + requests - 1;
+    freequeue.tail = request + (requests - 1);
     freequeue.head = request;
     mutex.Create();
     for (i = 0; i < requests; i++) {

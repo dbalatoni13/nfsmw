@@ -13,11 +13,11 @@ int madvlctbl4[0x40];
 extern int idctinput[0x40];
 extern int idctprescale[0x40];
 extern "C" void idctcompute(int *, int);
-extern int madvlcdecode();
+extern "C" int madvlcdecode();
 
 static unsigned char clipbiastbl[0x200];
 static int luma[0x100];
-static int chroma[0x80];
+static int chroma[2][64];
 static int initflag __attribute__((section(".sbss")));
 
 static const int encodetbl1[0x17c] = {
@@ -174,6 +174,7 @@ static void discardbits(int bits) {
 #define fixedmul(a, b) \
     static_cast<int>((static_cast<long long>(a) * (b) + 0x8000) >> 16)
 
+// NON_MATCHING: generated tables agree with retail; loop induction and DWARF locations differ.
 static void madinit() {
     int bits;
     int val;
@@ -182,7 +183,6 @@ static void madinit() {
     int count;
     int i;
     int j;
-    int *entry;
 
     count = 0x1ff;
     i = -0x100;
@@ -213,58 +213,60 @@ static void madinit() {
         madvlctbl1[i--] = 0x3f;
     } while (--count != 0);
 
-    entry = const_cast<int *>(encodetbl1) + 4;
-    i = 0x5e;
-    do {
-        bits = entry[3];
-        vlc = entry[0];
-        if (bits & 0xfc00) {
-            val = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | entry[1];
-            count = 1 << (9 - entry[0]);
-            prefix = bits >> 7;
-            j = count;
-            do {
-                madvlctbl1[prefix++] = val;
-            } while (--j != 0);
-        } else {
-            val = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[1] - 6);
-            count = 1 << (0xe - entry[0]);
-            prefix = bits >> 2;
-            j = count;
-            do {
-                madvlctbl3[prefix++] = val;
-            } while (--j != 0);
-        }
-        entry += 4;
-    } while (--i != 0);
-
-    entry = const_cast<int *>(encodetbl2);
-    i = 0x80;
-    do {
-        int value;
-        int count;
-
-        if (!(entry[3] & 0x8000)) {
-            value = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[0] - 1);
-            count = 1 << (0x11 - (entry[0] + 8));
-            for (j = 0; j < count; j++) {
-                madvlctbl2[(entry[3] >> 7) + j] = value;
+    for (i = 1; i < 95; i++) {
+        bits = (&encodetbl1[i * 4])[0];
+        val = (&encodetbl1[i * 4])[1];
+        vlc = (&encodetbl1[i * 4])[3];
+        if ((vlc & 0xfc00) != 0) {
+            prefix = vlc >> 7;
+            count = 1 << (9 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | bits;
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl1[prefix++] = val;
+                }
             }
         } else {
-            value = (entry[2] << 0x16) | ((entry[2] << 6) & 0x3f0000) | (entry[0] + 2);
-            count = 1 << (0xe - (entry[0] + 8));
-            for (j = 0; j < count; j++) {
-                madvlctbl3[(entry[3] >> 0xa) + j] = value;
+            prefix = vlc >> 2;
+            count = 1 << (14 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl3[prefix++] = val;
+                }
             }
         }
-        entry += 4;
-    } while (--i != 0);
-    for (i = 0; i < 0x20; i++) {
+    }
+    for (i = 0; i < 128; i++) {
+        bits = (&encodetbl2[i * 4])[0] + 8;
+        val = (&encodetbl2[i * 4])[1];
+        vlc = (&encodetbl2[i * 4])[3];
+        if ((vlc & 0x8000) == 0) {
+            prefix = vlc >> 7;
+            count = 1 << (17 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 9);
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl2[prefix++] = val;
+                }
+            }
+        } else {
+            prefix = vlc >> 10;
+            count = 1 << (14 - bits);
+            val = (static_cast<unsigned int>(val) << 22) | ((val << 6) & 0x3f0000) | (bits - 6);
+            if (count > 0) {
+                for (j = count; j != 0; j--) {
+                    madvlctbl3[prefix++] = val;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 32; i++) {
         madvlctbl4[i] = 1;
     }
-    for (i = 0; i < 0x10; i++) {
-        madvlctbl4[0x20 + i] = 0x400006 + i * 0x400000;
-        madvlctbl4[0x30 + i] = static_cast<int>(0xfc000006 + i * 0x400000);
+    for (i = 0; i < 16; i++) {
+        madvlctbl4[i + 32] = (static_cast<unsigned int>(i + 1) << 22) | 6;
+        madvlctbl4[i + 48] = (static_cast<unsigned int>(i - 16) << 22) | 6;
     }
     initflag = 1;
 }
@@ -374,6 +376,7 @@ static void setchroma(const int *src, unsigned char *dest, int stride) {
     } while (--i != 0);
 }
 
+// NON_MATCHING: original bit-state assignment order restored; quantization-loop induction and DWARF still differ.
 void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     int i;
 
@@ -382,8 +385,8 @@ void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     }
     madshiftreg = (geti(src, 2) << 0x10) |
                   geti(reinterpret_cast<const unsigned char *>(src) + 2, 2);
-    maddataptr = reinterpret_cast<const unsigned short *>(reinterpret_cast<const unsigned char *>(src) + 4);
     madbitcount = 0x20;
+    maddataptr = reinterpret_cast<const unsigned short *>(reinterpret_cast<const unsigned char *>(src) + 4);
     motionframe = motion;
     madquant[0] = fixedmul(quanttbl[0] << 16, idctprescale[0]);
     for (i = 1; i < 0x40; i++) {
@@ -391,6 +394,7 @@ void MAD_initdecode(const unsigned short *src, int motion, int quality) {
     }
 }
 
+// NON_MATCHING: normalized DWARF is exact; final chroma address scheduling still differs.
 void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_cb,
                           const unsigned char *src_cr, unsigned char *dest_y,
                           unsigned char *dest_cb, unsigned char *dest_cr, int width) {
@@ -418,10 +422,12 @@ void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_c
         dx = getdelta();
         dy = getdelta();
         src_y += dy * width + dx;
-        src_cb += (dy >> 1) * chromawidth + (dx >> 1);
-        src_cr += (dy >> 1) * chromawidth + (dx >> 1);
+        dx >>= 1;
+        dy >>= 1;
+        src_cb += dy * chromawidth + dx;
+        src_cr += dy * chromawidth + dx;
     }
-    if (!(flags & 1)) {
+    if ((flags & 1) == 0) {
         if (madvlcdecode() == 1) {
             dcblock(luma, 0x10);
         } else {
@@ -433,55 +439,55 @@ void MAD_decodemacroblock(const unsigned char *src_y, const unsigned char *src_c
     }
     if (!(flags & 2)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x20, 0x10);
+            dcblock(luma + 8, 0x10);
         } else {
-            idctcompute(luma + 0x20, 0x10);
+            idctcompute(luma + 8, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + 8, width, luma + 0x20, correction);
+        getluma(src_y + 8, width, luma + 8, correction);
     }
     if (!(flags & 4)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x200, 0x10);
+            dcblock(luma + 128, 0x10);
         } else {
-            idctcompute(luma + 0x200, 0x10);
+            idctcompute(luma + 128, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + width * 8, width, luma + 0x200, correction);
+        getluma(src_y + width * 8, width, luma + 128, correction);
     }
     if (!(flags & 8)) {
         if (madvlcdecode() == 1) {
-            dcblock(luma + 0x220, 0x10);
+            dcblock(luma + 136, 0x10);
         } else {
-            idctcompute(luma + 0x220, 0x10);
+            idctcompute(luma + 136, 0x10);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getluma(src_y + width * 8 + 8, width, luma + 0x220, correction);
+        getluma(src_y + width * 8 + 8, width, luma + 136, correction);
     }
     if (!(flags & 0x10)) {
         if (madvlcdecode() == 1) {
-            dcblock(chroma, 8);
+            dcblock(chroma[0], 8);
         } else {
-            idctcompute(chroma, 8);
+            idctcompute(chroma[0], 8);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getchroma(src_cb, chromawidth, chroma, correction);
+        getchroma(src_cb, chromawidth, chroma[0], correction);
     }
     if (!(flags & 0x20)) {
         if (madvlcdecode() == 1) {
-            dcblock(chroma + 0x100, 8);
+            dcblock(chroma[1], 8);
         } else {
-            idctcompute(chroma + 0x100, 8);
+            idctcompute(chroma[1], 8);
         }
     } else {
         correction = getdelta() * 2 - 0x80;
-        getchroma(src_cr, chromawidth, chroma + 0x100, correction);
+        getchroma(src_cr, chromawidth, chroma[1], correction);
     }
     setluma(luma, dest_y, width);
-    setchroma(chroma, dest_cb, chromawidth);
-    setchroma(chroma + 0x100, dest_cr, chromawidth);
+    setchroma(chroma[0], dest_cb, chromawidth);
+    setchroma(chroma[1], dest_cr, chromawidth);
 }

@@ -76,6 +76,7 @@ int PATHI_init() {
     return 0;
 }
 
+// NON_MATCHING: delete expressions restore semaphore ownership and exact DWARF; global-address scheduling still differs.
 int PATH_shutdown() {
     int numtracks;
 
@@ -89,21 +90,14 @@ int PATH_shutdown() {
 
         deadrealimp = Path::IPathToReal::realimp;
         Path::IPathToReal::realimp = 0;
-        if (deadrealimp != 0) {
-            delete deadrealimp;
-        }
+        delete deadrealimp;
         deadsndimp = Path::IPathToSnd::sndimp;
         Path::IPathToSnd::sndimp = 0;
-        if (deadsndimp != 0) {
-            delete deadsndimp;
-        }
+        delete deadsndimp;
         if (Path::inited != 0) {
             PATHI_unlock();
         }
-        if (pathsemaphore != 0) {
-            pathsemaphore->~PathSemaphore();
-            PATHI_memfree(pathsemaphore);
-        }
+        delete pathsemaphore;
         Path::inited = 0;
         pathsemaphore = 0;
     }
@@ -120,6 +114,7 @@ void PATHI_memfree(void *pmem) {
     }
 }
 
+// NON_MATCHING: global reloads and loop address allocation still differ in ASM.
 int PATH_addmapfile(char *pmap) {
     int p;
     int e;
@@ -166,7 +161,7 @@ int PATH_addmapfile(char *pmap) {
                 memset(Path::pfstates[slot], 0, sizeof(PATHFINDERSTATE));
                 Path::pfstates[slot]->pmap = reinterpret_cast<PATHFINDHEADER *>(pmap);
                 Path::pfstates[slot]->idflags =
-                    (0x10000000 << (voiceID & 0x3f)) | (0x01000000 << (projectID & 0x3f));
+                    (0x10000000 << voiceID) | (0x01000000 << projectID);
                 PATHI_switchproject(slot, Path::pfstates[slot]->idflags);
                 e = 0;
                 result = 0;
@@ -243,14 +238,14 @@ int PATH_destroy(int trackhandle) {
     return numdestroyed;
 }
 
+// NON_MATCHING: normalized DWARF is exact; name-copy and global-address scheduling still differ.
 int PATH_setnamedvalue(int projects, char *name, int value) {
-    int result;
+    int result = PATHERR_INV_PARAM;
     char str[16];
 
     if (name == 0) {
         return PATHERR_INV_PARAM;
     }
-    result = PATHERR_INV_PARAM;
     {
         int c;
 
@@ -293,6 +288,8 @@ Path::IPathTrack *PATH_gettrackimp(int trackhandle) {
     return track->trackimp;
 }
 
+// NON_MATCHING: retail next-track bounds and fallback are restored;
+// ASM and normalized DWARF still differ in inline address lifetimes.
 int PATHI_bytesperms(int trackID) {
     PATHFINDSAMPLE *sample;
     PATHFINDSAMPLE *endsample;
@@ -307,17 +304,17 @@ int PATHI_bytesperms(int trackID) {
         return 0;
     }
     sample = Path::pfstate->psampleoffsets + trackinfo->startingsample;
-    {
+    trackID++;
+    if (trackID < Path::pfstate->pmap->numtracks) {
         PATHTRACKINFO *nexttrackinfo;
 
-        nexttrackinfo = PATHI_gettrackinfo(trackID + 1);
-        if (nexttrackinfo != 0) {
+        nexttrackinfo = PATHI_gettrackinfo(trackID);
+        if (nexttrackinfo != nullptr) {
             endsample = Path::pfstate->psampleoffsets + nexttrackinfo->startingsample;
         }
-        else {
-            endsample = reinterpret_cast<PATHFINDSAMPLE *>(
-                reinterpret_cast<char *>(Path::pfstate->pmap) + Path::pfstate->pmap->mapfilelen);
-        }
+    } else {
+        endsample = reinterpret_cast<PATHFINDSAMPLE *>(
+            reinterpret_cast<char *>(Path::pfstate->pmap) + Path::pfstate->pmap->mapfilelen);
     }
     if (sample < endsample - 1) {
         int length;

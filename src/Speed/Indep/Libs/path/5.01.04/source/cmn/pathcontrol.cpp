@@ -42,6 +42,7 @@ abort:
     return result;
 }
 
+// NON_MATCHING: pfstate address lifetime and result's DWARF register home still differ.
 int PATH_pause(int tracks, unsigned char pause) {
     int result;
 
@@ -58,15 +59,15 @@ int PATH_pause(int tracks, unsigned char pause) {
         p = 0;
         do {
             int t;
-            if (PATHI_switchproject(p & 0xff, tracks) != 0) {
+            if (PATHI_switchproject(static_cast<unsigned char>(p), tracks) != 0) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track;
                     track = Path::pfstate->track[t];
                     if (track != 0 &&
                         ((((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0)) {
+                        result = PATH_OK;
                         track->trackimp->Pause(pause);
                         track->paused = pause;
-                        result = PATH_OK;
                     }
                 }
             }

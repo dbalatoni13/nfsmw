@@ -1,5 +1,6 @@
 #include "../../../include/vp6_pbdll.h"
 #include <string.h>
+#include <stddef.h>
 
 #define VP6_PROB_MUL(a, b) ((unsigned int)(a) * (unsigned int)(b) >> 8)
 
@@ -67,10 +68,7 @@ static inline int VP6_DecodeBool128(BOOL_CODER *br) {
     bigsplit = split << 24;
 
     bit = value >= bigsplit;
-    range -= split;
-    if (bit == 0) {
-        range = split;
-    }
+    range = bit ? range - split : split;
     if (bit != 0) {
         value -= bigsplit;
     }
@@ -182,59 +180,51 @@ void ConvertBoolTrees(struct PB_INSTANCE *pbi) {
     int Prec;
 
     for (Plane = 0; Plane < 2; Plane++) {
-        BoolTreeToHuffCodes(pbi->DcProbs,
-                            (unsigned int *)pbi->DcHuffProbs + Plane * 12);
-        VP6_BuildHuffTree((struct _huffnode *)pbi->DcHuffTree + Plane * 12,
-                          (unsigned int *)pbi->DcHuffProbs + Plane * 12, 12);
+        BoolTreeToHuffCodes(pbi->DcProbs + Plane * 11,
+                            pbi->DcHuffProbs[Plane]);
+        VP6_BuildHuffTree(pbi->DcHuffTree[Plane],
+                          pbi->DcHuffProbs[Plane], 12);
         VP6_BuildHuffLookupTable(
-            (struct _huffnode *)pbi->DcHuffTree + Plane * 12,
-            (unsigned short *)pbi->DcHuffLUT + Plane * 64);
+            pbi->DcHuffTree[Plane],
+            pbi->DcHuffLUT[Plane]);
         VP6_CreateCodeArray(
-            (struct _huffnode *)pbi->DcHuffTree + Plane * 12, 0,
-            (unsigned int *)pbi->DcHuffCode + Plane * 12,
-            (unsigned char *)pbi->DcHuffLength + Plane * 12, 0, 0);
+            pbi->DcHuffTree[Plane], 0,
+            pbi->DcHuffCode[Plane],
+            pbi->DcHuffLength[Plane], 0, 0);
     }
 
     for (i = 0; i < 2; i++) {
         ZerosBoolTreeToHuffCodes(
-            (unsigned char *)pbi->ZeroRunProbs + i * 14,
-            (unsigned int *)pbi->ZeroHuffProbs + i * 14);
-        VP6_BuildHuffTree((struct _huffnode *)pbi->ZeroHuffTree + i * 14,
-                          (unsigned int *)pbi->ZeroHuffProbs + i * 14, 9);
+            pbi->ZeroRunProbs[i],
+            pbi->ZeroHuffProbs[i]);
+        VP6_BuildHuffTree(pbi->ZeroHuffTree[i],
+                          pbi->ZeroHuffProbs[i], 9);
         VP6_BuildHuffLookupTable(
-            (struct _huffnode *)pbi->ZeroHuffTree + i * 14,
-            (unsigned short *)pbi->ZeroHuffLUT + i * 64);
+            pbi->ZeroHuffTree[i],
+            pbi->ZeroHuffLUT[i]);
         VP6_CreateCodeArray(
-            (struct _huffnode *)pbi->ZeroHuffTree + i * 14, 0,
-            (unsigned int *)pbi->ZeroHuffCode + i * 14,
-            (unsigned char *)pbi->ZeroHuffLength + i * 14, 0, 0);
+            pbi->ZeroHuffTree[i], 0,
+            pbi->ZeroHuffCode[i],
+            pbi->ZeroHuffLength[i], 0, 0);
     }
 
     for (Prec = 0; Prec < 3; Prec++) {
         for (Plane = 0; Plane < 2; Plane++) {
             for (Band = 0; Band < 6; Band++) {
                 BoolTreeToHuffCodes(
-                    pbi->AcProbs + Prec * 66 + Plane * 198 + Band * 11,
-                    (unsigned int *)pbi->AcHuffProbs +
-                        Prec * 144 + Plane * 72 + Band * 12);
+                    pbi->AcProbs + (Prec * 66 + Plane * 198 + Band * 11),
+                    pbi->AcHuffProbs[Prec][Plane][Band]);
                 VP6_BuildHuffTree(
-                    (struct _huffnode *)pbi->AcHuffTree +
-                        Prec * 144 + Plane * 72 + Band * 12,
-                    (unsigned int *)pbi->AcHuffProbs +
-                        Prec * 144 + Plane * 72 + Band * 12, 12);
+                    pbi->AcHuffTree[Prec][Plane][Band],
+                    pbi->AcHuffProbs[Prec][Plane][Band], 12);
                 VP6_BuildHuffLookupTable(
-                    (struct _huffnode *)pbi->AcHuffTree +
-                        Prec * 144 + Plane * 72 + Band * 12,
-                    (unsigned short *)pbi->AcHuffLUT +
-                        Prec * 768 + Plane * 384 + Band * 64);
+                    pbi->AcHuffTree[Prec][Plane][Band],
+                    pbi->AcHuffLUT[Prec][Plane][Band]);
                 VP6_CreateCodeArray(
-                    (struct _huffnode *)pbi->AcHuffTree +
-                        Prec * 144 + Plane * 72 + Band * 12,
+                    pbi->AcHuffTree[Prec][Plane][Band],
                     0,
-                    (unsigned int *)pbi->AcHuffCode +
-                        Prec * 144 + Plane * 72 + Band * 12,
-                    (unsigned char *)pbi->AcHuffLength +
-                        Prec * 144 + Plane * 72 + Band * 12, 0, 0);
+                    pbi->AcHuffCode[Prec][Plane][Band],
+                    pbi->AcHuffLength[Prec][Plane][Band], 0, 0);
             }
         }
     }
@@ -247,20 +237,19 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
     unsigned int Plane;
     unsigned int Band;
     int Prec;
-    unsigned int PrecNonZero;
+    unsigned char PrecNonZero;
     unsigned char LastProb[11];
 
     memset(LastProb, 128, 11);
 
-    for (j = 0; j < 2; j++) {
+    for (Plane = 0; Plane < 2; Plane++) {
         for (i = 0; i < 11; i++) {
-            if (nDecodeBool((void *)&pbi->br, VP6_DcUpdateProbs[j][i])) {
-                PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                PrecNonZero += PrecNonZero == 0;
-                pbi->DcProbs[j * 11 + i] = PrecNonZero;
-                LastProb[i] = PrecNonZero;
+            if (nDecodeBool((void *)&pbi->br, VP6_DcUpdateProbs[Plane][i])) {
+                LastProb[i] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                LastProb[i] += (LastProb[i] == 0);
+                pbi->DcProbs[Plane * 11 + i] = LastProb[i];
             } else if (FrameType == 0) {
-                pbi->DcProbs[j * 11 + i] = LastProb[i];
+                pbi->DcProbs[Plane * 11 + i] = LastProb[i];
             }
         }
     }
@@ -278,12 +267,11 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
         BuildScanOrder(pbi, pbi->ScanBands);
     }
 
-    for (j = 0; j < 2; j++) {
-        for (i = 0; i < 14; i++) {
-            if (nDecodeBool((void *)&pbi->br, ZrlUpdateProbs[j][i])) {
-                PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                PrecNonZero += PrecNonZero == 0;
-                pbi->ZeroRunProbs[j][i] = PrecNonZero;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 14; j++) {
+            if (nDecodeBool((void *)&pbi->br, ZrlUpdateProbs[i][j])) {
+                pbi->ZeroRunProbs[i][j] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                pbi->ZeroRunProbs[i][j] += (pbi->ZeroRunProbs[i][j] == 0);
             }
         }
     }
@@ -295,13 +283,11 @@ void VP6_ConfigureEntropyDecoder(struct PB_INSTANCE *pbi,
                     if (nDecodeBool(
                             (void *)&pbi->br,
                             VP6_AcUpdateProbs[Prec][Plane][Band][i])) {
-                        PrecNonZero = VP6_bitread((void *)&pbi->br, 7) << 1;
-                        PrecNonZero += PrecNonZero == 0;
-                        pbi->AcProbs[Prec * 66 + Plane * 198 + Band * 11 + i] =
-                            PrecNonZero;
-                        LastProb[i] = PrecNonZero;
+                        LastProb[i] = VP6_bitread((void *)&pbi->br, 7) << 1;
+                        LastProb[i] += (LastProb[i] == 0);
+                        pbi->AcProbs[Plane * 198 + Prec * 66 + Band * 11 + i] = LastProb[i];
                     } else if (FrameType == 0) {
-                        pbi->AcProbs[Prec * 66 + Plane * 198 + Band * 11 + i] =
+                        pbi->AcProbs[Plane * 198 + Prec * 66 + Band * 11 + i] =
                             LastProb[i];
                     }
                 }
@@ -374,6 +360,7 @@ void VP6_ResetAboveContext(struct PB_INSTANCE *pbi) {
     }
 }
 
+// NON_MATCHING: record-relative probability cursor ownership restored; other address lifetimes still differ.
 unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
                                      short *CoeffData, unsigned int Plane,
                                      BLOCK_CONTEXT *Above,
@@ -402,8 +389,8 @@ unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
         br = &pbi->br;
     }
 
-    ContextProbsPtr = pbi->DcNodeContexts[Plane][Left->Token + Above->Token];
     BaselineProbsPtr = pbi->DcProbs + Plane * 11;
+    ContextProbsPtr = pbi->DcNodeContexts[Plane][Left->Token + Above->Token];
     if (!nDecodeBool(br, ContextProbsPtr[0])) {
         PrecTokenIndex = 0;
         Left->Token = 0;
@@ -426,14 +413,14 @@ unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
                 }
                 value = VP6_TokenExtraBits2[token].MinVal;
                 BitsCount = VP6_TokenExtraBits2[token].Length;
-                ContextProbsPtr = (unsigned char *)VP6_TokenExtraBits2 + token * 16 + BitsCount + 4;
+                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token];
+                ContextProbsPtr += offsetof(TOKENEXTRABITS, Probs) + BitsCount;
                 do {
                     value += nDecodeBool(br, *ContextProbsPtr) << BitsCount;
                     ContextProbsPtr--;
                 } while (--BitsCount >= 0);
                 SignBit = VP6_DecodeBool128(br);
-                value = (value ^ -SignBit) + SignBit;
-                CoeffData[0] = (short)value;
+                CoeffData[0] = (short)((value ^ -SignBit) + SignBit);
             } else {
                 if (nDecodeBool(br, ContextProbsPtr[4])) {
                     token = nDecodeBool(br, BaselineProbsPtr[5]) + 3;
@@ -441,27 +428,25 @@ unsigned char VP6_ReadTokensPredictA(struct PB_INSTANCE *pbi,
                     token = 2;
                 }
                 SignBit = VP6_DecodeBool128(br);
-                value = (token ^ -SignBit) + SignBit;
-                CoeffData[0] = (short)value;
+                CoeffData[0] = (short)((token ^ -SignBit) + SignBit);
             }
         } else {
             PrecTokenIndex = 1;
             value = 1;
             SignBit = VP6_DecodeBool128(br);
-            value = (value ^ -SignBit) + SignBit;
-            CoeffData[0] = (short)value;
+            CoeffData[0] = (short)((value ^ -SignBit) + SignBit);
             goto ac_tokens;
         }
     }
 
 ac_tokens:
-    for (EncodedCoeffs = 1; EncodedCoeffs <= 63; EncodedCoeffs++) {
-        BaselineProbsPtr = AcProbsPtr + PrecTokenIndex * 66 +
-            *((const int *)((const unsigned char *)VP6_CoeffToBand + EncodedCoeffs * 4)) * 11;
-        if (EncodedCoeffs > 1 || PrecTokenIndex != 0) {
-            ThisTokenNonZero = nDecodeBool(br, BaselineProbsPtr[0]);
-        } else {
+    EncodedCoeffs = 1;
+    do {
+        BaselineProbsPtr = AcProbsPtr + (PrecTokenIndex * 66 + VP6_CoeffToBand[EncodedCoeffs] * 11);
+        if (EncodedCoeffs > 1 && PrecTokenIndex == 0) {
             ThisTokenNonZero = 1;
+        } else {
+            ThisTokenNonZero = nDecodeBool(br, BaselineProbsPtr[0]);
         }
 
         if (!ThisTokenNonZero) {
@@ -516,14 +501,14 @@ ac_tokens:
                 }
                 value = VP6_TokenExtraBits2[token].MinVal;
                 BitsCount = VP6_TokenExtraBits2[token].Length;
-                ContextProbsPtr = (unsigned char *)VP6_TokenExtraBits2 + token * 16 + BitsCount + 4;
+                ContextProbsPtr = (unsigned char *)&VP6_TokenExtraBits2[token];
+                ContextProbsPtr += offsetof(TOKENEXTRABITS, Probs) + BitsCount;
                 do {
                     value += nDecodeBool(br, *ContextProbsPtr) << BitsCount;
                     ContextProbsPtr--;
                 } while (--BitsCount >= 0);
                 SignBit = VP6_DecodeBool128(br);
-                value = (value ^ -SignBit) + SignBit;
-                CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)value;
+                CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)((value ^ -SignBit) + SignBit);
             } else {
                 if (nDecodeBool(br, BaselineProbsPtr[4])) {
                     token = nDecodeBool(br, BaselineProbsPtr[5]) + 3;
@@ -531,20 +516,20 @@ ac_tokens:
                     token = 2;
                 }
                 SignBit = VP6_DecodeBool128(br);
-                value = (token ^ -SignBit) + SignBit;
-                CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)value;
+                CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)((token ^ -SignBit) + SignBit);
             }
         } else {
             PrecTokenIndex = 1;
             value = 1;
             SignBit = VP6_DecodeBool128(br);
-            value = (value ^ -SignBit) + SignBit;
-            CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)value;
+            CoeffData[TransIndex[pbi->ModifiedScanOrder[EncodedCoeffs]]] = (short)((value ^ -SignBit) + SignBit);
         }
-    }
+        EncodedCoeffs++;
+    } while (EncodedCoeffs <= 63);
 
 token_return:
-    return pbi->EobOffsetTable[(unsigned char)(EncodedCoeffs - 1)];
+    EncodedCoeffs--;
+    return pbi->EobOffsetTable[EncodedCoeffs];
 }
 
 void VP6_DecodeFrameMbs(struct PB_INSTANCE *pbi) {

@@ -195,6 +195,7 @@ RealmcIface::CardStatus MemcardInterfaceImpl::_TranslateCardStatus(Realmc::CardS
     case Realmc::STATUS_FAILED:
         cardStatus = STATUS_CARD_ERROR;
         break;
+    case Realmc::STATUS_UNKNOWN:
     default:
         break;
     }

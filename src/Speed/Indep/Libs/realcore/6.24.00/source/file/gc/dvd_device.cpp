@@ -17,9 +17,9 @@ static OSMessageQueue ReadFileThreadMsgQ;
 static void *ReadFileThreadMsgData[32];
 static ReadStatus gCurRead;
 
-static void AyncDVDCallback(long, DVDFileInfo *);
+static void AyncDVDCallback(s32, DVDFileInfo *);
 static int AyncDVDRead(DVDFileInfo *FileInfo);
-static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, long FileBase, long Size);
+static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, s32 FileBase, s32 Size);
 
 static void QEndOp() {
     gCurRead.CurState = DONE;
@@ -34,15 +34,21 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
     if (gCurRead.CurState == ALIGN_THE_START) {
         nBytesToKeep = gCurRead.TA;
         MEM_copy(reinterpret_cast<void *>(gCurRead.MemBase), gCurRead.Data + gCurRead.SD, nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else if (gCurRead.CurState == ALIGN_READ) {
         nBytesToKeep = gCurRead.MEA - gCurRead.MemBase;
         DCInvalidateRange(reinterpret_cast<void *>(gCurRead.MemBase), nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else if (gCurRead.CurState == NONALIGN_READ) {
         nBytesToKeep = gCurRead.ME - gCurRead.MemBase;
         if (nBytesToKeep > 0x4000) {
             nBytesToKeep = 0x4000;
         }
         MEM_copy(reinterpret_cast<void *>(gCurRead.MemBase), gCurRead.Data, nBytesToKeep);
+        gCurRead.FileBase += nBytesToKeep;
+        gCurRead.MemBase += nBytesToKeep;
     } else {
         if (gCurRead.CurState == SMALL_FILE) {
             nBytesToKeep = gCurRead.Size;
@@ -53,8 +59,6 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
         }
     }
 
-    gCurRead.FileBase += nBytesToKeep;
-    gCurRead.MemBase += nBytesToKeep;
 
     if (gCurRead.MemBase == gCurRead.MSA && gCurRead.MemBase < gCurRead.MEA) {
         gCurRead.CurState = ALIGN_READ;
@@ -63,7 +67,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
                                        AyncDVDCallback, 2);
         return nBytesToKeep;
     }
-    if (gCurRead.MemBase < gCurRead.ME) {
+    if (gCurRead.ME > gCurRead.MemBase) {
         nBytesToRead = (gCurRead.ME - gCurRead.MemBase + 0x1f) & ~0x1f;
         if (nBytesToRead > 0x4000) {
             nBytesToRead = 0x4000;
@@ -77,7 +81,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
     return nBytesToKeep;
 }
 
-static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, long FileBase, long Size) {
+static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, s32 FileBase, s32 Size) {
     int readSize;
 
     if (Size == 0) {
@@ -85,26 +89,27 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
         return;
     }
 
-    gCurRead.MBS = reinterpret_cast<int>(MemPointer) & ~0x1f;
-    gCurRead.MSA = (reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
-    gCurRead.FBS = FileBase & ~0x1f;
-    gCurRead.FE = FileBase + Size;
-    gCurRead.ME = reinterpret_cast<int>(MemPointer) + Size;
-    gCurRead.SD = FileBase - gCurRead.FBS;
-    gCurRead.FEA = gCurRead.FE & ~0x1f;
-    gCurRead.TA = 0x20 - gCurRead.SD;
-    gCurRead.MEA = gCurRead.ME & ~0x1f;
-    gCurRead.FSA = (FileBase + 0x1f) & ~0x1f;
-    gCurRead.ret = 0;
-    gCurRead.MemBase = reinterpret_cast<int>(MemPointer);
-    gCurRead.FileBase = FileBase;
     gCurRead.Size = Size;
+    gCurRead.FileBase = FileBase;
+    gCurRead.MemBase = reinterpret_cast<int>(MemPointer);
+    gCurRead.MBS = gCurRead.MemBase & ~0x1f;
+    gCurRead.MSA = (gCurRead.MemBase + 0x1f) & ~0x1f;
+    gCurRead.ME = gCurRead.MemBase + Size;
+    gCurRead.MEA = gCurRead.ME & ~0x1f;
+    gCurRead.FBS = FileBase & ~0x1f;
+    gCurRead.FSA = (FileBase + 0x1f) & ~0x1f;
+    gCurRead.FE = FileBase + Size;
+    gCurRead.FEA = gCurRead.FE & ~0x1f;
+    gCurRead.SD = FileBase - gCurRead.FBS;
+    gCurRead.TA = 0x20 - gCurRead.SD;
+    gCurRead.ret = 0;
 
     if (Size <= 0x1f) {
         int sizealigned;
 
         gCurRead.CurState = SMALL_FILE;
-        sizealigned = (gCurRead.FE - gCurRead.FBS + 0x1f) & ~0x1f;
+        sizealigned = gCurRead.FE - gCurRead.FBS;
+        sizealigned = (sizealigned + 0x1f) & ~0x1f;
         gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, sizealigned, gCurRead.FBS,
                                         AyncDVDCallback, 2);
     } else if (gCurRead.SD != 0) {
@@ -113,27 +118,27 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
         gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS,
                                          AyncDVDCallback, 2);
     } else {
-        if (MemPointer == reinterpret_cast<void *>(gCurRead.MSA) && gCurRead.MSA < gCurRead.MEA) {
+        if (gCurRead.MemBase == gCurRead.MSA && gCurRead.MSA < gCurRead.MEA) {
             gCurRead.CurState = ALIGN_READ;
             readSize = gCurRead.MEA - gCurRead.MSA;
             gCurRead.ret = DVDReadAsyncPrio(FileInfo, reinterpret_cast<void *>(gCurRead.MSA), readSize,
-                                            FileBase, AyncDVDCallback, 2);
+                                            gCurRead.FileBase, AyncDVDCallback, 2);
             return;
         }
-        if (gCurRead.ME <= reinterpret_cast<int>(MemPointer)) {
+        if (gCurRead.ME <= gCurRead.MemBase) {
             return;
         }
-        readSize = (gCurRead.ME - reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
+        readSize = (gCurRead.ME - gCurRead.MemBase + 0x1f) & ~0x1f;
         if (readSize > 0x4000) {
             readSize = 0x4000;
         }
         gCurRead.CurState = NONALIGN_READ;
-        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, FileBase,
+        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FileBase,
                                          AyncDVDCallback, 2);
     }
 }
 
-static void AyncDVDCallback(long, DVDFileInfo *) {
+static void AyncDVDCallback(s32, DVDFileInfo *) {
     OSSendMessage(&ReadFileThreadMsgQ, reinterpret_cast<void *>(1), 1);
 }
 
@@ -188,7 +193,7 @@ unsigned long long GcDvdFileDeviceDriver::Getsize(EAFileHandle h) {
     return reinterpret_cast<DvdFileHandle *>(h)->size;
 }
 
-unsigned long long GcDvdFileDeviceDriver::QueryLocation(EAFileHandle) {
+unsigned long long GcDvdFileDeviceDriver::QueryLocation(EAFileHandle h) {
     return 0;
 }
 
@@ -202,22 +207,22 @@ EAFileHandle GcDvdFileDeviceDriver::Open(const char *filename, int, int *) {
 
     name = newname;
     dvd_fh = this->_AllocateDvdFileHandle();
-    while (*filename != '\0') {
-        if (*filename == '\\') {
-            *name = '/';
+    namesrc = filename;
+    while (*namesrc != '\0') {
+        if (*namesrc == '\\') {
+            *name++ = '/';
         } else {
-            *name = *filename;
+            *name++ = *namesrc;
         }
-        filename++;
-        name++;
+        namesrc++;
     }
     *name = '\0';
-    namesrc = newname;
-    if (strncmp(namesrc, "dvd:", 4) == 0) {
-        namesrc = newname + 4;
+    name = newname;
+    if (strncmp(name, "dvd:", 4) == 0) {
+        name += 4;
     }
-    entryNum = DVDConvertPathToEntrynum(namesrc + 1);
     ret = 0;
+    entryNum = DVDConvertPathToEntrynum(name + 1);
     if (entryNum != -1) {
         ret = DVDFastOpen(entryNum, &dvd_fh->fileInfo);
     }

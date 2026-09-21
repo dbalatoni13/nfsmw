@@ -69,86 +69,91 @@ void IDct10(short *InputData, short *QuantMatrix, short *OutputData) {
     op = OutputData;
     dequant_slow10(QuantMatrix, InputData, ip);
     for (loop = 4; loop; loop--) {
-        _A = ip[0];
-        _B = ip[1];
-        _C = ip[2];
-        _D = ip[3];
-        if (_A | _B | _C | _D) {
-        _Ad = (_B * C1) >> 16;
-        _Bd = (_B * C7) >> 16;
-        _Cd = -((_D * C5) >> 16);
-        _Dd = (_D * C3) >> 16;
-        _Ed = _Bd - _Cd;
-        _Gd = _Bd + _Cd;
-        _Fd = _Ad - _Dd;
-        _Hd = _Ad + _Dd;
-        _Add = (_Fd * C4) >> 16;
-        _Bdd = (_Ed * C4) >> 16;
-        _F = (_A * C4) >> 16;
-        _G = (_C * C2) >> 16;
-        _Ad = _F + _Add;
-        _Bd = _F - _Add;
-        _E = (_C * C6) >> 16;
-        _Cd = _F - _G;
-        _Dd = _F + _G;
-        _F = _Dd - _Hd;
-        _G = _Cd - _Gd;
-        _Dd += _Hd;
-        _Cd += _Gd;
-        _H = _Bdd + _E;
-        _E = _Bdd - _E;
-
-        ip[0] = (short)_Dd;
-        ip[7] = (short)_F;
-        ip[1] = (short)(_Ad + _H);
-        ip[2] = (short)(_Ad - _H);
-        ip[3] = (short)_Cd;
-        ip[4] = (short)_G;
-        ip[5] = (short)(_Bd + _E);
-        ip[6] = (short)(_Bd - _E);
+        if (ip[0] | ip[1] | ip[2] | ip[3]) {
+            t1 = ip[1] * C1;
+            _A = (t1 >> 16);
+            t1 = ip[1] * C7;
+            _B = (t1 >> 16);
+            t1 = ip[3] * C3;
+            t1 >>= 16;
+            _D = t1;
+            t2 = ip[3] * C5;
+            t2 >>= 16;
+            _C = -t2;
+            t1 = (_A - _D) * C4;
+            _Ad = t1 >> 16;
+            t1 = (_B - _C) * C4;
+            _Bd = t1 >> 16;
+            _Cd = _A + _D;
+            _Dd = _B + _C;
+            t1 = ip[0] * C4;
+            _E = t1 >> 16;
+            _F = _E;
+            t1 = ip[2] * C2;
+            _G = t1 >> 16;
+            t1 = ip[2] * C6;
+            _H = t1 >> 16;
+            _Ed = _E - _G;
+            _Gd = _E + _G;
+            _Add = _F + _Ad;
+            _Bdd = _Bd - _H;
+            _Fd = _F - _Ad;
+            _Hd = _Bd + _H;
+            ip[0] = (short)(_Gd + _Cd);
+            ip[7] = (short)(_Gd - _Cd);
+            ip[1] = (short)(_Add + _Hd);
+            ip[2] = (short)(_Add - _Hd);
+            ip[3] = (short)(_Ed + _Dd);
+            ip[4] = (short)(_Ed - _Dd);
+            ip[5] = (short)(_Fd + _Bdd);
+            ip[6] = (short)(_Fd - _Bdd);
         }
         ip += 8;
     }
-
     ip = IntermediateData;
     for (loop = 8; loop; loop--) {
-        _A = ip[0];
-        _B = ip[8];
-        _C = ip[16];
-        _D = ip[24];
-        if (_A | _B | _C | _D) {
-            _Ad = (_B * C1) >> 16;
-            _Bd = (_B * C7) >> 16;
-            _Cd = -((_D * C5) >> 16);
-            _Dd = (_D * C3) >> 16;
-            _Ed = _Bd - _Cd;
-            _Gd = _Bd + _Cd;
-            _Fd = _Ad - _Dd;
-            _Hd = _Ad + _Dd;
-            _Add = (_Fd * C4) >> 16;
-            _Bdd = (_Ed * C4) >> 16;
-            _F = (_A * C4) >> 16;
-            _G = (_C * C2) >> 16;
-            _Ad = _F + _Add + 8;
-            _Bd = _F - _Add + 8;
-            _E = (_C * C6) >> 16;
-            _Cd = _F - _G + 8;
-            _Dd = _F + _G + 8;
-            _F = _Dd - _Hd;
-            _G = _Cd - _Gd;
-            _Dd += _Hd;
-            _Cd += _Gd;
-            _H = _Bdd + _E;
-            _E = _Bdd - _E;
-
-            op[0] = _Dd >> 4;
-            op[56] = _F >> 4;
-            op[8] = (_Ad + _H) >> 4;
-            op[16] = (_Ad - _H) >> 4;
-            op[24] = _Cd >> 4;
-            op[32] = _G >> 4;
-            op[40] = (_Bd + _E) >> 4;
-            op[48] = (_Bd - _E) >> 4;
+        if (ip[0] | ip[8] | ip[16] | ip[24]) {
+            t1 = ip[8] * C1;
+            _A = (t1 >> 16);
+            t1 = ip[8] * C7;
+            _B = (t1 >> 16);
+            t1 = ip[24] * C3;
+            t1 >>= 16;
+            _D = t1;
+            t2 = ip[24] * C5;
+            t2 >>= 16;
+            _C = -t2;
+            t1 = (_A - _D) * C4;
+            _Ad = t1 >> 16;
+            t1 = (_B - _C) * C4;
+            _Bd = t1 >> 16;
+            _Cd = _A + _D;
+            _Dd = _B + _C;
+            t1 = ip[0] * C4;
+            _E = t1 >> 16;
+            _F = _E;
+            t1 = ip[16] * C2;
+            _G = t1 >> 16;
+            t1 = ip[16] * C6;
+            _H = t1 >> 16;
+            _Ed = _E - _G;
+            _Gd = _E + _G;
+            _Add = _F + _Ad;
+            _Bdd = _Bd - _H;
+            _Fd = _F - _Ad;
+            _Hd = _Bd + _H;
+            _Add += 8;
+            _Fd += 8;
+            _Ed += 8;
+            _Gd += 8;
+            op[0] = (_Gd + _Cd) >> 4;
+            op[56] = (_Gd - _Cd) >> 4;
+            op[8] = (_Add + _Hd) >> 4;
+            op[16] = (_Add - _Hd) >> 4;
+            op[24] = (_Ed + _Dd) >> 4;
+            op[32] = (_Ed - _Dd) >> 4;
+            op[40] = (_Fd + _Bdd) >> 4;
+            op[48] = (_Fd - _Bdd) >> 4;
         } else {
             op[0] = 0;
             op[56] = 0;
@@ -159,7 +164,7 @@ void IDct10(short *InputData, short *QuantMatrix, short *OutputData) {
             op[40] = 0;
             op[48] = 0;
         }
-        ip++;
+        ip += 1;
         op++;
     }
 }

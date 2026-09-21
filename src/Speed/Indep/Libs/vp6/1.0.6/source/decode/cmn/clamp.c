@@ -60,17 +60,12 @@ void ClampLevels_C(POSTPROC_INSTANCE *pbi, int BlackClamp, int WhiteClamp, unsig
     int row;
     int col;
     unsigned char clamped[256];
-    int width;
-    int height;
-    unsigned char *SrcPtr;
-    unsigned char *DestPtr;
-    unsigned int LineLength;
+    int width = pbi->HFragments * 8;
+    int height = pbi->VFragments * 8;
+    unsigned char *SrcPtr = Src + pbi->ReconYDataOffset;
+    unsigned char *DestPtr = Dst + pbi->ReconYDataOffset;
+    unsigned int LineLength = pbi->YStride;
 
-    width = pbi->HFragments << 3;
-    height = pbi->VFragments << 3;
-    LineLength = pbi->YStride;
-    SrcPtr = Src + pbi->ReconYDataOffset;
-    DestPtr = Dst + pbi->ReconYDataOffset;
 
     for (i = 0; i < 256; i++) {
         clamped[i] = i;

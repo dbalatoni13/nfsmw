@@ -197,7 +197,7 @@ int AllocatePostProcBuffers(POSTPROC_INSTANCE *ppi) {
     }
     ppi->FragmentVariances = (int *)(((unsigned int)ppi->FragmentVariancesAlloc + 0x1f) & ~0x1f);
 
-    ppi->FragDeblockingFlagAlloc = (unsigned char *)duck_malloc(ppi->UnitFragments * 4 + 0x20, 0);
+    ppi->FragDeblockingFlagAlloc = (unsigned char *)duck_malloc(ppi->UnitFragments + 0x20, 0);
     if (ppi->FragDeblockingFlagAlloc == 0) {
         DeletePostProcBuffers(ppi);
         return 0;
@@ -308,160 +308,127 @@ void PostProcess(POSTPROC_INSTANCE *ppi, int Vp3VersionNo, int FrameType,
     ppi->PostProcessBuffer = PostProcessBuffer;
 
     switch (PostProcessingLevel) {
-    case 0:
-        if (ppi->Configuration.Interlaced != 0 &&
-            ppi->DeInterlaceMode != 0) {
-            ReconUVPlaneSize = ppi->VFragments *
-                               (ppi->YStride + ppi->YStride);
-            memcpy(PostProcessBuffer + ppi->ReconUDataOffset,
-                   LastFrameRecon + ppi->ReconUDataOffset,
-                   ReconUVPlaneSize);
-            memcpy(PostProcessBuffer + ppi->ReconVDataOffset,
-                   LastFrameRecon + ppi->ReconVDataOffset,
-                   ReconUVPlaneSize);
-            FastDeInterlace(LastFrameRecon + ppi->ReconYDataOffset,
-                            PostProcessBuffer + ppi->ReconYDataOffset,
-                            ppi->HFragments << 3, ppi->VFragments << 3,
-                            ppi->YStride);
+    case 8:
+        UpdateFragQIndex(ppi);
+        if (ppi->Vp3VersionNo > 1) {
+            if (ppi->Configuration.Interlaced != 0 && ppi->DeInterlaceMode != 0) {
+                SimpleDeblockFrame(ppi, ppi->LastFrameRecon, ppi->IntermediateBuffer);
+                ReconUVPlaneSize = ppi->VFragments * (ppi->YStride + ppi->YStride);
+                memcpy(ppi->PostProcessBuffer + ppi->ReconUDataOffset,
+                       ppi->IntermediateBuffer + ppi->ReconUDataOffset, ReconUVPlaneSize);
+                memcpy(ppi->PostProcessBuffer + ppi->ReconVDataOffset,
+                       ppi->IntermediateBuffer + ppi->ReconVDataOffset, ReconUVPlaneSize);
+                FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
+                                ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                                ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride);
+            } else {
+                SimpleDeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+            }
+            break;
+        }
+        DeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+        break;
+    case 5:
+    case 6:
+        if (ppi->Vp3VersionNo <= 4) {
+            UpdateFragQIndex(ppi);
+        } else {
+            if (ppi->Configuration.Interlaced != 0) {
+                if (ppi->DeInterlaceMode == 0) {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+                    UpdateUMVBorder(ppi, ppi->PostProcessBuffer);
+                    DeringFrameInterlaced(ppi, ppi->PostProcessBuffer, ppi->PostProcessBuffer);
+                } else {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->IntermediateBuffer);
+                    UpdateUMVBorder(ppi, ppi->IntermediateBuffer);
+                    DeringFrameInterlaced(ppi, ppi->IntermediateBuffer, ppi->IntermediateBuffer);
+                    ReconUVPlaneSize = ppi->VFragments * (ppi->YStride + ppi->YStride);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconUDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconUDataOffset, ReconUVPlaneSize);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconVDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconVDataOffset, ReconUVPlaneSize);
+                    FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
+                                    ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                                    ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride);
+                }
+                break;
+            }
+        }
+        DeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+        UpdateUMVBorder(ppi, ppi->PostProcessBuffer);
+        DeringFrame(ppi, ppi->PostProcessBuffer, ppi->PostProcessBuffer);
+        if (ppi->AddNoiseMode != 0) {
+            PlaneAddNoise(ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                          ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride, FrameQIndex);
         }
         break;
-
+    case 7:
+        if (ppi->Vp3VersionNo > 4) {
+            if (ppi->Configuration.Interlaced != 0) {
+                if (ppi->DeInterlaceMode == 0) {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+                } else {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->IntermediateBuffer);
+                    ReconUVPlaneSize = ppi->VFragments * (ppi->YStride + ppi->YStride);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconUDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconUDataOffset, ReconUVPlaneSize);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconVDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconVDataOffset, ReconUVPlaneSize);
+                    FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
+                                    ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                                    ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride);
+                }
+                break;
+            }
+        } else {
+            UpdateFragQIndex(ppi);
+        }
+        DeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+        UpdateUMVBorder(ppi, ppi->PostProcessBuffer);
+        DeringFrame(ppi, ppi->PostProcessBuffer, ppi->PostProcessBuffer);
+        break;
+    case 4:
+        if (ppi->Vp3VersionNo > 4) {
+            if (ppi->Configuration.Interlaced != 0) {
+                if (ppi->DeInterlaceMode == 0) {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+                } else {
+                    DeblockFrameInterlaced(ppi, ppi->LastFrameRecon, ppi->IntermediateBuffer);
+                    ReconUVPlaneSize = ppi->VFragments * (ppi->YStride + ppi->YStride);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconUDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconUDataOffset, ReconUVPlaneSize);
+                    memcpy(ppi->PostProcessBuffer + ppi->ReconVDataOffset,
+                           ppi->IntermediateBuffer + ppi->ReconVDataOffset, ReconUVPlaneSize);
+                    FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
+                                    ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                                    ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride);
+                }
+                break;
+            }
+        } else {
+            UpdateFragQIndex(ppi);
+        }
+        DeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+        break;
     case 1:
         UpdateFragQIndex(ppi);
         break;
-
-    case 4:
-        if (Vp3VersionNo <= 4) {
-            UpdateFragQIndex(ppi);
-            DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-        } else if (ppi->Configuration.Interlaced == 0) {
-            DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-        } else if (ppi->DeInterlaceMode == 0) {
-            DeblockFrameInterlaced(ppi, LastFrameRecon, PostProcessBuffer);
-        } else {
-            DeblockFrameInterlaced(ppi, LastFrameRecon,
-                                   ppi->IntermediateBuffer);
-            ReconUVPlaneSize = ppi->VFragments *
-                               (ppi->YStride + ppi->YStride);
-            memcpy(PostProcessBuffer + ppi->ReconUDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconUDataOffset,
-                   ReconUVPlaneSize);
-            memcpy(PostProcessBuffer + ppi->ReconVDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconVDataOffset,
-                   ReconUVPlaneSize);
-            FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
-                            PostProcessBuffer + ppi->ReconYDataOffset,
-                            ppi->HFragments << 3, ppi->VFragments << 3,
-                            ppi->YStride);
+    case 0:
+        if (ppi->Configuration.Interlaced != 0 && ppi->DeInterlaceMode != 0) {
+            ReconUVPlaneSize = ppi->VFragments * (ppi->YStride + ppi->YStride);
+            memcpy(ppi->PostProcessBuffer + ppi->ReconUDataOffset,
+                   ppi->LastFrameRecon + ppi->ReconUDataOffset, ReconUVPlaneSize);
+            memcpy(ppi->PostProcessBuffer + ppi->ReconVDataOffset,
+                   ppi->LastFrameRecon + ppi->ReconVDataOffset, ReconUVPlaneSize);
+            FastDeInterlace(ppi->LastFrameRecon + ppi->ReconYDataOffset,
+                            ppi->PostProcessBuffer + ppi->ReconYDataOffset,
+                            ppi->HFragments << 3, ppi->VFragments << 3, ppi->YStride);
         }
         break;
-
-    case 5:
-    case 6:
-        if (Vp3VersionNo <= 4) {
-            UpdateFragQIndex(ppi);
-        }
-        if (Vp3VersionNo > 4 && ppi->Configuration.Interlaced != 0) {
-            if (ppi->DeInterlaceMode == 0) {
-                DeblockFrameInterlaced(ppi, LastFrameRecon,
-                                       PostProcessBuffer);
-                UpdateUMVBorder(ppi, PostProcessBuffer);
-                DeringFrameInterlaced(ppi, PostProcessBuffer,
-                                      PostProcessBuffer);
-            } else {
-                DeblockFrameInterlaced(ppi, LastFrameRecon,
-                                       ppi->IntermediateBuffer);
-                UpdateUMVBorder(ppi, ppi->IntermediateBuffer);
-                DeringFrameInterlaced(ppi, ppi->IntermediateBuffer,
-                                      ppi->IntermediateBuffer);
-                ReconUVPlaneSize = ppi->VFragments *
-                                   (ppi->YStride + ppi->YStride);
-                memcpy(PostProcessBuffer + ppi->ReconUDataOffset,
-                       ppi->IntermediateBuffer + ppi->ReconUDataOffset,
-                       ReconUVPlaneSize);
-                memcpy(PostProcessBuffer + ppi->ReconVDataOffset,
-                       ppi->IntermediateBuffer + ppi->ReconVDataOffset,
-                       ReconUVPlaneSize);
-                FastDeInterlace(ppi->IntermediateBuffer +
-                                    ppi->ReconYDataOffset,
-                                PostProcessBuffer + ppi->ReconYDataOffset,
-                                ppi->HFragments << 3, ppi->VFragments << 3,
-                                ppi->YStride);
-            }
-        } else {
-            DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-            UpdateUMVBorder(ppi, PostProcessBuffer);
-            DeringFrame(ppi, PostProcessBuffer, PostProcessBuffer);
-            if (ppi->AddNoiseMode != 0) {
-                PlaneAddNoise(PostProcessBuffer + ppi->ReconYDataOffset,
-                              ppi->HFragments << 3, ppi->VFragments << 3,
-                              ppi->YStride, FrameQIndex);
-            }
-            FastDeInterlace(PostProcessBuffer + ppi->ReconYDataOffset,
-                            PostProcessBuffer + ppi->ReconYDataOffset,
-                            ppi->HFragments << 3, ppi->VFragments << 3,
-                            ppi->YStride);
-        }
-        break;
-
-    case 7:
-        if (Vp3VersionNo <= 4) {
-            UpdateFragQIndex(ppi);
-            DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-        } else if (ppi->Configuration.Interlaced == 0) {
-            DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-            UpdateUMVBorder(ppi, PostProcessBuffer);
-            DeringFrame(ppi, PostProcessBuffer, PostProcessBuffer);
-        } else if (ppi->DeInterlaceMode == 0) {
-            DeblockFrameInterlaced(ppi, LastFrameRecon, PostProcessBuffer);
-        } else {
-            DeblockFrameInterlaced(ppi, LastFrameRecon,
-                                   ppi->IntermediateBuffer);
-            ReconUVPlaneSize = ppi->VFragments *
-                               (ppi->YStride + ppi->YStride);
-            memcpy(PostProcessBuffer + ppi->ReconUDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconUDataOffset,
-                   ReconUVPlaneSize);
-            memcpy(PostProcessBuffer + ppi->ReconVDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconVDataOffset,
-                   ReconUVPlaneSize);
-            FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
-                            PostProcessBuffer + ppi->ReconYDataOffset,
-                            ppi->HFragments << 3, ppi->VFragments << 3,
-                            ppi->YStride);
-        }
-        break;
-
-    case 8:
-        UpdateFragQIndex(ppi);
-        if (Vp3VersionNo <= 1) {
-            break;
-        }
-        if (ppi->Configuration.Interlaced == 0 ||
-            ppi->DeInterlaceMode == 0) {
-            SimpleDeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-        } else {
-            SimpleDeblockFrame(ppi, LastFrameRecon,
-                               ppi->IntermediateBuffer);
-            ReconUVPlaneSize = ppi->VFragments *
-                               (ppi->YStride + ppi->YStride);
-            memcpy(PostProcessBuffer + ppi->ReconUDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconUDataOffset,
-                   ReconUVPlaneSize);
-            memcpy(PostProcessBuffer + ppi->ReconVDataOffset,
-                   ppi->IntermediateBuffer + ppi->ReconVDataOffset,
-                   ReconUVPlaneSize);
-            FastDeInterlace(ppi->IntermediateBuffer + ppi->ReconYDataOffset,
-                            PostProcessBuffer + ppi->ReconYDataOffset,
-                            ppi->HFragments << 3, ppi->VFragments << 3,
-                            ppi->YStride);
-        }
-        break;
-
     default:
-        DeblockFrame(ppi, LastFrameRecon, PostProcessBuffer);
-        UpdateUMVBorder(ppi, PostProcessBuffer);
-        DeringFrame(ppi, PostProcessBuffer, PostProcessBuffer);
+        DeblockFrame(ppi, ppi->LastFrameRecon, ppi->PostProcessBuffer);
+        UpdateUMVBorder(ppi, ppi->PostProcessBuffer);
+        DeringFrame(ppi, ppi->PostProcessBuffer, ppi->PostProcessBuffer);
         break;
     }
 }
@@ -479,9 +446,9 @@ void InitPostProcessing(unsigned int *DCQuantScaleV2p, unsigned int *DCQuantScal
                 if (x > 0xff) {
                     x = 0xff;
                 }
-                *(i + LimitVal_VP31) = x;
+                LimitVal_VP31[i] = x;
             } else {
-                *(i + LimitVal_VP31) = 0;
+                LimitVal_VP31[i] = 0;
             }
         }
     }
@@ -490,9 +457,8 @@ void InitPostProcessing(unsigned int *DCQuantScaleV2p, unsigned int *DCQuantScal
     DCQuantScaleUV = DCQuantScaleUVp;
     DCQuantScaleV1 = DCQuantScaleV1p;
 
-    for (i = 0; i < 0x100; i += 4) {
-        *(unsigned int *)((unsigned char *)DeringModifierV1 + i) =
-            *(unsigned int *)(i + (unsigned char *)DCQuantScaleV1p);
+    for (i = 0; i < 64; i++) {
+        DeringModifierV1[i] = DCQuantScaleV1p[i];
     }
 
     if (Version > 5) {
@@ -522,11 +488,11 @@ void ChangePostProcConfiguration(POSTPROC_INSTANCE *ppi, CONFIG_TYPE *Configurat
     ppi->ReconYDataOffset = ppi->MVBorder * ppi->YStride + ppi->MVBorder;
     ppi->ReconUDataOffset =
         ppi->YStride * (ppi->Configuration.VideoFrameHeight + 2 * ppi->MVBorder) +
-        ppi->UVStride * (ppi->MVBorder / 2) + (ppi->MVBorder / 2);
+        (ppi->MVBorder / 2) * ppi->UVStride + (ppi->MVBorder / 2);
     ppi->ReconVDataOffset =
-        ppi->ReconUDataOffset +
-        ppi->UVStride * ((ppi->Configuration.VideoFrameHeight / 2) + ppi->MVBorder) +
-        ppi->UVStride * (ppi->MVBorder / 2) + (ppi->MVBorder / 2);
+        ppi->YStride * (ppi->Configuration.VideoFrameHeight + 2 * ppi->MVBorder) +
+        ppi->UVStride * (ppi->Configuration.VideoFrameHeight / 2 + ppi->MVBorder) +
+        (ppi->MVBorder / 2) * ppi->UVStride + ppi->MVBorder / 2;
 }
 
 void SetPPInterlacedMode(POSTPROC_INSTANCE *ppi, int Interlaced) {

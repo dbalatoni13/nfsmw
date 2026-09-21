@@ -4,6 +4,14 @@
 #include "Allocator/iallocator.h"
 #include "types.h"
 
+struct STREAMCHUNKHDR;
+
+enum STREAMSTATE {
+    STREAM_IDLE = 0,
+    STREAM_RUNNING = 1,
+    STREAM_STOPPED = 2,
+};
+
 typedef int FILEOP;
 typedef void FILESYS_CALLBACK(int, int, void *);
 typedef int FILESYS_ATOM(int, void *);
@@ -40,7 +48,7 @@ FILEOP FILESYS_open(const char *name, unsigned int modeflags, int priority, void
 FILEOP FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
 FILEOP FILESYS_readlarge(int filehandle, unsigned long long offset, void *buffer, unsigned long long bytes, int priority, void *userdata);
 FILEOP FILESYS_write(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
-int FILESYS_close(int filehandle, int timeout, void *userdata);
+int FILESYS_close(int filehandle, int priority, void *userdata);
 FILEOP FILESYS_size(int filehandle, int priority, void *userdata);
 FILEOP FILESYS_exists(const char *name, int priority, void *userdata);
 

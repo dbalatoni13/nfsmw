@@ -36,12 +36,13 @@ int TIMER_init(int hz) {
         }
         TIMERhz = hz;
         now = OSGetTime();
-        tmp = OS_TIMER_CLOCK;
-        Period = static_cast<int>(static_cast<float>(tmp) * (1.0f / hz));
+        tmp = static_cast<int>(static_cast<float>(OS_TIMER_CLOCK) * (1.0f / hz));
+        Period = tmp;
         ttInit();
         OSSetPeriodicAlarm(&Alarm, now, Period, AlarmHandler);
         bIsTimerInited = 1;
         SYSTEM_addexit(TIMER_restore);
+        return TIMERhz;
     }
     return TIMERhz;
 }

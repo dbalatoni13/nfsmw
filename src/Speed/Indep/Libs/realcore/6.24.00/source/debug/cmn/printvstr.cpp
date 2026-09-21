@@ -5,8 +5,8 @@
 void PRINT_vstring(PRINTCHANNEL channel, const char *format, va_list args);
 
 void PRINT_string(PRINTCHANNEL channel, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    PRINT_vstring(channel, format, args);
-    va_end(args);
+    va_list arglist;
+    va_start(arglist, format);
+    PRINT_vstring(channel, format, arglist);
+    va_end(arglist);
 }

@@ -405,12 +405,12 @@ int Wildcard(char *nam, char *pat) {
                     return 1;
                 }
             } while (*nam++ != 0);
-            return 0;
+            break;
         }
         if (*pat == '?') {
             pat++;
             if (*nam == 0) {
-                return 0;
+                break;
             }
             nam++;
             continue;
@@ -418,14 +418,16 @@ int Wildcard(char *nam, char *pat) {
         if (*pat == '#') {
             pat++;
             if (!isdigit(*nam)) {
-                return 0;
+                break;
             }
             nam++;
             continue;
         }
-        if (*pat != '~') {
+        if (*pat == '~') {
+            return !Wildcard(nam, pat + 1);
+        } else {
             if (*pat != *nam) {
-                return 0;
+                break;
             }
             if (*pat != 0) {
                 pat++;
@@ -433,10 +435,10 @@ int Wildcard(char *nam, char *pat) {
                 continue;
             }
             return 1;
-        } else {
-            return !Wildcard(nam, pat + 1);
+
         }
     }
+    return 0;
 }
 
 } // namespace RealmcUtils

@@ -1,5 +1,7 @@
 #include "../../../include/vp6_pbdll.h"
 #include <stdio.h>
+#include <dolphin/types.h>
+#include <dolphin/os/OSFastCast.h>
 
 typedef struct {
     unsigned int FrameQIndex;
@@ -60,13 +62,6 @@ extern void SetAddNoiseMode(struct POSTPROC_INSTANCE *ppi, int AddNoiseMode);
 extern void CopyFrame(struct POSTPROC_INSTANCE *ppi, YUV_BUFFER_CONFIG *b,
                       unsigned char *DestReconPtr);
 extern int AllocatePostProcBuffers(struct POSTPROC_INSTANCE *ppi);
-extern void PostProcess(struct POSTPROC_INSTANCE *ppi, int Vp3VersionNo,
-                        int FrameType, int PostProcessingLevel, int FrameQIndex,
-                        unsigned char *LastFrameRecon,
-                        unsigned char *PostProcessBuffer,
-                        unsigned char *FragInfo,
-                        unsigned int FragInfoElementSize,
-                        unsigned int FragInfoCodedMask);
 extern void (*ClampLevels)(struct POSTPROC_INSTANCE *ppi, int BlackClamp,
                            int WhiteClamp, unsigned char *Src,
                            unsigned char *Dst);
@@ -76,33 +71,12 @@ extern void InitHeaderBuffer(struct FRAME_HEADER *Header, unsigned char *Buffer)
 extern int VP6_LoadFrame(struct PB_INSTANCE *pbi);
 extern void VP6_StartDecode(void *br, unsigned char *source);
 extern int VP6_DecodeFrameMbs(struct PB_INSTANCE *pbi);
-extern void UpdateUMVBorder(struct POSTPROC_INSTANCE *ppi);
+extern void UpdateUMVBorder(struct POSTPROC_INSTANCE *ppi, unsigned char *DestReconPtr);
 extern unsigned int CPUFrequency;
 
 int CurrentFrame;
 
-static inline void OSInitFastCast(void) {
-    __asm__("li 3, 4\n"
-            "oris 3, 3, 4\n"
-            "mtspr 914, 3\n"
-            "li 3, 5\n"
-            "oris 3, 3, 5\n"
-            "mtspr 915, 3\n"
-            "li 3, 6\n"
-            "oris 3, 3, 6\n"
-            "mtspr 916, 3\n"
-            "li 3, 7\n"
-            "oris 3, 3, 7\n"
-            "mtspr 917, 3");
-}
 
-static inline void OSSetGQR6(unsigned int type, unsigned int scale) {
-    unsigned int val;
-
-    val = type | (scale << 8);
-    val |= val << 16;
-    __asm__("mtspr 918, %0" : : "r"(val) : "r0");
-}
 
 int VP6_StartDecoder(struct PB_INSTANCE **pbi, unsigned int ImageWidth,
                      unsigned int ImageHeight) {
@@ -171,11 +145,16 @@ void VP6_SetPbParam(struct PB_INSTANCE *pbi, PB_COMMAND_TYPE Command,
 }
 
 void VP6_GetYUVConfig(struct PB_INSTANCE *pbi, YUV_BUFFER_CONFIG *YuvConfig) {
-    {
-    }
-
     if (pbi->PostProcessingLevel != 0 ||
         (pbi->Configuration.Interlaced != 0 && pbi->DeInterlaceMode != 0)) {
+        extern void PostProcess(struct POSTPROC_INSTANCE *ppi, int Vp3VersionNo,
+                                int FrameType, int PostProcessingLevel, int FrameQIndex,
+                                unsigned char *LastFrameRecon,
+                                unsigned char *PostProcessBuffer,
+                                unsigned char *FragInfo,
+                                unsigned int FragInfoElementSize,
+                                unsigned int FragInfoCodedMask);
+
         if (pbi->PostProcessBuffer == 0) {
             pbi->PostProcessBufferAlloc = (unsigned char *)duck_malloc(
                 (pbi->Configuration.YStride + 32) +
@@ -196,9 +175,9 @@ void VP6_GetYUVConfig(struct PB_INSTANCE *pbi, YUV_BUFFER_CONFIG *YuvConfig) {
     }
 
     if (pbi->Configuration.VideoFrameWidth <
-            (pbi->OutputWidth + (pbi->Configuration.VideoFrameWidth * 0)) ||
+            pbi->OutputWidth ||
         pbi->Configuration.VideoFrameHeight <
-            (pbi->OutputHeight + (pbi->Configuration.VideoFrameHeight * 0))) {
+            pbi->OutputHeight) {
         YuvConfig->YWidth = pbi->OutputWidth + 32;
         YuvConfig->YHeight = pbi->OutputHeight + 32;
         YuvConfig->YStride = YuvConfig->YWidth;
@@ -206,11 +185,12 @@ void VP6_GetYUVConfig(struct PB_INSTANCE *pbi, YUV_BUFFER_CONFIG *YuvConfig) {
         YuvConfig->UVStride = YuvConfig->UVWidth;
         YuvConfig->UVHeight = YuvConfig->YHeight / 2;
         YuvConfig->YBuffer = (char *)pbi->ScaleBuffer;
-        YuvConfig->UBuffer = YuvConfig->YBuffer +
+        YuvConfig->UBuffer = (char *)pbi->ScaleBuffer +
                              YuvConfig->YStride * YuvConfig->YHeight;
-        YuvConfig->VBuffer = YuvConfig->UBuffer +
+        YuvConfig->VBuffer = (char *)pbi->ScaleBuffer +
+                             YuvConfig->YStride * YuvConfig->YHeight +
                              YuvConfig->UVStride * YuvConfig->UVHeight;
-        YuvConfig->YBufferStart = YuvConfig->YBuffer;
+        YuvConfig->YBufferStart = (char *)pbi->ScaleBuffer;
         if (pbi->PostProcessingLevel != 0) {
             ScaleOrCenter(pbi->postproc, pbi->PostProcessBuffer, YuvConfig);
         } else {
@@ -277,47 +257,37 @@ static int VP6_DecodeFrameToYUV_internal(struct PB_INSTANCE *pbi,
                                          unsigned int ImageHeight) {
     unsigned char *tmp;
 
-    {
-        struct __sFILE *f;
-    }
-
     pbi->CurrentFrameSize = ByteCount;
     InitHeaderBuffer(&pbi->Header, (unsigned char *)VideoBufferPtr);
     if (VP6_LoadFrame(pbi) == 0) {
         return -1;
     }
-    if (pbi->MultiStream == 0) {
-        if (pbi->VpProfile == 0) {
-            if (pbi->UseHuffman != 0) {
-                pbi->br3.bitsinremainder = 0;
-                pbi->br3.remainder = 0;
-                pbi->br3.position = (unsigned char *)VideoBufferPtr +
-                                    pbi->Buff2Offset;
-            } else {
-                VP6_StartDecode(&pbi->br2,
-                                (unsigned char *)VideoBufferPtr + pbi->Buff2Offset);
-            }
+    if (pbi->MultiStream != 0 || pbi->VpProfile == 0) {
+        if (pbi->UseHuffman != 0) {
+            pbi->br3.bitsinremainder = 0;
+            pbi->br3.remainder = 0;
+            pbi->br3.position = (unsigned char *)VideoBufferPtr + pbi->Buff2Offset;
+        } else {
+            VP6_StartDecode(&pbi->br2, (unsigned char *)VideoBufferPtr + pbi->Buff2Offset);
         }
     }
     VP6_DecodeFrameMbs(pbi);
 
-    tmp = pbi->OtherFrameRecon != 0 ? pbi->OtherFrameRecon :
-          pbi->LastFrameRecon;
+    tmp = pbi->LastFrameRecon;
     pbi->LastFrameRecon = pbi->ThisFrameRecon;
+    pbi->ThisFrameRecon = pbi->OtherFrameRecon != 0 ? pbi->OtherFrameRecon : tmp;
     pbi->OtherFrameRecon = 0;
-    pbi->ThisFrameRecon = tmp;
-    UpdateUMVBorder(pbi->postproc);
+    UpdateUMVBorder(pbi->postproc, pbi->LastFrameRecon);
 
-    if (pbi->FrameType != 0 && pbi->RefreshGoldenFrame != 0) {
+    if (pbi->FrameType == 0 || pbi->RefreshGoldenFrame != 0) {
         pbi->OtherFrameRecon = pbi->GoldenFrame;
         pbi->GoldenFrame = pbi->LastFrameRecon;
     }
 
     if (pbi->FrameType == 0) {
-        pbi->AvgFrameQIndex = pbi->quantizer->QThreshTable[0];
+        pbi->AvgFrameQIndex = pbi->quantizer->FrameQIndex;
     } else {
-        pbi->AvgFrameQIndex = (pbi->AvgFrameQIndex * 3 +
-                               pbi->quantizer->QThreshTable[0] + 2) >> 2;
+        pbi->AvgFrameQIndex = ((pbi->AvgFrameQIndex * 3 + 2) + pbi->quantizer->FrameQIndex) >> 2;
     }
 
     if (pbi->br.pos > pbi->CurrentFrameSize) {
@@ -338,34 +308,21 @@ int VP6_DecodeFrameToYUV(struct PB_INSTANCE *pbi, char *VideoBufferPtr,
     int result;
     unsigned int _gqrStates[5];
 
-    __asm__ volatile("mfspr 9, 914\n"
-                     "mfspr 11, 915\n"
-                     "mfspr 10, 916\n"
-                     "mfspr 8, 917\n"
-                     "mfspr 30, 918\n"
-                     "mr 0, 3\n"
-                     "stw 9, 8(1)\n"
-                     "stw 11, 12(1)\n"
-                     "stw 10, 16(1)\n"
-                     "stw 8, 20(1)\n"
-                     "stw 30, 24(1)"
-                     : : : "r8", "r9", "r10", "r11", "r30");
+    /* Preserve GQR2 through GQR6 across the native decoder. */
+    __asm__("mfspr %0, 914" : "=b"(_gqrStates[0]));
+    __asm__("mfspr %0, 915" : "=b"(_gqrStates[1]));
+    __asm__("mfspr %0, 916" : "=b"(_gqrStates[2]));
+    __asm__("mfspr %0, 917" : "=b"(_gqrStates[3]));
+    __asm__("mfspr %0, 918" : "=b"(_gqrStates[4]));
     OSInitFastCast();
     OSSetGQR6(5, 0x39);
-    __asm__("mr 3, 0");
     result = VP6_DecodeFrameToYUV_internal(pbi, VideoBufferPtr, ByteCount,
                                            ImageWidth, ImageHeight);
-    __asm__ volatile("lwz 9, 24(1)\n"
-                     "mtspr 918, 9\n"
-                     "lwz 11, 20(1)\n"
-                     "mtspr 917, 11\n"
-                     "lwz 9, 16(1)\n"
-                     "mtspr 916, 9\n"
-                     "lwz 11, 12(1)\n"
-                     "mtspr 915, 11\n"
-                     "lwz 9, 8(1)\n"
-                     "mtspr 914, 9"
-                     : : : "r9", "r11");
+    __asm__("mtspr 918, %0" : : "b"(_gqrStates[4]));
+    __asm__("mtspr 917, %0" : : "b"(_gqrStates[3]));
+    __asm__("mtspr 916, %0" : : "b"(_gqrStates[2]));
+    __asm__("mtspr 915, %0" : : "b"(_gqrStates[1]));
+    __asm__("mtspr 914, %0" : : "b"(_gqrStates[0]));
     return result;
 }
 

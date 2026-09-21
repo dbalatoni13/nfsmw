@@ -75,6 +75,7 @@ struct tBigYUVSwizzler *NEW_tBigYUVSwizzlerTexture(struct _GXTexObj *tYTexp,
     return This;
 }
 
+// NON_MATCHING: original matrix assignment order restored; floating-point saves and frame layout still differ.
 void tBigYUVSwizzler_DrawSetup(tBigYUVSwizzler *This, struct _GXTexObj *YImage,
                                struct _GXTexObj *CrImage, struct _GXTexObj *CbImage) {
     float mtx[2][3];
@@ -122,17 +123,17 @@ void tBigYUVSwizzler_DrawSetup(tBigYUVSwizzler *This, struct _GXTexObj *YImage,
 
     mtx[0][0] = static_cast<float>(UVSwizzler->TileWidth) * 0.0625f;
     mtx[0][1] = 0.0f;
-    mtx[0][2] = 0.0f;
-    mtx[1][0] = 0.0f;
     mtx[1][1] = static_cast<float>(UVSwizzler->TileHeight) * 0.0625f;
+    mtx[1][0] = 0.0f;
+    mtx[0][2] = 0.0f;
     mtx[1][2] = 0.0f;
     GXSetIndTexMtx(GX_ITM_0, reinterpret_cast<const float (*)[3]>(mtx), 4);
 
     mtx[0][0] = 0.0625f;
     mtx[0][1] = 0.0f;
-    mtx[0][2] = 0.0f;
-    mtx[1][0] = 0.0f;
     mtx[1][1] = 0.0625f;
+    mtx[1][0] = 0.0f;
+    mtx[0][2] = 0.0f;
     mtx[1][2] = 0.0f;
     GXSetIndTexMtx(GX_ITM_1, reinterpret_cast<const float (*)[3]>(mtx), 4);
 

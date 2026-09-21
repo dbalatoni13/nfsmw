@@ -123,7 +123,7 @@ inline unsigned char *BANKHDR_GetSampleRepeatAddr(VOXBANKHDR *hdr) {
     addr = BANKHDR_GetCycleBitsAddr(hdr);
     cycleBytes = 0;
     if ((hdr->parmFlags & 0x80) != 0) {
-        cycleBytes = ((hdr->numSamples + 7) >> 3) + 1;
+        cycleBytes = (hdr->numSamples + 7) / 8 + 1;
     }
     return addr + cycleBytes;
 }
@@ -292,7 +292,7 @@ struct EventChoice {
     PhraseChoice phrases[12];
 };
 
-extern VOXINGAME gVoxInGame[8];
+extern VOXINGAME gVoxInGame[];
 
 // Decl: 123
 #define SPCH_SetVecsToReal(extVecs)                                                                                                                  \

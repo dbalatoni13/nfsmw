@@ -45,15 +45,15 @@ static short iSPCH_FindInsertPosition(VOXBANKHDR *hdr) {
                 return static_cast<short>(mid);
             }
         }
-        if (hdr->type < gVoxBanks[mid].voxHdr->type ||
-            (hdr->type == gVoxBanks[mid].voxHdr->type && hdr->subID < gVoxBanks[mid].voxHdr->subID)) {
+        if ((hdr->type == gVoxBanks[mid].voxHdr->type && hdr->subID < gVoxBanks[mid].voxHdr->subID) ||
+            hdr->type < gVoxBanks[mid].voxHdr->type) {
             if ((hdr->type == gVoxBanks[mid - 1].voxHdr->type && hdr->subID > gVoxBanks[mid - 1].voxHdr->subID) ||
                 hdr->type > gVoxBanks[mid - 1].voxHdr->type) {
                 return static_cast<short>(mid);
             }
         }
-        if (gVoxBanks[mid].voxHdr->type < hdr->type ||
-            (hdr->type == gVoxBanks[mid].voxHdr->type && gVoxBanks[mid].voxHdr->subID < hdr->subID)) {
+        if (hdr->type > gVoxBanks[mid].voxHdr->type ||
+            (hdr->type == gVoxBanks[mid].voxHdr->type && hdr->subID > gVoxBanks[mid].voxHdr->subID)) {
             start = mid + 1;
             if (gVoxBanks[start].voxHdr == 0) {
                 return static_cast<short>(start);
@@ -90,9 +90,9 @@ void iSPCH_SetCycleBits(VOXBANKHDR *bank) {
     startSample = iSPCH_GetStartSample(gameNum, numSamples, cycleLength);
     nextStartSample = iSPCH_GetStartSample(gameNum + 1, numSamples, cycleLength);
     numValid = nextStartSample - startSample;
-    i = 0;
-    cycleBit = startSample & 7;
     cycleByte = (startSample >> 3) + 1;
+    cycleBit = startSample & 7;
+    i = 0;
     while (i < numValid) {
         mask = 1 << cycleBit;
         data[cycleByte] = data[cycleByte] | mask;

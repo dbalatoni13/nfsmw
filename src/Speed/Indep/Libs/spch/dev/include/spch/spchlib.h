@@ -78,7 +78,7 @@ inline unsigned char *iSPCH_GetContextDataAddr(VoxEvent *event) {
     unsigned char *data;
 
     data = iSPCH_GetSentenceRulesAddr(event);
-    data += (event->numSentences * ((VoxEvent_GetNumRules(event) + 7) >> 3) * 2 + 3) & ~3;
+    data += (((VoxEvent_GetNumRules(event) + 7) / 8) * event->numSentences * 2 + 3) & ~3;
     return data;
 }
 

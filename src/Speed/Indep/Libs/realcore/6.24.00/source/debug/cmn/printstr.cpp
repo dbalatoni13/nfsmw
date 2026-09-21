@@ -1,24 +1,9 @@
-#include "../../../../../../Src/EAGL4Anim/eagl4supportprintmessage.h"
+#include "printi.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 
-typedef void (*PRINTFUNCTION)(PRINTCHANNEL, const char *);
-
-struct PRINTCHANNELINFO {
-    const char *name;
-    bool enabled;
-    bool library_channel;
-};
-
-struct PRINTDEVICEINFO {
-    const char *name;
-    PRINTFUNCTION func;
-    bool enabled;
-};
-
 static PRINTCHANNELINFO PRINTchannellist[64];
-extern PRINTDEVICEINFO PRINTdevicelist[8];
 
 void PRINT_vstring(PRINTCHANNEL channel, const char *format, va_list arglist) {
     char tempstr[2048];
