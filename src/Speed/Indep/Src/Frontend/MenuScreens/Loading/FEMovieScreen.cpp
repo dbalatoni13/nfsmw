@@ -71,6 +71,7 @@ void MovieScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 pa
 
             if (bypassable) {
                 new ESndGameState(1, false);
+                SetSoundControlState(false, SNDSTATE_FMV, "MovieScreen");
                 if (IsDebugPlayMovie) {
                     movie_is_finished = true;
                     cFEng::Get()->QueuePackagePop(1);
