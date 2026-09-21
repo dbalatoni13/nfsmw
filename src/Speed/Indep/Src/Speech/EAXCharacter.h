@@ -37,7 +37,7 @@ struct History {
     void Touch(unsigned short spkrID) {
         this->time = WorldTimer;
         this->count = this->count + 1;
-        if (spkrID < 10 && ((this->speakers >> spkrID & 1) == 0)) {
+        if (spkrID < 10 && !(this->speakers >> spkrID & 1)) {
             this->speakers = this->speakers | (1 << spkrID);
         }
     }
