@@ -399,11 +399,6 @@ void CARSFX_TrafficWoosh::ProcessUpdate() {
     this->SetDMIX_Input(3, 0);
     if (this->m_DriveByWoosh != nullptr) {
         SND_Params TmpParams;
-        TmpParams.ID = 0;
-        TmpParams.Az = 0;
-        TmpParams.Mag = 0;
-        TmpParams.RVerb = 0;
-
         TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
         TmpParams.Vol = this->GetDMixOutput(3, DMX_VOL);
         TmpParams.Pitch = this->GetDMixOutput(4, DMX_VOL);

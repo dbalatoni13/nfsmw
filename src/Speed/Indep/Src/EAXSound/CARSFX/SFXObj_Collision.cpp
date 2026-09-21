@@ -179,10 +179,6 @@ void SFXObj_Collision::ProcessUpdate() {
     SndBase::ProcessUpdate();
 
     SND_Params impactParams;
-    impactParams.ID = 0;
-    impactParams.Az = 0;
-    impactParams.Mag = 0;
-    impactParams.RVerb = 0;
 
     if (this->FirstUpdate) {
         this->InitialAz = this->GetDMixOutput(AzimSlot, DMX_AZIM);

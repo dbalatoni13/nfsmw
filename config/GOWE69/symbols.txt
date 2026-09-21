@@ -34859,6 +34859,7 @@ _11NISActivity.mElapsedmsAudioTime = .data:0x804358CC; // type:object size:0x4 s
 Tweak_EnableNISMomements = .data:0x804358D0; // type:object size:0x4 scope:global data:4byte
 gSpeechSeed = .data:0x80435970; // type:object size:0x4 scope:local data:4byte
 SPEECH_DISPLAY_HISTORY = .data:0x80435978; // type:object size:0x4 scope:global data:4byte
+EVLOG_ENABLED = .data:0x8043597C; // type:object size:0x4 scope:global data:4byte
 _Q26Speech7Manager.m_SpeechModule = .data:0x80435980; // type:object size:0x8 scope:global data:4byte
 _Q26Speech7Manager.m_speechMode = .data:0x80435988; // type:object size:0x4 scope:global data:4byte
 _Q26Speech7Manager.m_numberSpeechBanks = .data:0x8043598C; // type:object size:0x4 scope:global data:4byte

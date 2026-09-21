@@ -130,6 +130,7 @@ const char *bGetMallocName(void *ptr);
 size_t bGetMallocSize(const void *ptr);
 int bGetMallocPool(void *ptr);
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations);
+void bMemoryPrintAllocations(int pool_num, int from_allocation, int to_allocation);
 
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
 void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);

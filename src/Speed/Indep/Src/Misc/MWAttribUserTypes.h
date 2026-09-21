@@ -13,7 +13,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
-#include "Speed/Indep/Src/EAXSound/SND_GEN/copspeech.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/COPSPEECH.hpp"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/P2temp.h"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/STITCH_COL.h"

@@ -10,7 +10,6 @@
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/LanguageHashes.hpp"
-#include "Speed/Indep/Src/Speech/MiscSpeech.h"
 
 uiSMSMessage::uiSMSMessage(ScreenConstructorData *sd) : MenuScreen(sd), ScrollBar(sd->PackageFilename, "scrollbar", true, true, false) {
     the_msg = reinterpret_cast<SMSMessage *>(sd->Arg);

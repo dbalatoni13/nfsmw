@@ -2216,10 +2216,13 @@ zSim.o:gap_06_804358A8_data
 zSim.o:gap_06_804358B8_data
 zSim.o:gap_06_804358D4_data
 zSpeech.o:MessageEventComplete__Q26Speech11PursuitFlowRC19MNotifySpeechStatus
+zSpeech.o:$LC2151702032
 zSpeech.o:lbl_80405E10
+zSpeech.o:$LC2151707900
 zSpeech.o:lbl_804074FC
 zSpeech.o:lbl_80407570
 zSpeech.o:lbl_80407574
+zSpeech.o:EVLOG_ENABLED
 zSpeech.o:gap_06_80435974_data
 zSpeech.o:gap_06_8043597C_data
 zSpeech.o:gap_06_804359BE_data

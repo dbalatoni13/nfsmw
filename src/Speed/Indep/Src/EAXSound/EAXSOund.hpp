@@ -656,10 +656,15 @@ class EAXSound : public AudioMemBase {
 // total size: 0x18
 // Decl: 422
 struct SND_Params {
-    // TODO it's sus that only these are initialized
-    SND_Params()
-        : Vol(0x7FFF),     //
-          Pitch(0x1000) {} // Decl: 423
+    // Decl: 423
+    SND_Params() {
+        this->Vol = 0x7fff;
+        this->Pitch = 0x1000;
+        this->ID = 0;
+        this->Az = 0;
+        this->Mag = 0;
+        this->RVerb = 0;
+    }
 
     SND_Params(int _ID, int _Vol, int _Pitch, int _Az, int _Mag, int _RVerb)
         : ID(_ID),         //

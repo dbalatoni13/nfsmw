@@ -45,6 +45,10 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
         return mCapacity;
     }
 
+    bool empty() const {
+        return size() == 0;
+    }
+
     const_iterator begin() const {
         return mBegin;
     }
@@ -74,7 +78,7 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
         if (size() >= capacity()) {
             reserve(GetGrowSize(size() + 1));
         }
-        new (&mBegin[size()]) T(val);
+        new (&mBegin[size()]) value_type(val);
         mSize++;
     }
 
@@ -131,16 +135,16 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 
         if (oldBuffer != mBegin) {
             for (size_type ii = 0; ii < iPos; ++ii) {
-                new (mBegin + ii) T(oldBuffer[ii]);
+                new (mBegin + ii) value_type(oldBuffer[ii]);
             }
         }
 
         for (size_type ii = 0; ii < oldSize - iPos; ++ii) {
-            new (mBegin + (newSize - ii) - 1) T(*(oldBuffer + (oldSize - ii) - 1));
+            new (mBegin + (newSize - ii) - 1) value_type(*(oldBuffer + (oldSize - ii) - 1));
         }
 
         for (size_type ii = 0; ii < num; ++ii) {
-            new (&mBegin[iPos + ii]) T(sequencer());
+            new (&mBegin[iPos + ii]) value_type(sequencer());
         }
 
         if (oldBuffer && oldBuffer != mBegin) {
@@ -184,14 +188,14 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
         size_type num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
             value_type &obj = *it;
-            obj.~T();
+            obj.~value_type();
         }
 
         for (size_type ii = 0; ii < size() - (iPos + num); ++ii) {
             size_type src = iPos + num + ii;
             size_type dest = iPos + ii;
 
-            new (&mBegin[dest]) T(mBegin[src]);
+            new (&mBegin[dest]) value_type(mBegin[src]);
         }
         mSize = size() - num;
         return end();

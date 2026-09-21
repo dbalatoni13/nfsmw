@@ -164,6 +164,11 @@ void AdvanceWorldTime();
 float GetDebugRealTime();
 VIDEO_MODE GetVideoMode();
 
+// Decl: 166
+inline float FramesToSeconds(int num_frames) {
+    return static_cast<float>(num_frames) * (1.0f / 60.0f);
+}
+
 inline float GetVideoFrameTime(VIDEO_MODE video_mode) {
     if (video_mode == MODE_PAL) {
         return 1.0f / 50.0f;

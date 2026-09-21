@@ -6,16 +6,47 @@
 
 extern void *NullPointer;
 
-namespace Sound {
+namespace Speech {
 
 // total size: 0x8
 // Decl: 39
 struct Battalion {
-    Battalion(int nam, int num) {}
+    // Decl: 40
+    Battalion(int nam, int num)
+        : name(nam), //
+          number(num) {}
 
     int name;   // offset 0x0, size 0x4
     int number; // offset 0x4, size 0x4
 };
+
+// Decl: 59
+enum SpeechValRtnType {
+    kKeepEvt = 0,
+    kIntEvt = 1,
+    kDitchEvt = 2,
+    kEvtNotFound = 3,
+    kDeferEvt = 4,
+    MAX_RETURN_TYPES = 5,
+};
+
+// Decl: unknown
+enum SpeakerID {
+    Dispatch = 1,
+    Heli = 2,
+    Primary1 = 3,
+    Primary2 = 4,
+    Primary3 = 5,
+    Secondary1 = 6,
+    Secondary2 = 7,
+    Secondary3 = 8,
+    Cross = 9,
+    NUM_SPEAKER_ID = 10,
+};
+
+}; // namespace Speech
+
+namespace Sound {
 
 // Decl: 85
 enum Context {
