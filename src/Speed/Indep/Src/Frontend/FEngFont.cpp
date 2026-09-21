@@ -530,22 +530,22 @@ float FEngFont::GetTextHeight(const i16 *pcString, int ilLeading, u32 flags, u32
 
 // UNSOLVED
 u16 FEngFont::ConvertCharacter(u16 c) {
-    // const i16 tmchar;
-    // const i16 oechar;
+    const i16 tmchar = 0x2122;
+    const i16 oechar = 0x153;
 
-    if (c > 0xFF7F) {
+    if (c >= 0xFF80) {
         c = c & 0xFF;
     }
     if (c == 0x99) {
-        return 0x2122;
+        return tmchar;
     }
     if (c == 0x9C) {
-        return 0x153;
+        return oechar;
     }
-    if (c != 0xA0) {
-        return c;
+    if (c == 0xA0) {
+        return 0x20;
     }
-    return 0x20;
+    return c;
 }
 
 float FEngFont::CalculateXOffset(uint32 ulJustification, float fLineWidth) {

@@ -98,7 +98,8 @@ inline float bSqrt(float x) {
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
 #elif defined(EA_PLATFORM_WIN32)
-// TODO
+    // TODO
+    return sqrt(x);
 #else
 #error Choose a platform
 #endif
@@ -122,7 +123,7 @@ inline float bMin(float a, float b) {
     return d;
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #else
-    return a > b ? b : a;
+    return a < b ? a : b;
 #endif
 }
 
@@ -1088,6 +1089,25 @@ inline void bIdentity(bMatrix4 *a) {
     asm("pextlw %0, %0, $0" : "+r"(t));
     asm("sq   %1, %0" : "=o"(a->v3) : "r"(t));
 #elif defined(EA_PLATFORM_WIN32)
+    a->v0.x = 1.0f;
+    a->v0.y = 0.0f;
+    a->v0.z = 0.0f;
+    a->v0.w = 0.0f;
+
+    a->v1.x = 0.0f;
+    a->v1.y = 1.0f;
+    a->v1.z = 0.0f;
+    a->v1.w = 0.0f;
+
+    a->v2.x = 0.0f;
+    a->v2.y = 0.0f;
+    a->v2.z = 1.0f;
+    a->v2.w = 0.0f;
+
+    a->v3.x = 0.0f;
+    a->v3.y = 0.0f;
+    a->v3.z = 0.0f;
+    a->v3.w = 1.0f;
 #else
 #error Choose a platform
 #endif

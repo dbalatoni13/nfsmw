@@ -40,8 +40,7 @@ RaceStat::RaceStat(FEString *title, FEString *data) : FEStatWidget(true) {
 
 StatsPanel::StatsPanel() : TheStats() {
     iWidgetToAdd = 1;
-    RacerName = "";
-    ParentPkg = "";
+    ParentPkg = RacerName = "";
 }
 
 void StatsPanel::Reset() {
@@ -837,23 +836,20 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
     }
 }
 
+// UNSOLVED
 eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
-    if (msg != 0x7B6B89D7) {
-        if (msg < 0x7B6B89D8) {
-            if (msg != 0x4A805994) {
-                return maybe;
+    switch (msg) {
+        case 0x4A805994:
+        case 0x9AFA53A7:
+            if (mNumberOfRacers <= 1 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+                return UISND_NONE;
             }
-        } else if (msg != 0x9AFA53A7) {
-            return maybe;
-        }
-
-        if (mNumberOfRacers < 2 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
-            return UISND_NONE;
-        }
-    }
-
-    if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
-        return UISND_NONE;
+            // fall through
+        case 0x7B6B89D7:
+            if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
+                return UISND_NONE;
+            }
+            break;
     }
 
     return maybe;

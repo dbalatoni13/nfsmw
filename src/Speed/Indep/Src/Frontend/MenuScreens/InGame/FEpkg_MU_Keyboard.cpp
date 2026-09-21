@@ -330,8 +330,15 @@ void FEKeyboard::MoveCursor(int nDelta) {
     UpdateVisuals();
 }
 
-// STRIPPED
-void FEKeyboard::HighlightButton(int nButton, bool bHighlight) {}
+void FEKeyboard::HighlightButton(int nButton, bool bHighlight) {
+    if (bHighlight) {
+        this->mpKeyName[nButton]->SetColor(LetterHighlight, false);
+        this->mpKeyButton[nButton]->SetColor(ButtonHighlight, false);
+    } else {
+        this->mpKeyName[nButton]->SetColor(LetterIdle, false);
+        this->mpKeyButton[nButton]->SetColor(ButtonIdle, false);
+    }
+}
 
 void FEKeyboard::SetString(char *pStr) {
     FEPrintf(mpInputString, pStr);

@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // Decl: 15
 enum eGameTips {
@@ -146,10 +147,13 @@ class LoadingTips : public MenuScreen {
     static bool mDoneShowingLoadingTips;
     static void *mLoadingTipsScreenPtr; // size: 0x4, address: 0x8041C188, Decl: 21
 
-    uint32 TipTextureHash;         // offset 0x2C
-    Timer DisplayTime;             // offset 0x30
-    GameTipInfo *CurrentTip;       // offset 0x34
-    bool mPressAcceptHasBeenShown; // offset 0x38
+    uint32 TipTextureHash;            // offset 0x2C
+    Timer DisplayTime;                // offset 0x30
+    GameTipInfo *CurrentTip;          // offset 0x34
+    bool mPressAcceptHasBeenShown;    // offset 0x38
+#ifdef EA_PLATFORM_WIN32              // TODO: might be v1.3
+    bool mSuppressingControllerError; // TODO: name
+#endif
 };
 
 extern GameTipInfo GameTipInfoTable[];

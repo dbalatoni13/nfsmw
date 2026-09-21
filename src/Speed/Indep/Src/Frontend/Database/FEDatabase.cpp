@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
@@ -23,6 +24,8 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Misc/MD5.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -71,8 +74,8 @@ void PlayerSettings::Default() {
     Rumble = true;
     DriveWithAnalog = true;
     Config = CC_CONFIG_1;
-    CurCam = PSC_DEFAULT;
     SplitTimeType = 0;
+    CurCam = PSC_DEFAULT;
     Transmission = 0;
     Handling = 1;
 }
@@ -191,7 +194,11 @@ void AudioSettings::Default() {
     CarVol = 1.0f;
     AmbientVol = 1.0f;
     SpeedVol = 1.0f;
+#ifdef EA_PLATFORM_WIN32
+    AudioMode = 1;
+#else
     AudioMode = 2;
+#endif
 #ifndef EA_BUILD_A124
     AudioMode = g_pEAXSound->GetDefaultPlatformAudioMode();
 #endif
@@ -201,6 +208,9 @@ void AudioSettings::Default() {
 }
 
 bool AudioSettings::operator==(const AudioSettings &settings) const {
+#ifdef EA_PLATFORM_WIN32
+    return bMemCmp(this, &settings, sizeof(AudioSettings)) == 0;
+#else
     if (MasterVol != settings.MasterVol)
         return false;
     if (SpeechVol != settings.SpeechVol)
@@ -229,6 +239,7 @@ bool AudioSettings::operator==(const AudioSettings &settings) const {
         return false;
     }
     return true;
+#endif
 }
 
 void OptionsSettings::Default() {
@@ -568,7 +579,9 @@ void UserProfile::SetProfileName(const char *pName, bool isP1) {
     }
 }
 
-const char *UserProfile::GetProfileName() {}
+const char *UserProfile::GetProfileName() {
+    return m_aProfileName;
+}
 
 bool UserProfile::IsProfileNamed() {
     return m_bNamed;
@@ -651,6 +664,16 @@ void UserProfile::Default(int player_number, bool commit_default) {
 #ifndef EA_BUILD_A124
     TheCareerSettings.TryAwardDemoMarker();
 #endif
+}
+
+void UserProfile::CommitHighScoresPreRace(eHighScoresRaceTypes race_type, int is_split_screen) {
+    this->HighScores.TotalStarts++;
+    if (race_type != HS_RACE_TYPE_UNKNOWN) {
+        this->HighScores.RaceTypeScores[race_type].TotalStarts++;
+    }
+    if (is_split_screen) {
+        this->HighScores.SplitScreenScores.TotalStarts++;
+    }
 }
 
 void UserProfile::CommitHighScoresPauseQuit() {
@@ -761,13 +784,13 @@ cFrontendDatabase::cFrontendDatabase()
 // UNSOLVED (regswap)
 void cFrontendDatabase::Default() {
     int track_number;
-    bProfileLoaded = false;
-    bIsOptionsDirty = false;
-#ifndef EA_BUILD_A124
-    bAutoSaveOverwriteConfirmed = false;
-#endif
     iNumPlayers = 1;
     bComingFromBoot = true;
+    bProfileLoaded = false;
+    bIsOptionsDirty = false;
+#ifdef EA_PLATFORM_GAMECUBE
+    bAutoSaveOverwriteConfirmed = false;
+#endif
     CurrentUserProfiles[0]->Default(0, true);
     iCurPauseSubOptionType = 0;
     iCurPauseOptionType = 0;
@@ -846,6 +869,14 @@ void cFrontendDatabase::SetPlayersJoystickPort(int player, int8 joy_port) {
         cFEngJoyInput::Get()->SetRequiredJoy(static_cast<JoystickPort>(PlayerJoyports[player]), false);
     }
     PlayerJoyports[player] = joy_port;
+}
+
+void cFrontendDatabase::RestartDemoCareer() {
+    uint32 default_car = FEHashUpper("E3_DEMO_BMW");
+
+    GetCareerSettings()->Default();
+    DefaultRaceSettings();
+    GetCareerSettings()->SetCurrentCar(default_car);
 }
 
 uint32 cFrontendDatabase::GetDefaultCar() {
@@ -946,7 +977,7 @@ void cFrontendDatabase::RefreshCurrentRide() {
 }
 
 RaceSettings *cFrontendDatabase::GetQuickRaceSettings(GRace::Type type) {
-    if (static_cast<int>(type) > 10) {
+    if (type >= GRace::kRaceType_NumTypes) {
         return &TheQuickRaceSettings[RaceMode];
     }
     return &TheQuickRaceSettings[type];
@@ -1028,6 +1059,34 @@ void cFrontendDatabase::BuildCurrentRideForPlayer(int player, RideInfo *ride) {
         current_car = FEDatabase->GetCareerSettings()->GetCurrentCar();
     }
     stable->BuildRideForPlayer(current_car, player, ride);
+}
+
+// UNSOLVED
+void cFrontendDatabase::NotifyStartNewRace() {
+    int is_split = iNumPlayers == 2;
+
+    eHighScoresRaceTypes race_type;
+
+    switch (TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber)->UsageFlags) {
+        case eTRACKUSAGE_SPRINT:
+            race_type = HS_RACE_TYPE_SPRINT;
+            break;
+        case eTRACKUSAGE_CIRCUIT:
+            race_type = HS_RACE_TYPE_CIRCUIT;
+            break;
+        default:
+            race_type = HS_RACE_TYPE_UNKNOWN;
+            break;
+    }
+
+    this->CurrentUserProfiles[0]->HighScores.TotalStarts++;
+    if (race_type != HS_RACE_TYPE_UNKNOWN) {
+        this->CurrentUserProfiles[0]->HighScores.RaceTypeScores[race_type].TotalStarts++;
+    }
+
+    if (is_split) {
+        this->CurrentUserProfiles[0]->HighScores.SplitScreenScores.TotalStarts++;
+    }
 }
 
 void cFrontendDatabase::NotifyExitRaceToFrontend(eExitRacePlaces from_where) {

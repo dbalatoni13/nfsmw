@@ -201,6 +201,11 @@ class IconPanel {
     bool JustScrolled() {
         return bJustScrolled;
     }
+
+#ifdef EA_PLATFORM_WIN32
+    virtual bool UpdateMouse(); // TODO
+#endif
+
     virtual void SetInitialPos();
     void SetWrap(bool wrap) {
         bWrap = wrap;
@@ -249,6 +254,9 @@ class IconScroller : public IconPanel {
     virtual void AddInitialBookEnds();
     FEImage *AddOption(IconOption *option) override;
     virtual void SetInitialPos(int index);
+#ifdef EA_PLATFORM_WIN32
+    bool UpdateMouse() override; // TODO
+#endif
     bool SetSelection(IconOption *option) override;
     void RemoveAll() override;
     void DelayUpdate() {

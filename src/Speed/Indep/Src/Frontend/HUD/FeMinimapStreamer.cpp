@@ -14,12 +14,23 @@ void ChoppedMiniMapManager::Init() {
     }
 }
 
+void ChoppedMiniMapManager::Close() {
+    if (gChoppedMiniMapManager != nullptr) {
+        delete gChoppedMiniMapManager;
+    }
+}
+
 ChoppedMiniMapManager::ChoppedMiniMapManager(int numSections) {
     LoadingChopNum = 0;
     NumSections = numSections;
     for (int i = 0; i <= 63; i++) {
         CompressedMiniMaps[i] = nullptr;
     }
+}
+
+ChoppedMiniMapManager::~ChoppedMiniMapManager() {
+    NumSections = 0;
+    LoadingChopNum = 0;
 }
 
 int ChoppedMiniMapManager::Loader(bChunk *chunk) {

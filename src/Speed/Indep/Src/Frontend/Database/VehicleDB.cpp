@@ -155,6 +155,17 @@ void AdjustStableHeat_EvadePursuit(int playerNum) {
     }
 }
 
+void AdjustStableHeat_MilestoneComplete(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i < MAX_CARS_IN_STABLE; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career != nullptr) {
+            fe_career->AdjustHeatOnMilestoneComplete();
+        }
+    }
+}
+
 void AdjustStableHeat_EventWin(int playerNum) {
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
     for (int i = 0; i < MAX_CARS_IN_STABLE; i++) {
@@ -487,10 +498,10 @@ int FEPlayerCarDB::GetNumCars(uint32 filter) {
 }
 
 FECarRecord *FEPlayerCarDB::CreateNewCustomCar(FECarHandle fromCar) {
-    if (GetNumQuickRaceCars() < MAX_QUICKRACE_CARS_IN_STABLE) {
-        return CreateCar(fromCar, FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_QUICK_RACE);
+    if (GetNumQuickRaceCars() >= MAX_QUICKRACE_CARS_IN_STABLE) {
+        return nullptr;
     }
-    return nullptr;
+    return CreateCar(fromCar, FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_QUICK_RACE);
 }
 
 FECarRecord *FEPlayerCarDB::AwardRivalCar(uint32 preset) {
@@ -1203,13 +1214,12 @@ uint32 FEInfractionsData::GetFineValue() const {
 }
 
 void FEImpoundData::Default() {
+    MaxBusted = 3;
     TimesBusted = 0;
     ImpoundedState = 0;
     DaysBeforeRelease = 0;
-    MaxBusted = 3;
     EvadeCount = 0;
-    Pad2 = 0;
-    Pad1 = 0;
+    Pad1 = Pad2 = 0;
 }
 
 void FEImpoundData::BecomeImpounded(eImpoundReasons reason) {
@@ -1229,9 +1239,14 @@ void FEImpoundData::NotifyPlayerUsedMarkerToRelease() {
 }
 
 bool FEImpoundData::NotifyWin() {
-    if (IsImpounded() && ((DaysBeforeRelease == 0 || --DaysBeforeRelease == 0) && ImpoundedState != IMPOUND_RELEASED)) {
-        ImpoundedState = IMPOUND_RELEASED;
-        return true;
+    if (IsImpounded()) {
+        if (DaysBeforeRelease > 0) {
+            DaysBeforeRelease--;
+        }
+        if (DaysBeforeRelease == 0 && ImpoundedState != IMPOUND_RELEASED) {
+            ImpoundedState = IMPOUND_RELEASED;
+            return true;
+        }
     }
     return false;
 }
@@ -1246,8 +1261,8 @@ bool FEImpoundData::NotifyEvade() {
     if (!IsImpounded()) {
         EvadeCount = EvadeCount + 1;
         if (EvadeCount > 2) {
-            EvadeCount = 0;
             TimesBusted--;
+            EvadeCount = 0;
         }
         if (TimesBusted < 0) {
             TimesBusted = 0;
@@ -1296,6 +1311,12 @@ void FECareerRecord::AdjustHeatOnEventWin() {
     VehicleHeat = VehicleHeat * DefaultPursuitLevelAttrib.EventWinHeatAdjust();
 }
 
+void FECareerRecord::AdjustHeatOnMilestoneComplete() {
+    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(0xEEC2271A, 0, nullptr);
+
+    VehicleHeat = VehicleHeat * DefaultPursuitLevelAttrib.MilestoneCompleteHeatAdjust();
+}
+
 void FECareerRecord::AdjustHeatOnEvadePursuit() {
     Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(0xEEC2271A, 0, nullptr);
 
@@ -1330,6 +1351,12 @@ void FECareerRecord::AdjustHeatOnHoodApplied(float extraAdjust) {
     Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewHood() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnNumbersApplied(float extraAdjust) {
+    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+
+    VehicleHeat *= FeCoolingAttrib.NewNumbers() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRimApplied(float extraAdjust) {
