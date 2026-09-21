@@ -252,10 +252,6 @@ void CARSFX_BottomOut::ProcessUpdate() {
 
     if (this->m_pBottomOut != nullptr) {
         SND_Params TmpParams;
-        TmpParams.ID = 0;
-        TmpParams.Az = 0;
-        TmpParams.Mag = 0;
-        TmpParams.RVerb = 0;
         TmpParams.Az = this->GetDMixOutput(1, DMX_AZIM);
         TmpParams.Vol = this->GetDMixOutput(1, DMX_VOL);
         TmpParams.Pitch = 0x1000;
@@ -269,10 +265,6 @@ void CARSFX_BottomOut::ProcessUpdate() {
 
     if (this->m_pJumpCamCrash != nullptr) {
         SND_Params TmpParams;
-        TmpParams.ID = 0;
-        TmpParams.Az = 0;
-        TmpParams.Mag = 0;
-        TmpParams.RVerb = 0;
         TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
         TmpParams.Vol = this->GetDMixOutput(3, DMX_VOL);
         TmpParams.Pitch = 0x1000;
@@ -287,10 +279,6 @@ void CARSFX_BottomOut::ProcessUpdate() {
     for (int n = 0; n < NUM_ELEMENTS(this->m_pStichLandJump); n++) {
         if (this->m_pStichLandJump[n] != nullptr) {
             SND_Params TmpParams;
-            TmpParams.ID = 0;
-            TmpParams.Az = 0;
-            TmpParams.Mag = 0;
-            TmpParams.RVerb = 0;
             TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
             TmpParams.Vol = this->GetDMixOutput(1, DMX_VOL);
 

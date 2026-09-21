@@ -657,6 +657,8 @@ class AttributeIterator {
     bool mInLayout;                // offset 0x8, size 0x1
 };
 
+const Collection *GetCollectionParent(const Collection *c);
+
 class Instance {
   public:
     enum Flags { kDynamic = 1 };
@@ -727,7 +729,9 @@ class Instance {
         return nullptr;
     }
 
-    const Attrib::Collection *GetParentCollection() const {}
+    const Attrib::Collection *GetParentCollection() const {
+        return GetCollectionParent(mCollection);
+    }
 
     void Lock() const {
         mLocks++;

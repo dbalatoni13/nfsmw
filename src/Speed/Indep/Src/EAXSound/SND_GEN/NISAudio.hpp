@@ -250,6 +250,15 @@ inline Result NIS_Select_End(Type_NIS_Scene_End NIS_Scene_End, Type_NIS_Track NI
     return result;
 }
 
+inline Result CacheHandlesEventsNIS() {
+    int result = RESULT_OK;
+    result = gNIS_Select_StartHandle.Set(&NIS_Select_StartId);
+    result = gSoundFX_SelectHandle.Set(&SoundFX_SelectId);
+    result = gNIS_Select_BlacklistHandle.Set(&NIS_Select_BlacklistId);
+    result = gNIS_Select_EndHandle.Set(&NIS_Select_EndId);
+    return static_cast<Result>(result);
+}
+
 }; // namespace Csis
 
 #endif
