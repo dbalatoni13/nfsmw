@@ -1,6 +1,7 @@
 #ifndef SIM_SIMEFFECT_H
 #define SIM_SIMEFFECT_H
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -46,9 +47,9 @@ class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServ
     bool OnService(HSIMSERVICE hCon, Packet *pkt) override;
 
   private:
-    ALIGN_16 UMath::Vector3 mPosition;      // offset 0x20, size 0xC
+    PS2ALIGN16 UMath::Vector3 mPosition;    // offset 0x20, size 0xC
     float mTime;                            // offset 0x2C, size 0x4
-    ALIGN_16 UMath::Vector3 mMagnitude;     // offset 0x30, size 0xC
+    PS2ALIGN16 UMath::Vector3 mMagnitude;   // offset 0x30, size 0xC
     HSIMSERVICE mService;                   // offset 0x3C, size 0x4
     const Attrib::Collection *mParticipant; // offset 0x40, size 0x4
     const Attrib::Collection *mContext;     // offset 0x44, size 0x4
