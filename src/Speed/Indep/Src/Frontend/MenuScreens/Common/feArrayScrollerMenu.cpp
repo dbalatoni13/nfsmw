@@ -123,11 +123,11 @@ int ArrayScroller::ForceSelectionOnScreen(int new_datum, int start) {
     int h = GetHeight();
     int ret = start;
     if (new_datum < start) {
-        ret = new_datum / w;
+        ret = (new_datum / w) * w;
     } else if (new_datum > start + w * h) {
-        ret = (new_datum / w - (h - 1));
+        ret = (new_datum / w - (h - 1)) * w;
     }
-    return ret * w;
+    return ret;
 }
 
 void ArrayScroller::ScrollHor(eScrollDir dir) {

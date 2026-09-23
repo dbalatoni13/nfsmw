@@ -1,6 +1,7 @@
 #include "FEngFrontend.hpp"
 
 #include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Input/IOModule.h"
@@ -83,6 +84,10 @@ void FEngTickSinglePackage(const char *pkg_name, uint32 ticks) {
         single_package->UpdateObject(pObject, ticks);
         pObject = pObject->GetNext();
     }
+}
+
+void FEngRenderSinglePackage(const char *pkg_name) {
+    cFEng::Get()->RenderSinglePackage(pkg_name);
 }
 
 uint32 FEngHashString(const char *fmt, ...) {

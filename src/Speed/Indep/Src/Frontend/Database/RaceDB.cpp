@@ -33,9 +33,9 @@ void RaceSettings::Default() {
     CopDensity = 1;
     TrafficDensity = 1;
     CatchUp = true;
-    NumLaps = 2;
     CopsOn = false;
     TrackDirection = 0;
+    NumLaps = 2;
     IsLapKO = false;
     for (int i = 0; i < 2; i++) {
         SelectedCar[i] = 0;

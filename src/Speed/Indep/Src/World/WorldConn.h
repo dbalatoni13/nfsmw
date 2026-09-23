@@ -2,6 +2,7 @@
 #define WORLDCONN_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
@@ -169,9 +170,9 @@ class Pkt_Effect_Send : public Sim::Packet {
 
     ~Pkt_Effect_Send() override {}
 
-    ALIGN_16 UMath::Vector3 mPosition;          // offset 0x4, size 0xC
+    PS2ALIGN16 UMath::Vector3 mPosition;        // offset 0x4, size 0xC
     WUID mOwner;                                // offset 0x10, size 0x4
-    ALIGN_16 UMath::Vector3 mMagnitude;         // offset 0x14, size 0xC
+    PS2ALIGN16 UMath::Vector3 mMagnitude;       // offset 0x14, size 0xC
     const Attrib::Collection *mEffectGroup;     // offset 0x20, size 0x4
     const Attrib::Collection *mOwnerAttributes; // offset 0x24, size 0x4
     const Attrib::Collection *mContext;         // offset 0x28, size 0x4
@@ -220,9 +221,9 @@ class Pkt_Effect_Service : public Sim::Packet {
         this->mTracking = b;
     }
 
-    ALIGN_16 UMath::Vector3 mPosition;  // offset 0x4, size 0xC
-    bool mTracking;                     // offset 0x10, size 0x1
-    ALIGN_16 UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
+    PS2ALIGN16 UMath::Vector3 mPosition;  // offset 0x4, size 0xC
+    bool mTracking;                       // offset 0x10, size 0x1
+    PS2ALIGN16 UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
 };
 
 void InitServices();

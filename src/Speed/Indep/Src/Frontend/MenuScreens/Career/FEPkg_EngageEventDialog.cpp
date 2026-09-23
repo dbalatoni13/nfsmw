@@ -111,17 +111,17 @@ void EngageEventDialog::NotificationMessage(u32 msg, FEObject *obj, u32 param1, 
             break;
         case __PAD_BACK__:
             NotifyTheGameDeclineEvent();
-            cFEng::Get()->QueuePackagePop(1);
+            cFEng::Get()->QueuePackagePop(0);
             break;
         case __BUTTON_PRESSED__:
             switch (obj->NameHash) {
                 case 0xd72f002a:
                     NotifyTheGameAcceptEvent();
-                    cFEng::Get()->QueuePackagePop(1);
+                    cFEng::Get()->QueuePackagePop(0);
                     break;
                 case 0x694b896e:
                     NotifyTheGameDeclineEvent();
-                    cFEng::Get()->QueuePackagePop(1);
+                    cFEng::Get()->QueuePackagePop(0);
                     break;
             }
             break;

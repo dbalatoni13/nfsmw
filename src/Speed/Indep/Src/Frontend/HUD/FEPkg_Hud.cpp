@@ -309,8 +309,8 @@ void HudResourceManager::ChooseLoadableTextures(ePlayerHudType hudType, int &tex
 void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pkg_name) {
     mPhase = 0;
     const char *hud_tex_file = GetHudTexPackFilename(ht);
-    int allocation_params = 0x2000;
     eWaitUntilRenderingDone();
+    int allocation_params = 0x2000;
     if (ht == PHT_DRAG) {
         allocation_params = 0x2047;
         TheTrackStreamer.MakeSpaceInPool(bFileSize(hud_tex_file), true);

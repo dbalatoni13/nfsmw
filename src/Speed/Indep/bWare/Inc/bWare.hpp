@@ -226,7 +226,7 @@ inline void bPlatEndianSwap(uint16 *value) {
 
 inline void bPlatEndianSwap(uint8 *value) {
 #ifdef NATIVE_ENDIAN_BIG
-        // bEndianSwap32(value);
+    // bEndianSwap32(value);
 #endif
 }
 

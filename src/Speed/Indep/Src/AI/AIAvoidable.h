@@ -4,6 +4,7 @@
 #include "Speed/Indep/Libs/Support/Miscellaneous/SAP.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
@@ -12,7 +13,7 @@ DECLARE_CONTAINER_TYPE(AIAvoidableNeighbors);
 typedef UTL::Std::list<struct AIAvoidable *, _type_AIAvoidableNeighbors> AvoidableList;
 
 // total size: 0x14
-class ALIGN_16 AIAvoidable {
+class PS2ALIGN16 AIAvoidable {
   public:
     // total size: 0x6C
     struct Grid : public SAP::Grid<AIAvoidable> {

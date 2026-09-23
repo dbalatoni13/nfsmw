@@ -129,6 +129,7 @@ class FEMarkerManager {
 
     FEMarkerManager();
     void Default();
+    void CheatToGetMarkers();
     void GetMarkerForLaterSelection(int index, ePossibleMarker &marker, int &param);
     void AddMarkerForLaterSelection(ePossibleMarker marker, int param);
     void ClearMarkersForLaterSelection();
@@ -144,7 +145,7 @@ class FEMarkerManager {
     char *SaveToBuffer(char *buffer);
     char *LoadFromBuffer(char *buffer);
     int GetSaveBufferSize() {
-        return 0x2F4;
+        return sizeof(OwnedMarkers);
     }
 
     inline int GetNumTempMarkers() {

@@ -58,6 +58,8 @@ class cFEng {
         mFEng->UnloadPackage(pPackagePtr);
     }
 
+    void RenderSinglePackage(const char *pkg_name);
+
     void QueuePackageMessage(uint32 pMessage, const char *pPackageName,
                              FEObject *obj); // Decl: 60
 

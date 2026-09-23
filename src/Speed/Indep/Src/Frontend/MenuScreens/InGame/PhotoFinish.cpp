@@ -102,6 +102,16 @@ void SillyTextureStreamerManager::Load(uint32 hash, FEImage *image) {
     }
 }
 
+void SillyTextureStreamerManager::Unload(uint32 hash) {
+    for (int i = 0; i < 4; i++) {
+        if (LoadInfos[i].LoadingTexture == hash) {
+            eUnloadStreamingTexture(LoadInfos[i].LoadingTexture);
+            LoadInfos[i].LoadingTexture = 0;
+            LoadInfos[i].IsLoaded = false;
+        }
+    }
+};
+
 void SillyTextureStreamerManager::UnloadAll() {
     for (int i = 0; i < 4; i++) {
         if (LoadInfos[i].IsLoaded) {

@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/World/WPathFinder.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
@@ -107,20 +108,20 @@ class AStarSearch : public bTNode<AStarSearch> {
     static int AStarCheckFlip(AStarNode *before, AStarNode *after);
     bool Admissible(const WRoadSegment *segment, bool forward, WRoadNav::EPathType path_type);
 
-    AStarSearchState nState;               // offset 0x8, size 0x4
-    AStarNode *pSolution;                  // offset 0xC, size 0x4
-    int nServices;                         // offset 0x10, size 0x4
-    int nSteps;                            // offset 0x14, size 0x4
-    float fSearchTime;                     // offset 0x18, size 0x4
-    uint32 nShortcutCached;                // offset 0x1C, size 0x4
-    uint32 nShortcutAllowed;               // offset 0x20, size 0x4
-    const char *pShortcutAllowed;          // offset 0x24, size 0x4
-    WRoadNav *pRoadNav;                    // offset 0x28, size 0x4
-    const WRoadNode *pGoalNode;            // offset 0x2C, size 0x4
-    int nGoalSegment;                      // offset 0x30, size 0x4
-    ALIGN_16 UMath::Vector3 vGoalPosition; // offset 0x34, size 0xC
-    bTList<AStarNode> lOpen;               // offset 0x40, size 0x8
-    bTList<AStarNode> lClosed;             // offset 0x48, size 0x8
+    AStarSearchState nState;                 // offset 0x8, size 0x4
+    AStarNode *pSolution;                    // offset 0xC, size 0x4
+    int nServices;                           // offset 0x10, size 0x4
+    int nSteps;                              // offset 0x14, size 0x4
+    float fSearchTime;                       // offset 0x18, size 0x4
+    uint32 nShortcutCached;                  // offset 0x1C, size 0x4
+    uint32 nShortcutAllowed;                 // offset 0x20, size 0x4
+    const char *pShortcutAllowed;            // offset 0x24, size 0x4
+    WRoadNav *pRoadNav;                      // offset 0x28, size 0x4
+    const WRoadNode *pGoalNode;              // offset 0x2C, size 0x4
+    int nGoalSegment;                        // offset 0x30, size 0x4
+    PS2ALIGN16 UMath::Vector3 vGoalPosition; // offset 0x34, size 0xC
+    bTList<AStarNode> lOpen;                 // offset 0x40, size 0x8
+    bTList<AStarNode> lClosed;               // offset 0x48, size 0x8
 };
 
 AStarSearch::AStarSearch(WRoadNav *road_nav, const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction,

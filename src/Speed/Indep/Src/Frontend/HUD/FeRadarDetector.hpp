@@ -16,9 +16,9 @@ class RadarDetector : public HudElement, public IRadarDetector {
     void Update(IPlayer *player) override;
 
     void SetTarget(RadarTarget targetType, float range, Radians direction) override {
-        mTargetType = targetType;
-        mDirection = direction;
         mRange = range;
+        mDirection = direction;
+        mTargetType = targetType;
         mStaticRange = range;
     };
     void SetInPursuit(bool inPursuit) override {

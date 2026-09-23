@@ -100,7 +100,7 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-    // typedef signed char i8;
+// typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 
@@ -133,7 +133,7 @@ typedef bool Bool;
 #define ATTRIBUTE_ALIGN(num) __declspec(align(num))
 #endif
 
-#define ALIGN_16
+#define ALIGN_16 ATTRIBUTE_ALIGN(16)
 
 #define EA_PACKED
 
@@ -169,7 +169,7 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-    // typedef signed char i8;
+// typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 

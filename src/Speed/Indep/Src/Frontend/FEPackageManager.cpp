@@ -116,12 +116,26 @@ void FEPackageManager::CloseAllPackages(int close_permanent) {
     }
 }
 
+void FEPackageManager::SetPermanent(const char *pkg_name, int flag) {
+    FEPackageData *pkg_data = FindFEPackageData(pkg_name);
+    if (pkg_data != nullptr) {
+        pkg_data->SetPermanent(flag);
+    }
+}
+
 bool FEPackageManager::GetVisibility(const char *pkg_name) {
     FEPackageData *pkg_data = FindFEPackageData(pkg_name);
     if (pkg_data != nullptr) {
         return pkg_data->GetVisibility();
     }
     return false;
+}
+
+void FEPackageManager::SetVisibility(const char *pkg_name, bool visible) {
+    FEPackageData *pkg_data = FindFEPackageData(pkg_name);
+    if (pkg_data != nullptr) {
+        pkg_data->SetVisibility(visible);
+    }
 }
 
 MenuScreen *FEPackageManager::FindScreen(const char *pkg_name) {

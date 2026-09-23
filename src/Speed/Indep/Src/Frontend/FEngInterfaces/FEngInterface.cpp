@@ -329,3 +329,14 @@ void cFEng::QueuePopChildPackages(const char *pPackageName) {
         pPkg = pNextPkg;
     }
 }
+
+static int UNK_RENDERSINGLE = 1;
+// Decl: 569
+// UNSOLVED
+void cFEng::RenderSinglePackage(const char *pkg_name) {
+    if (UNK_RENDERSINGLE) {
+        const char *FEngPleaseRenderSinglePackage = pkg_name;
+        // TODO
+        FEngPleaseRenderSinglePackage = nullptr;
+    }
+}
