@@ -18,6 +18,7 @@ class TextureInfoPlatInfo : public bTNode<TextureInfoPlatInfo> {
   public:
     unsigned char SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal, int alphaUsageType, int clamp);
     unsigned char SetImage(TextureInfo *texture_info);
+    unsigned char HasClut();
 
     eTextureBucket *GetActiveBucket() {
         return pActiveBucket;

@@ -331,6 +331,10 @@ class TrackStreamer {
         return this->PermFileLoading;
     }
 
+    bool HasUserMemoryAllocations() {
+        return UserMemoryAllocationSize > 0;
+    }
+
   private:
     void ClearCurrentZones();
     bool DetermineCurrentZones(int16 *current_zones);
