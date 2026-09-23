@@ -587,6 +587,8 @@ int SNDPLATFORM_memlimits(int startaddr, int endaddr);
 int SNDPLATFORM_memlargestunused(int *paddr);
 int SNDPLATFORM_download(int playloc, void *psrc, void *pdst, int size);
 int SNDPLATFORM_downloadcomplete(int dlhandle);
+int SNDPLATFORM_packetoverhead();
+int SNDPLATFORM_packetplaycreate(int pktchan, void *pmem);
 
 // ssine.c
 int iSNDsin(int angle);

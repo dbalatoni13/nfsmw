@@ -312,11 +312,15 @@ int SNDfxlevel(int shandle, int bus, int level);
 
 int SNDplaysetdef(SNDPLAYOPTS *pspo);
 
-int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *), void *pclientdata, void *pmem, int memsize);
 int SNDPKTPLAY_overhead(int maxpackets);
+int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *), void *pclientdata, void *pmem, int memsize);
 int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
-int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+int SNDPKTPLAY_submitspace(int packetinstancehandle);
+int SNDPKTPLAY_framesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_hardwareframesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_purge(int packetinstancehandle, int starthandle, int endhandle);
+int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_destroy(int packetinstancehandle);
 
 int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
