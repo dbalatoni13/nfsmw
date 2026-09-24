@@ -40,16 +40,6 @@ float ICEManager::GetAnimElevationFixup(ICE::Vector3 *position) {
     return 0.0f;
 }
 
-// float ICEManager::GetAnimElevationFixup(ICE::Vector3 *position) {
-//     float elevation = GetGroundElevation(reinterpret_cast<UMath::Vector3 *>(position));
-
-//     if (elevation > 0.0f) {
-//         return elevation - this->fAnimElevation;
-//     }
-
-//     return 0.0f;
-// }
-
 void ICEManager::FixAnimElevation(ICE::Vector3 *position) {
 
     if (ICEScene *scene = FindAnimScene()) {
@@ -111,14 +101,16 @@ ICEManager::ICEManager() {
     this->bSmoothExit = false;
 }
 
+float ICEManager::GetTimerSeconds() { // Decl: 57
+    return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+}
+
 bool ICEManager::RefreshCameraSplines() {
-    // Local variables
     bool b_refresh = false;
     return b_refresh;
 }
 
-// Range: 0x8007D69C -> 0x8007D76C
-static void ICEGetPlayerCarTransform(ICE::Matrix4 *mCarToWorld /* r30 */) {
+static void ICEGetPlayerCarTransform(ICE::Matrix4 *mCarToWorld) {
 
     ICE::Identity(mCarToWorld);
 
@@ -225,7 +217,7 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(uint32 scene_hash, const ICE::Ma
                 UMath::Vector3 vCamDir;
 
                 ICE::Sub(&vCamDir, &v_eye, &v_look);
-                // vCamDir.pad = 0.0f;
+                // vCamDir.pad = 0.0f; // its like in FixAnimElevation, maybe pad is real..?
                 vCamDir.z = 0.0f;
                 ICE::Normalize(&vCamDir, &vCamDir);
 
@@ -259,14 +251,6 @@ ICEGroup *ICEManager::GetNisCameraGroup(uint32 scene_hash) {
 
     return nullptr;
 }
-int ICEManager::GetNumSceneCameraTrack(uint32 scene_hash) {
-    ICEGroup *group = this->GetNisCameraGroup(scene_hash);
-
-    if (group != nullptr)
-        return group->GetNumTracks();
-
-    return 0;
-}
 
 int ICEManager::GetCameraIndex(float f_param, struct ICETrack *track) {
     if (track)
@@ -276,6 +260,15 @@ int ICEManager::GetCameraIndex(float f_param, struct ICETrack *track) {
 
 void ICEManager::Update() {
     return;
+}
+
+int ICEManager::GetNumSceneCameraTrack(uint32 scene_hash) {
+    ICEGroup *group = this->GetNisCameraGroup(scene_hash);
+
+    if (group != nullptr)
+        return group->GetNumTracks();
+
+    return 0;
 }
 
 // TODO move this?

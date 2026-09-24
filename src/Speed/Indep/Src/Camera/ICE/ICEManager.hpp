@@ -91,9 +91,7 @@ class ICEManager {
     float IsUsingRealTime() { // Decl: 56
         return bUseRealTime;
     }
-    float GetTimerSeconds() { // Decl: 57
-        return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
-    }
+    float GetTimerSeconds(); // Decl: 57
 
   private:
     float GetParameter(int i, ICETrack *track);
@@ -147,6 +145,9 @@ class ICEManager {
 };
 
 extern ICEManager TheICEManager; // size: 0x80, Decl: 93
+
+// remove?
+bool bMirrorICEData; // size: 0x1, address: 0x80417044
 
 void ICECompleteEventTags();
 
