@@ -494,35 +494,150 @@ elif config.platform == Platform.X360:
 elif config.platform == Platform.PS2:
     config.linker_version = "PS2/ee-gcc2.9-991111"
 
-    cflags_base_prodg = [
-        "-O2",
-        "-g2",
-        "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
-        # "-Wall",
-        "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
-        "-I src/Speed/Indep/Libs/Support/stlps2",
-        "-I src/Speed/PSX2/Libs/stl/gpp",
-        "-I src/Speed/PSX2/bWare/src/ee/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
-        "-I src/Packages",
-        "-I src",
-        "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
-        "-DEA_BUILD_A124",
-        "-D_NOTHREADS",  # TODO is this necessary?
-        f"-I build/{config.version}/include",
-        f"-DBUILD_VERSION={version_num}",
-        # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
-    ]
+    if config.version == "SLES-53558-A124":
+        cflags_base_prodg = [
+            "-O2",
+            "-g2",
+            "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
+            # "-Wall",
+            "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
+            "-I src/Speed/Indep/Libs/Support/stlps2",
+            "-I src/Speed/PSX2/Libs/stl/gpp",
+            "-I src/Speed/PSX2/bWare/src/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
+            "-I src/Packages",
+            "-I src",
+            "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
+            "-DEA_BUILD_A124",
+            "-D_NOTHREADS",  # TODO is this necessary?
+            f"-I build/{config.version}/include",
+            f"-DBUILD_VERSION={version_num}",
+            # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+        ]
 
-    config.context_defines = [
-        "EA_PLATFORM_PLAYSTATION2",
-        "EA_REGION_AMERICA",
-        "EA_BUILD_A124",
-        "_NOTHREADS",
-    ]
+        config.context_defines = [
+            "EA_PLATFORM_PLAYSTATION2",
+            "EA_REGION_AMERICA",
+            "EA_BUILD_A124",
+            "_NOTHREADS",
+        ]
+
+        cflags_game = [
+            *cflags_base_prodg,
+            "-G0",
+            "-ffast-math",
+            "-fno-exceptions",
+            "-fno-rtti",
+            # "-funaligned-pointers",
+            # "-funaligned-struct-hack",
+            # "-fsched-interblock",
+            # "-fsched-spec",
+            # "-fsched-spec-load-dangerous",
+            # "-fedge-sm",
+            # "-fedge-lm",
+            # "-fedge-lcm",
+            # "-fforce-addr",
+            # "-fcse-follow-jumps",
+            # "-fcse-skip-blocks",
+            # "-fforce-mem",
+            # "-fgcse",
+            # "-fstrength-reduce",
+            # "-frerun-cse-after-loop",
+            # "-fschedule-insns",
+            # "-fschedule-insns2",
+            # "-fexpensive-optimizations",
+            # "-frerun-loop-opt",
+            # "-fmove-all-movables",
+            # "-fregmove",
+            # "-fcaller-saves",
+            "-DLUA_NUMBER=float",
+            "-DMILESTONE_BUILD",
+            "-DDEFAULT_ALLOCATOR=0",
+            "-I src/Speed/Indep/Libs/allocator/1.5.0",
+            "-I src/Speed/Indep/Libs/csis/dev/include",
+            "-I src/Packages/eathread/1.1.0/include",
+            "-I src/Speed/Indep/Libs/snd/9/include",
+            "-I src/Speed/Indep/Libs/spch/dev/include",
+            "-I src/Speed/Indep/Libs/path/5.01.04/include",
+            "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+            "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+            "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
+        ]
+        
+    else:
+        cflags_base_prodg = [
+            "-O2",
+            "-g2",
+            "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
+            # "-Wall",
+            "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
+            "-I src/Speed/Indep/Libs/Support/stlps2",
+            "-I src/Speed/PSX2/Libs/stl/gpp",
+            "-I src/Speed/PSX2/bWare/src/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
+            "-I src/Packages",
+            "-I src",
+            "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
+            "-D_NOTHREADS",  # TODO is this necessary?
+            f"-I build/{config.version}/include",
+            f"-DBUILD_VERSION={version_num}",
+            # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+        ]
+
+        config.context_defines = [
+            "EA_PLATFORM_PLAYSTATION2",
+            "EA_REGION_AMERICA",
+            "_NOTHREADS",
+        ]
+
+        cflags_game = [
+            *cflags_base_prodg,
+            "-G0",
+            "-ffast-math",
+            "-fno-exceptions",
+            "-fno-rtti",
+            # "-funaligned-pointers",
+            # "-funaligned-struct-hack",
+            # "-fsched-interblock",
+            # "-fsched-spec",
+            # "-fsched-spec-load-dangerous",
+            # "-fedge-sm",
+            # "-fedge-lm",
+            # "-fedge-lcm",
+            # "-fforce-addr",
+            # "-fcse-follow-jumps",
+            # "-fcse-skip-blocks",
+            # "-fforce-mem",
+            # "-fgcse",
+            # "-fstrength-reduce",
+            # "-frerun-cse-after-loop",
+            # "-fschedule-insns",
+            # "-fschedule-insns2",
+            # "-fexpensive-optimizations",
+            # "-frerun-loop-opt",
+            # "-fmove-all-movables",
+            # "-fregmove",
+            # "-fcaller-saves",
+            "-DLUA_NUMBER=float",
+            "-DMILESTONE_BUILD",
+            "-DDEFAULT_ALLOCATOR=0",
+            "-I src/Speed/Indep/Libs/allocator/1.5.0",
+            "-I src/Speed/Indep/Libs/csis/dev/include",
+            "-I src/Packages/eathread/1.1.0/include",
+            "-I src/Speed/Indep/Libs/snd/9/include",
+            "-I src/Speed/Indep/Libs/spch/dev/include",
+            "-I src/Speed/Indep/Libs/path/5.01.04/include",
+            "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+            "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+            "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
+        ]
+        
 
     # Debug flags
     # TODO
@@ -531,47 +646,7 @@ elif config.platform == Platform.PS2:
     # else:
     #     cflags_base.append("-DNDEBUG=1")
 
-    cflags_game = [
-        *cflags_base_prodg,
-        "-G0",
-        "-ffast-math",
-        "-fno-exceptions",
-        "-fno-rtti",
-        # "-funaligned-pointers",
-        # "-funaligned-struct-hack",
-        # "-fsched-interblock",
-        # "-fsched-spec",
-        # "-fsched-spec-load-dangerous",
-        # "-fedge-sm",
-        # "-fedge-lm",
-        # "-fedge-lcm",
-        # "-fforce-addr",
-        # "-fcse-follow-jumps",
-        # "-fcse-skip-blocks",
-        # "-fforce-mem",
-        # "-fgcse",
-        # "-fstrength-reduce",
-        # "-frerun-cse-after-loop",
-        # "-fschedule-insns",
-        # "-fschedule-insns2",
-        # "-fexpensive-optimizations",
-        # "-frerun-loop-opt",
-        # "-fmove-all-movables",
-        # "-fregmove",
-        # "-fcaller-saves",
-        "-DLUA_NUMBER=float",
-        "-DMILESTONE_BUILD",
-        "-DDEFAULT_ALLOCATOR=0",
-        "-I src/Speed/Indep/Libs/allocator/1.5.0",
-        "-I src/Speed/Indep/Libs/csis/dev/include",
-        "-I src/Packages/eathread/1.1.0/include",
-        "-I src/Speed/Indep/Libs/snd/9/include",
-        "-I src/Speed/Indep/Libs/spch/dev/include",
-        "-I src/Speed/Indep/Libs/path/5.01.04/include",
-        "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
-        "-I src/Speed/Indep/Libs/endian/0.5.2/include",
-        "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
-    ]
+    
 
     cflags_snd = [
         *cflags_game,

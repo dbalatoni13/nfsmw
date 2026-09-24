@@ -135,7 +135,7 @@ void MemcardCallbacks::SaveDone(const char *filename) {
         }
     } else if (GetMemcard()->IsAutoSaving() || gMemcardSetup.GetCommand() == MCO_AutoSave) {
         GetMemcard()->m_bAutoSaveCardPulled = false;
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         if (GetMemcard()->m_bFoundAutoSaveFile) {
             FEDatabase->bAutoSaveOverwriteConfirmed = true;
         }
@@ -427,7 +427,7 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo *info) {
                 GetMemcard()->DoAutoSave();
                 return;
             case RealmcIface::STATUS_OK:
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
                 if (!FEDatabase->bAutoSaveOverwriteConfirmed) {
                     GetMemcard()->m_bCheckingCardForAutoSave = false;
                     GetMemcard()->m_bCheckingCardForOverwrite = true;
@@ -485,7 +485,7 @@ void MemcardCallbacks::CardRemoved() {
         if (FEDatabase->IsOptionsMode()) {
             cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
         }
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         FEDatabase->bAutoSaveOverwriteConfirmed = false;
 #endif
     }
@@ -529,7 +529,7 @@ void MemcardCallbacks::SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface:
         cFEng::Get()->QueueGameMessage(msg, nullptr, 0xff);
     }
     if (flag == RealmcIface::AUTOSAVE_ENABLE) {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         if (gMemcardSetup.GetCommand() == 0xa0 && FEDatabase->IsOptionsMode()) {
             FEDatabase->bAutoSaveOverwriteConfirmed = false;
         }

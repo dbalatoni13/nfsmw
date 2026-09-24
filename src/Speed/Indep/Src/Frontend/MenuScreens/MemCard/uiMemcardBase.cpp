@@ -891,7 +891,7 @@ void UIMemcardBase::HandleAutoSaveError() {
 void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
     bStrCpy(m_FileName, FEDatabase->GetUserProfile(0)->GetProfileName());
     MemoryCard::GetInstance()->EndAutoSave();
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     FEDatabase->bAutoSaveOverwriteConfirmed = true;
 #endif
     gMemcardSetup.ClearCommand();

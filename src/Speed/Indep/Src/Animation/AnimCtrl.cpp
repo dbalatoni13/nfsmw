@@ -17,7 +17,7 @@ CAnimCtrl::~CAnimCtrl() {
 }
 
 void InitAnimCtrls() {
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     AnimCtrlSlotPool = bNewSlotPool(128, 64, "AnimCtrlSlotPool", 0);
 #else
     AnimCtrlSlotPool = bNewSlotPool(128, 64, "AnimCtrlSlotPool", GetVirtualMemoryAllocParams());

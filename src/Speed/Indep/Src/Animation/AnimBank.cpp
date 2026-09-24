@@ -87,7 +87,7 @@ void CAnimBank::PrintfAnimBankContents() {}
 
 void InitAnimBankSlotPool() {
     if (!AnimBankSlotPoolInitialized) {
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
         AnimBankSlotPool = bNewSlotPool(60, 81, "Anim_CNFSAnimBank_SlotPool", 0);
 #else
         AnimBankSlotPool = bNewSlotPool(60, 81, "Anim_CNFSAnimBank_SlotPool", GetVirtualMemoryAllocParams());

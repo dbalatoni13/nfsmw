@@ -98,7 +98,7 @@ class WWorldPos {
     unsigned int fFaceValid : 1;   // offset 0x30, size 0x4
     unsigned int fMissCount : 15;  // offset 0x30, size 0x4
     unsigned int fUsageCount : 16; // offset 0x30, size 0x4
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     UCrc32 fSurfaceHash;
 #endif
     float fYOffset;                     // offset 0x34, size 0x4
