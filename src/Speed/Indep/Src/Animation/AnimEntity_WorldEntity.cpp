@@ -76,7 +76,7 @@ void WorldAnimEntityTreeInfo::operator delete(void *ptr) {
 }
 
 void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(data);
     bPlatEndianSwap(&info->mTypeID);
     bPlatEndianSwap(&info->mThisInstanceNameHash);
@@ -495,7 +495,7 @@ int LoaderWorldAnimDirectoryData(bChunk *chunk) {
         }
         WorldAnimInstance *wai = &reinterpret_cast<WorldAnimInstance *>(chunk->GetAlignedData(16))[n];
 
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         bPlatEndianSwap(&wai->unique_instance_id);
         bPlatEndianSwap(&wai->anim_tree_name_hash);
         bPlatEndianSwap(&wai->section_number);

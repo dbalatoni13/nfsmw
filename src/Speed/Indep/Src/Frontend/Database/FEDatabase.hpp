@@ -809,7 +809,7 @@ class cFrontendDatabase {
     bool bSavedProfileForMP; // offset 0x8, size 0x1
     bool bProfileLoaded;     // offset 0xC, size 0x1
     bool bIsOptionsDirty;    // offset 0x10, size 0x1
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     bool bAutoSaveOverwriteConfirmed; // offset 0x14, size 0x1
 #endif
     uint32 iDefaultStableHash;           // offset 0x18, size 0x4

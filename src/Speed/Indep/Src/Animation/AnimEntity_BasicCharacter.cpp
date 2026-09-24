@@ -38,7 +38,7 @@ void CloseCharacterEffects() {
 }
 
 void CBasicCharacterAnimEntity::EndianSwapEntityData(void *data, int size) {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     BasicCharacterAnimEntityInfo *info = reinterpret_cast<BasicCharacterAnimEntityInfo *>(data);
     bPlatEndianSwap(&info->mThisInstanceNameHash);
     bPlatEndianSwap(&info->mParentInstanceNameHash);

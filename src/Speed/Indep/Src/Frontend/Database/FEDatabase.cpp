@@ -788,7 +788,7 @@ void cFrontendDatabase::Default() {
     bComingFromBoot = true;
     bProfileLoaded = false;
     bIsOptionsDirty = false;
-#ifdef EA_PLATFORM_GAMECUBE
+#ifndef EA_PLATFORM_PLAYSTATION2
     bAutoSaveOverwriteConfirmed = false;
 #endif
     CurrentUserProfiles[0]->Default(0, true);
@@ -816,7 +816,7 @@ void cFrontendDatabase::Default() {
 
 void cFrontendDatabase::DefaultProfile() {
     CurrentUserProfiles[0]->Default(0, true);
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     bAutoSaveOverwriteConfirmed = false;
 #endif
     DefaultRaceSettings();
