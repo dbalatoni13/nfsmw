@@ -21,6 +21,11 @@ void uiRepSheetRivalFlow::Init() {
     mInstance = new ("uiRepSheetRivalFlow", 0) uiRepSheetRivalFlow();
 }
 
+void uiRepSheetRivalFlow::Destroy() {
+    delete mInstance;
+    mInstance = nullptr;
+}
+
 uiRepSheetRivalFlow *uiRepSheetRivalFlow::Get() {
     return mInstance;
 }
@@ -60,7 +65,7 @@ void uiRepSheetRivalFlow::Next() {
             RaceStarter::StartCareerFreeRoam();
         }
     } else if (mStage == 7) {
-        MFlowReadyForOutro().Post(0x20d60dbf);
+        MFlowReadyForOutro().Post(UCRC32_Gameplay);
         new ERaceSheetOn(0);
         FEDatabase->ClearGameMode(eFE_GAME_MODE_POST_RIVAL);
         mStage = -1;

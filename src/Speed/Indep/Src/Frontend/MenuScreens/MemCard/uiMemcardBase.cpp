@@ -92,7 +92,7 @@ UIMemcardBase::UIMemcardBase(ScreenConstructorData *sd)
 UIMemcardBase::~UIMemcardBase() {
     m_pDisplayMsg = nullptr;
     MemoryCard::GetInstance()->FEngLinkObjects(nullptr);
-    if ((gMemcardSetup.GetExtraOptions() & 0x1000) != 0) {
+    if ((gMemcardSetup.GetExtraOptions() & MCE_PostOnDestroy) != 0) {
         gMemcardSetup.Complete(gMemcardSetup.mLastMessage);
     }
 }
@@ -103,8 +103,8 @@ void UIMemcardBase::Abort() {
 
 bool UIMemcardBase::AddItem(const char *pName, const char *pDate, int size, int flag) {
     Item *pNode = new ("FEPkgMemcardFileItem", 0) Item();
-    bStrNCpy(pNode->m_Name, pName, 0x1f);
-    pNode->m_Name[31] = '\0';
+    bStrNCpy(pNode->m_Name, pName, sizeof(pNode->m_Name) - 1);
+    pNode->m_Name[sizeof(pNode->m_Name) - 1] = '\0';
     bStrCpy(pNode->m_Data, pDate);
     pNode->m_Size = size;
     pNode->m_Flag = static_cast<MemCardFileFlag>(flag);
@@ -134,59 +134,59 @@ void UIMemcardBase::InitComplete() {
     }
     SetMessageBlurbText(const_cast<char *>(" "));
     FEngSetInvisible(GetPackageName(), FEHashUpper("Button"));
-    m_pDisplayMsg->Flags |= 0x80;
-    if ((gMemcardSetup.GetExtraOptions() & 0x4000) != 0) {
+    m_pDisplayMsg->Flags |= MCO_CheckCard;
+    if ((gMemcardSetup.GetExtraOptions() & MCE_SendInitComplete) != 0) {
         cFEng::Get()->QueueGameMessage(0x5afe12f4, gMemcardSetup.mFromScreen, 0xff);
     }
-    if ((gMemcardSetup.GetExtraOptions() & 0x400000) != 0 ||
-        ((gMemcardSetup.GetExtraOptions() & 0x10000) != 0 && gMemcardSetup.GetCommand() == 0xb0)) {
+    if ((gMemcardSetup.GetExtraOptions() & MCE_RivalFlow) != 0 ||
+        ((gMemcardSetup.GetExtraOptions() & MCE_ChallengeSeries) != 0 && gMemcardSetup.GetCommand() == MCO_AutoSave)) {
         cFEng::Get()->QueuePackageMessage(FEHashUpper("MEMCARD_ON"), GetPackageName(), nullptr);
     }
     switch (MemcardGetCurrentUIOperation()) {
-        case 0x10:
-        case 0x70:
-            if (FEDatabase->bProfileLoaded && (gMemcardSetup.GetExtraOptions() & 0x20000) == 0) {
-                ShowYesNo(0x87c7577e, 0x6000000);
+        case MCO_LoadList:
+        case MCO_CarLotLoad:
+            if (FEDatabase->bProfileLoaded && (gMemcardSetup.GetExtraOptions() & MCE_Player2) == 0) {
+                ShowYesNo(0x87c7577e, MCP_ConfirmDestoryLoad);
                 return;
             }
             InitCompleteDoList();
             break;
-        case 0x20:
+        case MCO_BootList:
             MemcardExit(0x8867412d);
             break;
-        case 0x30:
+        case MCO_DeleteList:
             SetStringCheckingCard();
             InitCompleteDoList();
             break;
-        case 0x40:
-        case 0x60:
+        case MCO_SaveCreate:
+        case MCO_CreateNew:
             cFEng::Get()->QueueGameMessage(0x5a051729, nullptr, 0xff);
             break;
-        case 0x50: {
+        case MCO_Save: {
             bStrCpy(m_FileName, FEDatabase->GetUserProfile(0)->GetProfileName());
             DoSaveFlow(6);
             break;
         }
-        case 0x80:
+        case MCO_CheckCard:
             MemoryCard::GetInstance()->CheckCard(0);
             break;
-        case 0xa0:
-            if ((gMemcardSetup.mOp & 0x8000) != 0) {
+        case MCO_EnableAutoSave:
+            if ((gMemcardSetup.mOp & MCE_Online) != 0) {
                 MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
                 return;
             }
             SetStringCheckingCard();
-            ShowYesNo(0x750eb45c, 0xc000000);
+            ShowYesNo(0x750eb45c, MCP_EnableAutoSave);
             break;
-        case 0x90:
+        case MCO_AutoSaveError:
             m_SimPausedForMemcard = true;
             HandleAutoSaveError();
             break;
-        case 0xd0:
+        case MCO_AutoSaveOverwrite:
             m_SimPausedForMemcard = true;
             HandleAutoSaveOverwriteMessage();
             break;
-        case 0xb0:
+        case MCO_AutoSave:
             if (FEDatabase->bProfileLoaded) {
                 if (MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
                     SetScreenVisible(true, 0);
@@ -196,15 +196,15 @@ void UIMemcardBase::InitComplete() {
                     return;
                 }
                 gMemcardSetup.ClearCommand();
-                gMemcardSetup.SetCommand(0x50);
+                gMemcardSetup.SetCommand(MCO_Save);
                 InitComplete();
             } else {
                 gMemcardSetup.ClearCommand();
-                gMemcardSetup.SetCommand(0x60);
+                gMemcardSetup.SetCommand(MCO_CreateNew);
                 InitComplete();
             }
             break;
-        case 0xf0:
+        case MCO_AutoLoad:
             extern int IsMemcardEnabled;
             if (MemoryCard::IsCardAvailable() && IsMemcardEnabled) {
                 InitCompleteDoList();
@@ -219,9 +219,9 @@ void UIMemcardBase::ExitComplete() {
     gMemcardSetup.SendTermMessage(gMemcardSetup.mLastMessage);
     if ((FEDatabase->IsCareerManagerMode()) && TheGameFlowManager.IsInFrontend()) {
         FEDatabase->ResetGameMode();
-        if (FEDatabase->bProfileLoaded &&
-            !(((gMemcardSetup.GetCommand()) == 0x10 && gMemcardSetup.mLastMessage == 0x8867412d) || gMemcardSetup.mPreviousPrompt == 0x1000000 ||
-              gMemcardSetup.mPreviousPrompt == 0x3000000 || gMemcardSetup.mPreviousPrompt == 0x5000000)) {
+        if (FEDatabase->bProfileLoaded && !(((gMemcardSetup.GetCommand()) == MCO_LoadList && gMemcardSetup.mLastMessage == 0x8867412d) ||
+                                            gMemcardSetup.mPreviousPrompt == MCP_Create || gMemcardSetup.mPreviousPrompt == MCP_DismissMe ||
+                                            gMemcardSetup.mPreviousPrompt == MCP_ConfirmDestoryCreate)) {
             if (FEDatabase->GetCareerSettings()->HasCareerStarted()) {
                 FEDatabase->GetCareerSettings()->ResumeCareer();
             } else {
@@ -229,15 +229,15 @@ void UIMemcardBase::ExitComplete() {
             }
         } else {
             gMemcardSetup.ClearMethod();
-            gMemcardSetup.SetMethod(1);
+            gMemcardSetup.SetMethod(MCF_Modal);
             FEDatabase->RestoreFromBackupDB();
             FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
         }
     }
 
-    if ((gMemcardSetup.GetExtraOptions() & 0x400000) != 0) {
+    if ((gMemcardSetup.GetExtraOptions() & MCE_RivalFlow) != 0) {
         uiRepSheetRivalFlow::Get()->Next();
-    } else if ((gMemcardSetup.GetExtraOptions() & 0x10000) != 0) {
+    } else if ((gMemcardSetup.GetExtraOptions() & MCE_ChallengeSeries) != 0) {
         if (TheGameFlowManager.IsInFrontend()) {
             cFEng::Get()->QueuePackagePop(1);
             if (FEDatabase->bProfileLoaded) {
@@ -250,7 +250,7 @@ void UIMemcardBase::ExitComplete() {
         }
     } else {
         switch (gMemcardSetup.GetMethod()) {
-            case 1:
+            case MCF_Modal:
                 if (m_SimPausedForMemcard) {
                     m_SimPausedForMemcard = false;
                     cFEng::Get()->QueuePackagePop(cFEng::Get()->IsPackagePushed("SMS_Mailboxes.fng") ? 1 : 0);
@@ -258,10 +258,10 @@ void UIMemcardBase::ExitComplete() {
                     cFEng::Get()->QueuePackagePop(1);
                 }
                 break;
-            case 2:
+            case MCF_Switch:
                 cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen, MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
                 break;
-            case 3:
+            case MCF_ModalSwitch:
                 cFEng::Get()->QueuePackagePop(1);
                 cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen, MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
                 break;
@@ -333,13 +333,13 @@ void UIMemcardBase::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 
             FEDatabase->GetUserProfile(0)->SetProfileName(m_FileName, true);
             FEDatabase->DeallocBackupDB();
             FEDatabase->bProfileLoaded = true;
-            DoSaveFlow(4);
+            DoSaveFlow(MCSF_PromptForSave);
             break;
         case 0xc9d30688:
-            if ((gMemcardSetup.GetCommand()) == 0x60 && !FEDatabase->bProfileLoaded) {
-                DoSaveFlow(2);
-            } else if ((gMemcardSetup.GetCommand() & 0x60) != 0 && FEDatabase->bProfileLoaded) {
-                DoSaveFlow(1);
+            if ((gMemcardSetup.GetCommand()) == MCO_CreateNew && !FEDatabase->bProfileLoaded) {
+                DoSaveFlow(MCSF_PromptForCreate);
+            } else if ((gMemcardSetup.GetCommand() & MCO_CreateNew) != 0 && FEDatabase->bProfileLoaded) {
+                DoSaveFlow(MCSF_PromptForDestoryCreate);
             } else {
                 FEPrintf(m_pDisplayMsg, "");
                 m_bDelayedFailed = true;
@@ -377,25 +377,25 @@ void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 
     HideAllButtons();
 
     switch (nPrompt) {
-        case 0x1000000:
+        case MCP_Create:
             if (bYes) {
                 FEDatabase->AllocBackupDB(true);
-                if ((gMemcardSetup.GetExtraOptions() & 0x40000) == 0) {
-                    if ((gMemcardSetup.GetExtraOptions() & 0x200000) == 0) {
+                if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveOptions) == 0) {
+                    if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveStable) == 0) {
                         FEDatabase->DefaultProfile();
                     }
                 }
-                if ((gMemcardSetup.GetExtraOptions() & 0x80000) != 0) {
+                if ((gMemcardSetup.GetExtraOptions() & MCE_NewCareer) != 0) {
                     FEDatabase->GetCareerSettings()->StartNewCareer(false);
                 }
-                if ((gMemcardSetup.GetCommand()) == 0x20) {
+                if ((gMemcardSetup.GetCommand()) == MCO_BootList) {
                     gMemcardSetup.ClearCommand();
-                    gMemcardSetup.SetCommand(0x60);
+                    gMemcardSetup.SetCommand(MCO_CreateNew);
                 }
-                DoSaveFlow(10);
+                DoSaveFlow(MCSF_AutoSaveWarning);
                 return;
             } else {
-                if ((gMemcardSetup.GetExtraOptions() & 0x80000) != 0) {
+                if ((gMemcardSetup.GetExtraOptions() & MCE_NewCareer) != 0) {
                     FEDatabase->RestoreFromBackupDB();
                 }
                 if (true) {
@@ -407,11 +407,11 @@ void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 
                 }
             }
             break;
-        case 0x4000000:
+        case MCP_ConfirmSave:
             if (bYes) {
-                DoSaveFlow(12);
+                DoSaveFlow(MCSF_DisableAutoSave);
             } else {
-                if ((gMemcardSetup.GetCommand()) == 0x60) {
+                if ((gMemcardSetup.GetCommand()) == MCO_CreateNew) {
                     FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
                 }
                 cFEng::Get()->QueueGameMessage(0xdc12af2e, GetPackageName(), 0xff);
@@ -420,34 +420,34 @@ void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 
         case 0x5000000:
             if (bYes) {
                 FEDatabase->AllocBackupDB(true);
-                if ((gMemcardSetup.GetExtraOptions() & 0x40000) == 0) {
-                    if ((gMemcardSetup.GetExtraOptions() & 0x200000) == 0) {
+                if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveOptions) == 0) {
+                    if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveStable) == 0) {
                         FEDatabase->DefaultProfile();
                     }
                 }
-                DoSaveFlow(10);
+                DoSaveFlow(MCSF_AutoSaveWarning);
             } else {
                 MemcardExit(0x8867412d);
             }
             break;
-        case 0x6000000:
+        case MCP_ConfirmDestoryLoad:
             if (bYes) {
                 InitCompleteDoList();
             } else {
                 cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
             }
             break;
-        case 0x7000000:
+        case MCP_OK:
             cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
             break;
-        case 0x8000000:
-            DoSaveFlow(11);
+        case MCP_AutoSaveWarning:
+            DoSaveFlow(MCSF_AutoSaveWarning2);
             break;
-        case 0x9000000:
+        case MCP_AutoSaveWarning2:
             cFEng::Get()->QueuePackageMessage(0x40E73793, GetPackageName(), nullptr);
-            DoSaveFlow(3);
+            DoSaveFlow(MCSF_PromptForKeyboard);
             break;
-        case 0xa000000:
+        case MCP_ConfirmAutoSave:
             if (bYes) {
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
                 cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
@@ -456,21 +456,21 @@ void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = true;
                 gMemcardSetup.ClearCommand();
                 MemoryCard::GetInstance()->ShowMessages(true);
-                gMemcardSetup.SetCommand(0x50);
-                DoSaveFlow(12);
+                gMemcardSetup.SetCommand(MCO_Save);
+                DoSaveFlow(MCSF_DisableAutoSave);
             }
             break;
-        case 0xb000000:
-            if ((gMemcardSetup.GetCommand()) == 0xa0) {
-                if ((gMemcardSetup.GetExtraOptions() & 0x8000) == 0) {
+        case MCP_ConfirmAutoSaveEnableFailed:
+            if ((gMemcardSetup.GetCommand()) == MCO_EnableAutoSave) {
+                if ((gMemcardSetup.GetExtraOptions() & MCE_Online) == 0) {
                     gMemcardSetup.ClearMethod();
-                    gMemcardSetup.SetMethod(1);
+                    gMemcardSetup.SetMethod(MCF_Modal);
                 }
             }
             cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
             break;
-        case 0xc000000:
+        case MCP_EnableAutoSave:
             if (bYes) {
                 MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
             } else {
@@ -479,8 +479,8 @@ void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 
                 cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
             }
             break;
-        case 0x3000000:
-        case 0xd000000:
+        case MCP_DismissMe:
+        case MCP_CorruptProfile:
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
             break;
         default:
@@ -629,27 +629,27 @@ void UIMemcardBase::SetupPromptNoProfileFound() {
 
 void UIMemcardBase::SetupPromptSaveConfirm() {
     char *fmt;
-    if ((gMemcardSetup.GetExtraOptions() & 0x8000) != 0) {
+    if ((gMemcardSetup.GetExtraOptions() & MCE_Online) != 0) {
         fmt = GetLocalizedString(0x391a0aac);
     } else {
         uint32 fmtHash;
-        if ((gMemcardSetup.GetExtraOptions() & 0x40000) != 0) {
+        if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveOptions) != 0) {
             fmtHash = 0xb0af33a5;
-        } else if ((gMemcardSetup.GetExtraOptions() & 0x200000) != 0) {
+        } else if ((gMemcardSetup.GetExtraOptions() & MCE_PromptSaveStable) != 0) {
             fmtHash = 0xd80818f8;
         } else {
             fmtHash = 0x39b3ccba;
         }
         fmt = GetLocalizedString(fmtHash);
     }
-    ShowYesNo(0x39b3ccba, 0x4000000);
+    ShowYesNo(0x39b3ccba, MCP_ConfirmSave);
     char text[512];
     bSPrintf(text, fmt, m_FileName, m_FileName);
     SetMessageBlurbText(text);
 }
 
 void UIMemcardBase::SetupAutoSaveConfirmPrompt() {
-    gMemcardSetup.SetPrompt(0xa000000);
+    gMemcardSetup.SetPrompt(MCP_ConfirmAutoSave);
     SetMessageBlurbText(GetLocalizedString(0xa0b434a2));
     FEngEnableButton(GetPackageName(), gButtonIDs[0]);
     FEngSetVisible(GetPackageName(), gButtonIDs[0]);
@@ -668,15 +668,15 @@ void UIMemcardBase::SetupAutoSaveConfirmPrompt() {
 }
 
 void UIMemcardBase::SetupPromptForSave() {
-    ShowYesNo(0x83f4bb3e, 0x4000000);
-    char *fmt = GetLocalizedString(gMemcardSetup.GetExtraOptions() & 0x200000 ? 0xd80818f8 : 0x83f4bb3e);
+    ShowYesNo(0x83f4bb3e, MCP_ConfirmSave);
+    char *fmt = GetLocalizedString(gMemcardSetup.GetExtraOptions() & MCE_PromptSaveStable ? 0xd80818f8 : 0x83f4bb3e);
     char text[512];
     bSPrintf(text, fmt, m_FileName, m_FileName);
     SetMessageBlurbText(text);
 }
 
 void UIMemcardBase::SetupPromptCorruptProfile() {
-    ShowOK(0x821e4444, 0xd000000);
+    ShowOK(0x821e4444, MCP_CorruptProfile);
     char text[512];
     char *fmt = GetLocalizedString(0x821e4444);
     bSPrintf(text, fmt, m_FileName);
@@ -684,7 +684,7 @@ void UIMemcardBase::SetupPromptCorruptProfile() {
 }
 
 void UIMemcardBase::SetupPromptAutoSaveEnableFailedNoCard() {
-    uint32 msg = 0xb000000;
+    uint32 msg = MCP_ConfirmAutoSaveEnableFailed;
     ShowOK(0x9e85bba8, msg);
 }
 
@@ -715,55 +715,55 @@ void UIMemcardBase::DoSaveFlow(int flow) {
         m_Flow = flow;
     } else {
         if (!FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
-            m_Flow = 2;
+            m_Flow = MCSF_PromptForCreate;
         }
     }
     uint32 msg;
     switch (m_Flow) {
-        case 9:
-            ShowOK(0xd9783c57, 0x3000000);
+        case MCSF_PromptForExceedingLimit:
+            ShowOK(0xd9783c57, MCP_DismissMe);
             break;
-        case 1:
-            ShowYesNo(0x7209349f, 0x5000000);
+        case MCSF_PromptForDestoryCreate:
+            ShowYesNo(0x7209349f, MCP_ConfirmDestoryCreate);
             break;
-        case 2:
-            if ((gMemcardSetup.GetExtraOptions() & 0x80000) != 0) {
+        case MCSF_PromptForCreate:
+            if ((gMemcardSetup.GetExtraOptions() & MCE_NewCareer) != 0) {
                 msg = 0xbadd522c;
-            } else if ((gMemcardSetup.GetExtraOptions() & 0x10000) != 0) {
+            } else if ((gMemcardSetup.GetExtraOptions() & MCE_ChallengeSeries) != 0) {
                 msg = 0x93c25b3d;
-            } else if ((gMemcardSetup.GetExtraOptions() & 0x8000) != 0) {
+            } else if ((gMemcardSetup.GetExtraOptions() & MCE_Online) != 0) {
                 msg = 0xf8448956;
             } else {
                 msg = 0xbe97590f;
             }
-            ShowYesNo(msg, 0x1000000);
+            ShowYesNo(msg, MCP_Create);
             break;
 
-        case 3:
+        case MCSF_PromptForKeyboard:
             ShowKeyboard();
             break;
-        case 6:
+        case MCSF_PromptForConfirm:
             SetupPromptSaveConfirm();
             break;
-        case 4:
+        case MCSF_PromptForSave:
             SetupPromptForSave();
             break;
-        case 12:
+        case MCSF_DisableAutoSave:
             MemoryCard::GetInstance()->SetAutoSaveEnabled(false);
             break;
-        case 8:
+        case MCSF_DoSave:
             FEDatabase->GetUserProfile(0)->SetProfileName(m_FileName, true);
             MemoryCard::GetInstance()->Save(m_FileName);
             SetStringCheckingCard();
             break;
-        case 10:
+        case MCSF_AutoSaveWarning:
             cFEng::Get()->QueuePackageMessage(0x1c8ace, GetPackageName(), nullptr);
             msg = GetAutoSaveWarning();
-            ShowOK(msg, 0x9000000);
+            ShowOK(msg, MCP_AutoSaveWarning2);
             break;
-        case 11:
+        case MCSF_AutoSaveWarning2:
             msg = GetAutoSaveWarning2();
-            ShowOK(msg, 0x9000000);
+            ShowOK(msg, MCP_AutoSaveWarning2);
             break;
     }
 }
@@ -868,12 +868,12 @@ void UIMemcardBase::PopChild() {
 
 void UIMemcardBase::HandleAutoSaveError() {
     if (!MemoryCard::GetInstance()->IsCheckingCardForAutoSave() && !MemoryCard::GetInstance()->IsCheckingCardForOverwrite()) {
-        if ((gMemcardSetup.GetCommand()) != 0xb0) {
+        if ((gMemcardSetup.GetCommand()) != MCO_AutoSave) {
             gMemcardSetup.ClearMethod();
-            gMemcardSetup.SetMethod(1);
+            gMemcardSetup.SetMethod(MCF_Modal);
         }
         gMemcardSetup.ClearCommand();
-        gMemcardSetup.SetCommand(0x50);
+        gMemcardSetup.SetCommand(MCO_Save);
     }
     bStrCpy(m_FileName, FEDatabase->GetUserProfile(0)->GetProfileName());
     if (MemoryCard::GetInstance()->IsCheckingCardForAutoSave() || MemoryCard::GetInstance()->IsCheckingCardForOverwrite() ||
@@ -895,9 +895,9 @@ void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
     FEDatabase->bAutoSaveOverwriteConfirmed = true;
 #endif
     gMemcardSetup.ClearCommand();
-    gMemcardSetup.SetCommand(0x50);
+    gMemcardSetup.SetCommand(MCO_Save);
     MemoryCard::GetInstance()->ShowMessages(true);
-    DoSaveFlow(12);
+    DoSaveFlow(MCSF_DisableAutoSave);
 }
 
 // ===== UIMemcardList =====
@@ -918,19 +918,19 @@ UIMemcardList::UIMemcardList(ScreenConstructorData *sd)
         char tempStr[32];
         ScrollerSlot *pSlot = new ("ScrollerSlot", 0) ScrollerSlot();
 
-        FEngSNPrintf(tempStr, 0x20, "option_name_%d", i);
+        FEngSNPrintf(tempStr, sizeof(tempStr), "option_name_%d", i);
         pSlot->AddData(FEngFindString(GetPackageName(), FEHashUpper(tempStr)));
 
-        FEngSNPrintf(tempStr, 0x20, "option_data_%d", i);
+        FEngSNPrintf(tempStr, sizeof(tempStr), "option_data_%d", i);
         pSlot->AddData(FEngFindString(GetPackageName(), FEHashUpper(tempStr)));
 
-        FEngSNPrintf(tempStr, 0x20, "option_mouse_%d", i);
+        FEngSNPrintf(tempStr, sizeof(tempStr), "option_mouse_%d", i);
         pSlot->SetBacking(FEngFindObject(GetPackageName(), FEHashUpper(tempStr)));
         pSlot->Hide();
         m_SaveGameList.AddSlot(pSlot);
     }
 
-    m_ListOp = static_cast<int>((gMemcardSetup.GetCommand()) == 0x30);
+    m_ListOp = static_cast<int>(gMemcardSetup.GetCommand() == MCO_DeleteList);
 
     static uint32 sOpName[2] = {0x841c21af, 0xe85326e2};
     FEngSetLanguageHash(GetPackageName(), 0x48d4fcae, sOpName[m_ListOp]);

@@ -14,7 +14,7 @@ ENV VIRTUAL_ENV=/venv
 ENV PATH=/venv/bin:$PATH
 
 # Copying ../requirements.txt because it can't be referenced directly
-RUN python -m pip install pyelftools sortedcontainers pyyaml "splat64[mips]>=0.36.0,<1.0.0" "spimdisasm>=1.36.1,<2.0.0" "rabbitizer==1.13.0" tqdm pygfxd
+RUN python -m pip install pyelftools sortedcontainers pyyaml "splat64[mips]>=0.50.0,<1.0.0" "spimdisasm>=1.36.1,<2.0.0" "rabbitizer==1.16.2" tqdm pygfxd
 
 # Install nfsmw match extension
 ADD --chmod=644 https://github.com/dbalatoni13/nfsmw/releases/latest/download/nfsmw-match-annotations.vsix /tmp/nfsmw-match-annotations.vsix 

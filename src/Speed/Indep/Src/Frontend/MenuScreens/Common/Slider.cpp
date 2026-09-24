@@ -53,13 +53,11 @@ void cSlider::InitObjects(const char *pkg_name, const char *name) {
 }
 
 void cSlider::InitValues(float min, float max, float inc, float cur, float range) {
-    fRange = range;
     fMaxValue = max;
     fMinValue = min;
+    fDesiredValue = fCurValue = bMin(bMax(cur, min), max);
     fIncrement = inc;
-    cur = bMin(bMax(cur, min), max);
-    fCurValue = cur;
-    fDesiredValue = cur;
+    fRange = range;
 }
 
 void cSlider::Draw() {
@@ -111,9 +109,8 @@ void cSlider::ToggleVisible(bool bOn) {
 }
 
 void cSlider::SetValue(float fvalue) {
-    fvalue = bMax(fvalue, fMinValue);
     fPrevValue = fCurValue;
-    fCurValue = bMin(fvalue, fMaxValue);
+    fCurValue = bMin(bMax(fvalue, fMinValue), fMaxValue);
 }
 
 void cSlider::Highlight() {

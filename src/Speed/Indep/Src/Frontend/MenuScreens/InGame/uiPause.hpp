@@ -4,6 +4,7 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
@@ -170,7 +171,7 @@ class pm_QuitRaceToFE : public IconOption {
             unsigned int quitMessageHash = 0;
             PauseMenu::SetSelectionHash(0xE5C9C609);
             GRace::Context ctx = GRaceStatus::Get().GetRaceContext();
-            if (ctx == GRace::kRaceContext_TimeTrial) {
+            if (ctx == GRace::kRaceContext_Online) {
             } else if (ctx == GRace::kRaceContext_QuickRace) {
                 quitMessageHash = 0x1DB1CDE5;
             } else {

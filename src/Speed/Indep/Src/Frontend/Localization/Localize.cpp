@@ -342,12 +342,12 @@ char *GetLocalizedString(uint32 string_label) {
 }
 
 void GetLocalizedString(char *buffer, uint32 bufsize, uint32 string_label) {
-    char *str = const_cast<char *>(GetLocalizedString(string_label));
-    bStrNCpy(buffer, str, static_cast<int>(bufsize));
+    char *str = GetLocalizedString(string_label);
+    bStrNCpy(buffer, str, bufsize);
 }
 
 char *GetTranslatedString(int label_hash) {
-    return const_cast<char *>(GetLocalizedString(label_hash));
+    return GetLocalizedString(label_hash);
 }
 
 const bool GetLocalizedWideString(int16 *wide_string, int wide_string_buffer_size, uint32 string_label) {

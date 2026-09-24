@@ -34,7 +34,7 @@ void CloseAnimSkelSlotPool() {
     AnimSkelSlotPoolInitialized = false;
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 static int NumAnimSkels = 0;
 static int MaxNumAnimSkels = 0;
 
@@ -49,7 +49,7 @@ void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
         InitAnimSkelSlotPool();
     }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimSkels++;
     if (MaxNumAnimSkels < NumAnimSkels) {
         MaxNumAnimSkels = NumAnimSkels;
@@ -60,7 +60,7 @@ void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
 }
 
 void CAnimSkeleton::operator delete(void *ptr) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     NumAnimSkels--;
 #endif
 
@@ -97,6 +97,7 @@ void CAnimSkeleton::DynamicLoadResolve() {
     if (m_pDynLoader) {
         EAGL4::DynamicLoader::Symbol sym;
         int idx = 0;
+        void *addr;
 
         if (m_pDynLoader->GetNextSymbol(EAGL4::DynamicLoader::SkeletonType, idx, sym)) {
             EAGL4Anim::Skeleton *skeleton = reinterpret_cast<EAGL4Anim::Skeleton *>(sym.data);
@@ -118,12 +119,11 @@ void CAnimSkeleton::DynamicLoadResolve() {
 void CAnimSkeleton::PrintfSkeletonBoneData() {}
 
 CAnimSkeleton *GetSkeletonFromList(uint32 namehash) {
-    CAnimSkeleton *skel_list = g_loadedSkeletonList.GetHead();
-    while (skel_list != g_loadedSkeletonList.EndOfList()) {
-        if (skel_list->GetSkeletonName() && bStringHash(skel_list->GetSkeletonName()) == namehash) {
+    unsigned int skel_hash;
+    for (CAnimSkeleton *skel_list = g_loadedSkeletonList.GetHead(); skel_list != g_loadedSkeletonList.EndOfList(); skel_list = skel_list->GetNext()) {
+        if (skel_list->GetSkeletonName() && (skel_hash = bStringHash(skel_list->GetSkeletonName())) == namehash) {
             return skel_list;
         }
-        skel_list = skel_list->GetNext();
     }
 
     return nullptr;
@@ -132,11 +132,11 @@ CAnimSkeleton *GetSkeletonFromList(uint32 namehash) {
 int LoaderEAGLSkeletons(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_EAGL_SKELETONS) {
         int size = chunk->GetAlignedSize(0x10); // unused
-        CAnimSkeleton *skeleton = new ("NFS CAnimSkeleton") CAnimSkeleton();
+        CAnimSkeleton *anim_skel = new ("NFS CAnimSkeleton") CAnimSkeleton();
 
-        skeleton->Initialize(chunk->GetAlignedData(0x10), chunk->GetAlignedSize(0x10));
-        skeleton->SetAssociatedChunk(chunk);
-        g_loadedSkeletonList.AddTail(skeleton);
+        anim_skel->Initialize(chunk->GetAlignedData(0x10), chunk->GetAlignedSize(0x10));
+        anim_skel->SetAssociatedChunk(chunk);
+        g_loadedSkeletonList.AddTail(anim_skel);
 
         return 1;
     }
@@ -153,7 +153,7 @@ int UnloaderEAGLSkeletons(bChunk *chunk) {
             struct bChunk *assoc_chunk = skel->GetAssociatedChunk();
 
             if (assoc_chunk == chunk) {
-                skel->Remove();
+                g_loadedSkeletonList.Remove(skel);
                 skel->Cleanup();
                 delete skel;
             }

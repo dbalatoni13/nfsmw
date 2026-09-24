@@ -1,10 +1,13 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Animation/AnimCandidates.hpp"
 #include "Speed/Indep/Src/Animation/AnimChooser.hpp"
 #include "Speed/Indep/Src/Animation/AnimLocator.hpp"
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Animation/AnimScene.hpp"
+#include "Speed/Indep/Src/Animation/AnimWorldTypes.hpp" // needed for WAM_
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
@@ -12,10 +15,12 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle_hash.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayEndNIS.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
@@ -32,6 +37,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
@@ -181,38 +187,39 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     void UpdateLoading();
     void Play();
     void UpdatePlaying(float dT);
+    void PrepareVehicles(int carListType);
     bool IsAudioStreamQueued();
     bool IsCarListLoaded();
     void JoyHandle(IPlayer *player);
 
-    HSIMTASK mUpdate;                             // offset 0x6C, size 0x4
-    float mNISElapsedTime;                        // offset 0x70, size 0x4
-    ActionQueue mActionQ;                         // offset 0x74, size 0x294
-    NISACTIVITY_STATE mState;                     // offset 0x308, size 0x4
-    Hermes::HHANDLER mMsgMovieComplete;           // offset 0x30C, size 0x4
-    CAnimChooser::eType mNISType;                 // offset 0x310, size 0x4
-    bVector3 mNISPosition;                        // offset 0x314, size 0x10
-    float mNISDirection;                          // offset 0x324, size 0x4
-    char mPreMovie[64];                           // offset 0x328, size 0x40
-    char mPostMovie[64];                          // offset 0x368, size 0x40
-    unsigned int mSceneHash;                      // offset 0x3A8, size 0x4
-    UCrc32 mSequencerID;                          // offset 0x3AC, size 0x4
-    CAnimScene *mAnimScene;                       // offset 0x3B0, size 0x4
-    int mAnimHandle;                              // offset 0x3B4, size 0x4
-    int mCameraTrackNumber;                       // offset 0x3B8, size 0x4
-    float mDefault_MaxTicksPerTimestep;           // offset 0x3BC, size 0x4
-    CarList mVehicleTable;                        // offset 0x3C0, size 0x10
-    EventSequencer::IEngine *mSequencer;          // offset 0x3D0, size 0x4
-    ALIGN_16 UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
-    ALIGN_16 UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
-    bool mStartPlayingNow;                        // offset 0x3EC, size 0x1
-    bool mRunningThroughICE;                      // offset 0x3F0, size 0x1
-    int mLoadAttemptCount;                        // offset 0x3F4, size 0x4
-    int mSuspensionSettle;                        // offset 0x3F8, size 0x4
-    CAnimMomentScene *mMomentScene;               // offset 0x3FC, size 0x4
-    bool mUsingFEngOverlay;                       // offset 0x400, size 0x1
-    bool mCareerNIS;                              // offset 0x404, size 0x1
-    bool mDDayNIS;                                // offset 0x408, size 0x1
+    HSIMTASK mUpdate;                               // offset 0x6C, size 0x4
+    float mNISElapsedTime;                          // offset 0x70, size 0x4
+    ActionQueue mActionQ;                           // offset 0x74, size 0x294
+    NISACTIVITY_STATE mState;                       // offset 0x308, size 0x4
+    Hermes::HHANDLER mMsgMovieComplete;             // offset 0x30C, size 0x4
+    CAnimChooser::eType mNISType;                   // offset 0x310, size 0x4
+    bVector3 mNISPosition;                          // offset 0x314, size 0x10
+    Angle mNISDirection;                            // offset 0x324, size 0x4
+    char mPreMovie[64];                             // offset 0x328, size 0x40
+    char mPostMovie[64];                            // offset 0x368, size 0x40
+    uint32 mSceneHash;                              // offset 0x3A8, size 0x4
+    UCrc32 mSequencerID;                            // offset 0x3AC, size 0x4
+    CAnimScene *mAnimScene;                         // offset 0x3B0, size 0x4
+    int mAnimHandle;                                // offset 0x3B4, size 0x4
+    int mCameraTrackNumber;                         // offset 0x3B8, size 0x4
+    float mDefault_MaxTicksPerTimestep;             // offset 0x3BC, size 0x4
+    CarList mVehicleTable;                          // offset 0x3C0, size 0x10
+    EventSequencer::IEngine *mSequencer;            // offset 0x3D0, size 0x4
+    PS2ALIGN16 UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
+    PS2ALIGN16 UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
+    bool mStartPlayingNow;                          // offset 0x3EC, size 0x1
+    bool mRunningThroughICE;                        // offset 0x3F0, size 0x1
+    int mLoadAttemptCount;                          // offset 0x3F4, size 0x4
+    int mSuspensionSettle;                          // offset 0x3F8, size 0x4
+    CAnimMomentScene *mMomentScene;                 // offset 0x3FC, size 0x4
+    bool mUsingFEngOverlay;                         // offset 0x400, size 0x1
+    bool mCareerNIS;                                // offset 0x404, size 0x1
+    bool mDDayNIS;                                  // offset 0x408, size 0x1
 #ifndef EA_BUILD_A124
     bool mBlackListNIS;   // offset 0x40C, size 0x1
     bool mNonSkipableNIS; // offset 0x410, size 0x1
@@ -240,9 +247,8 @@ NISActivity::NISActivity()
       mNISElapsedTime(0.0f),          //
       mActionQ(true),                 //
       mState(NISACTIVITY_NONE),       //
-                                      // TODO magic
       mMsgMovieComplete(
-          Hermes::Handler::Create<MNotifyMovieFinished, NISActivity, NISActivity>(this, &NISActivity::OnMovieComplete, UCrc32(0x20d60dbf), 0)),
+          Hermes::Handler::Create<MNotifyMovieFinished, NISActivity, NISActivity>(this, &NISActivity::OnMovieComplete, UCrc32(UCRC32_Gameplay), 0)),
       mNISType(CAnimChooser::Intro),      //
       mSceneHash(0),                      //
       mSequencerID(),                     //
@@ -284,6 +290,7 @@ NISActivity::~NISActivity() {
     Unload();
     g_pEAXSound->NISFinished();
 
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     if (bStringHash("IntroNisFlyInDD") == mSceneHash) {
         SetSoundControlState(false, SNDSTATE_NIS_321, "DDAY flying");
     }
@@ -325,7 +332,7 @@ NISActivity::~NISActivity() {
     if (mNISSkipped) {
         new EPlayEndNIS(mSkipToNIS);
     } else {
-        MNISComplete(nullptr).Post(UCrc32(0x20d60dbf)); // magic
+        MNISComplete(nullptr).Post(UCrc32(UCRC32_Gameplay));
     }
 #else
     // TODO PS2
@@ -642,6 +649,100 @@ void NISActivity::Pause() {
 
 void NISActivity::UnPause() {
     mPause = false;
+}
+
+void NISActivity::PrepareVehicles(int carListType) {
+    if (carListType == CSpecialCarListAnimCandidate::NONE) {
+        return;
+    }
+
+    UMath::Vector3 startVec = {1.0f, 0.0f, 0.0f};
+    UMath::Vector3 startPos = {0.0f, 0.0f, 0.0f};
+
+    if (carListType == CSpecialCarListAnimCandidate::ONE_COP || carListType == CSpecialCarListAnimCandidate::LOTS_OF_COPS) {
+        ISimable *iSim = ISimable::CreateInstance(
+            UCrc32("PVehicle"), VehicleParams(this, DRIVER_NIS, Attrib::Hash::pvehicle::key_copmidsize_nis, startVec, startPos, 2, nullptr, nullptr));
+        IVehicle *iCar;
+        if (iSim != nullptr && iSim->QueryInterface(&iCar)) {
+            INIS::Get()->AddCar(UCrc32("cop1"), iCar);
+            IDamageable *carDamage;
+            if (iCar->QueryInterface(&carDamage)) {
+                carDamage->ResetDamage();
+            }
+        }
+
+        if (carListType == CSpecialCarListAnimCandidate::LOTS_OF_COPS) {
+            for (int i = 1; i < 8; i++) {
+                ISimable *iSim =
+                    ISimable::CreateInstance(UCrc32("PVehicle"), VehicleParams(this, DRIVER_NIS, Attrib::Hash::pvehicle::key_copmidsize_nis_ld,
+                                                                               startVec, startPos, 2, nullptr, nullptr));
+                IVehicle *iCar;
+                if (iSim != nullptr && iSim->QueryInterface(&iCar)) {
+                    char channelName[32];
+                    bSPrintf(channelName, "cop%d", i + 1);
+                    IDamageable *carDamage;
+                    INIS::Get()->AddCar(UCrc32(channelName), iCar);
+                    if (iCar->QueryInterface(&carDamage)) {
+                        carDamage->ResetDamage();
+                    }
+                }
+            }
+        }
+    } else if (carListType == CSpecialCarListAnimCandidate::ONE_SPORT_COP) {
+        ISimable *iSim = ISimable::CreateInstance(UCrc32("PVehicle"), VehicleParams(this, DRIVER_NIS, Attrib::Hash::pvehicle::key_copsport, startVec,
+                                                                                    startPos, 2, GetCustomCar("COP_CROSS"), nullptr));
+        IVehicle *iCar;
+        if (iSim != nullptr && iSim->QueryInterface(&iCar)) {
+            INIS::Get()->AddCar(UCrc32("cop1"), iCar);
+            IDamageable *carDamage;
+            if (iCar->QueryInterface(&carDamage)) {
+                carDamage->ResetDamage();
+            }
+        }
+    } else if (carListType >= CSpecialCarListAnimCandidate::TRAFFIC_MIX1 && carListType <= CSpecialCarListAnimCandidate::TRAFFIC_MIX9) {
+        Attrib::Key *specialCarList = SpecialCarList1;
+        switch (carListType) {
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX2:
+                specialCarList = SpecialCarList2;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX3:
+                specialCarList = SpecialCarList3;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX4:
+                specialCarList = SpecialCarList4;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX5:
+                specialCarList = SpecialCarList5;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX6:
+                specialCarList = SpecialCarList6;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX7:
+                specialCarList = SpecialCarList7;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX8:
+                specialCarList = SpecialCarList8;
+                break;
+            case CSpecialCarListAnimCandidate::TRAFFIC_MIX9:
+                specialCarList = SpecialCarList9;
+                break;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            ISimable *iSim = ISimable::CreateInstance(UCrc32("PVehicle"),
+                                                      VehicleParams(this, DRIVER_NIS, specialCarList[i], startVec, startPos, 2, nullptr, nullptr));
+            IVehicle *iCar;
+            if (iSim != nullptr && iSim->QueryInterface(&iCar)) {
+                char channelName[32];
+                bSPrintf(channelName, "cop%d", i + 1);
+                INIS::Get()->AddCar(UCrc32(channelName), iCar);
+                IDamageable *carDamage;
+                if (iCar->QueryInterface(&carDamage)) {
+                    carDamage->ResetDamage();
+                }
+            }
+        }
+    }
 }
 
 void NISActivity::ServiceLoads() {

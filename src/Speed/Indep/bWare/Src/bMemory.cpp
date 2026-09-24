@@ -33,7 +33,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetAllocationNumber() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding);
 #else
         return 0;
@@ -41,7 +41,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetDebugLine() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding + 2);
 #else
         return 0;
@@ -758,7 +758,7 @@ void bMemoryInit() {
 // STRIPPED
 void bMemoryUpdateTraceInformation() {}
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
 }

@@ -1,8 +1,6 @@
-#ifndef SPEECH_SOUNDAI_H
-#define SPEECH_SOUNDAI_H
+#ifndef __SOUNDAI_H_
+#define __SOUNDAI_H_ 1 // Decl: 13
 
-#include "EAXAirSupport.h"
-#include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -12,10 +10,19 @@
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Speech/EAXCharacter.h"
 #include "Speed/Indep/Src/Speech/MWRoadNames.h"
+#include "Speed/Indep/Src/Speech/MusicFlow.h"
+#include "Speed/Indep/Src/Speech/PursuitFlow.h"
+#include "Speed/Indep/Src/Speech/StrategyFlow.h"
+#include "Speed/Indep/Src/Speech/RoadblockFlow.h"
+#include "Speed/Indep/Src/Speech/Observer.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
-#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
+
+#define SOUNDAI_MAIN_UPDATE_RATE 0.1f      // Decl: 25
+#define SOUNDAI_OBSERVER_UPDATE_RATE 0.25f // Decl: 26
+#define MAX_VOICE_ACTORS 20                // Decl: 27
 
 DECLARE_CONTAINER_TYPE(IVehiclePtrs);
 
@@ -36,7 +43,9 @@ DECLARE_CONTAINER_TYPE(copMap);
 
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
-    copMap(int size) {}
+    copMap(int size) {
+        this->reserve(size);
+    }
 
     void Add(HSIMABLE hsimable, EAXCop *cop);
     EAXCop *Remove(HSIMABLE hsimable);
@@ -55,6 +64,16 @@ class voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
 // total size: 0x70
 // Decl: 86
 struct VoiceUsage {
+    VoiceUsage() {
+        voices.reserve(8);
+        cs_Rhino.reserve(6);
+        cs_SuperPursuit.reserve(6);
+        cs_City.reserve(20);
+        cs_Coastal.reserve(10);
+        cs_Rosewood.reserve(10);
+        cs_Alpine.reserve(10);
+    }
+
     voiceIDs voices;          // offset 0x0, size 0x10
     voiceIDs cs_Rhino;        // offset 0x10, size 0x10
     voiceIDs cs_SuperPursuit; // offset 0x20, size 0x10
@@ -67,9 +86,19 @@ struct VoiceUsage {
 // total size: 0xC
 // Decl: 108
 struct BlowByRecord {
-    void Reset() {} // Decl: 109
+    // Decl: 109
+    void Reset() {
+        this->distance = 32767.0f;
+        this->speed = 0.0f;
+        this->timestamp = Timer(0);
+    }
 
-    void Set(float dist, float vel) {} // Decl: 116
+    // Decl: 116
+    void Set(float dist, float vel) {
+        this->distance = dist;
+        this->speed = vel;
+        this->timestamp = WorldTimer;
+    }
 
     float distance;  // offset 0x0, size 0x4, Decl: 123
     float speed;     // offset 0x4, size 0x4, Decl: 124
@@ -154,19 +183,19 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         kReset = 5,
     };
     enum SoundAIFlags {
-        RB_ENABLED = 1,
-        HELIRB_ENABLED = 2,
-        SPIKES_ENABLED = 4,
-        LOWSPEEDTIMER = 8,
-        PATH_WAITING = 16,
-        COPS_ARE_AHEAD = 32,
-        HELI_INTRO_REQ = 64,
-        BUSTED = 128,
-        DISP911_ACTIVE = 256,
-        SETUP_RESTARTED = 512,
-        COPS_IMMUNE = 1024,
-        RACERS_PROXIMAL = 2048,
-        PURSUIT_EXPIRED = 4096,
+        RB_ENABLED = 1 << 0,
+        HELIRB_ENABLED = 1 << 1,
+        SPIKES_ENABLED = 1 << 2,
+        LOWSPEEDTIMER = 1 << 3,
+        PATH_WAITING = 1 << 4,
+        COPS_ARE_AHEAD = 1 << 5,
+        HELI_INTRO_REQ = 1 << 6,
+        BUSTED = 1 << 7,
+        DISP911_ACTIVE = 1 << 8,
+        SETUP_RESTARTED = 1 << 9,
+        COPS_IMMUNE = 1 << 10,
+        RACERS_PROXIMAL = 1 << 11,
+        PURSUIT_EXPIRED = 1 << 12,
     };
 
     typedef Activity Base;
@@ -174,22 +203,29 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     SoundAI();
     ~SoundAI() override;
-    Sim::IActivity *Construct(Sim::Param params);
+    static Sim::IActivity *Construct(Sim::Param params);
 
     void OnVehicleAdded(IVehicle *ivehicle);
     void OnVehicleRemoved(IVehicle *ivehicle);
 
-    // void EnableObservations() {}
+    void EnableObservations() {
+        this->ModifyTask(this->mProcessObservations, SOUNDAI_OBSERVER_UPDATE_RATE);
+    }
 
     // void DisableObservations() {}
 
     // void ObserveOnly(unsigned int m) {}
 
-    // void EnableAI() {}
+    void EnableAI() {
+        this->ModifyTask(this->mMainUpdate, SOUNDAI_MAIN_UPDATE_RATE);
+    }
 
     // void DisableAI() {}
 
-    // void Enable() {}
+    void Enable() {
+        this->EnableAI();
+        this->EnableObservations();
+    }
 
     // void Disable() {}
 
@@ -280,14 +316,16 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return this->mPursuitLevel;
     }
 
-    // const int GetHavoc() {}
+    const int GetHavoc() {
+        return this->mCTS911; // TODO BUG? why not mHavoc?
+    }
 
-    // SpeechObservations GetLastObservation() {
-    //     if (mObserver != nullptr) {
-    //         return mObserver->GetLastEvent();
-    //     }
-    //     return Speech::None;
-    // }
+    Speech::SpeechObservations GetLastObservation() {
+        if (this->mObserver != nullptr) {
+            return this->mObserver->GetLastEvent();
+        }
+        return Speech::None;
+    }
 
     const int GetFocus() {
         return this->mFocus;
@@ -299,11 +337,13 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     IRoadBlock *GetRoadblock();
 
-    // Observer *GetObserver() {}
+    Speech::Observer *GetObserver() {
+        return this->mObserver;
+    }
 
-    // RoadblockFlow *GetRBFlow() {
-    //     return this->mRoadblockFlow;
-    // }
+    Speech::RoadblockFlow *GetRBFlow() {
+        return this->mRoadblockFlow;
+    }
 
     unsigned int CalcPlayerDirection(bool force_set);
 
@@ -364,7 +404,10 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     void RandomBailoutDeny(EAXCop *wimp);
 
     bool RoadblocksEnabled() {
-        return (this->mFlags & RB_ENABLED) != 0;
+        if ((this->mFlags & RB_ENABLED) != 0) {
+            return true;
+        }
+        return false;
     }
 
     bool HeliRoadblocksEnabled() {
@@ -396,13 +439,15 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     }
 
     unsigned int GetPlayerOffroadID() {
-        if (mPlayerCarCustom == nullptr) {
-            return 0;
-        }
-        return mPlayerCarCustom->color;
+        return static_cast<unsigned int>(this->mPlayerOffroadID);
     }
 
-    unsigned int GetPlayerCarColor() {}
+    unsigned int GetPlayerCarColor() {
+        if (this->mPlayerCarCustom == nullptr) {
+            return 0;
+        }
+        return this->mPlayerCarCustom->color;
+    }
 
     unsigned int GetPlayerCustom() {
         if (mPlayerCarCustom == nullptr) {
@@ -418,6 +463,8 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int GetNumActiveCopCars() {
         return this->mNumActiveCopCars;
     }
+
+    void Force911State();
 
   protected:
     //  IAttachable
@@ -440,6 +487,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     EAXCop *GetCop(int speaker);
     EAXCop *GetRandomCop(int type);
     EAXCop *GetRandomActiveCop(int type, bool reqLOS);
+    EAXCop *GetCopInRB();
 
     void UpdateStateMachines();
     void DealWithDeadAir();
@@ -479,7 +527,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int GetBattalionFromKey(unsigned int theKey);
 
     void ForceGlobalVoiceChange();
-    unsigned char GetCustomized(IVehicle *vehicle, CarCustomizations &custrec);
+    uint8 GetCustomized(IVehicle *vehicle, CarCustomizations &custrec);
 
     void AttemptReattachPursuit();
 
@@ -490,10 +538,6 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     void MessageUnspawnCop(const MUnspawnCop &message);
     void MessageTireBlown(const MGamePlayMoment &message);
 
-    // TODO these two have unknown visibility
-    EAXCop *GetCopInRB();
-    void Force911State();
-
   private:
     HSIMTASK mMainUpdate;          // offset 0x54, size 0x4
     HSIMTASK mProcessObservations; // offset 0x58, size 0x4
@@ -503,7 +547,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     unsigned int mFlags;                      // offset 0x5C, size 0x4
     Speech::copMap mActors;                   // offset 0x60, size 0x10
     Speech::VoiceUsage mUsage;                // offset 0x70, size 0x70
-    struct EAXDispatch *mDispatch;            // offset 0xE0, size 0x4
+    EAXDispatch *mDispatch;                   // offset 0xE0, size 0x4
     EAXCop *mLeader;                          // offset 0xE4, size 0x4
     EAXAirSupport *mHeli;                     // offset 0xE8, size 0x4
     Speech::copList mCopsInFormation;         // offset 0xEC, size 0x14
@@ -526,8 +570,8 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int mCTS911;                              // offset 0x158, size 0x4
     int mHavoc;                               // offset 0x15C, size 0x4
     int mPursuitCount;                        // offset 0x160, size 0x4
-    char mNumRoadBlocks;                      // offset 0x164, size 0x1
-    char mRacerCount;                         // offset 0x165, size 0x1
+    int8 mNumRoadBlocks;                      // offset 0x164, size 0x1
+    int8 mRacerCount;                         // offset 0x165, size 0x1
     float mClosestRacerDist;                  // offset 0x168, size 0x4
     float mTimeSinceLastChase;                // offset 0x16C, size 0x4
     Attrib::Gen::pvehicle mPVehicle;          // offset 0x170, size 0x14
@@ -544,12 +588,12 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int mNumCopsInWave;                       // offset 0x1F4, size 0x4
     int mNumActiveCopCars;                    // offset 0x1F8, size 0x4
     int mPlayerOffroadID;                     // offset 0x1FC, size 0x4
-    unsigned char mCopsInView;                // offset 0x200, size 0x1
-    struct PursuitFlow *mPursuitFlow;         // offset 0x204, size 0x4
-    struct StrategyFlow *mStrategyFlow;       // offset 0x208, size 0x4
-    struct Observer *mObserver;               // offset 0x20C, size 0x4
-    struct RoadblockFlow *mRoadblockFlow;     // offset 0x210, size 0x4
-    struct MusicFlow *mMusicFlow;             // offset 0x214, size 0x4
+    uint8 mCopsInView;                        // offset 0x200, size 0x1
+    Speech::PursuitFlow *mPursuitFlow;        // offset 0x204, size 0x4
+    Speech::StrategyFlow *mStrategyFlow;      // offset 0x208, size 0x4
+    Speech::Observer *mObserver;              // offset 0x20C, size 0x4
+    Speech::RoadblockFlow *mRoadblockFlow;    // offset 0x210, size 0x4
+    Speech::MusicFlow *mMusicFlow;            // offset 0x214, size 0x4
     Timer mT_outofFormation;                  // offset 0x218, size 0x4
     Timer mT_reallylowspeed;                  // offset 0x21C, size 0x4
     Timer mT_noLOS;                           // offset 0x220, size 0x4
@@ -569,5 +613,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     Hermes::HHANDLER mMsgUnspawnCop;          // offset 0x258, size 0x4
     Hermes::HHANDLER mMsgTireBlown;           // offset 0x25C, size 0x4
 };
+
+extern const bool SPEECHFLOW_DISPLAY; // TODO const and move?
 
 #endif

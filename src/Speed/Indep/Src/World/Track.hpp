@@ -30,7 +30,6 @@ class TrackOBB {
     bVector3 Dims;             // offset 0x50, size 0x10
 };
 
-void EstablishRemoteCaffeineConnection();
 int GetNumTrackOBBs();
 TrackOBB *GetTrackOBB(int index);
 int LoaderTrackOBB(bChunk *chunk);

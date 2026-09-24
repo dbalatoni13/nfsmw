@@ -233,7 +233,7 @@ void FECodeListBox::AllocateStrings(u32 ulNumStrings, u32 ulStringSize) {
     mppsStringData = nullptr;
 
     if (ulNumStrings == 0 || ulStringSize == 0) {
-        // #if !defined(FIX_BUGS) || defined(MILESTONE_OPT)
+        // #if !defined(FIX_BUGS) || defined(MILESTONE_BUILD)
         for (i = 0; i < mulNumVisibleRows; i++) {
             for (j = 0; j < mulNumVisibleColumns; j++) {
                 // if (mpstCells[(i * mulNumVisibleColumns) + j].ulType != FE_String) {

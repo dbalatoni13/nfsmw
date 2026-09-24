@@ -24,10 +24,7 @@ class RaceInformation : public HudElement, public IRaceInformation {
         mPlayerPosition = pos;
     };
     void SetPlayerLapNumber(int lap) override {
-        if (lap > mNumLaps) {
-            lap = mNumLaps;
-        }
-        mPlayerLapNumber = lap;
+        mPlayerLapNumber = lap <= mNumLaps ? lap : mNumLaps;
     };
     void SetPlayerLapTime(float time) override {
         mPlayerLapTime = time;

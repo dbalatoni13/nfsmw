@@ -48,8 +48,6 @@ class SunChunkInfo {
 };
 
 void RenderSunAsFlare();
-void SunTrackLoader(void);
-void SunTrackUnloader(void);
 void GetSunPos(eView *view, float *x, float *y, float *z);
 
 extern SunChunkInfo *SunInfo;

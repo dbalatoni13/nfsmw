@@ -6,7 +6,6 @@
 #endif
 
 #include "AnimScene.hpp"
-#include "AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
@@ -40,6 +39,8 @@ enum eAnimCategory {
     eAnimCategory_Race = 1,
     eAnimCategory_MaxAnimCategory = 2,
 };
+
+class CAnimWorldScene;
 
 // total size: 0x10
 class CAnimPlayer {

@@ -1,13 +1,28 @@
-#ifndef MISC_ATTRIBVAULTPACK_H
-#define MISC_ATTRIBVAULTPACK_H
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef ATTRIBVAULTPACK_H__
+#define ATTRIBVAULTPACK_H__ // Decl: 18
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define ATTRIBVAULTPACK_HEADER_MAGIC ("VPAK") // Decl: 20
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // total size: 0x10
+// Decl: 28
 struct AttribVaultPackHeader {
     char mMagic[4];            // offset 0x0, size 0x4
     uint32 mNumEntries;        // offset 0x4, size 0x4
@@ -16,6 +31,7 @@ struct AttribVaultPackHeader {
 };
 
 // total size: 0x14
+// Decl: 39
 struct AttribVaultPackEntry {
     uint32 mVaultNameOffset; // offset 0x0, size 0x4
     uint32 mBinSize;         // offset 0x4, size 0x4
@@ -25,15 +41,16 @@ struct AttribVaultPackEntry {
 };
 
 // total size: 0x24
+// Decl: 48
 struct AttribVaultPackImage {
     const char *GetVaultName(int index) {
-        return reinterpret_cast<const char *>(reinterpret_cast<unsigned char *>(&mHeader) + mHeader.mStringBlockOffset +
-                                              mEntry[index].mVaultNameOffset);
+        return reinterpret_cast<const char *>(reinterpret_cast<unsigned char *>(&this->mHeader) + this->mHeader.mStringBlockOffset +
+                                              this->mEntry[index].mVaultNameOffset);
     }
 
     int GetVaultIndex(const char *name) {
-        for (int onEntry = 0; onEntry < static_cast<int>(mHeader.mNumEntries); onEntry++) {
-            const char *entryName = GetVaultName(onEntry);
+        for (int onEntry = 0; onEntry < static_cast<int>(this->mHeader.mNumEntries); onEntry++) {
+            const char *entryName = this->GetVaultName(onEntry);
             if (bStrCmp(name, entryName) == 0) {
                 return onEntry;
             }
@@ -42,18 +59,18 @@ struct AttribVaultPackImage {
     }
 
     AttribVaultPackEntry &GetEntry(int index) {
-        return mEntry[index];
+        return this->mEntry[index];
     }
 
     unsigned char *GetData(unsigned int offset) {
-        return reinterpret_cast<unsigned char *>(&mHeader) + offset;
+        return reinterpret_cast<unsigned char *>(&this->mHeader) + offset;
     }
 
     void EndianSwap() {
-        bPlatEndianSwap(&mHeader.mNumEntries);
-        bPlatEndianSwap(&mHeader.mStringBlockOffset);
-        bPlatEndianSwap(&mHeader.mStringBlockSize);
-        for (int onEntry = 0; onEntry < static_cast<int>(mHeader.mNumEntries); onEntry++) {
+        bPlatEndianSwap(&this->mHeader.mNumEntries);
+        bPlatEndianSwap(&this->mHeader.mStringBlockOffset);
+        bPlatEndianSwap(&this->mHeader.mStringBlockSize);
+        for (int onEntry = 0; onEntry < static_cast<int>(this->mHeader.mNumEntries); onEntry++) {
             AttribVaultPackEntry &entry = GetEntry(onEntry);
             bPlatEndianSwap(&entry.mVaultNameOffset);
             bPlatEndianSwap(&entry.mBinSize);

@@ -37,6 +37,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Speech/SpeechCache.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
 #define USE_DYNAMIC_MIXER // Decl: 176
@@ -203,6 +204,7 @@ bool EAXSound::IsNISStreamQueued() {
 }
 
 void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 void EAXSound::NISFinished() {
     if (IsSoundEnabled == 0 || IsAudioStreamingEnabled == 0) {

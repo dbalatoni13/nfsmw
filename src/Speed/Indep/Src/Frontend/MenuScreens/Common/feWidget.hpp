@@ -482,8 +482,12 @@ class FEDateWidget : public FEStatWidget {
     void Hide() override;
     void SetFocus(const char *parent_pkg) override;
     void UnsetFocus() override;
-    virtual const char *GetHeaderText() {}
-    virtual int GetMaxYear() {}
+    virtual const char *GetHeaderText() {
+        return "";
+    }
+    virtual int GetMaxYear() {
+        return 2015;
+    }
     void SetDate(int d, int m, int y) {
         mDay = d;
         mMonth = m;

@@ -1,5 +1,6 @@
 #include "uiRapSheetRankingsDetail.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "uiRapSheetRankings.hpp"

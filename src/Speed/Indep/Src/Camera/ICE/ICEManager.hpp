@@ -2,6 +2,7 @@
 #define ICEMANAGER_HPP_
 
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"

@@ -1,7 +1,9 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.hpp"
 #include "Speed/Indep/Src/FEng/FEButtonMap.h"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 void FEngSetCurrentButton(const char *pkg_name, uint32 hash) {
     FEPackage *pkg = FEPackageManager::Get()->FindPackage(pkg_name);
@@ -46,4 +48,12 @@ void FEngSetButtonState(const char *pkg_name, uint32 button_hash, bool enabled) 
             }
         }
     }
+}
+
+bool FEngGetButtonState(const char *pkg_name, uint32 button_hash) {
+    FEObject *obj = FEngFindObject(pkg_name, button_hash);
+    if (obj != nullptr) {
+        return (obj->Flags & FF_IgnoreButton) == 0;
+    }
+    return false;
 }

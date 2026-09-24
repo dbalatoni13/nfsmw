@@ -39,7 +39,7 @@ class FEPackageData : public bTNode<FEPackageData> {
     void UnActivate();
 
     bool IsActive() { // Decl: 28
-        return pPackage != nullptr;
+        return pPackage;
     }
 
     void Close();
@@ -47,7 +47,6 @@ class FEPackageData : public bTNode<FEPackageData> {
     void SetPermanent(int flag) { // Decl: 31
         IsPermanent = flag;
     }
-
     int GetPermanent() { // Decl: 32
         return IsPermanent;
     }

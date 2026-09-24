@@ -22,532 +22,558 @@ custom_section_ranges:
       - start: 0x803C6A40
         end: 0x803C8B58
 
-
 block_relocations:
-# - source: .text:0x800F92C0
-#   end: .text:0x800F92C8
-# - source: .text:0x800F9368
-#   end: .text:0x800F9370
+  # - source: .text:0x800F92C0
+  #   end: .text:0x800F92C8
+  # - source: .text:0x800F9368
+  #   end: .text:0x800F9370
 
-- target: .text:0x80135100
-- target: .text:0x80135000
-- target: .text:0x80134001
-- target: .text:0x80134008
-- target: .text:0x80134010
-- target: .text:0x80134100
-- target: .text:0x80134000
+  - target: .text:0x80135100
+  - target: .text:0x80135000
+  - target: .text:0x80134001
+  - target: .text:0x80134008
+  - target: .text:0x80134010
+  - target: .text:0x80134100
+  - target: .text:0x80134000
 
-- source: .text:0x800b2c5c
-  end: .text:0x800b2c68
+  - source: .text:0x800b2c5c
+    end: .text:0x800b2c68
 
-- source: .text:0x800b2de4
-  end: .text:0x800b2dec
+  - source: .text:0x800b2de4
+    end: .text:0x800b2dec
 
-- source: .text:0x801fb140
-  end: .text:0x801fb14c
+  - source: .text:0x801fb140
+    end: .text:0x801fb14c
 
-- source: .text:0x801fb2e4
-  end: .text:0x801fb2f0
+  - source: .text:0x801fb2e4
+    end: .text:0x801fb2f0
 
-- source: .text:0x80047b70
-  end: .text:0x80047b7c
+  - source: .text:0x80047b70
+    end: .text:0x80047b7c
 
-- source: .text:0x80047c1c
-  end: .text:0x80047c28
+  - source: .text:0x80047c1c
+    end: .text:0x80047c28
 
-- source: .text:0x8025dbc4
-  end: .text:0x8025dbd0
+  - source: .text:0x8025dbc4
+    end: .text:0x8025dbd0
 
-- source: .text:0x8025ef2c
-  end: .text:0x8025ef38
+  - source: .text:0x8025ef2c
+    end: .text:0x8025ef38
 
-- source: .text:0x8025f67c
-  end: .text:0x8025f688
+  - source: .text:0x8025f67c
+    end: .text:0x8025f688
 
-- source: .text:0x802c2b58
-  end: .text:0x802c2b64
+  - source: .text:0x802c2b58
+    end: .text:0x802c2b64
 
-- source: .text:0x802c2d84
-  end: .text:0x802c2d90
+  - source: .text:0x802c2d84
+    end: .text:0x802c2d90
 
-- source: .text:0x802bd678
-  end: .text:0x802bd680
+  - source: .text:0x802bd678
+    end: .text:0x802bd680
 
-- source: .text:0x802be078
-  end: .text:0x802be080
+  - source: .text:0x802be078
+    end: .text:0x802be080
 
-- source: .text:0x802c4178
-  end: .text:0x802c4188
+  - source: .text:0x802c4178
+    end: .text:0x802c4188
 
-- source: .text:0x802c0a1c
-  end: .text:0x802c0a28
+  - source: .text:0x802c0a1c
+    end: .text:0x802c0a28
 
-- source: .text:0x802c0e2c
-  end: .text:0x802c0e38
+  - source: .text:0x802c0e2c
+    end: .text:0x802c0e38
 
-# LoaderParameterMaps: chunk ID constant
-- source: .text:0x802E63EC
-  end: .text:0x802E63F0
-- source: .text:0x802E63F4
-  end: .text:0x802E63F8
+  # LoaderParameterMaps: chunk ID constant
+  - source: .text:0x802E63EC
+    end: .text:0x802E63F0
+  - source: .text:0x802E63F4
+    end: .text:0x802E63F8
 
-# UnloaderParameterMaps: chunk ID constant
-- source: .text:0x802E650C
-  end: .text:0x802E6514
+  # UnloaderParameterMaps: chunk ID constant
+  - source: .text:0x802E650C
+    end: .text:0x802E6514
 
-# MissingCarPartTable: SystemAbortBuffer pointers
-- source: .data:0x80437DF4
-  end: .data:0x80437DF8
-- source: .data:0x80437DFC
-  end: .data:0x80437E00
-- source: .data:0x80437E04
-  end: .data:0x80437E08
-- source: .data:0x80437E0C
-  end: .data:0x80437E10
-- source: .data:0x80437E14
-  end: .data:0x80437E18
+  # MissingCarPartTable: SystemAbortBuffer pointers
+  - source: .data:0x80437DF4
+    end: .data:0x80437DF8
+  - source: .data:0x80437DFC
+    end: .data:0x80437E00
+  - source: .data:0x80437E04
+    end: .data:0x80437E08
+  - source: .data:0x80437E0C
+    end: .data:0x80437E10
+  - source: .data:0x80437E14
+    end: .data:0x80437E18
 
-# SjisE3
-- source: .data:0x8044C120
-  end: .data:0x8044C320
+  # SjisE3
+  - source: .data:0x8044C120
+    end: .data:0x8044C320
+
+  # LoaderAnimSceneData__FP6bChunk
+  - source: .text:0x8004BAB8
+    end: .text:0x8004BAC4
+  # UnloaderAnimSceneData__FP6bChunk
+  - source: .text:0x8004BB94
+    end: .text:0x8004BBA0
 
 add_relocations:
-- source: .text:0x80019604
-  type: ha
-  target: $LC2151455892
-  addend: 0
-
-- source: .text:0x80019608
-  type: ha
-  target: $LC2151455896
-  addend: 0
-
-- source: .text:0x8001a7f0
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001a870
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001a9b0
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001ab8c
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001aba4
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001adf8
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x8001ae50
-  type: ha
-  target: $LC2151456064
-  addend: 0
-
-- source: .text:0x80018568
-  type: ha
-  target: _IHandle__10IVehicleAI
-  addend: 0
-
-- source: .text:0x800adeb8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ae34c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ae3dc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ae560
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ae6d4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800b8be4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800b9a04
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800bb348
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800bd788
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800be220
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800bf8b8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c0024
-  type: ha
-  target: $LC2151511324
-  addend: 0
-
-- source: .text:0x800c0c8c
-  type: ha
-  target: $LC2151511528
-  addend: 0
-
-- source: .text:0x800c04b4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c0fbc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c1048
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c27cc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c2c70
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c2d4c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c2ddc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c2e68
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c2f70
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c3d54
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c47e4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800c4870
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d5318
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d6440
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d6c08
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d8790
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d8820
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d88ac
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d923c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800d965c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800da220
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800da2b0
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800da33c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800da678
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800db9a4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800dbc80
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800dc0a8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800dc8a4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800dd2c4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ddc40
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800de940
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800df21c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800df2a8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800df404
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800df78c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800df818
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800dfa2c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e0100
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e018c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e0204
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e0cdc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e1380
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e22b8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e2884
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e2f00
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e3030
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e5ffc
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e673c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e7a64
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e9068
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e90f8
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e9184
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e972c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800e9f6c
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800ea3b4
-  type: ha
-  target: gAudioMemoryManager
-  addend: 0
-
-- source: .text:0x800f2520
-  type: l
-  target: _9SndCamera.m_v3WorldCarPos
-  addend: 0
-
-- source: .text:0x80249960
-  type: ha
-  target: lbl_803FB614
-  addend: 0
-
-- source: .text:0x802678e4
-  type: ha
-  target: _Q33UTL11Collectionst12Instanceable3ZP8HMODEL__Z6IModeli434._mList
-  addend: 0
-  
-- source: .text:0x802c57b0
-  type: ha
-  target: lbl_8040A274
-  addend: 0
-
-- source: .text:0x802dfa94
-  type: ha
-  target: last_result_was_textures.35424
-  addend: 0
-
-- source: .text:0x802F5A3C
-  type: ha
-  target: _5WGrid.fgGrid
-  addend: 0
-
-- source: .text:0x802F5A44
-  type: ha
-  target: _5WGrid.fgGrid
-  addend: 0
-
-- source: .text:0x8030242C
-  type: ha
-  target: lbl_8040E9E0
-  addend: 0
-
-- source: .text:0x80302A24
-  type: ha
-  target: lbl_8040EA1C
-  addend: 0
-
-- source: .text:0x802FFCF8
-  type: ha
-  target: lbl_8040E930
-  addend: 0
+  - source: .text:0x80019604
+    type: ha
+    target: $LC2151455892
+    addend: 0
+
+  - source: .text:0x80019608
+    type: ha
+    target: $LC2151455896
+    addend: 0
+
+  - source: .text:0x8001a7f0
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001a870
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001a9b0
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001ab8c
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001aba4
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001adf8
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x8001ae50
+    type: ha
+    target: $LC2151456064
+    addend: 0
+
+  - source: .text:0x80018568
+    type: ha
+    target: _IHandle__10IVehicleAI
+    addend: 0
+
+  - source: .text:0x800adeb8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ae34c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ae3dc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ae560
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ae6d4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800b8be4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800b9a04
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800bb348
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800bd788
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800be220
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800bf8b8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c0024
+    type: ha
+    target: $LC2151511324
+    addend: 0
+
+  - source: .text:0x800c0c8c
+    type: ha
+    target: $LC2151511528
+    addend: 0
+
+  - source: .text:0x800c04b4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c0fbc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c1048
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c27cc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c2c70
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c2d4c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c2ddc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c2e68
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c2f70
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c3d54
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c47e4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800c4870
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d5318
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d6440
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d6c08
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d8790
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d8820
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d88ac
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d923c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800d965c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800da220
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800da2b0
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800da33c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800da678
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800db9a4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800dbc80
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800dc0a8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800dc8a4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800dd2c4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ddc40
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800de940
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800df21c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800df2a8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800df404
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800df78c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800df818
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800dfa2c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e0100
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e018c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e0204
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e0cdc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e1380
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e22b8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e2884
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e2f00
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e3030
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e5ffc
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e673c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e7a64
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e9068
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e90f8
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e9184
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e972c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800e9f6c
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800ea3b4
+    type: ha
+    target: gAudioMemoryManager
+    addend: 0
+
+  - source: .text:0x800f2520
+    type: l
+    target: _9SndCamera.m_v3WorldCarPos
+    addend: 0
+
+  - source: .text:0x80249960
+    type: ha
+    target: lbl_803FB614
+    addend: 0
+
+  - source: .text:0x802678e4
+    type: ha
+    target: _Q33UTL11Collectionst12Instanceable3ZP8HMODEL__Z6IModeli434._mList
+    addend: 0
+
+  - source: .text:0x802a61b0
+    type: ha
+    target: _IHandle__8IVehicle
+    addend: 0
+
+  - source: .text:0x802a8508
+    type: ha
+    target: WorldTimer
+    addend: 0
+
+  - source: .text:0x802a854c
+    type: ha
+    target: WorldTimer
+    addend: 0
+
+  - source: .text:0x802a866c
+    type: ha
+    target: WorldTimer
+    addend: 0
+
+  - source: .text:0x802c57b0
+    type: ha
+    target: lbl_8040A274
+    addend: 0
+
+  - source: .text:0x802dfa94
+    type: ha
+    target: last_result_was_textures.35424
+    addend: 0
+
+  - source: .text:0x802F5A3C
+    type: ha
+    target: _5WGrid.fgGrid
+    addend: 0
+
+  - source: .text:0x802F5A44
+    type: ha
+    target: _5WGrid.fgGrid
+    addend: 0
+
+  - source: .text:0x8030242C
+    type: ha
+    target: lbl_8040E9E0
+    addend: 0
+
+  - source: .text:0x80302A24
+    type: ha
+    target: lbl_8040EA1C
+    addend: 0
+
+  - source: .text:0x802FFCF8
+    type: ha
+    target: lbl_8040E930
+    addend: 0

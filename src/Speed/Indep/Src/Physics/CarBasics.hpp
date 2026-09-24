@@ -22,7 +22,7 @@ enum Gear {
     SEVENTH_GEAR = 8,
 };
 
-typedef int32 CarLoaderHandle;
+typedef int32 CarLoaderHandle; // Decl: 45
 
 // inline float MPH2MPS(float x) {
 //     return x * 0.44702727f;

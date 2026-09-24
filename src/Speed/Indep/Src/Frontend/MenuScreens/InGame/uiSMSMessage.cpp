@@ -10,12 +10,13 @@
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/LanguageHashes.hpp"
-#include "Speed/Indep/Src/Speech/MiscSpeech.h"
 
 uiSMSMessage::uiSMSMessage(ScreenConstructorData *sd) : MenuScreen(sd), ScrollBar(sd->PackageFilename, "scrollbar", true, true, false) {
     the_msg = reinterpret_cast<SMSMessage *>(sd->Arg);
     new ESndGameState(0xd, true);
     SoundPause(true, eSNDPAUSE_SMS_MESSAGE);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(false, SNDSTATE_FE_UPSCREEN, "SMSMesUnPause");
     SetSoundControlState(true, SNDSTATE_FE_SMS_MESSAGE, "SMSMes");
     Setup();
@@ -24,6 +25,8 @@ uiSMSMessage::uiSMSMessage(ScreenConstructorData *sd) : MenuScreen(sd), ScrollBa
 uiSMSMessage::~uiSMSMessage() {
     new ESndGameState(0xd, false);
     SoundPause(false, eSNDPAUSE_SMS_MESSAGE);
+
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_FE_UPSCREEN, "SMSMesPause");
     SetSoundControlState(false, SNDSTATE_FE_SMS_MESSAGE, "SMSMes");
 }

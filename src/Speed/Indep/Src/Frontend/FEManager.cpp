@@ -212,7 +212,7 @@ bool FEManager::ShouldPauseSimulation(bool useControllerErrors) {
         (UTL::Collections::Singleton<INIS>::Get() == nullptr) && (gMoviePlayer == nullptr)) {
         return true;
     }
-    return mPauseRequest != 0;
+    return mPauseRequest;
 }
 
 void FEManager::RequestPauseSimulation(const char *reason) {

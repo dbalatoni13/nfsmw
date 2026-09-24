@@ -5,6 +5,7 @@
 #include "FEObject.h"
 #include "FEWideString.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 class FEString;
 
@@ -71,7 +72,14 @@ class FEString : public FEObject {
         Flags |= FF_DirtyCode;
     }
 
-    void SetStringFromUTF8(const char *pUTF8String) {}
+    // UNSOLVED
+    void SetStringFromUTF8(const char *pUTF8String) {
+#ifdef EA_PLATFORM_WIN32
+        // TODO: utf8 strlen
+        string.SetLength(bStrLen(pUTF8String) + 1);
+        Flags |= FF_DirtyCode;
+#endif
+    }
 
     void SetLabel(const char *pString);
 

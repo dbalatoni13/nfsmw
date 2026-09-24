@@ -13,10 +13,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     // total size: 0xC or 0x10
     class Node {
       public:
-        void *operator new(std::size_t, void *place) {
-            return place;
-        }
-
         Node() : mKey(0), mPtr(reinterpret_cast<T *>(this)), mMax(0) {}
 
         Node(KeyType key, T *ptr) : mKey(key), mPtr(ptr) {}
@@ -78,6 +74,12 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         Clear();
     }
 
+    T *GetPtrAtIndex(std::size_t index) const {
+        if (ValidIndex(index)) {
+        }
+        return mTable[index].Get();
+    }
+
     std::size_t Size() const {
         return mNumEntries;
     }
@@ -122,7 +124,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         mNumEntries--;
 
         std::size_t freedIndex = UpdateSearchLength(Policy::KeyIndex(key, mTableSize, 0), actualIndex);
-        // TODO UNSOLVED making it a while loop changes the output, in AttribHashMap.h it's a while loop
         for (; freedIndex < mTableSize; freedIndex = UpdateSearchLength(freedIndex, freedIndex)) {
         }
         return result;
@@ -133,6 +134,11 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return RemoveIndex(actualIndex);
     }
 
+    void DeleteIndex(std::size_t actualIndex) {
+        T *obj = RemoveIndex(actualIndex);
+        obj->~T();
+    }
+
     std::size_t FindIndex(KeyType key) const {
         if (mNumEntries == 0) {
             return mTableSize;
@@ -140,8 +146,8 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         Node *table = mTable;
         std::size_t actualIndex = Policy::KeyIndex(key, mTableSize, 0);
         std::size_t searchLen = 0;
-        std::size_t maxSearchLen = table[actualIndex].MaxSearch();
-        while (searchLen < maxSearchLen && table[actualIndex].Key() != key) {
+        std::size_t maxSearchlen = table[actualIndex].MaxSearch();
+        while (searchLen < maxSearchlen && table[actualIndex].Key() != key) {
             // TODO why is there a Node::IsValid call somewhere here?
             if (table[actualIndex].IsValid()) {
             }
@@ -161,6 +167,14 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         }
         unsigned int index = FindIndex(key);
         return ValidIndex(index) ? mTable[index].Get() : nullptr;
+    }
+
+    size_t GetNextValidIndex(std::size_t startPoint) const {
+        std::size_t index = startPoint;
+        while (index < mTableSize && !mTable[index].IsValid()) {
+            index++;
+        }
+        return index;
     }
 
     void Reserve(std::size_t reservationSize) {
@@ -280,7 +294,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
 
     void CopyFromOldTable(Node *oldTable, std::size_t oldSize, bool needFree) {
         for (std::size_t i = 0; i < mTableSize; i++) {
-            // TODO UNSOLVED
             if (i * sizeof(Node) + (uintptr_t)mTable) {
                 new (&mTable[i]) Node();
             }
@@ -356,5 +369,13 @@ template <typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHas
   public:
     VecHashMap64(std::size_t reservationSize) : VecHashMap<uint64_t, T, Policy, Unk2, Unk3>(reservationSize) {}
 };
+
+inline void *DefaultTableAllocFunc(size_t bytes) {
+    return AttribAlloc::Allocate(bytes, "TODO");
+}
+
+inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
+    AttribAlloc::Free(ptr, bytes, "TODO");
+}
 
 #endif

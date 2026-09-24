@@ -1,11 +1,11 @@
 #include "csis/csis.h"
 #include "snd/sndo.h"
 #include "sndcmn.h"
+#undef override
 #include "Speed/Indep/Libs/snd/9/extern/aemsdef.h"
 #include "saemsi.h"
 #include <cstddef>
 #include <types.h>
-#undef override
 #include <cstring>
 
 #ifdef EA_PLATFORM_GAMECUBE

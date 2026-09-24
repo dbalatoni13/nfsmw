@@ -52,6 +52,8 @@ inline float FEngGetSizeY(FEObject *obj) {
     return y;
 };
 
+FEScript *FEngGetScript(const char *pkg_name, uint32 script_hash, const char *script_name);
+
 FEScript *FEngGetScript(FEObject *object, uint32 script_hash);
 
 FEScript *FEngGetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash);

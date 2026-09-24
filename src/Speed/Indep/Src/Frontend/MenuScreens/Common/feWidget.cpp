@@ -1,13 +1,18 @@
 #include "feWidget.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstdio>
 #include <cstring>
@@ -202,7 +207,55 @@ void FEToggleWidget::UnsetFocus() {
     SetScript(FEHASH_UNHIGHLIGHT);
 }
 
+FEToggleImageWidget::FEToggleImageWidget(bool enabled) : FEToggleWidget(enabled), pDataImage(nullptr) {}
+
 void FEToggleWidget::BlinkArrows(uint32 data) {}
+
+// TODO
+void FEToggleImageWidget::Position() {}
+
+void FEToggleImageWidget::Enable() {
+    FEToggleWidget::Enable();
+    FEngSetScript(pDataImage, FEHASH_UNHIGHLIGHT, true);
+}
+
+void FEToggleImageWidget::Disable() {
+    FEToggleWidget::Disable();
+    FEngSetScript(pDataImage, FEHASH_DISABLE, true);
+}
+
+void FEToggleImageWidget::Show() {
+    FEngSetVisible(GetTitleObject());
+    FEngSetVisible(GetDataObject());
+    FEngSetVisible(GetLeftImage());
+    FEngSetVisible(GetRightImage());
+    if (GetBacking() != nullptr) {
+        FEngSetVisible(GetBacking());
+    }
+    FEngSetVisible(GetDataImage());
+}
+
+void FEToggleImageWidget::Hide() {
+    FEngSetInvisible(GetTitleObject());
+    FEngSetInvisible(GetDataObject());
+    FEngSetInvisible(GetLeftImage());
+    FEngSetInvisible(GetRightImage());
+    if (GetBacking() != nullptr) {
+        FEngSetInvisible(GetBacking());
+    }
+    FEngSetInvisible(GetDataImage());
+}
+
+void FEToggleImageWidget::SetFocus(const char *parent_pkg) {
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    SetScript(FEHASH_HIGHLIGHT);
+    FEngSetScript(pDataImage, FEHASH_HIGHLIGHT, true);
+};
+
+void FEToggleImageWidget::UnsetFocus() {
+    SetScript(FEHASH_UNHIGHLIGHT);
+    FEngSetScript(pDataImage, FEHASH_UNHIGHLIGHT, true);
+};
 
 FESliderWidget::FESliderWidget(bool enabled) : FEToggleWidget(enabled) {
     fVertOffset = 9.5f;
@@ -283,6 +336,165 @@ void FESliderWidget::UpdateSlider(uint32 msg) {
         bMovedLastUpdate = true;
     } else {
         bMovedLastUpdate = false;
+    }
+}
+
+FEInputWidget::FEInputWidget(uint32 max_input_length, const char *init_text, uint32 edit_mode, bool enabled)
+    : FEStatWidget(enabled), MaxInputLength(max_input_length), EditMode(edit_mode) {
+    bMemSet(this->Title, 0, sizeof(this->Title));
+    bMemSet(this->InputText, 0, sizeof(this->InputText));
+
+    if (init_text != nullptr) {
+        bStrNCpy(this->InputText, init_text, sizeof(this->InputText) - 1);
+    }
+}
+
+void FEInputWidget::Act(const char *parent_pkg, uint32 data) {
+    if (data == __BUTTON_PRESSED__) {
+        cFEng::Get()->QueueGameMessage(FEMSG_BEGIN_INPUT, parent_pkg, 0xff);
+    }
+}
+
+void FEInputWidget::CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) {
+    bVector2 bottom_right;
+    bVector2 top_left;
+    GetTopLeft(top_left);
+    bVector2 size;
+    GetSize(size);
+
+    if (FEngTestForIntersection(mouse_x, mouse_y, top_left, size)) {
+        Act(parent_pkg, __BUTTON_PRESSED__);
+    }
+}
+
+void FEInputWidget::Enable() {
+    FEWidget::Enable();
+    FEngSetScript(GetTitleObject(), FEHASH_UNHIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_UNHIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_UNHIGHLIGHT, true);
+    }
+}
+
+void FEInputWidget::Disable() {
+    FEWidget::Disable();
+    FEngSetScript(GetTitleObject(), FEHASH_DISABLE, true);
+    FEngSetScript(GetDataObject(), FEHASH_DISABLE, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_DISABLE, true);
+    }
+}
+
+void FEInputWidget::Show() {
+    FEngSetVisible(GetTitleObject());
+    FEngSetVisible(GetDataObject());
+    if (GetBacking() != nullptr) {
+        FEngSetVisible(GetBacking());
+    }
+}
+
+void FEInputWidget::Hide() {
+    FEngSetInvisible(GetTitleObject());
+    FEngSetInvisible(GetDataObject());
+    if (GetBacking() != nullptr) {
+        FEngSetInvisible(GetBacking());
+    }
+}
+
+void FEInputWidget::SetFocus(const char *parent_pkg) {
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetScript(GetTitleObject(), FEHASH_HIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_HIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_HIGHLIGHT, true);
+    }
+}
+
+void FEInputWidget::UnsetFocus() {
+    FEngSetScript(GetTitleObject(), FEHASH_UNHIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_UNHIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_UNHIGHLIGHT, true);
+    }
+}
+
+void FEInputWidget::SetInputFocus() {}
+
+void FEInputWidget::SetTitle(const char *text) {
+    bStrNCpy(Title, text, sizeof(Title) - 1);
+}
+
+FEDateWidget::FEDateWidget(bool enabled) : FEStatWidget(enabled) {}
+
+void FEDateWidget::CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) {
+    bVector2 bottom_right;
+    bVector2 top_left;
+
+    GetTopLeft(top_left);
+    FEngGetBottomRight(GetDataObject(), bottom_right.x, bottom_right.y);
+    bottom_right -= top_left;
+
+    if (FEngTestForIntersection(mouse_x, mouse_y, top_left, bottom_right)) {
+        Act(parent_pkg, __BUTTON_PRESSED__);
+    }
+}
+
+void FEDateWidget::Draw() {
+    if (GetCurrentLanguage() == eLANGUAGE_ENGLISH && !BuildRegion::IsEurope()) {
+        FEPrintf(GetDataObject(), "%d/%d/%d", mDay, mMonth, mYear);
+    } else {
+        FEPrintf(GetDataObject(), "%02d/%02d/%02d", mDay, mMonth, mYear);
+    }
+}
+
+void FEDateWidget::Enable() {
+    FEWidget::Enable();
+    FEngSetScript(GetTitleObject(), FEHASH_UNHIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_UNHIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_UNHIGHLIGHT, true);
+    }
+}
+
+void FEDateWidget::Disable() {
+    FEWidget::Disable();
+    FEngSetScript(GetTitleObject(), FEHASH_DISABLE, true);
+    FEngSetScript(GetDataObject(), FEHASH_DISABLE, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_DISABLE, true);
+    }
+}
+
+void FEDateWidget::Show() {
+    FEngSetVisible(GetTitleObject());
+    FEngSetVisible(GetDataObject());
+    if (GetBacking() != nullptr) {
+        FEngSetVisible(GetBacking());
+    }
+}
+
+void FEDateWidget::Hide() {
+    FEngSetInvisible(GetTitleObject());
+    FEngSetInvisible(GetDataObject());
+    if (GetBacking() != nullptr) {
+        FEngSetInvisible(GetBacking());
+    }
+}
+
+void FEDateWidget::SetFocus(const char *parent_pkg) {
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetScript(GetTitleObject(), FEHASH_HIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_HIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_HIGHLIGHT, true);
+    }
+}
+
+void FEDateWidget::UnsetFocus() {
+    FEngSetScript(GetTitleObject(), FEHASH_UNHIGHLIGHT, true);
+    FEngSetScript(GetDataObject(), FEHASH_UNHIGHLIGHT, true);
+    if (GetBacking() != nullptr) {
+        FEngSetScript(GetBacking(), FEHASH_UNHIGHLIGHT, true);
     }
 }
 
@@ -379,6 +591,18 @@ void FEScrollBar::SetPosResized(int num_view_items, int num_list_items, int view
     }
 }
 
+// TODO
+void FEScrollBar::SetPosNonResized(int num_view_items, int num_list_items, int view_head_index) {}
+
+// TODO
+void FEScrollBar::UpdateArrowsMouse() {}
+
+// TODO
+void FEScrollBar::UpdateHandleMouse() {}
+
+// TODO
+void FEScrollBar::UpdateBackingMouse() {}
+
 void FEScrollBar::SetArrowVisibility(int arrow_num, bool visible) {
     if (visible) {
         if (arrow_num == 1) {
@@ -392,6 +616,14 @@ void FEScrollBar::SetArrowVisibility(int arrow_num, bool visible) {
         } else if (arrow_num == 2) {
             SetInvisible(pSecondArrow);
         }
+    }
+}
+
+void FEScrollBar::SetBackingVisibility(bool visible) {
+    if (visible) {
+        SetVisible(pBacking);
+    } else {
+        SetInvisible(pBacking);
     }
 }
 
@@ -425,8 +657,8 @@ CTextScroller::~CTextScroller() {
 
 void CTextScroller::Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl, FEngFont *pFont) {
     m_pOwner = pOwner;
-    m_ViewWidth = ViewWidth;
     m_ViewVisibleLines = ViewLines;
+    m_ViewWidth = ViewWidth;
     bStrNCpy(m_TextBoxNameTemplate, pTextDisplayNameTempl, 31);
     m_pFont = pFont;
 }

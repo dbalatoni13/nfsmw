@@ -213,6 +213,7 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
 
     if (CSISindex == -1) {
         this->m_bNISAudioStreamReady = true;
+        void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
         SetSoundControlState(false, SNDSTATE_NIS_STORY, "Clear NIS");
         SetSoundControlState(false, SNDSTATE_NIS_INTRO, "Clear NIS");
         SetSoundControlState(false, SNDSTATE_NIS_321, "Clear NIS");
@@ -240,6 +241,7 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         g_bWasLastNISaStart = true;
 
         if (bbuttonthrough == true) {
+            void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
             Csis::NIS_Select_Start(static_cast<Csis::Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex][1]), csiscamtrack,
@@ -269,6 +271,7 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         g_bWasLastNISaStart = true;
 
         if (bbuttonthrough == true) {
+            void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
             Csis::NIS_Select_Blacklist(csiscamtrack, Csis::Type_NIS_Section_End,

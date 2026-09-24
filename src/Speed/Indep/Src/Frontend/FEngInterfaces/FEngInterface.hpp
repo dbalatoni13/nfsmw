@@ -33,7 +33,11 @@ class cFEng {
     void PushErrorPackage(const char *pPackageName, int pArg, u32 ControlMask); // Decl: 41
     void PopErrorPackage();                                                     // Decl: 42
     bool IsErrorState() {                                                       // Decl: 43
+#ifdef EA_PLATFORM_WIN32
+        return (mFEng != nullptr) ? mFEng->IsErrorScreenMode() : false;
+#else
         return mFEng->IsErrorScreenMode();
+#endif
     }
 
     void PopErrorPackage(int port); // Decl: 42
@@ -53,6 +57,8 @@ class cFEng {
     void UnloadPackage(FEPackage *pPackagePtr) { // Decl: 70
         mFEng->UnloadPackage(pPackagePtr);
     }
+
+    void RenderSinglePackage(const char *pkg_name);
 
     void QueuePackageMessage(uint32 pMessage, const char *pPackageName,
                              FEObject *obj); // Decl: 60

@@ -580,8 +580,10 @@ void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool vis) {
         if (item->GetType() == type) {
             if (vis) {
                 item->SetHidden(false);
+                item->Show();
             } else {
                 item->SetHidden(true);
+                item->Hide();
             }
         }
     }

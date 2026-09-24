@@ -9,18 +9,34 @@
 #include "Config.h"
 #include <cstring>
 
-int EnableJoylog = ENABLE_IN_MILESTONE;
-int SaveJoylog = false;
+int EnableJoylog = ENABLE_IN_MILESTONE; // Decl: 110
 
-// static const int PrintJoylog;
-// static const int JoylogScreenPrintX;
-// static const int JoylogScreenPrintY;
-int JoylogThrottleCounter[2];
-int JoylogThrottleTicks[2];
-int CurrentJoylogThrottleBuffer = 0;
-// static const int JoylogMaxThrottleCounter;
-// static const float JoylogThrottleTime;
-JoylogChannelInfo NFSJoylogChannelInfoTable[14] = {
+int SaveJoylog = 0; // Decl: 120
+
+static const int PrintJoylog = 0; // Decl: 123
+
+// TODO use these
+static const int JoylogScreenPrintX = -300; // Decl: 126
+static const int JoylogScreenPrintY = 0;    // Decl: 127
+
+int JoylogThrottleCounter[2];        // Decl: 130
+int JoylogThrottleTicks[2];          // Decl: 131
+int CurrentJoylogThrottleBuffer = 0; // Decl: 132
+
+static const int JoylogMaxThrottleCounter = 2048; // Decl: 135
+static const float JoylogThrottleTime = 30.0f;    // Decl: 136
+
+// total size: 0xC
+// Decl: 145
+struct JoylogChannelInfo {
+    JoylogChannel ChannelNumber; // offset 0x0, size 0x4, Decl: 146
+    char *Name;                  // offset 0x4, size 0x4, Decl: 147
+    int8 YieldRepeatCount;       // offset 0x8, size 0x1, Decl: 148
+    int8 ReadAheadOnly;          // offset 0x9, size 0x1, Decl: 149
+};
+
+// Decl: 154
+JoylogChannelInfo NFSJoylogChannelInfoTable[MAX_JOYLOG_CHANNELS] = {
     {JOYLOG_CHANNEL_NONE, "JOYLOG_CHANNEL_NONE", 0, 0},
     {JOYLOG_CHANNEL_CONFIG, "JOYLOG_CHANNEL_CONFIG", 0, 0},
     {JOYLOG_CHANNEL_JOYEVENTS, "JOYLOG_CHANNEL_JOYEVENTS", 0, 0},
@@ -36,7 +52,77 @@ JoylogChannelInfo NFSJoylogChannelInfoTable[14] = {
     {JOYLOG_CHANNEL_SOUND_LOADING, "JOYLOG_CHANNEL_SOUND_LOADING", 0, 0},
     {JOYLOG_CHANNEL_PATHFINDER_TIMEOUT, "JOYLOG_CHANNEL_PATHFINDER_TIMEOUT", 0, 0},
 };
-// static const int DisableDumpJoylogPrint;
+
+// Decl: 174
+inline JoylogChannelInfo *GetJoylogChannelInfo(int channel_number) {
+    return &NFSJoylogChannelInfoTable[channel_number];
+}
+
+// Decl: 176
+// STRIPPED
+char *GetJoylogChannelName(int channel_number) {}
+
+// Decl: 182
+// STRIPPED
+int GetJoylogChannelRepeatCount(int channel_number) {}
+
+// total size: 0xC
+// Decl: 200
+struct JoylogBufferEntry {
+    int ChannelNumber; // offset 0x0, size 0x4
+    int DataSize;      // offset 0x4, size 0x4
+    uint32 Data;       // offset 0x8, size 0x4
+};
+
+// total size: 0x4118
+// Decl: 252
+class JoylogBuffer {
+  public:
+    JoylogBuffer(const char *filename, int top_position);
+
+    void SaveBuffer();
+
+    void LoadBuffer(int position);
+
+    void AddData(int32 data, int data_size, int channel_number);
+
+    uint32 GetData(int data_size, int channel_number);
+
+    int AddEntry(JoylogBufferEntry *entry, int position);
+
+    int GetEntry(JoylogBufferEntry *entry, int position);
+
+    static int GetEntry(JoylogBufferEntry *entry, uint8 *pbuf);
+
+    void PrintNearbyJoylogEntries(int error_pos);
+
+    char *GetFilename() {
+        return Filename;
+    }
+
+    int GetTotalSize() {
+        return TopPosition;
+    }
+
+    int IsMoreData() {
+        return static_cast<int>(CurrentPosition < TopPosition);
+    }
+
+    int GetPosition() {
+        return CurrentPosition;
+    }
+
+    void SetPosition(int position) {}
+
+  private:
+    int32 CurrentPosition;     // offset 0x0, size 0x4
+    int32 NumBytesInBuffer;    // offset 0x4, size 0x4
+    int32 CurrentLoadPosition; // offset 0x8, size 0x4
+    int32 BufferStartPosition; // offset 0xC, size 0x4
+    int32 TopPosition;         // offset 0x10, size 0x4
+    char Filename[260];        // offset 0x14, size 0x104
+    uint8 Buffer[16384];       // offset 0x118, size 0x4000
+};
 
 JoylogBuffer::JoylogBuffer(const char *filename, int top_position) {
     this->TopPosition = top_position;
@@ -114,11 +200,11 @@ void JoylogBuffer::AddData(int32 data, int data_size, int channel_number) {
         JoylogThrottleCounter[CurrentJoylogThrottleBuffer] = 0;
         JoylogThrottleTicks[CurrentJoylogThrottleBuffer] = bGetTicker();
     }
-    this->CurrentPosition = this->TopPosition = AddEntry(&buffer_entry, this->CurrentPosition);
+    this->CurrentPosition = this->TopPosition = this->AddEntry(&buffer_entry, this->CurrentPosition);
     this->NumBytesInBuffer = this->CurrentPosition - this->BufferStartPosition;
     int free_space = sizeof(this->Buffer) - this->NumBytesInBuffer;
     if (free_space < 256) {
-        SaveBuffer();
+        this->SaveBuffer();
     }
 }
 
@@ -128,27 +214,27 @@ uint32 JoylogBuffer::GetData(int data_size, int channel_number) {
 
     do {
         if (CurrentLoadPosition - CurrentPosition < 0x100 && CurrentLoadPosition != TopPosition) {
-            LoadBuffer(CurrentPosition);
+            this->LoadBuffer(CurrentPosition);
         }
-        CurrentPosition = GetEntry(&buffer_entry, CurrentPosition);
+        CurrentPosition = this->GetEntry(&buffer_entry, CurrentPosition);
     } while (GetJoylogChannelInfo(buffer_entry.ChannelNumber)->ReadAheadOnly != 0);
 
     int lookahead_pos = CurrentPosition;
-    while (IsMoreData()) {
+    while (this->IsMoreData()) {
         if (CurrentLoadPosition - CurrentPosition < 0x100 && CurrentLoadPosition != TopPosition) {
-            LoadBuffer(CurrentPosition);
+            this->LoadBuffer(CurrentPosition);
         }
         JoylogBufferEntry lookahead_buffer_entry;
-        lookahead_pos = GetEntry(&lookahead_buffer_entry, lookahead_pos);
+        lookahead_pos = this->GetEntry(&lookahead_buffer_entry, lookahead_pos);
         if (GetJoylogChannelInfo(lookahead_buffer_entry.ChannelNumber)->ReadAheadOnly == 0) {
             break;
         }
         CurrentPosition = lookahead_pos;
     }
 
-    int percent_complete = CurrentPosition * 100 / GetTotalSize();
+    int percent_complete = CurrentPosition * 100 / this->GetTotalSize();
     if (buffer_entry.ChannelNumber != channel_number) {
-        PrintNearbyJoylogEntries(prev_position);
+        this->PrintNearbyJoylogEntries(prev_position);
         bBreak();
         CurrentPosition = TopPosition;
     }
@@ -204,14 +290,16 @@ void JoylogBuffer::PrintNearbyJoylogEntries(int error_pos) {
     }
 }
 
-int Joylog::ReplayingFlag = 0;
-int Joylog::CapturingFlag = 0;
-JoylogBuffer *Joylog::pReplayingBuffer = nullptr;
-JoylogBuffer *Joylog::pCapturingBuffer = nullptr;
-int32 Joylog::ReadAheadBufferSize = 0;
-int32 Joylog::ReadAheadBufferPos = 0;
-uint8 *Joylog::ReadAheadBuffer = nullptr;
-int Joylog::JuiceReplayFlag = 0;
+int Joylog::ReplayingFlag = 0;                    // Decl: 609
+int Joylog::CapturingFlag = 0;                    // Decl: 610
+JoylogBuffer *Joylog::pReplayingBuffer = nullptr; // Decl: 611
+JoylogBuffer *Joylog::pCapturingBuffer = nullptr; // Decl: 612
+
+int32 Joylog::ReadAheadBufferSize = 0;    // Decl: 614
+int32 Joylog::ReadAheadBufferPos = 0;     // Decl: 615
+uint8 *Joylog::ReadAheadBuffer = nullptr; // Decl: 616
+
+int Joylog::JuiceReplayFlag = 0; // Decl: 618
 
 void Joylog::StopReplaying() {
     if (!ReplayingFlag) {
@@ -224,6 +312,18 @@ void Joylog::StopReplaying() {
     pReplayingBuffer = nullptr;
     ReplayingFlag = 0;
 }
+
+// STRIPPED
+void Joylog::SetChecksumError() {}
+
+// STRIPPED
+void Joylog::PrintNearbyJoylogEntries(int error_pos) {}
+
+// STRIPPED
+int Joylog::GetPosition() {}
+
+// STRIPPED
+void Joylog::SetPosition(int position) {}
 
 void Joylog::LoadReadAheadBuffer() {
     ReadAheadBuffer = static_cast<uint8 *>(bGetFile(pReplayingBuffer->GetFilename(), &ReadAheadBufferSize, 0x40));
@@ -295,6 +395,9 @@ uint32 Joylog::AddOrGetData(uint32 data, int data_size, JoylogChannel channel_nu
     return data;
 }
 
+// STRIPPED
+int Joylog::AddOrGetSignedData(int32 data, int data_size, JoylogChannel channel_number) {}
+
 float Joylog::AddOrGetData(float data, JoylogChannel channel_number) {
     if (IsReplaying()) {
         data = Joylog::GetData(channel_number);
@@ -341,23 +444,26 @@ void Joylog::AddOrGetData(uint16 *string, JoylogChannel channel_number) {
     }
 }
 
+// STRIPPED
+void Joylog::VerifyData(int data, int data_size, JoylogChannel channel_number) {}
+
 void Joylog::Init() {
     if (EnableJoylog) {
         char filename[260];
         bStrCpy(filename, "ReplayJoylog.jlg");
         if (filename[0] != '\0' && bFileExists(filename)) {
-            bFile *f = bOpen(filename, 1, true);
+            bFile *f = bOpen(filename, 1, 1);
             int size = bFileSize(filename);
             JoylogBuffer *buffer = new ("JoylogBuffer (Replaying)", 0) JoylogBuffer(filename, size);
             pReplayingBuffer = buffer;
-            ReplayingFlag = true;
+            ReplayingFlag = 1;
         } else {
             JoylogBuffer *buffer = new ("JoylogBuffer", 0) JoylogBuffer("CaptureJoylog.jlg", 0);
             pCapturingBuffer = buffer;
-            CapturingFlag = true;
+            CapturingFlag = 1;
             if (!bIsCodeineConnected()) {
-                bFile *f = bOpen("CaptureJoylog.jlg", 6, true);
-                if (f) {
+                bFile *f = bOpen("CaptureJoylog.jlg", 6, 1);
+                if (f != nullptr) {
                     bClose(f);
                 } else {
                     CapturingFlag = 0;
@@ -368,10 +474,16 @@ void Joylog::Init() {
 }
 
 void Joylog::Save() {
-    if (pCapturingBuffer) {
+    if (pCapturingBuffer != nullptr) {
         pCapturingBuffer->SaveBuffer();
     }
 }
+
+// STRIPPED
+void Joylog::Suspend() {}
+
+// STRIPPED
+void Joylog::Resume() {}
 
 uint32 Joylog::IsCapturing() {
     return CapturingFlag;
@@ -381,9 +493,12 @@ int Joylog::IsReplaying() {
     return ReplayingFlag;
 }
 
+// STRIPPED
+void PrintInventory() {}
+
 bool JoylogPutStringFunction(int terminal_channel, const char *s) {
     if (!bIsMainThread()) {
-        return 0;
+        return false;
     }
     int len = bStrLen(s);
     static int total_captured = 0;
@@ -391,8 +506,10 @@ bool JoylogPutStringFunction(int terminal_channel, const char *s) {
     if (len < 0x40000) {
         Joylog::AddData(s, len + 1, JOYLOG_CHANNEL_PRINTF);
     }
-    return 0;
+    return false;
 }
+
+static const int DisableDumpJoylogPrint = 0;
 
 void DumpJoylogPrint() {
     bool last_line_missing_linefeed = false;
@@ -432,9 +549,9 @@ void WriteJoylogFileHeader() {
     }
     bReleasePrintf("Changelist: %s\n", BuildVersionChangelistName);
     bStrCpy(build_version_name, bGetPlatformName());
-#ifdef DEBUG_OPT
+#ifdef DEBUG
     bStrCat(build_version_name, build_version_name, " Debug");
-#elif defined(MILESTONE_OPT)
+#elif defined(MILESTONE_BUILD)
     bStrCat(build_version_name, build_version_name, " Milestone");
 #else
     bStrCat(build_version_name, build_version_name, " Release");
@@ -474,7 +591,10 @@ void InitJoylog() {
 void ServiceJoylog() {
     if (SaveJoylog) {
         Joylog::Save();
-        SaveJoylog = false;
+        SaveJoylog = 0;
         bRefreshTweaker();
     }
 }
+
+// STRIPPED
+void EmergencySaveJoylog() {}

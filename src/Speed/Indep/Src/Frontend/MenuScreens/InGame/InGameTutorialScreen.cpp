@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
@@ -119,7 +120,7 @@ void InGameAnyTutorialScreen::LaunchMovie(const char *filename, const char *pack
 
 void InGameAnyTutorialScreen::DismissMovie() {
     gInGameMoviePlaying = false;
-    MNotifyMovieFinished().Post(0x20d60dbf);
+    MNotifyMovieFinished().Post(UCRC32_Gameplay);
     cFEng::Get()->QueuePackagePop(0);
     cFEng::Get()->QueueGameMessage(0xc3960eb9, PackageFilename, 0xff);
     new EFadeScreenOn(false);

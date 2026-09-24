@@ -691,7 +691,7 @@ class cFrontendDatabase {
     void RestoreFromBackupDB();
     bool IsDirty();
     bool IsDDay() {
-        return GetCareerSettings()->GetCurrentBin() >= 16;
+        return GetCareerSettings()->GetCurrentBin() > 15;
     }
     bool IsFinalEpicChase();
     void SetOptionsDirty(bool dirty) {
@@ -773,7 +773,9 @@ class cFrontendDatabase {
         return &mOnlineCreateUserSettings;
     };
 #endif
-    FEKeyboardSettings *GetFEKeyboardSettings() {}
+    FEKeyboardSettings *GetFEKeyboardSettings() {
+        return &mFEKeyboardSettings;
+    }
     FEPlayerCarDB *GetPlayerCarStable(int player) {
         if (player == 0 || player == 1)
             return &CurrentUserProfiles[player]->PlayersCarStable;
