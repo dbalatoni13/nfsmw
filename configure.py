@@ -169,7 +169,7 @@ elif version_num in [2, 3]:
     config.binutils_tag = "2.45"
 elif version_num in [4]:
     config.platform = Platform.WIN32
-    config.delink_tag = "v0.16.1"
+    config.delink_tag = "v0.16.3"
 
 config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.2"
@@ -236,9 +236,16 @@ elif config.platform == Platform.PS2:
     ]  # TODO what about undefined_syms_auto.txt?
 elif config.platform == Platform.WIN32:
     config.ldflags = [
+        "/nologo",
+        "/MACHINE:X86",
+        "/SUBSYSTEM:WINDOWS,4.0",
+        "/ENTRY:entry",
         "/NODEFAULTLIB",
+        "/FIXED",
+        "/INCREMENTAL:NO",
+        "/BASE:0x400000",
+        "/FILEALIGN:0x1000",
         f"/PDB:./build/{config.version}/{config.version}.pdb",
-        f"/DEBUG",
     ]
 
 # Use for any additional files that should cause a re-configure when modified

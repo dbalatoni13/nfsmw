@@ -200,7 +200,7 @@ void RoadblockFlow::Setup() {
         EAXCop *primary = ai->GetRandomCop(1);
         EAXCop *secondary = ai->GetRandomCop(2);
 
-        if (this->mNumBlocks > 2 && secondary != nullptr) {
+        if (this->mNumBlocks > 1 && secondary != nullptr) {
             if (bRandom(1.0f) > 0.5f) {
                 secondary->CallForSubRB();
             } else {

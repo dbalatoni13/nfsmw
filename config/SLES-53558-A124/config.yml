@@ -7,6 +7,7 @@ options:
   target_path: orig/SLES-53558-A124/NFS.ELF
   elf_path: build/SLES-53558-A124/NFS.ELF
   base_path: ../..
+  cache_path: build/SLES-53558-A124/.splache
   platform: ps2
   compiler: EEGCC
 

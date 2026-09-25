@@ -985,10 +985,7 @@ bool SoundAI::IsMusicActive() {
     if (this->mMusicFlow == nullptr) {
         return false;
     }
-    if (this->mMusicFlow->GetState() == -1) {
-        return false;
-    }
-    return true;
+    return this->mMusicFlow->GetState() != -1;
 }
 
 bool SoundAI::OnTask(HSIMTASK htask, float dT) {
