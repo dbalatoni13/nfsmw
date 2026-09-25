@@ -416,10 +416,6 @@ struct Memory {
     static Result SetHeapFastRam(void *pmem, int size);
 };
 
-#ifdef __cplusplus
-
-namespace Snd {
-
 // total size: 0x1
 class GlobalFxProcessor {
   public:
@@ -449,10 +445,6 @@ class GlobalFxProcessor {
 
     Csis::Result SetPreset(FxPreset fxPreset);
 };
-
-} // namespace Snd
-
-#endif
 
 } // namespace Snd
 
