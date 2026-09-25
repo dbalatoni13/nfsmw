@@ -78,9 +78,9 @@
 
 #define SND_MAX_MULTI_CHAN 6 // Decl: 138
 
+// TODO remove and use SNDCALL per function
 #define SNDCALL // Decl: 143
 
-// TODO remove and use SNDCALL per function
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -274,11 +274,15 @@ int SNDfxlevel(int shandle, int bus, int level);
 
 int SNDplaysetdef(SNDPLAYOPTS *pspo);
 
-int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *), void *pclientdata, void *pmem, int memsize);
 int SNDPKTPLAY_overhead(int maxpackets);
+int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *), void *pclientdata, void *pmem, int memsize);
 int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
-int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+int SNDPKTPLAY_submitspace(int packetinstancehandle);
+int SNDPKTPLAY_framesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_hardwareframesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_purge(int packetinstancehandle, int starthandle, int endhandle);
+int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_destroy(int packetinstancehandle);
 
 int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
@@ -415,14 +419,13 @@ struct Memory {
 };
 
 // total size: 0x1
-// Decl: 1967
 class GlobalFxProcessor {
   public:
     static Csis::Result GetMaxBuses(int *pBuses);
 
     static Csis::Result SetMaxBuses(int buses);
 
-    static Csis::Result CreateInstance(Snd::Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
+    static Csis::Result CreateInstance(Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
 
     Csis::Result Release();
 

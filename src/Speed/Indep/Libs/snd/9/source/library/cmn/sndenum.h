@@ -5,7 +5,6 @@
 
 namespace Snd {
 
-// TODO move to sndo.h
 enum Channel {
     CHANNEL_ALL = -1,
     CHANNEL_CENTER = 0,
@@ -96,6 +95,6 @@ enum FoldDownTarget {
     FOLDDOWNTARGET_MAX = 4,
 };
 
-} // namespace Snd
+}
 
 #endif
