@@ -174,16 +174,16 @@ struct SNDIPACKETCALLBACK {
 
     union {
         unsigned int frames; // offset 0x0, size 0x4
-        void *psamples; // offset 0x0, size 0x4
-    } u; // offset 0x4, size 0x4
+        void *psamples;      // offset 0x0, size 0x4
+    } u;                     // offset 0x4, size 0x4
 };
 
 // total size: 0x384
 struct SNDPACKETSTATE {
     // Members
-    int callbackindex; // offset 0x0, size 0x4
+    int callbackindex;           // offset 0x0, size 0x4
     SNDIPACKETCALLBACK spcb[96]; // offset 0x4, size 0x300
-    SNDPACKETCHAN *ppc[32]; // offset 0x304, size 0x80
+    SNDPACKETCHAN *ppc[32];      // offset 0x304, size 0x80
 };
 
 // total size: 0x8
@@ -373,6 +373,8 @@ struct Util {
         gVariableTimerList.Remove(&pClient->ln);
     }
 
+    static void SetDefaultAzimuths(struct CHANPUB *pVoice);
+
     static void *MemCpy(void *pDst, const void *pSrc, unsigned int bytes);
 };
 
@@ -541,6 +543,9 @@ static inline float SNDI_clipf(float val, float minval, float maxval) {
 SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
 
 // salloc.c
+int SNDVOICEI_isreserved(int voice, int voicesallocated);
+int SNDVOICEI_alloc(int voicesneeded, int priority, int *phandle, int minvoicerange, int maxvoicerange);
+void SNDVOICEI_free(int voice);
 int SNDVOICEI_get(int handle);
 
 // sbadd.c
@@ -551,6 +556,22 @@ TAGGEDPATCH *SNDBANKI_getppatch(BANKVER5 *pb, int patnum);
 
 // spatkey.c
 int iSNDpatchkey(int chan, int *psetchan);
+
+// spktplay.c
+int SNDPKTPLAYI_gethighchannel(int chan, int channels);
+int SNDPKTPLAYI_overhead(int maxpackets);
+int SNDPKTPLAY_overhead(int maxpackets);
+int SNDPKTPLAY_create(void (*preleasefunc)(void *, void *), void (*pframesfunc)(int, int, void *), void *pclientdata, void *pmem, int memsize);
+int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
+int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+int SNDPKTPLAY_submitspace(int packetinstancehandle);
+int SNDPKTPLAY_framesoutstanding(int packetinstancehandle);
+int SNDPKTPLAY_purge(int packetinstancehandle, int starthandle, int endhandle);
+int SNDPKTPLAY_stop(int packetinstancehandle);
+int SNDPKTPLAY_destroy(int packetinstancehandle);
+void *SNDPKTPLAYI_get(int packetinstancehandle, int chan, int *pframes, int *pcontinuation);
+void SNDPKTPLAYI_freeframes(int packetinstancehandle, int chan, int frames);
+void SNDPKTPLAYI_flushcallbackdata();
 
 // spat2hdr.c
 void SNDI_patchtohdr(void *pbank, TAGGEDPATCH *ptp, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd, unsigned char *isgeneric);
@@ -589,6 +610,9 @@ int SNDPLATFORM_download(int playloc, void *psrc, void *pdst, int size);
 int SNDPLATFORM_downloadcomplete(int dlhandle);
 int SNDPLATFORM_packetoverhead();
 int SNDPLATFORM_packetplaycreate(int pktchan, void *pmem);
+int SNDPLATFORM_packetplay(int pktchan, int voice, int timemult, int lowpasscutoff, int highpasscutoff, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa);
+int SNDPLATFORM_packetplaydestroy(int pktchan);
+void SNDPLATFORM_getvoicerange(int playloc, int *minvoicerange, int *maxvoicerange);
 
 // ssine.c
 int iSNDsin(int angle);
@@ -613,7 +637,10 @@ void SNDI_checkplayopts(SNDPLAYOPTS *pspo);
 int SNDBANKI_playpatch(void *psampledata, TAGGEDPATCH *ptp, int bhandle, int patnum, struct SNDPLAYOPTS *pspo);
 
 // sclcptch.c
-void iSNDcalcpitch(int chan /* r3 */);
+void iSNDcalcpitch(int chan);
+
+// srender.c
+int SNDI_validrendermode(int *prenderindex, SNDIPATCHHEADER *pph);
 
 #ifdef __cplusplus
 extern "C" {

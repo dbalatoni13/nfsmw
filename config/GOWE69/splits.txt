@@ -872,6 +872,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c:
 	.text       start:0x803608A0 end:0x80361480
+	.rodata     start:0x80412870 end:0x80412880
 	.bss        start:0x804BE8F4 end:0x804BEC78
 
 Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c:
