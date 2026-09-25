@@ -80,46 +80,6 @@
 
 #define SNDCALL // Decl: 143
 
-// TODO remove and use SNDCALL per function
-#ifdef __cplusplus
-
-namespace Snd {
-
-// total size: 0x1
-class GlobalFxProcessor {
-public:
-    static Csis::Result GetMaxBuses(int *pBuses);
-
-    static Csis::Result SetMaxBuses(int buses);
-
-    static Csis::Result CreateInstance(Snd::Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
-
-    Csis::Result Release();
-
-    Csis::Result UpdatePreset(ExtendedFxPreset *pExtendedFxPreset);
-
-    Csis::Result SetCustom(void *pFxDefinition);
-
-    Csis::Result Reset();
-
-    Csis::Result SetOutputLevel(float level);
-
-private:
-    GlobalFxProcessor();
-
-    ~GlobalFxProcessor();
-
-public:
-    Csis::Result SetPreset(ExtendedFxPreset *pExtendedFxPreset);
-
-    Csis::Result SetPreset(FxPreset fxPreset);
-};
-
-
-}
-
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -197,10 +157,10 @@ typedef struct SNDSAMPLEDESC {
 
 // total size: 0x20
 typedef struct SNDPACKETENTRY {
-    int handle; // offset 0x0, size 0x4
-    int numframes : 31; // offset 0x4, size 0x4
+    int handle;           // offset 0x0, size 0x4
+    int numframes : 31;   // offset 0x4, size 0x4
     int continuation : 1; // offset 0x4, size 0x4
-    void *psamples[6]; // offset 0x8, size 0x18
+    void *psamples[6];    // offset 0x8, size 0x18
 } SNDPACKETENTRY;
 
 // total size: 0x24
@@ -236,27 +196,27 @@ typedef struct SNDFILTERDEF {
 
 // total size: 0x9C
 struct SNDPACKETCHAN {
-    volatile int shandle; // offset 0x0, size 0x4
-    volatile int lastpackethandle; // offset 0x4, size 0x4
-    volatile unsigned int masterReleasePacket; // offset 0x8, size 0x4
-    volatile unsigned int masterCurrentPacket; // offset 0xC, size 0x4
-    volatile unsigned int numPacketsProcessed[6]; // offset 0x10, size 0x18
-    volatile short playpacket[6]; // offset 0x28, size 0xC
-    volatile short outstandingpackets[6]; // offset 0x34, size 0xC
-    volatile short maxpackets; // offset 0x40, size 0x2
-    volatile signed char masterpacketchan; // offset 0x42, size 0x1
-    char pad; // offset 0x43, size 0x1
-    volatile short releasepacket; // offset 0x44, size 0x2
-    volatile short submitpacket; // offset 0x46, size 0x2
-    volatile unsigned int outstandingframes; // offset 0x48, size 0x4
+    volatile int shandle;                            // offset 0x0, size 0x4
+    volatile int lastpackethandle;                   // offset 0x4, size 0x4
+    volatile unsigned int masterReleasePacket;       // offset 0x8, size 0x4
+    volatile unsigned int masterCurrentPacket;       // offset 0xC, size 0x4
+    volatile unsigned int numPacketsProcessed[6];    // offset 0x10, size 0x18
+    volatile short playpacket[6];                    // offset 0x28, size 0xC
+    volatile short outstandingpackets[6];            // offset 0x34, size 0xC
+    volatile short maxpackets;                       // offset 0x40, size 0x2
+    volatile signed char masterpacketchan;           // offset 0x42, size 0x1
+    char pad;                                        // offset 0x43, size 0x1
+    volatile short releasepacket;                    // offset 0x44, size 0x2
+    volatile short submitpacket;                     // offset 0x46, size 0x2
+    volatile unsigned int outstandingframes;         // offset 0x48, size 0x4
     volatile unsigned int outstandingplatformframes; // offset 0x4C, size 0x4
-    void *pplatformmem; // offset 0x50, size 0x4
-    void (*preleasefunc)(void *, void *); // offset 0x54, size 0x4
-    void (*pframesfunc)(int, int, void *); // offset 0x58, size 0x4
-    void *pclientdata; // offset 0x5C, size 0x4
-    SNDSAMPLEFORMAT sampleformat; // offset 0x60, size 0x4
-    void *ptsdata[6]; // offset 0x64, size 0x18
-    SNDPACKETENTRY pe[1]; // offset 0x7C, size 0x20
+    void *pplatformmem;                              // offset 0x50, size 0x4
+    void (*preleasefunc)(void *, void *);            // offset 0x54, size 0x4
+    void (*pframesfunc)(int, int, void *);           // offset 0x58, size 0x4
+    void *pclientdata;                               // offset 0x5C, size 0x4
+    SNDSAMPLEFORMAT sampleformat;                    // offset 0x60, size 0x4
+    void *ptsdata[6];                                // offset 0x64, size 0x18
+    SNDPACKETENTRY pe[1];                            // offset 0x7C, size 0x20
 };
 
 int SND3dpos(int shandle, int azimuth, int elevation);
