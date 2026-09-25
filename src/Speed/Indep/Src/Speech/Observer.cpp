@@ -80,7 +80,6 @@ bool Observer::IsTransitionable() {
 
 void Observer::Reset() {
     this->SpeechFlow::Reset();
-    this->mPrevPursuitState = 2;
     this->mNumCopsWithLOS = 0;
     this->mT_bullhorn = Timer(0);
     this->mT_unstable = Timer(0);
@@ -91,10 +90,11 @@ void Observer::Reset() {
     this->mDotTrack = 0.0f;
     this->mOffroadHistory = 0;
     this->mTracking = 0;
+    this->mPrevPursuitState = 2;
     this->mWeather = false;
     this->mTunnel = false;
-    this->mAirborneHeight = 0.0f;
     this->mRamCop = nullptr;
+    this->mAirborneHeight = 0.0f;
     this->mAirborneLength = 0.0f;
     this->mGasStationPos = UMath::Vector3::kZero;
     this->mFwPlayer = UMath::Vector3::kZero;
@@ -585,7 +585,7 @@ void Observer::AssessOutrun() {
 void Observer::AssessOffroad() {
     SoundAI *ai = SoundAI::Get();
 
-    if (ai->NumCopsWithLOS() <= 0) {
+    if (ai->NumCopsWithLOS() < 1) {
         return;
     }
     if (ai->GetTimeInView() < 2.0f) {
@@ -753,7 +753,7 @@ void Observer::MessageEventComplete(const MNotifySpeechStatus &message) {
 void Observer::MessageBlewPastCop(const MGamePlayMoment &message) {
     SoundAI *ai = SoundAI::Get();
     if ((ai->GetFocus() == SoundAI::kStrategyFlow) &&
-        ((ai->GetPursuitState() == SoundAI::kActive) || (ai->GetPursuitState() == SoundAI::kSearching)) && (ai->NumCopsWithLOS() < 2)) {
+        ((ai->GetPursuitState() == SoundAI::kActive) || (ai->GetPursuitState() == SoundAI::kSearching)) && (ai->NumCopsWithLOS() <= 1)) {
         unsigned int copID = message.GethSimable();
         for (copMap::const_iterator i = ai->GetActors().begin(); i != ai->GetActors().end(); ++i) {
             EAXCop *cop = i->cop;

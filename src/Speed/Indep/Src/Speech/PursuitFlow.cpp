@@ -135,8 +135,8 @@ void PursuitFlow::Reset() {
     this->mFirstOnScene = nullptr;
     this->SpeechFlow::Reset();
     this->mState = kCullCheck;
-    this->mCauseofPursuit = kUnknown;
     this->mBusy = 0;
+    this->mCauseofPursuit = kUnknown;
 }
 
 void PursuitFlow::Reacquire() {
@@ -167,8 +167,8 @@ bool PursuitFlow::RequiresRestart() {
         return false;
     }
 
-    this->mBusy = 0;
     this->mReqRestart = true;
+    this->mBusy = 0;
     return true;
 }
 
@@ -176,7 +176,7 @@ void PursuitFlow::CloseInCheck() {
     SoundAI *ai = SoundAI::Get();
     const copMap &cops = ai->GetActors();
 
-    if ((ai->GetPursuitState() == SoundAI::kInactive) || (cops.size() == 0)) {
+    if ((ai->GetPursuitState() == SoundAI::kInactive) || (cops.size() < 1)) {
         this->Reset();
         return;
     }
@@ -193,7 +193,7 @@ void PursuitFlow::CloseInCheck() {
     BlowByRecord &recent = ai->GetRecentBlowby();
     float lastblowby = (WorldTimer - recent.timestamp).GetSeconds();
     if ((recent.distance < ai->GetTune().RangeForSpotterBranch()) && (recent.speed >= ai->GetTune().SpeedDiffForBlowby()) &&
-        (lastblowby < ai->GetTune().BlowbyInterval()) && (35.0f <= ai->GetPlayerSpeed()) && !ai->AreCopsAhead()) {
+        (lastblowby < ai->GetTune().BlowbyInterval()) && (ai->GetPlayerSpeed() >= 35.0f) && !ai->AreCopsAhead()) {
         this->mCauseofPursuit = kSpotted;
     }
 
@@ -464,7 +464,7 @@ void PursuitFlow::ScriptedBranch() {
         } else {
             ai->GetDispatch()->PursuitEscalationGeneric();
         }
-        if ((ai->GetPlayerCarColor() != 0) && MiscSpeech::IsVehicleTypeOK()) {
+        if ((ai->GetPlayerCarColor() > 0) && MiscSpeech::IsVehicleTypeOK()) {
             ai->GetDispatch()->VehicleDescription();
         }
         this->mBusy++;
@@ -588,7 +588,7 @@ void PursuitFlow::Terminal() {
 
     if (!this->mBusy) {
         EAXCop *leader = ai->GetLeader();
-        if ((60.0f <= ai->GetPlayerSpeed()) && leader != nullptr && (this->mCauseofPursuit != kSpotted) && (this->mCauseofPursuit != k911Reported) &&
+        if ((ai->GetPlayerSpeed() >= 60.0f) && leader != nullptr && (this->mCauseofPursuit != kSpotted) && (this->mCauseofPursuit != k911Reported) &&
             (this->mCauseofPursuit != kScripted) && (this->mCauseofPursuit != kReacquired) && (this->mCauseofPursuit != kCopAssaultedScripted) &&
             (this->mCauseofPursuit != kCopAssaulted)) {
             leader->InitiatePursuit();

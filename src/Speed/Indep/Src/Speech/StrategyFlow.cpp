@@ -518,11 +518,9 @@ void StrategyFlow::Lost() {
 void StrategyFlow::Terminal() {
     this->mBusy = 0;
     this->ChangeStateTo(kTransition);
+    this->mDistance[0] = this->mDistance[1] = 0.0f;
+    this->mSpeed[0] = this->mSpeed[1] = 0.0f;
     this->mLOSCount = 0;
-    this->mDistance[1] = 0.0f;
-    this->mDistance[0] = 0.0f;
-    this->mSpeed[1] = 0.0f;
-    this->mSpeed[0] = 0.0f;
     this->mFormationCount = 0;
     this->mBackupType = 0;
     this->mFormationType = 0;
@@ -575,8 +573,8 @@ void StrategyFlow::Outcome() {
 
 void StrategyFlow::MessageReqBackup(const MReqBackup &message) {
     this->mBackupType = message.GetBackupType();
-    SoundAI *ai = SoundAI::Get();
     this->mFlags &= ~BUDENIED;
+    SoundAI *ai = SoundAI::Get();
     if (ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() == 2) {
         this->ChangeStateTo(kReqBackup);
     }
@@ -584,8 +582,8 @@ void StrategyFlow::MessageReqBackup(const MReqBackup &message) {
 
 void StrategyFlow::MessageBackupDenied(const MReqBackup &message) {
     this->mBackupType = message.GetBackupType();
-    SoundAI *ai = SoundAI::Get();
     this->mFlags |= BUDENIED;
+    SoundAI *ai = SoundAI::Get();
     if (ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() == 2) {
         this->ChangeStateTo(kReqBackup);
     }

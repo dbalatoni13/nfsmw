@@ -249,8 +249,8 @@ void Cache::TossSample(SpeechSampleData *data) {
     unsigned int index = this->mIndex.GetNextValidIndex(0);
     while (this->mIndex.ValidIndex(index)) {
         SpeechSampleData *sample = this->mIndex.GetPtrAtIndex(index);
-        if (sample == data && !data->lock) {
-            SpeechSampleData::Destruct(data);
+        if (sample == data && !sample->lock) {
+            SpeechSampleData::Destruct(sample);
             this->mIndex.DeleteIndex(index);
             if (SPEECH_CACHE_STATS) {
                 Attrib::Gen::speech speech(Manager::GetHashIDMap().GetHash(data->eventID), 0, nullptr);

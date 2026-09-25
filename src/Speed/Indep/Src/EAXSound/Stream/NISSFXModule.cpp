@@ -19,12 +19,11 @@ int SED_NISSFX::m_channel = 0;                    // Decl: 38
 char *SED_NISSFX::m_eventDat = nullptr;           // Decl: 39
 bool SED_NISSFX::m_dataIsLoaded = false;
 
+// TODO not initializer list? (on PC)
 SED_NISSFX::SED_NISSFX()
-    : mLoadState(),             //
-      m_moduleIsInitted(false), //
+    : m_moduleIsInitted(false), //
       m_speechCycle(0),         //
-      m_paused(false),          //
-      m_SyncObject() {
+      m_paused(false) {
     this->mLoadState.clear();
     if (this->m_pSFXOBJ_NISStream != nullptr) {
         static_cast<SFXObj_NISStream *>(this->m_pSFXOBJ_NISStream)->NISActivityDone();
@@ -190,8 +189,8 @@ bool SED_NISSFX::QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool tr
         }
     }
     this->m_SyncObject.callback = callback;
-    this->m_SyncObject.id = stream_type;
     this->m_SyncObject.qsObject = nullptr;
+    this->m_SyncObject.id = stream_type;
     this->m_SyncObject.handle = -1;
     this->m_bIsStreamQueued = false;
     if (SPCH_Play(2) == 0) {
@@ -289,7 +288,7 @@ void SED_NISSFX::Update() {
         if (this->m_SyncObject.qsObject != nullptr) {
             this->m_bIsStreamQueued = true;
             if ((this->m_SyncObject.callback != nullptr) && (this->m_SyncObject.id >= STRM_NIS_RACE_START) &&
-                ((this->m_SyncObject.id < STRM_THUNDER) || (this->m_SyncObject.id == STRM_SFX_MOMENT)) && (this->m_SyncObject.holdtime <= 0)) {
+                ((this->m_SyncObject.id <= STRM_NIS_BUSTED) || (this->m_SyncObject.id == STRM_SFX_MOMENT)) && (this->m_SyncObject.holdtime <= 0)) {
                 this->m_SyncObject.callback();
             }
             this->m_SyncObject.callback = nullptr;

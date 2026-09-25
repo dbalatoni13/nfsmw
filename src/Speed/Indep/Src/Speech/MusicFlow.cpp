@@ -421,10 +421,9 @@ void MusicFlow::Elude() {
         return;
     }
 
-    if (this->mAvgPlayerSpeed <= this->mTopSpeed * 0.45f) {
-        return;
+    if (this->mAvgPlayerSpeed > this->mTopSpeed * 0.45f) {
+        this->ChangeStateTo(kWin);
     }
-    this->ChangeStateTo(kWin);
 }
 
 void MusicFlow::Terminal() {
@@ -488,16 +487,16 @@ void MusicFlow::ChangeStateTo(int new_state) {
 }
 
 void MusicFlow::Reset() {
-    this->mState = kTransition;
     this->mTimer = Timer(0);
     this->mElapsed = 0.0f;
-    this->mRequestedSwap = false;
-    this->mRestrained = true;
     this->mIntensity = 0.0f;
     this->mAvgNumCopsInForm = 0.0f;
     this->mAvgNumCopsLOS = 0.0f;
     this->mAvgPlayerSpeed = 0.0f;
     this->mAvgPursuitDist = 0.0f;
+    this->mRequestedSwap = false;
+    this->mRestrained = true;
+    this->mState = kTransition;
 }
 
 }; // namespace Speech

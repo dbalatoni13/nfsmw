@@ -145,7 +145,7 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
   public:
     static int Count(Enum idx);
-    static iterator First(Enum idx);
+    static iterator First(Enum idx); // TODO implement this on the bottom
     static iterator Last(Enum idx);
 
     template <typename Functor> static Functor ForEach(Enum idx, Functor f) {

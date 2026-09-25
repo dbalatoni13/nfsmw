@@ -275,7 +275,7 @@ void EAXDispatch::RBReply(EAXCop *cop, int8 true_false, unsigned int type) {
     Csis::StaticRoadblock_DispRBReplyStruct data;
     data.speaker_id = this->mSpeakerID;
     data.code = this->GetRandomizedCode();
-    if (type != 0) {
+    if (type > 0) {
         data.roadblock_type = static_cast<Csis::Type_roadblock_type>(type);
     } else {
         if (ai->SpikesEnabled()) {

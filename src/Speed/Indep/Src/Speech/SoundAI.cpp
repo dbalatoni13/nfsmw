@@ -640,7 +640,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
                 if (this->GetRoadblock() != nullptr) {
                     const IRoadBlock::Smackables &objects = this->GetRoadblock()->GetSmackables();
-                    if (objects.size() != 0) {
+                    if (objects.size() > 0) {
                         for (IRoadBlock::Smackables::const_iterator i = objects.begin(); i != objects.end(); ++i) {
                             IPlaceableScenery *object = *i;
                             if (UTL::COM::ComparePtr(object, model) && model != nullptr) {
@@ -985,7 +985,10 @@ bool SoundAI::IsMusicActive() {
     if (this->mMusicFlow == nullptr) {
         return false;
     }
-    return this->mMusicFlow->GetState() != -1;
+    if (this->mMusicFlow->GetState() == -1) {
+        return false;
+    }
+    return true;
 }
 
 bool SoundAI::OnTask(HSIMTASK htask, float dT) {
@@ -1111,7 +1114,7 @@ void SoundAI::AttemptReattachPursuit() {
     short aifound = this->mAIPursuit != nullptr && !this->mAIPursuit->IsPlayerPursuit();
 
     const IPursuit::List &pursuits = IPursuit::GetList();
-    if (pursuits.size() != 0) {
+    if (pursuits.size() > 0) {
         IPursuit::List::const_iterator i = pursuits.begin();
         if (!playerfound) {
             for (IPursuit::List::const_iterator i = pursuits.begin(); i != pursuits.end(); ++i) {
@@ -1367,9 +1370,9 @@ void SoundAI::ResetPursuit(bool including_music) {
     this->mQuadrantState = kReset;
     this->mRacerCount = 0;
 
-    if (this->mActors.size() != 0) {
+    if (this->mActors.size() > 0) {
         Speech::copMap::iterator i = this->mActors.begin();
-        while (this->mActors.size() != 0) {
+        while (this->mActors.size() > 0) {
             RemoveCop(i->hsimable);
         }
     }
@@ -1454,7 +1457,7 @@ void SoundAI::ShuffleActors() {
         }
     }
 
-    if (active.size() != 0) {
+    if (active.size() > 0) {
         if ((this->mLeader == nullptr || !this->mLeader->IsActive()) || (this->mLeader == nullptr || this->mLeader->IsHeli())) {
             for (Speech::copList::iterator i = active.begin(); i != active.end(); ++i) {
                 EAXCop *activecop = *i;
@@ -1474,8 +1477,8 @@ void SoundAI::ShuffleActors() {
 }
 
 bool SoundAI::IsHeadingValid() {
-    if (this->mPlayerCurrent[0].roadID >= on_Highway99 && this->mPlayerCurrent[0].roadID <= through_Century_Square &&
-        (this->mPlayerCurrent[0].direction != 0)) {
+    if (this->mPlayerCurrent[0].roadID > untagged && this->mPlayerCurrent[0].roadID < Seaside_Interchange &&
+        (this->mPlayerCurrent[0].direction > 0)) {
         return true;
     }
     return false;
@@ -1844,7 +1847,7 @@ void SoundAI::SyncCarsToActors() {
         this->mFlags &= ~COPS_ARE_AHEAD;
     }
 
-    if (new_cop_cars.size() != 0) {
+    if (new_cop_cars.size() > 0) {
         for (IVehicles::iterator i = new_cop_cars.begin(); i != new_cop_cars.end(); ++i) {
             this->AddNewCop(*i);
         }
@@ -1897,7 +1900,7 @@ void SoundAI::SyncFormations() {
     if (this->mCopsInFormation.size() == 1) {
         mLastCopInFormation = *this->mCopsInFormation.begin();
     }
-    if (this->mCopsInFormation.size() != 0) {
+    if (this->mCopsInFormation.size() > 0) {
         this->mT_outofFormation = WorldTimer;
     }
 }
@@ -2361,27 +2364,30 @@ unsigned int SoundAI::CalcPlayerDirection(bool force_set) {
     float zmag = UMath::Abs(this->mSmoothedFWRoad.z);
     float xmag = UMath::Abs(this->mSmoothedFWRoad.x);
     if (xmag > zmag) {
-        dir = 8;
-        if (0.0f < this->mSmoothedFWRoad.x) {
+        if (this->mSmoothedFWRoad.x > 0.0f) {
             dir = 4;
+        } else {
+            dir = 8;
         }
     } else {
-        dir = 1;
-        if (0.0f < this->mSmoothedFWRoad.z) {
+        if (this->mSmoothedFWRoad.z > 0.0f) {
             dir = 2;
+        } else {
+            dir = 1;
         }
     }
 
     if ((dir != 0) && (dir != dir_tracking)) {
-        t_currdir = WorldTimer;
         dir_tracking = dir;
+        t_currdir = WorldTimer;
     }
 
     float t_samedir = (WorldTimer - t_currdir).GetSeconds();
-    if ((t_samedir <= 3.0f) && !force_set) {
-        dir = 0;
+    if ((t_samedir > 3.0f) || force_set) {
+        return dir;
+    } else {
+        return 0;
     }
-    return dir;
 }
 
 void SoundAI::ForceGlobalVoiceChange() {
