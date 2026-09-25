@@ -78,6 +78,7 @@
 
 #define SND_MAX_MULTI_CHAN 6 // Decl: 138
 
+// TODO remove and use SNDCALL per function
 #define SNDCALL // Decl: 143
 
 #ifdef __cplusplus
@@ -195,6 +196,7 @@ typedef struct SNDFILTERDEF {
 } SNDFILTERDEF;
 
 // total size: 0x9C
+// TODO move this to sndcmn.h
 struct SNDPACKETCHAN {
     volatile int shandle;                            // offset 0x0, size 0x4
     volatile int lastpackethandle;                   // offset 0x4, size 0x4
