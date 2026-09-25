@@ -416,6 +416,44 @@ struct Memory {
     static Result SetHeapFastRam(void *pmem, int size);
 };
 
+#ifdef __cplusplus
+
+namespace Snd {
+
+// total size: 0x1
+class GlobalFxProcessor {
+  public:
+    static Csis::Result GetMaxBuses(int *pBuses);
+
+    static Csis::Result SetMaxBuses(int buses);
+
+    static Csis::Result CreateInstance(Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
+
+    Csis::Result Release();
+
+    Csis::Result UpdatePreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetCustom(void *pFxDefinition);
+
+    Csis::Result Reset();
+
+    Csis::Result SetOutputLevel(float level);
+
+  private:
+    GlobalFxProcessor();
+
+    ~GlobalFxProcessor();
+
+  public:
+    Csis::Result SetPreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetPreset(FxPreset fxPreset);
+};
+
+} // namespace Snd
+
+#endif
+
 } // namespace Snd
 
 #endif
