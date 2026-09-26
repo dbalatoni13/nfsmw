@@ -95,7 +95,7 @@ ScheduledSpeechEvent *Manager::ScheduleSpeechPartII(unsigned int size, void *dat
                 if (obj_updated) {
                     this_event->entry_time = WorldTimer;
                     this_event->actor = actor;
-                    if (size != 0) {
+                    if (size > 0) {
                         bMemCpy(this_event->GetData(nullptr), data, size);
                     }
                 }
@@ -111,7 +111,7 @@ ScheduledSpeechEvent *Manager::ScheduleSpeechPartII(unsigned int size, void *dat
         }
     }
 
-    if (event_atr.Num_RecallList() != 0) {
+    if (event_atr.Num_RecallList() > 0) {
         for (unsigned int i = 0; i < event_atr.Num_RecallList(); ++i) {
             Attrib::Gen::speech recall(event_atr.RecallList(i).GetCollectionKey(), 0, nullptr);
             SPCHType_1_EventID recall_id = recall.SpeechID();
@@ -135,7 +135,7 @@ ScheduledSpeechEvent *Manager::ScheduleSpeechPartII(unsigned int size, void *dat
         event->flags |= 2;
     }
     mEvents[0].push_back(event);
-    if (size != 0) {
+    if (size > 0) {
         bMemCpy(event->GetData(nullptr), data, size);
     }
     return event;
@@ -340,7 +340,7 @@ void Manager::AttachSFXOBJ(SpeechModuleIndex idx, SFX_Base *psfx, eSFXOBJ_MAIN_T
 }
 
 Module *Manager::GetSpeechModule(int nindex) {
-    if (nindex <= 1) {
+    if (nindex < 2) {
         return m_SpeechModule[nindex];
     }
     return nullptr;
@@ -563,7 +563,7 @@ void Manager::Update(float t) {
 
                 {
                     bool track_streamer_busy = TheTrackStreamer.GetLoadingBacklog() >= TRACKSTREAMER_BACKLOG_THRESH;
-                    if (mSampleRequests.size() != 0 && !track_streamer_busy) {
+                    if (mSampleRequests.size() > 0 && !track_streamer_busy) {
                         for (int ndx = 0; ndx < 4; ++ndx) {
                             for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end(); ++i) {
                                 ScheduledSpeechEvent *this_event = *i;
@@ -653,7 +653,7 @@ static bool InteruptedAndNotDelayed(ScheduledSpeechEvent *this_event) {
 }
 
 bool Manager::ServiceInterruptEvents() {
-    if (mEvents[3].size() != 0) {
+    if (mEvents[3].size() > 0) {
         if (mEvents[3].size() > 1) {
             std::sort(mEvents[3].begin(), mEvents[3].end());
         }
@@ -677,7 +677,7 @@ bool Manager::ServiceInterruptEvents() {
         }
 
         if (interruptable) {
-            if (mEvents[1].size() != 0) {
+            if (mEvents[1].size() > 0) {
                 mEvents[0] = mEvents[1];
                 mEvents[1].clear();
             }
@@ -700,7 +700,7 @@ bool Manager::ServiceInterruptEvents() {
                     return true;
                 }
             }
-            if (mEvents[2].size() != 0) {
+            if (mEvents[2].size() > 0) {
                 SchedSpchEvents::iterator i = std::remove_if(mEvents[2].begin(), mEvents[2].end(), InteruptedAndNotDelayed);
                 mEvents[2].erase(i, mEvents[2].end());
             }
@@ -715,7 +715,7 @@ bool Manager::ServiceInterruptEvents() {
 }
 
 void Manager::ServiceFilteredEvents() {
-    if (mEvents[1].size() != 0) {
+    if (mEvents[1].size() > 0) {
         std::sort(mEvents[1].begin(), mEvents[1].end());
 
         SchedSpchEvents::iterator i = mEvents[1].begin();
@@ -723,7 +723,7 @@ void Manager::ServiceFilteredEvents() {
             bool trimmed = false;
             ScheduledSpeechEvent *this_event = *i;
 
-            if (this_event->assoc_samples_count == 0) {
+            if (this_event->assoc_samples_count < 1) {
                 Csis::Result rval = IndirectSpeechEvent(this_event, false);
                 switch (rval) {
                     case Csis::RESULT_ERR_NOTFOUND:
@@ -763,7 +763,7 @@ void Manager::ServiceFilteredEvents() {
 
 void Manager::Deduce() {
     SchedSpchEvents deferredEvents;
-    if (mEvents[0].size() != 0) {
+    if (mEvents[0].size() > 0) {
         SchedSpchEvents::iterator i = mEvents[0].begin();
         while (i != mEvents[0].end()) {
             ScheduledSpeechEvent *this_event = *i;
@@ -805,7 +805,7 @@ void Manager::Deduce() {
         mEvents[0].clear();
     }
 
-    if (deferredEvents.size() != 0) {
+    if (deferredEvents.size() > 0) {
         SchedSpchEvents::iterator i = deferredEvents.begin();
         for (; i != deferredEvents.end(); ++i) {
             ScheduledSpeechEvent *deferral = *i;
@@ -844,7 +844,7 @@ void Manager::Deduce() {
 
 void Manager::ClearPlayback() {
     for (int ndx = 0; ndx < 4; ++ndx) {
-        if (mEvents[ndx].size() != 0) {
+        if (mEvents[ndx].size() > 0) {
             SchedSpchEvents::iterator i = mEvents[ndx].begin();
             for (; i != mEvents[ndx].end(); ++i) {
                 ScheduledSpeechEvent *this_event = *i;
@@ -861,7 +861,7 @@ void Manager::ClearPlayback() {
 bool Manager::RecallSpeechEvent(SPCHType_1_EventID recall_id) {
     bool found_event = false;
     for (int ndx = 0; ndx < 4; ++ndx) {
-        if (mEvents[ndx].size() != 0) {
+        if (mEvents[ndx].size() > 0) {
             for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end();) {
                 ScheduledSpeechEvent *this_event = *i;
                 if (this_event->ID == recall_id) {
@@ -898,13 +898,15 @@ bool Manager::IsQueued(SPCHType_1_EventID evtID, int indices) {
     int start_index = 0;
     if (indices != 4) {
         start_index = indices;
+    } else {
+        start_index = 0;
     }
     int end_index = 4;
     if (indices != 4) {
         end_index = indices + 1;
     }
     for (int ndx = start_index; ndx < end_index; ++ndx) {
-        if (mEvents[ndx].size() != 0) {
+        if (mEvents[ndx].size() > 0) {
             for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end(); ++i) {
                 ScheduledSpeechEvent *this_event = *i;
                 if (this_event->ID == evtID) {
@@ -924,7 +926,8 @@ float Manager::IsEventDead(ScheduledSpeechEvent *evt) {
     }
 
     float elapsed = (WorldTimer - evt->finish_time).GetSeconds();
-    return elapsed < enforce_time ? enforce_time - elapsed : -1.0f;
+
+    return elapsed >= enforce_time ? -1.0f : enforce_time - elapsed;
 }
 
 void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete) {
@@ -957,7 +960,7 @@ void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_com
 }
 
 ScheduledSpeechEvent *Manager::GetNextEvent() {
-    if (mEvents[2].size() != 0) {
+    if (mEvents[2].size() > 0) {
         if (mEvents[2].size() > 1) {
             bool requires_sort = true;
             SchedSpchEvents::iterator start = mEvents[2].begin();
@@ -1069,7 +1072,7 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
         }
 
         float last_heard;
-        if (history->count != 0 && (mask & 8)) {
+        if (history->count > 0 && (mask & 8)) {
             last_heard = (WorldTimer - history->time).GetSeconds();
             if (last_heard < event.Interval()) {
                 return kDeferEvt;
@@ -1082,7 +1085,7 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
             }
         }
 
-        if (event.Num_DepFollow() != 0 && (mask & 0x20)) {
+        if (event.Num_DepFollow() > 0 && (mask & 0x20)) {
             short pass = 0;
 
             if (event.BackTime() > 0.0f) {
@@ -1098,7 +1101,7 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
                         break;
                     }
                 }
-            } else if (mEvtHistory.size() != 0) {
+            } else if (mEvtHistory.size() > 0) {
                 SPCHType_1_EventID last_evt_id = mEvtHistory.front();
                 Attrib::Key last_hist_key = mHashMap.GetHash(last_evt_id);
                 for (unsigned int i = 0; i < event.Num_DepFollow(); ++i) {
@@ -1211,7 +1214,7 @@ int Manager::FlushSpeechForActor(EAXCharacter *actor) {
 
     int num_flushed = 0;
     for (int ndx = 0; ndx < NUM_ELEMENTS(mEvents); ++ndx) {
-        if (mEvents[ndx].size() != 0) {
+        if (mEvents[ndx].size() > 0) {
             SchedSpchEvents::iterator i = mEvents[ndx].begin();
             while (i != mEvents[ndx].end()) {
                 ScheduledSpeechEvent *this_event = *i;

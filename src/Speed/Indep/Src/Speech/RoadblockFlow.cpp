@@ -37,15 +37,16 @@ RoadblockFlow::~RoadblockFlow() {
 }
 
 void RoadblockFlow::NailedSomethingInRB(unsigned int what) {
-    if ((this->mFlags & (OUTCOMETIMERSET | AVERTED | ENGAGED)) == 0) {
+    if (!(this->mFlags & OUTCOMETIMERSET) && !(this->mFlags & (AVERTED | ENGAGED))) {
         this->mT_engaged = WorldTimer;
         this->mFlags |= OUTCOMETIMERSET;
     }
+
     this->mFlags |= ENGAGED | what;
 }
 
 void RoadblockFlow::MessageRoadBlockDodged(const MReqRoadBlock &message) {
-    if ((this->mFlags & (OUTCOMETIMERSET | AVERTED | ENGAGED)) == 0) {
+    if (!(this->mFlags & OUTCOMETIMERSET) && !(this->mFlags & (AVERTED | ENGAGED))) {
         this->mT_averted = WorldTimer;
         this->mFlags |= OUTCOMETIMERSET;
     }
@@ -137,8 +138,8 @@ void RoadblockFlow::Update() {
 }
 
 void RoadblockFlow::MessageReqHeliJoinRB(const MReqRoadBlock &message) {
-    SoundAI *ai = SoundAI::Get();
     this->mFlags |= HELIJOINED;
+    SoundAI *ai = SoundAI::Get();
     if (ai->GetHeli() != nullptr && ai->GetPursuitState() == SoundAI::kActive) {
         ai->GetHeli()->JoinRB();
     }
@@ -199,7 +200,7 @@ void RoadblockFlow::Setup() {
         EAXCop *primary = ai->GetRandomCop(1);
         EAXCop *secondary = ai->GetRandomCop(2);
 
-        if (this->mNumBlocks >= 2 && secondary != nullptr) {
+        if (this->mNumBlocks > 1 && secondary != nullptr) {
             if (bRandom(1.0f) > 0.5f) {
                 secondary->CallForSubRB();
             } else {
@@ -369,9 +370,9 @@ void RoadblockFlow::Service() {
 void RoadblockFlow::Terminal() {
     this->mBusy = 0;
     this->mFlags = 0;
+    this->mLoDist2RB = 32767.0f;
     this->mSpikeOffset = 0;
     this->mPertinentRB = nullptr;
-    this->mLoDist2RB = 32767.0f;
 }
 
 void RoadblockFlow::Reset() {

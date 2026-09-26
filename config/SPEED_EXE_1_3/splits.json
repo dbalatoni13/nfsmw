@@ -1,722 +1,478 @@
 {
+  "unassigned_imports.obj": {
+    "functions": [],
+    "function_ranges": [],
+    "rdata": [["0x890000", "0x8904E4"]],
+    "data": [],
+    "bss": []
+  },
   "Speed/Indep/SourceLists/zAI.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4198480,
-        4477488
-      ]
-    ],
-    "rdata": [[8979684, 8991720]],
-    "data": [[9347072, 9355384]],
-    "bss": [[9492252, 9492912]]
+    "function_ranges": [["0x401000", "0x445230"]],
+    "rdata": [["0x8904E4", "0x8933E8"]],
+    "data": [["0x8EA000", "0x8EC078"]],
+    "bss": [["0x90D71C", "0x90D9B0"]]
   },
   "Speed/Indep/SourceLists/zAnim.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4477488,
-        4527240
-      ]
-    ],
-    "rdata": [[8991720, 8993856]],
-    "data": [[9355384, 9356512]],
-    "bss": [[9492912, 9493672]]
+    "function_ranges": [["0x445230", "0x451488"]],
+    "rdata": [["0x8933E8", "0x893C40"]],
+    "data": [["0x8EC078", "0x8EC4E0"]],
+    "bss": [["0x90D9B0", "0x90DCA8"]]
   },
   "Speed/Indep/SourceLists/zAttribSys.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4527240,
-        4573481
-      ]
-    ],
-    "rdata": [[8993856, 8994136]],
+    "function_ranges": [["0x451488", "0x45C929"]],
+    "rdata": [["0x893C40", "0x893D58"]],
     "data": [],
-    "bss": [[9493672, 9493744]]
+    "bss": [["0x90DCA8", "0x90DCF0"]]
   },
   "Speed/Indep/SourceLists/zBWare.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4573481,
-        4613280
-      ]
-    ],
-    "rdata": [
-      [
-        8994136,
-        8996328
-      ]
-    ],
-    "data": [[9356512, 9363028]],
-    "bss": [[9493744, 9506848]]
+    "function_ranges": [["0x45C929", "0x4664A0"]],
+    "rdata": [["0x893D58", "0x8945E8"]],
+    "data": [["0x8EC4E0", "0x8EDE54"]],
+    "bss": [["0x90DCF0", "0x911020"]]
   },
   "Speed/Indep/SourceLists/zCamera.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4613280,
-        4759546
-      ]
-    ],
-    "rdata": [[8996328, 9000056]],
-    "data": [[9363028, 9364688]],
-    "bss": [[9506848, 9507628]]
+    "function_ranges": [["0x4664A0", "0x489FFA"]],
+    "rdata": [["0x8945E8", "0x895478"]],
+    "data": [["0x8EDE54", "0x8EE4D0"]],
+    "bss": [["0x911020", "0x91132C"]]
   },
-    "Speed/Indep/SourceLists/zDebug.obj": {
+  "Speed/Indep/SourceLists/zDebug.obj": {
     "functions": [],
-    "function_ranges": [],
+    "function_ranges": [["0x489FFA", "0x48A000"]],
     "rdata": [],
     "data": [],
     "bss": []
   },
   "Speed/Indep/SourceLists/zDynamics.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4759546,
-        4776198
-      ]
-    ],
+    "function_ranges": [["0x48A000", "0x48E106"]],
     "rdata": [],
     "data": [],
-    "bss": [[9507628, 9508828]]
+    "bss": [["0x91132C", "0x9117DC"]]
   },
   "Speed/Indep/SourceLists/zEagl4Anim.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4776198,
-        4826398
-      ]
-    ],
-    "rdata": [[9000056, 9004012]],
-    "data": [[9364688, 9364824]],
-    "bss": [[9508828, 9510552]]
+    "function_ranges": [["0x48E106", "0x49A51E"]],
+    "rdata": [["0x895478", "0x8963EC"]],
+    "data": [["0x8EE4D0", "0x8EE558"]],
+    "bss": [["0x9117DC", "0x911E98"]]
   },
   "Speed/Indep/SourceLists/zEAXSound.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        4826398,
-        5060373
-      ]
-    ],
-    "rdata": [[9004012, 9009468]],
-    "data": [[9364824, 9370008]],
-    "bss": [[9510552, 9518512]]
+    "function_ranges": [["0x49A51E", "0x4D3715"]],
+    "rdata": [["0x8963EC", "0x89793C"]],
+    "data": [["0x8EE558", "0x8EF998"]],
+    "bss": [["0x911E98", "0x913DB0"]]
   },
   "Speed/Indep/SourceLists/zEAXSound2.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        5060373,
-        5217785
-      ]
-    ],
-    "rdata": [[9009468, 9020996]],
-    "data": [[9370008, 9380180]],
-    "bss": [[9518512, 9522016]]
+    "function_ranges": [["0x4D3715", "0x4F9DF9"]],
+    "rdata": [["0x89793C", "0x89A644"]],
+    "data": [["0x8EF998", "0x8F2154"]],
+    "bss": [["0x913DB0", "0x914B60"]]
   },
   "Speed/Indep/SourceLists/zEcstasy.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        5217785,
-        5297616
-      ]
-    ],
+    "function_ranges": [["0x4F9DF9", "0x50D5D0"]],
     "rdata": [],
-    "data": [[9380180, 9384468]],
-    "bss": [[9522016, 9552496]]
+    "data": [["0x8F2154", "0x8F3214"]],
+    "bss": [["0x914B60", "0x91C270"]]
   },
   "Speed/Indep/SourceLists/zFe.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        5297616,
-        5654608
-      ]
-    ],
-    "rdata": [[9020996, 9030996]],
-    "data": [[9384468, 9389468]],
-    "bss": [[9552496, 9560036]]
+    "function_ranges": [["0x50D5D0", "0x564850"]],
+    "rdata": [["0x89A644", "0x89CD54"]],
+    "data": [["0x8F3214", "0x8F459C"]],
+    "bss": [["0x91C270", "0x91DFE4"]]
   },
   "Speed/Indep/SourceLists/zFe2.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        5654608,
-        5957260
-      ]
-    ],
-    "rdata": [[9030996, 9040996]],
-    "data": [[9389468, 9394776]],
+    "function_ranges": [["0x564850", "0x5AE68C"]],
+    "rdata": [["0x89CD54", "0x89F464"]],
+    "data": [["0x8F459C", "0x8F5A58"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zFEng.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        5957260,
-        6053311
-      ]
-    ],
-    "rdata": [[9040996, 9058276]],
+    "function_ranges": [["0x5AE68C", "0x5C5DBF"]],
+    "rdata": [["0x89F464", "0x8A37E4"]],
     "data": [],
     "bss": []
   },
   "Speed/Indep/SourceLists/zFoundation.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6053311,
-        6128844
-      ]
-    ],
+    "function_ranges": [["0x5C5DBF", "0x5D84CC"]],
     "rdata": [],
     "data": [],
     "bss": []
   },
   "Speed/Indep/SourceLists/zGameModes.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6128844,
-        6129245
-      ]
-    ],
+    "function_ranges": [["0x5D84CC", "0x5D865D"]],
     "rdata": [],
     "data": [],
     "bss": []
   },
   "Speed/Indep/SourceLists/zGameplay.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6129245,
-        6307981
-      ]
-    ],
-    "rdata": [[9058276, 9060040]],
-    "data": [[9394776, 9397972]],
-    "bss": [[9560036, 9560264]]
+    "function_ranges": [["0x5D865D", "0x60408D"]],
+    "rdata": [["0x8A37E4", "0x8A3EC8"]],
+    "data": [["0x8F5A58", "0x8F66D4"]],
+    "bss": [["0x91DFE4", "0x91E0C8"]]
   },
   "Speed/Indep/SourceLists/zLua.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6307981,
-        6421305
-      ]
-    ],
-    "rdata": [[9060040, 9062428]],
+    "function_ranges": [["0x60408D", "0x61FB39"]],
+    "rdata": [["0x8A3EC8", "0x8A481C"]],
     "data": [],
-    "bss": [[9560264, 9565208]]
+    "bss": [["0x91E0C8", "0x91F418"]]
   },
   "Speed/Indep/SourceLists/zMain.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6421305,
-        6592081
-      ]
-    ],
-    "rdata": [[9062428, 9078232]],
-    "data": [[9397972, 9403864]],
-    "bss": [[9565208, 9590400]]
+    "function_ranges": [["0x61FB39", "0x649651"]],
+    "rdata": [["0x8A481C", "0x8A85D8"]],
+    "data": [["0x8F66D4", "0x8F7DD8"]],
+    "bss": [["0x91F418", "0x925680"]]
   },
   "Speed/Indep/SourceLists/zMisc.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6592081,
-        6713347
-      ]
-    ],
-    "rdata": [[9078232, 9081456]],
-    "data": [[9403864, 9406092]],
-    "bss": [[9590400, 9592932]]
+    "function_ranges": [["0x649651", "0x667003"]],
+    "rdata": [["0x8A85D8", "0x8A9270"]],
+    "data": [["0x8F7DD8", "0x8F868C"]],
+    "bss": [["0x925680", "0x926064"]]
   },
   "Speed/Indep/SourceLists/zMiscSmall.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6713347,
-        6713930
-      ]
-    ],
+    "function_ranges": [["0x667003", "0x66724A"]],
     "rdata": [],
-    "data": [[9406092, 9406768]],
-    "bss": [[9592932, 9593192]]
+    "data": [["0x8F868C", "0x8F8930"]],
+    "bss": [["0x926064", "0x926168"]]
   },
   "Speed/Indep/SourceLists/zMission.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6713930,
-        6714168
-      ]
-    ],
+    "function_ranges": [["0x66724A", "0x667338"]],
     "rdata": [],
     "data": [],
     "bss": []
   },
   "Speed/Indep/SourceLists/zPhysics.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6714168,
-        6853985
-      ]
-    ],
-    "rdata": [[9081456, 9087956]],
-    "data": [[9406768, 9406928]],
-    "bss": [[9593192, 9656904]]
+    "function_ranges": [["0x667338", "0x689561"]],
+    "rdata": [["0x8A9270", "0x8AABD4"]],
+    "data": [["0x8F8930", "0x8F89D0"]],
+    "bss": [["0x926168", "0x935A48"]]
   },
   "Speed/Indep/SourceLists/zPhysicsBehaviors.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        6853985,
-        7072220
-      ]
-    ],
-    "rdata": [[9087956, 9110056]],
-    "data": [[9406928, 9408496]],
-    "bss": [[9656904, 9685712]]
+    "function_ranges": [["0x689561", "0x6BE9DC"]],
+    "rdata": [["0x8AABD4", "0x8B0228"]],
+    "data": [["0x8F89D0", "0x8F8FF0"]],
+    "bss": [["0x935A48", "0x93CAD0"]]
   },
   "Speed/Indep/SourceLists/zPlatform.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7072220,
-        7112769
-      ]
-    ],
+    "function_ranges": [["0x6BE9DC", "0x6C8841"]],
     "rdata": [],
-    "data": [[9408496, 9444064]],
-    "bss": [[9685712, 9693284]]
+    "data": [["0x8F8FF0", "0x901AE0"]],
+    "bss": [["0x93CAD0", "0x93E864"]]
   },
   "Speed/Indep/SourceLists/zSim.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7112769,
-        7331895
-      ]
-    ],
-    "rdata": [[9110056, 9116876]],
-    "data": [[9444064, 9444288]],
+    "function_ranges": [["0x6C8841", "0x6FE037"]],
+    "rdata": [["0x8B0228", "0x8B0E60"]],
+    "data": [["0x901AE0", "0x901BC0"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zSpeech.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7331895,
-        7478464
-      ]
-    ],
-    "rdata": [[9116876, 9126876]],
-    "data": [[9444288, 9445668]],
+    "function_ranges": [["0x6FE037", "0x721CC0"]],
+    "rdata": [["0x8B0E60", "0x8B43DC"]],
+    "data": [["0x901BC0", "0x902124"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zTrack.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7478464,
-        7547307
-      ]
-    ],
+    "function_ranges": [["0x721CC0", "0x7329AB"]],
     "rdata": [],
-    "data": [[9445668, 9450128]],
+    "data": [["0x902124", "0x903290"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zWorld.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7547307,
-        7739131
-      ]
-    ],
-    "rdata": [[9126876, 9136876]],
-    "data": [[9450128, 9460968]],
-    "bss": [[9693284, 9993284]]
+    "function_ranges": [["0x7329AB", "0x7616FB"]],
+    "rdata": [["0x8B43DC", "0x8B6AEC"]],
+    "data": [["0x903290", "0x905CE8"]],
+    "bss": [["0x93E864", "0x987C44"]]
   },
   "Speed/Indep/SourceLists/zWorld2.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7739131,
-        7904648
-      ]
-    ],
-    "rdata": [[9136876, 9146876]],
-    "data": [[9460968, 9461036]],
+    "function_ranges": [["0x7616FB", "0x789D88"]],
+    "rdata": [["0x8B6AEC", "0x8B91FC"]],
+    "data": [["0x905CE8", "0x905D2C"]],
+    "bss": []
+  },
+  "unassigned_gap_28.obj": {
+    "functions": [],
+    "function_ranges": [["0x789D88", "0x789EC0"]],
+    "rdata": [],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_data.obj": {
+    "functions": [],
+    "function_ranges": [],
+    "rdata": [],
+    "data": [["0x905D2C", "0x90D71C"]],
     "bss": []
   },
   "unassigned_00.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7904960,
-        7944452
-      ]
-    ],
-    "rdata": [[9146876, 9153549]],
+    "function_ranges": [["0x789EC0", "0x793910"]],
+    "rdata": [["0x8B91FC", "0x8BAC0D"]],
     "data": [],
     "bss": []
   },
   "unassigned_01.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7944464,
-        7979979
-      ]
-    ],
-    "rdata": [[9153549, 9160222]],
+    "function_ranges": [["0x793910", "0x79C3D0"]],
+    "rdata": [["0x8BAC0D", "0x8BC61E"]],
     "data": [],
     "bss": []
   },
   "unassigned_02.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        7979984,
-        8012041
-      ]
-    ],
-    "rdata": [[9160222, 9166895]],
+    "function_ranges": [["0x79C3D0", "0x7A4110"]],
+    "rdata": [["0x8BC61E", "0x8BE02F"]],
     "data": [],
     "bss": []
   },
   "unassigned_03.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8012048,
-        8043290
-      ]
-    ],
-    "rdata": [[9166895, 9173568]],
+    "function_ranges": [["0x7A4110", "0x7ABB1A"]],
+    "rdata": [["0x8BE02F", "0x8BFA40"]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_gap_32.obj": {
+    "functions": [],
+    "function_ranges": [["0x7ABB1A", "0x7ABB60"]],
+    "rdata": [],
     "data": [],
     "bss": []
   },
   "unassigned_04.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8043360,
-        8071808
-      ]
-    ],
-    "rdata": [[9173568, 9180242]],
+    "function_ranges": [["0x7ABB60", "0x7B2A80"]],
+    "rdata": [["0x8BFA40", "0x8C1452"]],
     "data": [],
     "bss": []
   },
   "unassigned_05.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8071808,
-        8099581
-      ]
-    ],
-    "rdata": [[9180242, 9186915]],
+    "function_ranges": [["0x7B2A80", "0x7B9740"]],
+    "rdata": [["0x8C1452", "0x8C2E63"]],
     "data": [],
     "bss": []
   },
   "unassigned_06.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8099648,
-        8126448
-      ]
-    ],
-    "rdata": [[9186915, 9193588]],
+    "function_ranges": [["0x7B9740", "0x7BFFF0"]],
+    "rdata": [["0x8C2E63", "0x8C4874"]],
     "data": [],
     "bss": []
   },
   "unassigned_07.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8126448,
-        8154226
-      ]
-    ],
-    "rdata": [[9193588, 9200261]],
+    "function_ranges": [["0x7BFFF0", "0x7C6C80"]],
+    "rdata": [["0x8C4874", "0x8C6285"]],
     "data": [],
     "bss": []
   },
   "unassigned_08.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8154240,
-        8182176
-      ]
-    ],
-    "rdata": [[9200261, 9206934]],
+    "function_ranges": [["0x7C6C80", "0x7CD9A0"]],
+    "rdata": [["0x8C6285", "0x8C7C96"]],
     "data": [],
     "bss": []
   },
   "unassigned_09.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8182176,
-        8210372
-      ]
-    ],
-    "rdata": [[9206934, 9213608]],
+    "function_ranges": [["0x7CD9A0", "0x7D47D0"]],
+    "rdata": [["0x8C7C96", "0x8C96A8"]],
     "data": [],
     "bss": []
   },
   "unassigned_10.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8210384,
-        8238512
-      ]
-    ],
-    "rdata": [[9213608, 9220281]],
+    "function_ranges": [["0x7D47D0", "0x7DB5B0"]],
+    "rdata": [["0x8C96A8", "0x8CB0B9"]],
     "data": [],
     "bss": []
   },
   "unassigned_11.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8238512,
-        8265966
-      ]
-    ],
-    "rdata": [[9220281, 9226954]],
+    "function_ranges": [["0x7DB5B0", "0x7E20F0"]],
+    "rdata": [["0x8CB0B9", "0x8CCACA"]],
     "data": [],
     "bss": []
   },
   "unassigned_12.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8265968,
-        8301384
-      ]
-    ],
-    "rdata": [[9226954, 9233627]],
+    "function_ranges": [["0x7E20F0", "0x7EAB48"]],
+    "rdata": [["0x8CCACA", "0x8CE4DB"]],
+    "data": [],
+    "bss": []
+  },
+  "unassigned_gap_41.obj": {
+    "functions": [],
+    "function_ranges": [["0x7EAB48", "0x7EABB0"]],
+    "rdata": [],
     "data": [],
     "bss": []
   },
   "unassigned_13.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8301488,
-        8336972
-      ]
-    ],
-    "rdata": [[9233627, 9240300]],
+    "function_ranges": [["0x7EABB0", "0x7F364C"]],
+    "rdata": [["0x8CE4DB", "0x8CFEEC"]],
     "data": [],
     "bss": []
   },
   "unassigned_14.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8336972,
-        8368377
-      ]
-    ],
-    "rdata": [[9240300, 9246974]],
+    "function_ranges": [["0x7F364C", "0x7FB0F9"]],
+    "rdata": [["0x8CFEEC", "0x8D18FE"]],
     "data": [],
     "bss": []
   },
   "unassigned_15.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8368377,
-        8398506
-      ]
-    ],
-    "rdata": [[9246974, 9253647]],
+    "function_ranges": [["0x7FB0F9", "0x8026AA"]],
+    "rdata": [["0x8D18FE", "0x8D330F"]],
     "data": [],
     "bss": []
   },
   "unassigned_16.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8398506,
-        8430053
-      ]
-    ],
-    "rdata": [[9253647, 9260320]],
+    "function_ranges": [["0x8026AA", "0x80A1E5"]],
+    "rdata": [["0x8D330F", "0x8D4D20"]],
     "data": [],
     "bss": []
   },
   "unassigned_17.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8430053,
-        8454407
-      ]
-    ],
-    "rdata": [[9260320, 9266993]],
+    "function_ranges": [["0x80A1E5", "0x810107"]],
+    "rdata": [["0x8D4D20", "0x8D6731"]],
     "data": [],
     "bss": []
   },
   "unassigned_18.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8454407,
-        8483119
-      ]
-    ],
-    "rdata": [[9266993, 9273666]],
+    "function_ranges": [["0x810107", "0x81712F"]],
+    "rdata": [["0x8D6731", "0x8D8142"]],
     "data": [],
     "bss": []
   },
   "unassigned_19.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8483119,
-        8513081
-      ]
-    ],
-    "rdata": [[9273666, 9280340]],
+    "function_ranges": [["0x81712F", "0x81E639"]],
+    "rdata": [["0x8D8142", "0x8D9B54"]],
     "data": [],
     "bss": []
   },
   "unassigned_20.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8513081,
-        8540265
-      ]
-    ],
-    "rdata": [[9280340, 9287013]],
+    "function_ranges": [["0x81E639", "0x825069"]],
+    "rdata": [["0x8D9B54", "0x8DB565"]],
     "data": [],
     "bss": []
   },
   "unassigned_21.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8540265,
-        8571008
-      ]
-    ],
-    "rdata": [[9287013, 9293686]],
+    "function_ranges": [["0x825069", "0x82C880"]],
+    "rdata": [["0x8DB565", "0x8DCF76"]],
     "data": [],
     "bss": []
   },
   "unassigned_22.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8571008,
-        8602356
-      ]
-    ],
-    "rdata": [[9293686, 9300359]],
+    "function_ranges": [["0x82C880", "0x834314"]],
+    "rdata": [["0x8DCF76", "0x8DE987"]],
     "data": [],
-    "bss": [[9993284, 10067662]]
+    "bss": [["0x987C44", "0x999ECE"]]
   },
   "unassigned_23.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8602388,
-        8638108
-      ]
-    ],
-    "rdata": [[9300359, 9307032]],
-    "data": [[10067662, 10094037]],
+    "function_ranges": [["0x834314", "0x83CE9C"]],
+    "rdata": [["0x8DE987", "0x8E0398"]],
+    "data": [["0x999ECE", "0x9A05D5"]],
+    "bss": []
+  },
+  "unassigned_gap_52.obj": {
+    "functions": [],
+    "function_ranges": [["0x83CE9C", "0x83CF00"]],
+    "rdata": [],
+    "data": [],
     "bss": []
   },
   "unassigned_24.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8638208,
-        8668939
-      ]
-    ],
-    "rdata": [[9307032, 9313706]],
-    "data": [[10094037, 10120412]],
+    "function_ranges": [["0x83CF00", "0x844710"]],
+    "rdata": [["0x8E0398", "0x8E1DAA"]],
+    "data": [["0x9A05D5", "0x9A6CDC"]],
     "bss": []
   },
   "unassigned_25.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8668944,
-        8697704
-      ]
-    ],
-    "rdata": [[9313706, 9320379]],
-    "data": [[10120412, 10146787]],
+    "function_ranges": [["0x844710", "0x84B770"]],
+    "rdata": [["0x8E1DAA", "0x8E37BB"]],
+    "data": [["0x9A6CDC", "0x9AD3E3"]],
     "bss": []
   },
   "unassigned_26.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8697712,
-        8733458
-      ]
-    ],
-    "rdata": [[9320379, 9327052]],
-    "data": [[10146787, 10173162]],
+    "function_ranges": [["0x84B770", "0x854320"]],
+    "rdata": [["0x8E37BB", "0x8E51CC"]],
+    "data": [["0x9AD3E3", "0x9B3AEA"]],
     "bss": []
   },
   "unassigned_27.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8733472,
-        8762360
-      ]
-    ],
-    "rdata": [[9327052, 9333725]],
-    "data": [[10173162, 10199537]],
+    "function_ranges": [["0x854320", "0x85B3F8"]],
+    "rdata": [["0x8E51CC", "0x8E6BDD"]],
+    "data": [["0x9B3AEA", "0x9BA1F1"]],
+    "bss": []
+  },
+  "unassigned_gap_56.obj": {
+    "functions": [],
+    "function_ranges": [["0x85B3F8", "0x85B440"]],
+    "rdata": [],
+    "data": [],
     "bss": []
   },
   "unassigned_28.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8762432,
-        8796307
-      ]
-    ],
-    "rdata": [[9333725, 9340398]],
-    "data": [[10199537, 10225912]],
+    "function_ranges": [["0x85B440", "0x8638A0"]],
+    "rdata": [["0x8E6BDD", "0x8E85EE"]],
+    "data": [["0x9BA1F1", "0x9C08F8"]],
     "bss": []
   },
   "unassigned_29.obj": {
     "functions": [],
-    "function_ranges": [
-      [
-        8796320,
-        8974634
-      ]
-    ],
-    "rdata": [[9340398, 9347072]],
-    "data": [[10225912, 10252288]],
+    "function_ranges": [["0x8638A0", "0x88F12A"]],
+    "rdata": [["0x8E85EE", "0x8EA000"]],
+    "data": [["0x9C08F8", "0x9C7000"]],
+    "bss": []
+  },
+  "unassigned_tail.obj": {
+    "functions": [],
+    "function_ranges": [["0x88F12A", "0x88F2A5"]],
+    "rdata": [],
+    "data": [],
     "bss": []
   }
 }

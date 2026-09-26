@@ -10,6 +10,7 @@ splits:
   - Speed/Indep/SourceLists/zAttribSys.cpp
   - Speed/Indep/SourceLists/zBWare.cpp
   - Speed/Indep/SourceLists/zCamera.cpp
+  - Speed/Indep/SourceLists/zDebug.cpp
   - Speed/Indep/SourceLists/zDynamics.cpp
   - Speed/Indep/SourceLists/zEagl4Anim.cpp
   - Speed/Indep/SourceLists/zEAXSound.cpp

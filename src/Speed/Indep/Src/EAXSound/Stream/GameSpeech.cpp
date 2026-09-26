@@ -210,7 +210,7 @@ void GameSpeech::Update() {
             int err = this->m_strm->GetRequestStatus(ss.currentrequest, &srs);
             if (err >= 0) {
                 SpeechSampleData *sample;
-                if (this->m_pendingList.size() != 0) {
+                if (this->m_pendingList.size() > 0) {
                     sample = this->m_pendingList.Find(ss.currentrequest);
                 } else {
                     sample = nullptr;
@@ -256,7 +256,7 @@ void GameSpeech::Update() {
                 }
             }
 
-            if (this->m_pendingList.size() != 0) {
+            if (this->m_pendingList.size() > 0) {
                 SpeechSampleVec::iterator i = std::remove_if(this->m_pendingList.begin(), this->m_pendingList.end(), Unlocked);
                 this->m_pendingList.erase(i, m_pendingList.end());
             }
@@ -408,7 +408,7 @@ void GameSpeech::ClearCompletedRequests() {
         this->m_strm->Stop();
     }
 
-    if (this->m_pendingList.size() != 0) {
+    if (this->m_pendingList.size() > 0) {
         SpeechSampleVec::iterator i = std::remove_if(this->m_pendingList.begin(), this->m_pendingList.end(), Unlocked);
         this->m_pendingList.erase(i, this->m_pendingList.end());
         for (unsigned int i = 0; i < this->m_pendingList.size(); ++i) {
@@ -479,7 +479,7 @@ void GameSpeech::IssueSampleRequests() {
 void GameSpeech::RadioChirp(unsigned char type) {
     if ((this->m_pSFXOBJ_Speech != nullptr) && (this->m_Chirper == nullptr) && this->TestFlag(0x400)) {
         int stich_id;
-        if (type != 0) {
+        if (type > 0) {
             if (bRandom(1.0f) > 0.67f) {
                 stich_id = bRandom(4);
             } else {

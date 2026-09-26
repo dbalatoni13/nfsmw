@@ -85,7 +85,7 @@ void EAXCop::Update() {
 
     if (suspension != nullptr && (this->mActive)) {
         this->mPctTractiveTires =
-            suspension->GetNumWheels() != 0 ? static_cast<float>(suspension->GetNumWheelsOnGround() / suspension->GetNumWheels()) : 1.0f;
+            suspension->GetNumWheels() > 0 ? static_cast<float>(suspension->GetNumWheelsOnGround() / suspension->GetNumWheels()) : 1.0f;
         if (this->mPctTractiveTires > 0.25f) {
             this->mTimeAirborne = WorldTimer;
         }
@@ -193,7 +193,7 @@ void EAXCop::SetActive(bool activity) {
 
             this->mT_lastactivity = WorldTimer;
 
-            if (this->mTrafficHitCount > 1) {
+            if (this->mTrafficHitCount >= 2) {
                 this->BailoutTraffic();
                 this->mTrafficHitCount = 0;
                 if (ai->GetPursuitState() != SoundAI::kActive && ai->GetPursuitState() != SoundAI::kSearching) {
@@ -233,9 +233,11 @@ void EAXCop::SetActive(bool activity) {
 }
 
 bool EAXCop::IsPrimary() {
-    if ((this->mSpeakerID >= Speech::Heli && this->mSpeakerID <= Speech::Primary3) || (this->mSpeakerID == Speech::Cross)) {
+    if (this->mSpeakerID == Speech::Primary1 || this->mSpeakerID == Speech::Primary2 || this->mSpeakerID == Speech::Primary3 ||
+        this->mSpeakerID == Speech::Heli || this->mSpeakerID == Speech::Cross) {
         return true;
     }
+
     return false;
 }
 
@@ -254,17 +256,21 @@ void EAXCop::Reset() {
 }
 
 void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
-    Csis::Type_intensity intensity = Csis::Type_intensity_Normal;
+    Csis::Type_intensity intensity;
+
     if (force > 0.75f) {
         intensity = Csis::Type_intensity_High;
+    } else {
+        intensity = Csis::Type_intensity_Normal;
     }
+
     switch (collisionType) {
         case Speech::Collision_Cop_Cop:
         case Speech::Collision_Cop_Traffic:
         case Speech::Collision_Cop_Suspect:
             break;
         case Speech::Collision_Cop_World:
-            return;
+            return; // TODO this return doesn't match on PC but kinda needed on GC
         case Speech::Collision_Suspect_World:
             this->Impact_Suspect_World();
             break;
@@ -445,7 +451,10 @@ void EAXCop::VehicleReport() {
     } else {
         data.measurement = Csis::Type_measurement_imperial_only;
     }
-    while (ndx <= 10 && speedo >= speed_test[ndx]) {
+    while (ndx < 11) {
+        if (speedo < speed_test[ndx]) {
+            break;
+        }
         ndx++;
     }
     if (ndx == 0) {
@@ -549,12 +558,12 @@ void EAXCop::CallforEV(unsigned int type) {
     }
 
     Csis::AnytimeEvents_CallForEVStruct data;
-    if (type != 0) {
+    if (type > 0) {
         data.ev_type = static_cast<Csis::Type_ev_type>(type);
     } else if (this->IsHeli()) {
         data.ev_type = Csis::Type_ev_type_heli_down;
     } else {
-        if (ai->GetPursuit()->GetNumCopsDestroyed() < 2) {
+        if (ai->GetPursuit()->GetNumCopsDestroyed() <= 1) {
             return;
         }
         data.ev_type = Csis::Type_ev_type_multiple_units_down;
@@ -1000,11 +1009,12 @@ void EAXCop::Bailout() {
         return;
     }
     Csis::AnytimeEvents_BailoutStruct data;
-    if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
-        data.speaker_id = this->mSpeakerID;
-        data.bailout_type = Csis::Type_bailout_type_Damage_Sustained;
-        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+    if (ai->GetPursuitDuration() < ai->GetTune().MinPursuitDurationForBailouts()) {
+        return;
     }
+    data.speaker_id = this->mSpeakerID;
+    data.bailout_type = Csis::Type_bailout_type_Damage_Sustained;
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
 }
 
 void EAXCop::DenyBailout() {
@@ -1019,11 +1029,12 @@ void EAXCop::LoBailout() {
         return;
     }
     Csis::AnytimeEvents_BailoutStruct data;
-    if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
-        data.speaker_id = this->mSpeakerID;
-        data.bailout_type = Csis::Type_bailout_type_Generic_low_intensity;
-        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+    if (ai->GetPursuitDuration() < ai->GetTune().MinPursuitDurationForBailouts()) {
+        return;
     }
+    data.speaker_id = this->mSpeakerID;
+    data.bailout_type = Csis::Type_bailout_type_Generic_low_intensity;
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
 }
 
 void EAXCop::HiBailout() {
@@ -1032,11 +1043,12 @@ void EAXCop::HiBailout() {
         return;
     }
     Csis::AnytimeEvents_BailoutStruct data;
-    if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
-        data.speaker_id = this->mSpeakerID;
-        data.bailout_type = Csis::Type_bailout_type_Generic_high_intensity;
-        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+    if (ai->GetPursuitDuration() < ai->GetTune().MinPursuitDurationForBailouts()) {
+        return;
     }
+    data.speaker_id = this->mSpeakerID;
+    data.bailout_type = Csis::Type_bailout_type_Generic_high_intensity;
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
 }
 
 void EAXCop::BailoutBadRoad() {
@@ -1045,11 +1057,12 @@ void EAXCop::BailoutBadRoad() {
         return;
     }
     Csis::AnytimeEvents_BailoutStruct data;
-    if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
-        data.speaker_id = this->mSpeakerID;
-        data.bailout_type = Csis::Type_bailout_type_Road_conditions;
-        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+    if (ai->GetPursuitDuration() < ai->GetTune().MinPursuitDurationForBailouts()) {
+        return;
     }
+    data.speaker_id = this->mSpeakerID;
+    data.bailout_type = Csis::Type_bailout_type_Road_conditions;
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
 }
 
 void EAXCop::BailoutTraffic() {
@@ -1058,11 +1071,12 @@ void EAXCop::BailoutTraffic() {
     if (ai == nullptr) {
         return;
     }
-    if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
-        data.speaker_id = this->mSpeakerID;
-        data.bailout_type = Csis::Type_bailout_type_Heavy_traffic;
-        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+    if (ai->GetPursuitDuration() < ai->GetTune().MinPursuitDurationForBailouts()) {
+        return;
     }
+    data.speaker_id = this->mSpeakerID;
+    data.bailout_type = Csis::Type_bailout_type_Heavy_traffic;
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
 }
 
 void EAXCop::CallForRB() {
@@ -1218,8 +1232,8 @@ void EAXCop::SpotterWanted() {
 
 void EAXCop::Offroad(unsigned int id, bool subsequent) {
     Csis::AnytimeEvents_OffroadMomentStruct data;
-    data.offroad_moment_id = static_cast<Csis::Type_offroad_moment_id>(id);
     data.speaker_id = this->mSpeakerID;
+    data.offroad_moment_id = static_cast<Csis::Type_offroad_moment_id>(id);
     data.first_subsequent = subsequent ? Csis::Type_first_subsequent_subsequent_time : Csis::Type_first_subsequent_first_time;
     Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_OffroadMomentId, Csis::gAnytimeEvents_OffroadMomentHandle, this);
 }
