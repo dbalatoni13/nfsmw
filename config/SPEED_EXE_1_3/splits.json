@@ -184,14 +184,14 @@
   "Speed/Indep/SourceLists/zSim.obj": {
     "functions": [],
     "function_ranges": [["0x6C8841", "0x6FE037"]],
-    "rdata": [["0x8B0228", "0x8B1CCC"]],
+    "rdata": [["0x8B0228", "0x8B0E60"]],
     "data": [["0x901AE0", "0x901BC0"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zSpeech.obj": {
     "functions": [],
     "function_ranges": [["0x6FE037", "0x721CC0"]],
-    "rdata": [["0x8B1CCC", "0x8B43DC"]],
+    "rdata": [["0x8B0E60", "0x8B43DC"]],
     "data": [["0x901BC0", "0x902124"]],
     "bss": []
   },

@@ -216,7 +216,7 @@ elif config.platform == Platform.X360:
         "/NODEFAULTLIB",
         "/MACHINE:PPCBE",
         "/XEX:NO",
-        f"/PDB:./build/{config.version}/{config.version}.pdb",
+        # f"/PDB:./build/{config.version}/{config.version}.pdb",
         f"/DEBUG",
         f"/LTCG",
     ]
