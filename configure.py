@@ -169,7 +169,7 @@ elif version_num in [2, 3]:
     config.binutils_tag = "2.45"
 elif version_num in [4]:
     config.platform = Platform.WIN32
-    config.delink_tag = "v0.16.3"
+    config.delink_tag = "v0.16.4"
 
 config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.2"
