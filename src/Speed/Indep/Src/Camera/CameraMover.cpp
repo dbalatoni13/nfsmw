@@ -98,8 +98,7 @@ void CameraMover::Disable() {
 void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
 
     if (f_scale > 0.0f) {
-        const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
-            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
+        const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_AICOPS);
         for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); iter++) {
             IVehicle *vehicle = *iter;
             if (!vehicle->IsActive()) {
@@ -201,21 +200,24 @@ void UpdateCameraMovers(float dT) {
 
     if (JR2ServerExists) {
         eView *view = eGetView(1, false);
-        int elapsed = bAbs(RealTime - LastUpdateTimeJR2);
-        if (elapsed > 16) {
+        Camera *camera = view->GetCamera();
+        if (bAbs(RealTime - LastUpdateTimeJR2) > 16) {
             LastUpdateTimeJR2 = RealTime;
-            view->pCamera->CommunicateWithJollyRancher("SpeedCam");
+            camera->CommunicateWithJollyRancher("SpeedCam");
         }
     }
 
     if (RemoteCaffeinating != 0 && DisableCommunication == 0) {
         eView *view = eGetView(1, false);
-        if (view->pCamera != nullptr && bAbs(RealTime - LastUpdateTimeCaffeine) > 16) {
+        Camera *camera = view->GetCamera();
+        if (camera != nullptr && bAbs(RealTime - LastUpdateTimeCaffeine) > 16) {
 
             LastUpdateTimeCaffeine = RealTime;
 
             bVector3 eye;
+            eye = *camera->GetDirection() * 50.0f;
             bVector3 look;
+            look = *camera->GetPosition() - eye;
             LongVector fix_eye;
             LongVector fix_look;
 
@@ -223,14 +225,14 @@ void UpdateCameraMovers(float dT) {
 
             float scale = 50.0f;
 
-            bScale(&look, view->pCamera->GetPosition(), scale);
-            bScale(&look, view->pCamera->GetDirection(), scale);
+            bScale(&look, view->pCamera->GetPosition(), 50.0f);
+
+            bScale(&look, view->pCamera->GetDirection(), 50.0f);
             bVector3 diff = eye - prev_position;
 
-            // espSetCameraPositionFix(&fix_eye, &fix_look); // need
+            espSetCameraPositionFix(&fix_eye, &fix_look); // need
 
-            float dist = bDistBetween(&diff, &prev_position);
-            if (dist < 10.0f) {
+            if (bDistBetween(&diff, &prev_position) < 10.0f) {
             }
 
             // espCentrePlaneView();
@@ -249,7 +251,7 @@ void UpdateCameraMovers(float dT) {
     for (int view_id = 1; view_id < 3; ++view_id) {
         eView *view = eGetView(view_id, false);
 
-        if (!view->Active) {
+        if (!view->IsActive()) {
             continue;
         }
 
