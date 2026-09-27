@@ -9,7 +9,7 @@ import sys
 
 
 SKIP_TARGET = ("TODO")
-SKIP_BASE = ("__save", "__rest", "$SG")
+SKIP_BASE = ("__save", "__rest")
 
 
 def _compact_json_dumps(value) -> str:
@@ -125,6 +125,7 @@ def apply(game_version: str) -> tuple[int, int]:
         for target, base in mappings.items()
         if not target.startswith(SKIP_TARGET)
         and not any(marker in base for marker in SKIP_BASE)
+        and not (base.startswith("$SG") and target.startswith("$SG"))
     }
 
     changed = 0

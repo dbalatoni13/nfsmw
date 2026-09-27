@@ -67,18 +67,18 @@
     "function_ranges": [["0x49A51E", "0x4D3715"]],
     "rdata": [["0x8963EC", "0x89793C"]],
     "data": [["0x8EE558", "0x8EF998"]],
-    "bss": [["0x911E98", "0x913DB0"]]
+    "bss": [["0x911E98", "0x913F30"]]
   },
   "Speed/Indep/SourceLists/zEAXSound2.obj": {
     "functions": [],
-    "function_ranges": [["0x4D3715", "0x4F9DF9"]],
+    "function_ranges": [["0x4D3715", "0x4FA130"]],
     "rdata": [["0x89793C", "0x89A644"]],
     "data": [["0x8EF998", "0x8F2154"]],
-    "bss": [["0x913DB0", "0x914B60"]]
+    "bss": [["0x913F30", "0x914B60"]]
   },
   "Speed/Indep/SourceLists/zEcstasy.obj": {
     "functions": [],
-    "function_ranges": [["0x4F9DF9", "0x50D5D0"]],
+    "function_ranges": [["0x4FA130", "0x50D5D0"]],
     "rdata": [],
     "data": [["0x8F2154", "0x8F3214"]],
     "bss": [["0x914B60", "0x91C270"]]
@@ -183,14 +183,14 @@
   },
   "Speed/Indep/SourceLists/zSim.obj": {
     "functions": [],
-    "function_ranges": [["0x6C8841", "0x6FE037"]],
+    "function_ranges": [["0x6C8841", "0x6FD6B0"]],
     "rdata": [["0x8B0228", "0x8B0E60"]],
     "data": [["0x901AE0", "0x901BC0"]],
     "bss": []
   },
   "Speed/Indep/SourceLists/zSpeech.obj": {
     "functions": [],
-    "function_ranges": [["0x6FE037", "0x721CC0"]],
+    "function_ranges": [["0x6FD6B0", "0x721CC0"]],
     "rdata": [["0x8B0E60", "0x8B43DC"]],
     "data": [["0x901BC0", "0x902124"]],
     "bss": []

@@ -124,9 +124,9 @@ void SFXObj_NISStream::InitSFX() {
     SndBase::InitSFX();
     GenerateNISAnimHashMap();
     m_bNISAnimationReady = false;
-    m_bNISButtonThroughReady = false;
     m_bNISButtonThroughAnimationReady = false;
     m_bNISAudioStreamReady = false;
+    m_bNISButtonThroughReady = false;
     m_bBackupStreamCleared = true;
     g_pEAXSound->GetSndGameMode();
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
@@ -322,8 +322,8 @@ void SFXObj_NISStream::NISActivityDone() {
     this->SetDMIX_Input(6, 0);
     this->SetDMIX_Input(7, 0);
     this->m_mselapsedtimecb = nullptr;
-    this->m_mstimeelapsed = -1;
     this->m_mslengthofstream = -1;
+    this->m_mstimeelapsed = -1;
 
     // TODO magic
     int id = 0x40010010;

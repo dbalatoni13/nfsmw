@@ -50,8 +50,8 @@ void CARSFX_Rain::Play() {
 
 void CARSFX_Rain::Stop() {
     if (this->m_pCsisRain != nullptr) {
-        this->bFadingOut = true;
         this->m_fTimeLeftToFadeOut = 10.0f;
+        this->bFadingOut = true;
         this->m_pCsisRain->SetRain_on_off(1);
         this->m_pCsisRain->CommitMemberData();
     }

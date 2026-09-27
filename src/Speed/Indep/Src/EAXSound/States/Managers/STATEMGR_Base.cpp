@@ -12,8 +12,8 @@ CSTATEMGR_Base::CSTATEMGR_Base() {
     this->m_eStateType = eMM_MAIN;
     this->m_CurNumStates = 0;
     this->m_CurTime = 0.0f;
-    this->bIsInitialized = false;
     this->m_DeltaTime = 0.0f;
+    this->bIsInitialized = false;
     this->m_pHeadStateObj = nullptr;
 }
 
