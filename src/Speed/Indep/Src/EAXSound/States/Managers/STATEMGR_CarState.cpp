@@ -9,10 +9,10 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
-CSTATEMGR_CarState::MappingList CSTATEMGR_CarState::FinalMapping;           // size: 0x0, Decl: 14
-CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalEngines;            // size: 0x0, Decl: 15
-CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalCopV8Engines;       // size: 0x0, Decl: 16
-CSTATEMGR_CarState::EngToCarMapList CSTATEMGR_CarState::EngineToCarMapping; // size: 0x0, Decl: 18
+CSTATEMGR_CarState::MappingList CSTATEMGR_CarState::FinalMapping;           // Decl: 14
+CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalEngines;            // Decl: 15
+CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalCopV8Engines;       // Decl: 16
+CSTATEMGR_CarState::EngToCarMapList CSTATEMGR_CarState::EngineToCarMapping; // Decl: 18
 
 bool CSTATEMGR_CarState::CopsCanBeInGame = true; // Decl: 20
 

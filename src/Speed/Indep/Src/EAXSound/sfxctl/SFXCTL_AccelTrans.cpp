@@ -27,8 +27,8 @@ void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_AccelTrans::InitSFX() {
     SFXCTL::InitSFX();
-    this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
     this->t_LastAccelTrans = 0.0f;
+    this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
     this->IsAccelerating = false;
     this->OldIsAccelerating = false;
     this->PlayEngOffSweet = false;

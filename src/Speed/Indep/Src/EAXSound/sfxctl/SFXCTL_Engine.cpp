@@ -81,8 +81,8 @@ void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Engine::InitSFX() {
     SFXCTL::InitSFX();
-    this->m_bIsEngineBlown = false;
     this->m_Rotation = MIN_EXHVIEW_ROTATION;
+    this->m_bIsEngineBlown = false;
     this->Trq.Flush(0.0f);
     this->VisRpmAvg.Flush(0.0f);
     this->Rpm.Flush(0.0f);

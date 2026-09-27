@@ -464,13 +464,12 @@ SndBase *EAXSound::GetSndBase_Object(int nID) {
     return ReturnObj;
 }
 
-// TODO after we merge FE
-// float EAXSound::GetCurMusicVolume() {
-//     if (this->m_eSndGameMode == SND_FRONTEND) {
-//         return this->m_pCurAudioSettings->GetMasteredFEMusicVol();
-//     }
-//     return this->m_pCurAudioSettings->GetMasteredIGMusicVol();
-// }
+float EAXSound::GetCurMusicVolume() {
+    if (this->m_eSndGameMode == SND_FRONTEND) {
+        return this->m_pCurAudioSettings->GetMasteredFEMusicVol();
+    }
+    return this->m_pCurAudioSettings->GetMasteredIGMusicVol();
+}                       
 
 void EAXSound::ReInitMasterVolumes() {
     int i;

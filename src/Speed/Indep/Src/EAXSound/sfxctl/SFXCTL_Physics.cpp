@@ -249,8 +249,8 @@ SFXCTL_AIPhysics::SFXCTL_AIPhysics() {
     this->m_AngleDeltaRPM_LFO = 0;
     this->DownShiftSameGearCount = 0;
     this->UpShiftSameGearCount = 0;
-    this->IsDrifting = false;
     this->SteadyVelocityFactor = 0.0f;
+    this->IsDrifting = false;
     this->IsCornering = false;
 }
 
