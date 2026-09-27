@@ -1,12 +1,11 @@
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#include "Speed/Indep/Libs/Support/Utility/UListable.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Generated/Events/EGPSFinished.hpp"
 #include "Speed/Indep/Src/Generated/Events/EGPSLost.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -250,8 +249,146 @@ bool Gps::Engage(const UMath::Vector3 &target, float maxDeviation) {
     return false;
 }
 
-// TODO do once FE is merged
-// void Gps::Render(eView *view) {}
+void Gps::Render(eView *view) {
+    if (view->GetID() != 1) {
+        return;
+    }
+    if (UTL::Collections::Singleton<INIS>::Exists()) {
+        return;
+    }
+    if (FEManager::IsPaused()) {
+        return;
+    }
+
+    eGPSState state = this->mState;
+    if (state == GPS_DOWN) {
+        return;
+    }
+
+    CameraMover *camera_mover = view->GetCameraMover();
+    if (camera_mover == nullptr) {
+        return;
+    }
+    if (!camera_mover->IsDriveCamera()) {
+        return;
+    }
+
+    UMath::Vector3 nav_position = this->mPosition;
+
+    float camera_speed = bLength(camera_mover->GetCamera()->GetVelocityPosition());
+
+    if (state == GPS_SEARCHING) {
+        this->mScale += RealTimeElapsed * UMath::Lerp(1.5f, 3.5f, this->mDeviation);
+        this->mScale = UMath::Mod(this->mScale, 1.0f);
+    } else {
+        if (this->mScale > 0.0f) {
+            this->mScale -= RealTimeElapsed * 1.5f;
+            this->mScale = UMath::Max(this->mScale, 0.0f);
+        }
+    }
+
+    float extra_scale = UMath::Sina(this->mScale) * 0.1f + 1.0f;
+
+    UMath::ScaleAdd(this->mDirection, camera_speed, nav_position, nav_position);
+
+    bVector3 position_to_point_at;
+    eSwizzleWorldVector(reinterpret_cast<bVector3 &>(nav_position), position_to_point_at);
+
+    Camera *camera = camera_mover->GetCamera();
+    bMatrix4 *world_to_camera = camera->GetWorldToCameraMatrix();
+    bMatrix4 camera_to_world;
+    eInvertTransformationMatrix(&camera_to_world, world_to_camera);
+
+    unsigned short half_fov = camera->GetFov() / 2;
+    if (Sim::GetUserMode() == 1) {
+        half_fov /= 2;
+    }
+
+    float alt_dist = 1.0f;
+    if (eGetCurrentViewMode() == 2 && FEDatabase->GetGameplaySettings()->RearviewOn) {
+        alt_dist = 1.5f;
+    }
+
+    float scale = bCos(half_fov);
+    scale += scale;
+
+    unsigned short angle = static_cast<unsigned short>(-static_cast<int>(half_fov * 0.5f));
+
+    float sin, cos;
+    bSinCos(&sin, &cos, angle);
+
+    bVector3 v_pos(0.0f, sin * scale, cos * scale * alt_dist);
+    bMulMatrix(&v_pos, &camera_to_world, &v_pos);
+
+    bVector3 v_ray(v_pos - position_to_point_at);
+    v_ray.z = 0.0f;
+    bNormalize(&v_ray, &v_ray);
+
+    float desired_angle = UMath::Atan2r(v_ray.y, v_ray.x);
+
+    if (!this->mDrawn) {
+        this->mAngle = desired_angle;
+    } else {
+        float dist = UMath::Abs(this->mAngle - desired_angle);
+        float circle_dist = UMath::Abs(dist - (float)M_TWOPI);
+        float rotation_scale = UMath::Min(dist, circle_dist);
+        float roatation_speed;
+        float rotation = RealTimeElapsed * UMath::Lerp(0.125f, 1.0f, UMath::Ramp(rotation_scale, 0.0f, (float)M_PI)) * (float)M_TWOPI;
+
+        if (this->mAngle <= desired_angle) {
+            roatation_speed = rotation;
+        } else {
+            roatation_speed = -rotation;
+            roatation_speed = -roatation_speed;
+            rotation = -rotation;
+        }
+
+        float abs_rotation = rotation;
+        if (dist > (float)M_PI) {
+            abs_rotation = -rotation;
+        }
+
+        if (rotation_scale <= roatation_speed) {
+            this->mAngle = desired_angle;
+        } else {
+            this->mAngle = this->mAngle + abs_rotation;
+        }
+
+        if (this->mAngle > (float)M_PI) {
+            this->mAngle = this->mAngle - (float)M_TWOPI;
+        } else if (this->mAngle < -(float)M_PI) {
+            this->mAngle = this->mAngle + (float)M_TWOPI;
+        }
+    }
+
+    v_ray.x = UMath::Cosr(this->mAngle);
+    v_ray.y = UMath::Sinr(this->mAngle);
+    bScale(&v_ray, &v_ray, 0.2f);
+
+    bVector3 v_left;
+    bVector3 v_up(0.0f, 0.0f, 1.0f);
+    bCross(&v_left, &v_up, &v_ray);
+    bNormalize(&v_left, &v_left, 0.2f);
+
+    bCross(&v_up, &v_ray, &v_left);
+    bNormalize(&v_up, &v_up, 0.2f);
+
+    bMatrix4 *pMatrix = eFrameMallocMatrix(1);
+
+    if (pMatrix != nullptr) {
+        v_left *= extra_scale;
+        v_up *= extra_scale;
+        v_ray *= extra_scale;
+
+        bCopy(&pMatrix->v0, &v_left, 0.0f);
+        bCopy(&pMatrix->v1, &v_up, 0.0f);
+        bCopy(&pMatrix->v2, &v_ray, 0.0f);
+        bCopy(&pMatrix->v3, &v_pos, 1.0f);
+
+        view->Render(this->mArrowModel, pMatrix, nullptr, 0, nullptr);
+        this->mDrawn = true;
+    }
+}
 
 void GPS_Disengage() {
     Gps *gps = Gps::Get();
