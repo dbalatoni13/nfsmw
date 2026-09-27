@@ -161,9 +161,9 @@ void cInterpLine::Initialize(float _Start, float _Finish, int _Length, eCURVETYP
     }
 
     this->Finish = _Finish;
+    this->Start = _Start;
     this->CurveTypes = _Curve;
     this->bComplete = false;
-    this->Start = _Start;
     this->CurValue = _Start;
     this->ElapsedTime = 0.0f;
 }

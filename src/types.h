@@ -35,6 +35,8 @@ typedef unsigned int type_operator_new;
 
 #define ONLINE_SUPPORT (0) // TODO get rid of this
 
+#define MAX_PATH 255
+
 #elif defined(EA_PLATFORM_XENON)
 
 #include <cstddef>
@@ -104,6 +106,8 @@ typedef unsigned __int8 u8;
 
 #define ONLINE_SUPPORT (1)
 
+#define MAX_PATH 260
+
 #elif defined(EA_PLATFORM_WIN32)
 
 #include <cstddef>
@@ -172,6 +176,8 @@ typedef unsigned __int8 u8;
 // typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define MAX_PATH 260
 
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include <cstddef>
@@ -243,6 +249,8 @@ typedef unsigned char u8;
 typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define MAX_PATH 256
 
 #endif
 

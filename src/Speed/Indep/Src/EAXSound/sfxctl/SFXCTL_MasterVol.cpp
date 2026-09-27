@@ -110,7 +110,7 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
 DEFINE_CREATABLE(0x10, SFXCTL_GameState, SFXCTL);
 
 void SFXCTL_GameState::UpdateMixerOutputs() {
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i <= 13; i++) {
         extern uint32 g_ActiveSFXStates; // Decl: 230
         if (g_ActiveSFXStates & (1 << i)) {
             this->SetDMIX_Input(i, 0x7fff);

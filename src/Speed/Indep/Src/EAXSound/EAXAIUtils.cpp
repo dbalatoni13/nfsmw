@@ -126,8 +126,8 @@ SndAIStateManager::SndAIStateManager() {
     this->bTransition = false;
     this->CurState = SND_AI_STATE_UNKNOWN;
     this->PrevState = SND_AI_STATE_UNKNOWN;
-    this->m_pPhysicsCTL = nullptr;
     this->m_tLastSwitch = 0.0f;
+    this->m_pPhysicsCTL = nullptr;
 }
 
 SndAIStateManager::~SndAIStateManager() {}

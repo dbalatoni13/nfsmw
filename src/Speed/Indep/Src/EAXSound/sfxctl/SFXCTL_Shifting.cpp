@@ -226,7 +226,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 this->eShiftStageChanged = SHFT_DOWN_ENGAGING_FALL;
 
                 int Length = static_cast<int>(this->m_pShiftingPatternData->Down_Engaging_Fall_T());
-                if (this->GetCurGear() < SECOND_GEAR && this->m_UGL < AEMS_LEVEL2) {
+                if (this->GetCurGear() < SECOND_GEAR && this->m_UGL <= AEMS_LEVEL1) {
                     Length = static_cast<int>(Length * 0.7f);
                 }
 

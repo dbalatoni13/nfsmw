@@ -121,6 +121,9 @@ void EAXFrontEnd::Update(void *peventst) {
 }
 
 // STRIPPED
+void EAXFrontEnd::PlayHydraulics(HydraulicState eType, int iWheel) {}
+
+// STRIPPED
 void EAXFrontEnd::StopHydraulics(int iWheel) {}
 
 // STRIPPED
@@ -135,7 +138,9 @@ void EAXFrontEnd::UpdateDriveOn() {}
 void EAXFrontEnd::SetFEDrivingCarState(bVector3 *car_position, bVector3 *car_velocity, Camera *camera, int view_id) {}
 
 // STRIPPED
-int GetDriveOnIndexOffsetForCarType(CarType eCarType) {}
+int GetDriveOnIndexOffsetForCarType(CarType eCarType) {
+    return 0;
+}
 
 // STRIPPED
 void EAXFrontEnd::PlayDriveOnSnd(eMenuSoundTriggers etrigger, int view_id, CarType eCarType) {}
