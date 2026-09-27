@@ -10,7 +10,7 @@ Need for Speed: Most Wanted Decompilation
 [Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
 [discord]: https://discord.gg/hKx3FJJgrV
 
-A work-in-progress decompilation of the **GameCube**, Xbox 360 and PS2 versions of Need for Speed: Most Wanted. The focus is currently on the **GameCube** version.
+A work-in-progress decompilation of the GameCube, Xbox 360, PS2 and PC versions of Need for Speed: Most Wanted.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 

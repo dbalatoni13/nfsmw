@@ -35,13 +35,13 @@ class smVector3 {
 };
 
 enum EmitterControlState {
-    ECS_OFF = 6,
-    ECS_ON = 5,
-    ECS_OFF_CYCLE = 4,
-    ECS_ON_CYCLE = 3,
-    ECS_DELAYING = 2,
-    ECS_NOT_STARTED = 1,
     ECS_ERROR = 0,
+    ECS_NOT_STARTED = 1,
+    ECS_DELAYING = 2,
+    ECS_ON_CYCLE = 3,
+    ECS_OFF_CYCLE = 4,
+    ECS_ON = 5,
+    ECS_OFF = 6,
 };
 
 class EmitterControl {

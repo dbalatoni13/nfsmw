@@ -1,8 +1,11 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
+#include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 int g_SpewData = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 48
 int g_RPM = 0;      // size: 0x4, address: 0xFFFFFFFF, Decl: 49
@@ -140,7 +143,156 @@ float CarIdPrintWidth = 1.0f;                            // size: 0x4, address: 
 unsigned int CarIdPrintColor = 0xFFFFFFFF;               // size: 0x4, address: 0xFFFFFFFF, Decl: 420
 static const NIS_CAR_IDS CarToDisplay = NIS_PLAYER_CAR1; // size: 0x4, Decl: 421
 
-// TODO UpdateNIS after we've merged FE
+// UNSOLVED
+void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
+    if (this->eCurNisRevingState != NIS_OFF) {
+        goto Continuing;
+    }
+
+    if (this->PattternPlay) {
+        this->PattternPlay = false;
+        this->pRevData = nullptr;
+
+        switch (this->PatternNumber) {
+            default:
+            case 5:
+                this->NumDataPoints = 0x1B;
+                this->pRevData = RevPat5;
+                break;
+            case 6:
+                this->NumDataPoints = 0x16;
+                this->pRevData = RevPat6;
+                break;
+            case 7:
+                this->NumDataPoints = 0x13;
+                this->pRevData = RevPat7;
+                break;
+            case 8:
+                this->NumDataPoints = 0x43;
+                this->pRevData = RevPat8;
+                break;
+            case 9:
+                this->NumDataPoints = 0x38;
+                this->pRevData = RevPat9;
+                break;
+            case 10:
+                this->NumDataPoints = 0x22;
+                this->pRevData = RevPat10;
+                break;
+            case 11:
+                this->NumDataPoints = 0x1E;
+                this->pRevData = RevPat11;
+                break;
+            case 12:
+                this->NumDataPoints = 0x1D;
+                this->pRevData = RevPat12;
+                break;
+        }
+
+        if (this->pRevData != nullptr) {
+            this->eCurNisRevingState = NIS_PATTERN_ON;
+
+            Slope RPMSlope(static_cast<float>(this->pRevData->RPM), static_cast<float>(this->pRevData[1].RPM), this->pRevData->time,
+                           this->pRevData[1].time);
+            Slope TRQSlope(static_cast<float>(this->pRevData->Trq), static_cast<float>(this->pRevData[1].Trq), this->pRevData->time,
+                           this->pRevData[1].time);
+
+            this->NISRPM = RPMSlope.GetValue(this->TimeIntoRev);
+            this->NISTRQ = TRQSlope.GetValue(this->TimeIntoRev);
+        }
+    } else {
+        this->eCurNisRevingState = NIS_OFF;
+        this->TimeIntoRev = TotalTime;
+        this->CarID = this->GetPhysCar()->GetNISCarID();
+
+        if (this->CarID < 0) {
+            return;
+        }
+
+        if (!g_pNISRevMgr->IsInitialized) {
+            return;
+        }
+
+        if (g_pNISRevMgr->m_EngineDataSet[this->CarID].NumPoints < 2) {
+            return;
+        }
+
+        this->eCurNisRevingState = NIS_PATTERN_ON;
+        this->NumDataPoints = g_pNISRevMgr->m_EngineDataSet[this->CarID].NumPoints - 1;
+        this->pRevData = g_pNISRevMgr->m_EngineDataSet[this->CarID].DataPoints;
+    }
+
+Continuing:
+    switch (this->eCurNisRevingState) {
+        case NIS_PATTERN_ON: {
+            if (TotalTime < 0.001f) {
+                this->TimeIntoRev += deltaTime;
+            } else {
+                this->TimeIntoRev = TotalTime;
+            }
+
+            while (this->TimeIntoRev > this->pRevData[1].time && this->eCurNisRevingState != NIS_OFF) {
+                this->NumDataPoints--;
+
+                if (this->NumDataPoints == 0) {
+                    this->eCurNisRevingState = NIS_OFF;
+                } else {
+                    this->pRevData++;
+                }
+            }
+
+            if (this->eCurNisRevingState != NIS_OFF) {
+                Slope RPMSlope(static_cast<float>(this->pRevData->RPM), static_cast<float>(this->pRevData[1].RPM), this->pRevData->time,
+                               this->pRevData[1].time);
+                Slope TRQSlope(static_cast<float>(this->pRevData->Trq), static_cast<float>(this->pRevData[1].Trq), this->pRevData->time,
+                               this->pRevData[1].time);
+
+                this->NISRPM = RPMSlope.GetValue(this->TimeIntoRev);
+                this->NISTRQ = TRQSlope.GetValue(this->TimeIntoRev);
+            }
+
+            float timeLeft = -1.0f;
+            IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+
+            if (player != nullptr) {
+                ICountdown *icountdown;
+                IHud *hud = player->GetHud();
+
+                if (hud != nullptr && hud->QueryInterface(&icountdown)) {
+                    timeLeft = icountdown->GetSecondsBeforeRaceStart();
+                }
+            }
+
+            if (timeLeft < 1.0f && 0.0f < timeLeft) {
+                this->eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
+            }
+            break;
+        }
+
+        case NIS_MERGE_WITH_PHYSICS:
+            this->NISTRQ = this->m_pEAXCar->GetPhysRPM() < this->PhysicsRPM ? 100.0f : 0.0f;
+            this->NISRPM = smooth(this->m_pEAXCar->GetPhysRPM(), this->PhysicsRPM, 500.0f);
+            break;
+
+        default:
+            this->NISRPM = this->NISRPM - 500.0f;
+            this->NISTRQ = this->NISTRQ - 15.0f;
+            break;
+    }
+
+    this->PhysicsRPM = bClamp(this->NISRPM, 1000.0f, 10000.0f);
+    this->NISTRQ = bClamp(this->NISTRQ, 0.0f, 100.0f);
+
+    this->IsAccelerating = this->NISTRQ > 30.0f;
+    this->m_fThrottle = this->NISTRQ;
+    this->NISRPM = this->PhysicsRPM;
+    this->PhysicsTRQ = this->NISTRQ;
+    this->m_pEAXCar->SetPhysTRQ(this->NISTRQ);
+    this->m_pEAXCar->SetPhysRPM(this->PhysicsRPM);
+    this->m_pEAXCar->SetIsAccelerating(static_cast<float>(this->IsAccelerating));
+    this->m_pEAXCar->SetCurGear(this->m_CurGear);
+    this->m_pEAXCar->SetThrottle(this->m_fThrottle);
+}
 
 void SFXCTL_Physics::MsgRevEngine(const MAIEngineRev &message) {
     this->eCurNisRevingState = NIS_OFF;
