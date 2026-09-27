@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
@@ -27,7 +28,13 @@ int DEBUG_SFXOBJ_INIT = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 60
 DEFINE_CREATABLE(0x1010000, SFXObj_Pathfinder, SndBase);
 
 // size: 0x8, address: 0xFFFFFFFF, Decl: 65
-uint32 SPECIAL_EVENTS[2] = {0x17B768A, 0};
+uint32 SPECIAL_EVENTS[2] = {0x17B768A,
+#ifdef EA_BUILD_A124
+                            0
+#else
+                            0x01EA0327
+#endif
+};
 
 // size: 0x38, address: 0x804182C0, Decl: 108
 uint32 AmbientCrossMap[14] = {
@@ -146,7 +153,7 @@ SFXObj_PFEATrax::~SFXObj_PFEATrax() {
 }
 
 void SFXObj_PFEATrax::RestartRace() {
-    if (this->m_MusicType == eMUSIC_TYPE_LICENCED || this->m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+    if (this->m_MusicType == eMUSIC_TYPE_INTERACTIVE || this->m_MusicType == eMUSIC_TYPE_LICENCED) {
         PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         PATH_clearallevents(PATH_ALL_PROJECTS);
         this->m_MusicType = eMUSIC_TYPE_LICENCED;

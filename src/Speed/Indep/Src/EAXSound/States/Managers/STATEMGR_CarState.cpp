@@ -17,8 +17,8 @@ CSTATEMGR_CarState::EngToCarMapList CSTATEMGR_CarState::EngineToCarMapping; // D
 bool CSTATEMGR_CarState::CopsCanBeInGame = true; // Decl: 20
 
 CSTATEMGR_CarState::CSTATEMGR_CarState() {
-    this->m_fConnectDistance = 135.0f;
     this->m_CarContext = Sound::CONTEXT_AIRACER;
+    this->m_fConnectDistance = 135.0f;
     this->CopsCanBeInGame = true;
 }
 
