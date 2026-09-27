@@ -558,6 +558,8 @@ inline size_t Max(const size_t a, const size_t b) {
 }
 #endif
 
+float Mod(const float x, const float e);
+
 // Credits: Brawltendo
 // Limits the input value to the range [a,l]
 inline float Limit(const float a, const float l) {
