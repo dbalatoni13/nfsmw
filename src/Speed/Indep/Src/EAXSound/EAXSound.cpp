@@ -1274,7 +1274,7 @@ void LoadCommonIngameFiles() {
     g_LoadSndAsset(g_pEAXSound->GetAttributes().AEMS_MiscBanks(6), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM);
     g_LoadSndAsset(g_pEAXSound->GetAttributes().AEMS_MiscBanks(7), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM);
 
-    for (int n = 0; n < 12; n++) {
+    for (int n = 0; n < NUM_ELEMENTS(csfxedit); n++) {
         g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, SDT_GENERIC_DATA);
     }
 }

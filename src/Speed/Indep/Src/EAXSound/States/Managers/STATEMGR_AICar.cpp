@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
@@ -42,4 +43,30 @@ void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
 
 bool CSTATEMGR_AICar::bUsingGinsu = false; // Decl: 118
 
-// TODO function here after FE is merged
+void CSTATEMGR_AICar::QueueSlots() {
+    int numopponents;
+    bool NoCops = FEDatabase->IsQuickRaceMode();
+
+    bUsingGinsu = false;
+    GRaceParameters *race;
+    if (GRaceStatus::Exists()) {
+        race = GRaceStatus::Get().GetRaceParameters();
+    } else {
+        race = GRaceDatabase::Get().GetStartupRace();
+    }
+
+    if (race == nullptr) {
+        EAXAemsManager::QueueSlots(eBANK_SLOT_AI_AEMS_ENGINE, 4);
+    } else {
+        int engineslotsneeded = IVehicle::Count(VEHICLE_AIRACERS) + IVehicle::Count(VEHICLE_REMOTE);
+
+        if (!NoCops) {
+            engineslotsneeded++;
+        }
+        if (engineslotsneeded > 4) {
+            engineslotsneeded = 4;
+        }
+
+        EAXAemsManager::QueueSlots(eBANK_SLOT_AI_AEMS_ENGINE, engineslotsneeded);
+    }
+}

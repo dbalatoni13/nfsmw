@@ -113,7 +113,7 @@ void HeliRenderConn::OnRender(eView *view, int reflection) {
 
         if (car_render_info->Render(view, &Position, &cbm, this->mMatrices, this->mMatrices, this->mMatrices, render_flags, reflection, reflection,
                                     this->mShadowScale, car_render_info->GetMinLodLevel(), car_render_info->GetMinLodLevel()) &&
-            view->GetID() < 4) {
+            view->GetID() < EVIEW_PLAYER1_GLOW) {
             this->mLastVisibleFrame = eGetFrameCounter();
         }
     }

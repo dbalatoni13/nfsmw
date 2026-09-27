@@ -133,6 +133,7 @@ int PATH_addmapfile(char *pmap);
 void PATH_callbacks(SongProgressCallback progresscb, EventReleaseCallback eventcb, EventActionCallback actioncb);
 int PATH_destroy(int trackhandle);
 Path::IPathTrack *PATH_gettrackimp(int trackhandle);
+int PATH_setnamedvalue(int projects, char *name, int value);
 
 void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValuePair &flags);
 

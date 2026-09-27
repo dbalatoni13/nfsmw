@@ -256,7 +256,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     }
 
     PursuitState GetPursuitState() {
-        return mPursuitState;
+        return this->mPursuitState;
     }
 
     bool IsMusicActive();
