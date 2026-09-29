@@ -136,7 +136,7 @@ int UnloaderEventManager(bChunk *bchunk) {
 }
 
 int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
-    if (!(function != nullptr) && (stream_mask != 0)) {
+    if (function == nullptr || stream_mask == 0) {
         return 0;
     }
     emEventHandler *handler;

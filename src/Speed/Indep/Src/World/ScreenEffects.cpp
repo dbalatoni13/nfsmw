@@ -20,10 +20,10 @@ ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 extern eModel *pVisibleZoneBoundaryModel;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
-extern float GlareFalloff;
-extern float GlareFallon;
-extern float TUNHEIGHT;
-extern int debugflash;
+int debugflash = 0;
+float GlareFalloff = 0.02f;
+float GlareFallon = 0.04f;
+float TUNHEIGHT = 10.0f;
 extern TrackPathZone *zoneB[2];
 
 void InitScreenEFX();

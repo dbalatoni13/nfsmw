@@ -284,14 +284,13 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
     {
         int point_number = 0;
         while (point_number < this->NumPoints) {
-            int next = point_number + 1; // TODO get rid of the temporary
             bVector2 *point1 = this->GetPoint(point_number);
-            bVector2 *point2 = this->GetPoint(next - (next / this->NumPoints) * this->NumPoints);
+            bVector2 *point2 = this->GetPoint((point_number + 1) % this->NumPoints);
             float distance = bDistToLine(point, point1, point2);
             if (distance < closest_distance) {
                 closest_distance = distance;
             }
-            point_number = next;
+            point_number++;
         }
     }
 
@@ -407,7 +406,6 @@ VisibleSectionManager::VisibleSectionManager() {
     bMemSet(this->UserInfoTable, 0, sizeof(this->UserInfoTable));
     this->NumAllocatedUserInfo = 0;
 
-    bNode *head = this->UnallocatedUserInfoList.GetHead();
     for (int n = 0; n < 512; n++) {
         UnallocatedVisibleSectionUserInfo *unallocated_info = reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(&this->UserInfoStorageTable[n]);
         this->UnallocatedUserInfoList.AddTail(unallocated_info);
@@ -571,14 +569,13 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
     return 0;
 }
 
-// UNSOLVED
 int VisibleSectionManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_VISIBLE_SECTION_MANAGER) {
-        this->pInfo = nullptr;
+        this->DrivableBoundaryList.InitList();
         this->NonDrivableBoundaryList.InitList();
         this->LoadingSectionList.InitList();
         this->DrivableSectionList.InitList();
-        this->DrivableBoundaryList.InitList();
+        this->pInfo = nullptr;
         return 1;
     }
 
