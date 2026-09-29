@@ -1076,8 +1076,8 @@ void TrackStreamer::UnJettisonSections() {
 
 // total size: 0x10
 struct HoleMovement {
-    int32 SourceAddress; // offset 0x0, size 0x4
-    int32 DestAddress;   // offset 0x4, size 0x4
+    intptr_t SourceAddress; // offset 0x0, size 0x4
+    intptr_t DestAddress;   // offset 0x4, size 0x4
     int32 Size;          // offset 0x8, size 0x4
     uint32 Checksum;     // offset 0xC, size 0x4
 };
