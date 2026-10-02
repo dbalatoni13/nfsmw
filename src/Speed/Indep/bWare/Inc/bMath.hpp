@@ -160,7 +160,7 @@ inline int bMult(int a, int b) {
 
 inline float bAbs(float a) {
 #ifdef EA_PLATFORM_GAMECUBE
-    float f_abs;
+    float f_abs = 0.0f;
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
     return f_abs;

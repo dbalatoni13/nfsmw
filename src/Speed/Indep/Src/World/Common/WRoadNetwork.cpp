@@ -1914,7 +1914,6 @@ void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float cu
     this->ClampCookieCentres(cookies, num_cookies);
 }
 
-// UNSOLVED, but should be functionally matching
 void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
     if (!this->HasCookieTrail()) {
         return;
