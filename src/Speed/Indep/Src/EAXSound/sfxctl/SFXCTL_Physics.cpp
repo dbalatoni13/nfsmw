@@ -141,7 +141,6 @@ void SFXCTL_Physics::InitSFX() {
 static const int Smoother_CameraStateChange = 60; // size: 0x4, Decl: 213
 static const int Smoother_PlayerPosion = 2000;    // size: 0x4, Decl: 214
 
-// UNSOLVED
 void SFXCTL_Physics::UpdateMixerOutputs() {
     int TargeVal;
 

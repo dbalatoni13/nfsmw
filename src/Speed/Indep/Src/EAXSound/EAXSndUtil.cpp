@@ -264,7 +264,6 @@ Slope::Slope(float _Min, float _Max, float _Start, float _Finish) {
 
 Slope::~Slope() {}
 
-// UNSOLVED
 void Slope::Initialize(float _Min, float _Max, float _Start, float _Finish) {
     this->Min = _Min;
     this->Max = _Max;
