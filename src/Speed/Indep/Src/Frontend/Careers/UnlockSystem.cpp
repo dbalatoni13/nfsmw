@@ -111,47 +111,36 @@ bool DoesCategoryHaveNewUnlock(eUnlockableEntity entity) {
     return answer;
 }
 
-// UNSOLVED
 bool QuickRaceUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, int player, bool backroom) {
-    bool answer;
-
-    if (level <= TheUnlockData[ent].QuickRaceUnlockLevel) {
-        answer = true;
-    } else if (UnlockAllThings) {
-        answer = true;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
 #ifndef EA_BUILD_A124
-    } else if (FEDatabase->GetCareerSettings()->HasBeatenCareer()) {
-        answer = true;
+    answer = static_cast<bool>(answer | FEDatabase->GetCareerSettings()->HasBeatenCareer());
 #endif
-    } else if (FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce) {
-        answer = true;
-    }
-
+    answer = static_cast<bool>(answer | (level <= TheUnlockData[ent].QuickRaceUnlockLevel));
+    answer = static_cast<bool>(answer | FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce);
     return answer;
 }
 
-// UNSOLVED
 bool QuickRaceUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, int player, bool backroom) {
-    bool answer = UnlockAllThings != 0;
-
-    answer = answer || QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), player, false);
-    answer = answer || part->GetUpgradeLevel() == 0;
-
-    return answer;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
+    answer = static_cast<bool>(answer | (part->GetUpgradeLevel() == 0));
+    return static_cast<bool>(answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0));
 }
 
-// UNSOLVED
 bool QuickRaceUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
-    bool answer = UnlockAllThings != 0;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
 
-    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, player, false);
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom, 0);
 
     return answer;
 }
 
-// UNSOLVED
 bool QuickRaceUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash, int player) {
-    bool answer = UnlockAllThings != 0;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
     answer = answer | GRaceDatabase::Get().IsQuickRaceUnlocked(event_hash);
     if (event_hash == Attrib::StringHash32("19.8.31")) {
         return true;
@@ -305,33 +294,27 @@ bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEn
     return answer;
 }
 
-// UNSOLVED
 bool OnlineUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, bool backroom) {
     bool answer;
-    answer = QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, 0, backroom) != false;
+    answer = QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, backroom, 0) != false;
     return answer;
 }
 
-// UNSOLVED
 bool OnlineUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
     bool answer;
-    answer = QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, 0, backroom) != false;
+    answer = QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom, 0) != false;
     return answer;
 }
 
-// UNSOLVED
 bool OnlineUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
     bool answer;
-    answer = QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, 0, backroom) != false;
+    answer = QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom, 0) != false;
     return answer;
 }
 
-// UNSOLVED
 bool OnlineUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
-    bool answer = true;
-    if (UnlockAllThings == 0) {
-        answer = false;
-    }
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
     answer = answer | GRaceDatabase::Get().CheckRaceScoreFlags(event_hash, GRaceDatabase::kUnlocked_QuickRace);
     answer = answer | GRaceDatabase::Get().CheckRaceScoreFlags(event_hash, GRaceDatabase::kUnlocked_Online);
     return answer;
@@ -346,48 +329,42 @@ bool OnlineUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntit
     return answer;
 }
 
-// UNSOLVED
 bool CareerUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, bool backroom) {
-    bool answer = (level <= TheUnlockData[ent].CareerUnlockLevel) | UnlockAllThings
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
 #ifndef EA_BUILD_A124
-                  | FEDatabase->GetCareerSettings()->HasBeatenCareer()
+    answer = static_cast<bool>(answer | FEDatabase->GetCareerSettings()->HasBeatenCareer());
 #endif
-                  | FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce;
-
-    if (!backroom)
+    answer = static_cast<bool>(answer | (level <= TheUnlockData[ent].CareerUnlockLevel));
+    answer = static_cast<bool>(answer | FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce);
+    if (!backroom) {
         return answer;
-
-    answer = (level <= TheUnlockData[ent].QuickRaceUnlockLevel) | answer;
-
-    if (TheUnlockData[ent].CareerUnlockLevel != gMaxPartLevels[ent])
-        return answer;
-
-    return (level <= 7) | answer;
-}
-
-// UNSOLVED
-bool CareerUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
-    bool answer = UnlockAllThings != 0;
-    eUnlockableEntity unlockable = MapCarPartToUnlockable(carslot, part);
-    int unlocked = CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, part->GetUpgradeLevel(), backroom);
-    return (part->GetUpgradeLevel() == 0 || answer) || unlocked != 0;
-}
-
-// UNSOLVED
-bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
-    bool answer = UnlockAllThings != 0;
-    eUnlockableEntity unlockable = MapPerfPkgToUnlockable(pkg_type);
-    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, level, backroom));
-}
-
-// UNSOLVED
-bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
-    bool answer = true;
-    if (UnlockAllThings == 0) {
-        answer = false;
     }
-    bool raceUnlocked = GRaceDatabase::Get().CheckRaceScoreFlags(event_hash, GRaceDatabase::kUnlocked_Career);
-    return static_cast<bool>(answer | raceUnlocked);
+    answer = static_cast<bool>(answer | (level <= TheUnlockData[ent].CareerUnlockLevel + 1));
+    if (TheUnlockData[ent].CareerUnlockLevel != gMaxPartLevels[ent]) {
+        return answer;
+    }
+    answer = static_cast<bool>(answer | (level <= 7));
+    return answer;
+}
+
+bool CareerUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
+    answer = static_cast<bool>(answer | (part->GetUpgradeLevel() == 0));
+    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom));
+}
+
+bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
+    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom));
+}
+
+bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
+    return static_cast<bool>(answer | GRaceDatabase::Get().IsCareerRaceUnlocked(event_hash));
 }
 
 // UNSOLVED
@@ -539,13 +516,12 @@ marker_check:
     return static_cast<bool>(answer) | static_cast<bool>(TheFEMarkerManager.IsMarkerAvailable(marker, 0));
 }
 
-// UNSOLVED
 bool UnlockSystem::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity thing, int level, int player, bool backroom) {
     if (UnlockAllThings)
         return true;
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsUnlockableUnlocked(filter, thing, level, player, backroom) != 0;
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, thing, level, player, backroom));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, thing, level, backroom));
@@ -556,13 +532,12 @@ bool UnlockSystem::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, int player, bool backroom) {
     if (UnlockAllThings)
         return true;
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, player, backroom) != 0;
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, player, backroom));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom));
@@ -573,13 +548,12 @@ bool UnlockSystem::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
     if (UnlockAllThings)
         return true;
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, player, backroom) != 0;
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, player, backroom));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom));
@@ -590,13 +564,12 @@ bool UnlockSystem::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrade
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsTrackUnlocked(eUnlockFilters filter, int event_hash, int player) {
     if (UnlockAllThings)
         return true;
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsTrackUnlocked(filter, event_hash, player) != 0;
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsTrackUnlocked(filter, event_hash, player));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsTrackUnlocked(filter, event_hash));
@@ -607,13 +580,12 @@ bool UnlockSystem::IsTrackUnlocked(eUnlockFilters filter, int event_hash, int pl
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsCarUnlocked(eUnlockFilters filter, unsigned int handle, int player) {
     if (UnlockAllThings)
         return true;
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsCarUnlocked(filter, handle, player);
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsCarUnlocked(filter, handle, player));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsCarUnlocked(filter, handle));
@@ -621,17 +593,14 @@ bool UnlockSystem::IsCarUnlocked(eUnlockFilters filter, unsigned int handle, int
     if (filter & UNLOCK_ONLINE) {
         answer = static_cast<bool>(answer | OnlineUnlocker::IsCarUnlocked(filter, handle));
     }
-    if (GetIsCollectorsEdition() && UnlockSystem::IsBonusCarCEOnly(handle)) {
-        answer = true;
-    }
+    answer = static_cast<bool>(answer | (GetIsCollectorsEdition() && UnlockSystem::IsBonusCarCEOnly(handle)));
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
     bool answer = false;
     if (filter & UNLOCK_QUICK_RACE) {
-        answer = QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0);
+        answer = static_cast<bool>(answer | QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0));
     }
     if (filter & UNLOCK_CAREER_MODE) {
         answer = static_cast<bool>(answer | CareerUnlocker::IsBackroomAvailable(filter, ent, level));
@@ -666,7 +635,6 @@ bool UnlockSystem::IsUnlockableNew(eUnlockFilters filter, eUnlockableEntity ent,
     return TheUnlockData[ent].QuickRaceIsNewPart == level;
 }
 
-// UNSOLVED
 void UnlockSystem::ClearNewUnlock(eUnlockableEntity ent, uint32 filter) {
     if (filter & UNLOCK_QUICK_RACE) {
         TheUnlockData[ent].QuickRaceIsNewPart = UNLOCK_IS_OLD;
@@ -1059,7 +1027,6 @@ int FEMarkerManager::GetNumMarkers(ePossibleMarker marker, int param) {
     return num;
 }
 
-// UNSOLVED
 FEMarkerManager::ePossibleMarker FEMarkerManager::ConvertBigBangMarkerAward(const char *marker_name, const char *partid) {
     static struct {
         const char *MarkerName;
@@ -1090,16 +1057,19 @@ FEMarkerManager::ePossibleMarker FEMarkerManager::ConvertBigBangMarkerAward(cons
     };
 
     for (int i = 0; i < 21; i++) {
-        if (bStrICmp(marker_name, unlockType[i].MarkerName) == 0 &&
-            ((unlockType[i].PartName == nullptr) || bStrICmp(partid, unlockType[i].PartName) == 0)) {
-            return unlockType[i].Marker;
+        if (bStrICmp(marker_name, unlockType[i].MarkerName) == 0) {
+            if (unlockType[i].PartName == nullptr) {
+                return unlockType[i].Marker;
+            }
+            if (bStrICmp(partid, unlockType[i].PartName) == 0) {
+                return unlockType[i].Marker;
+            }
         }
     }
 
     return MARKER_NONE;
 }
 
-// UNSOLVED
 void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_reward) {
     ePossibleMarker marker = ConvertBigBangMarkerAward(inst.RewardMarkerType(), inst.UpgradePartID());
     if (marker != MARKER_NONE) {
@@ -1112,12 +1082,15 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
                 goto add_inventory;
             }
             param = static_cast<int>(inst.CashReward());
-            FEDatabase->GetCareerSettings()->CurrentCash = FEDatabase->GetCareerSettings()->CurrentCash + param;
+            FEDatabase->GetCareerSettings()->AwardCash(param);
             goto award_done;
 
         award_pink_slip:
             param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
-            FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(param);
+            {
+                FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+                stable->AwardRivalCar(param);
+            }
             goto award_done;
 
         add_inventory:
@@ -1130,7 +1103,7 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
                     param = static_cast<int>(inst.CashReward());
                 }
             } else {
-                param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin(), 0);
+                param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
             }
             AddMarkerForLaterSelection(marker, param);
         }
