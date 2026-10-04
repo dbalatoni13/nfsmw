@@ -367,15 +367,14 @@ bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
     return static_cast<bool>(answer | GRaceDatabase::Get().IsCareerRaceUnlocked(event_hash));
 }
 
-// UNSOLVED
 bool CareerUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
-    bool answer = UnlockAllThings != 0;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FECarRecord *fe_car = stable->GetCarRecordByHandle(car);
     Attrib::Gen::frontend CarAttribs(fe_car->FEKey, 0, nullptr);
-    unsigned char unlockedAt = CarAttribs.UnlockedAt();
-    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
-    return (currentBin >= unlockedAt) | answer;
+    answer = static_cast<bool>(answer | (CarAttribs.UnlockedAt() >= FEDatabase->GetCareerSettings()->GetCurrentBin()));
+    return answer;
 }
 
 // UNSOLVED
@@ -611,23 +610,14 @@ bool UnlockSystem::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity 
     return answer;
 }
 
-// UNSOLVED
 bool UnlockSystem::IsUnlockableNew(eUnlockFilters filter, eUnlockableEntity ent, int level) {
     if (level == UNLOCK_LEVEL_ANY) {
         if (filter & UNLOCK_QUICK_RACE) {
-            if ((filter & UNLOCK_CAREER_MODE) == 0) {
-                return TheUnlockData[ent].QuickRaceIsNewPart == level;
-            }
-            if (TheUnlockData[ent].QuickRaceIsNewPart != UNLOCK_IS_OLD) {
-                return true;
-            }
+            return TheUnlockData[ent].QuickRaceIsNewPart != UNLOCK_IS_OLD;
         }
         if (filter & UNLOCK_CAREER_MODE) {
-            if (TheUnlockData[ent].CareerIsNewPart != UNLOCK_IS_OLD) {
-                return true;
-            }
+            return TheUnlockData[ent].CareerIsNewPart != UNLOCK_IS_OLD;
         }
-        return false;
     }
     if (filter & UNLOCK_CAREER_MODE) {
         return TheUnlockData[ent].CareerIsNewPart == level;
@@ -643,7 +633,6 @@ void UnlockSystem::ClearNewUnlock(eUnlockableEntity ent, uint32 filter) {
         TheUnlockData[ent].CareerIsNewPart = UNLOCK_IS_OLD;
     }
 }
-// UNSOLVED
 // 0x8017B688: d:/mw/speed/indep/src/frontend/careers/UnlockSystem.cpp (line 773)
 eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part) {
     switch (carslot) {
@@ -651,62 +640,53 @@ eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part) {
             return UNLOCKABLE_THING_BODY_KIT;
         case CARSLOTID_SPOILER:
             return UNLOCKABLE_THING_SPOILERS;
-        case CARSLOTID_ROOF:
-            return UNLOCKABLE_THING_ROOF_SCOOPS;
         case CARSLOTID_HOOD:
             return UNLOCKABLE_THING_HOODS;
+        case CARSLOTID_ROOF:
+            return UNLOCKABLE_THING_ROOF_SCOOPS;
+        case CARSLOTID_LICENSE_PLATE:
+            return UNLOCKABLE_THING_LICENSE_PLATE;
+        case CARSLOTID_CUSTOM_HUD:
+            return UNLOCKABLE_THING_CUSTOM_HUD;
+        case CARSLOTID_WINDOW_TINT:
+            return UNLOCKABLE_THING_WINDOW_TINT;
         case CARSLOTID_FRONT_WHEEL:
             return UNLOCKABLE_THING_RIM_BRANDS;
         case CARSLOTID_REAR_WHEEL:
             return UNLOCKABLE_THING_RIM_BRANDS;
-        case CARSLOTID_LICENSE_PLATE:
-            return UNLOCKABLE_THING_LICENSE_PLATE;
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX6:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX7:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX6:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX7:
+            return UNLOCKABLE_DECAL_NUMBERS;
+        case CARSLOTID_DECAL_FRONT_WINDOW_TEX0:
+        case CARSLOTID_DECAL_REAR_WINDOW_TEX0:
+            return UNLOCKABLE_DECAL_WINDSHIELD;
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX0:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX1:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX2:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX3:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX4:
+        case CARSLOTID_DECAL_LEFT_DOOR_TEX5:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX0:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX1:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX2:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX3:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX4:
+        case CARSLOTID_DECAL_RIGHT_DOOR_TEX5:
+            return UNLOCKABLE_DECAL_LEFT_DOOR;
+        case CARSLOTID_DECAL_LEFT_QUARTER_TEX0:
+        case CARSLOTID_DECAL_RIGHT_QUARTER_TEX0:
+            return UNLOCKABLE_DECAL_LEFT_QP;
         case CARSLOTID_BASE_PAINT:
-            return UNLOCKABLE_THING_PAINTABLE_BODY;
-        case CARSLOTID_VINYL_LAYER0:
-            return UNLOCKABLE_VINYLS_GROUP_BODY;
         case CARSLOTID_PAINT_RIM:
             return UNLOCKABLE_THING_PAINTABLE_BODY;
-        case CARSLOTID_DECAL_FRONT_WINDOW_TEX0:
-            return UNLOCKABLE_DECAL_REAR_WINDOW;
-        case CARSLOTID_DECAL_REAR_WINDOW_TEX0:
-            return UNLOCKABLE_DECAL_REAR_WINDOW;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX0:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX1:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX2:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX3:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX4:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX5:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX6:
-            return UNLOCKABLE_DECAL_NUMBERS;
-        case CARSLOTID_DECAL_LEFT_DOOR_TEX7:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX0:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX1:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX2:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX3:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX4:
-            return UNLOCKABLE_DECAL_LEFT_DOOR;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX5:
-            return UNLOCKABLE_DECAL_NUMBERS;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX6:
-            return UNLOCKABLE_DECAL_LEFT_QP;
-        case CARSLOTID_DECAL_RIGHT_DOOR_TEX7:
-            return UNLOCKABLE_DECAL_LEFT_QP;
-        case CARSLOTID_WINDOW_TINT:
-            return UNLOCKABLE_THING_WINDOW_TINT;
-        case CARSLOTID_CUSTOM_HUD:
-            return UNLOCKABLE_THING_CUSTOM_HUD;
+        case CARSLOTID_VINYL_LAYER0:
+        case CARSLOTID_VINYL_COLOUR0_0:
+        case CARSLOTID_VINYL_COLOUR0_1:
+        case CARSLOTID_VINYL_COLOUR0_2:
+        case CARSLOTID_VINYL_COLOUR0_3:
+            return UNLOCKABLE_VINYLS_GROUP_BODY;
         default:
             return UNLOCKABLE_THING_UNKNOWN;
     }
