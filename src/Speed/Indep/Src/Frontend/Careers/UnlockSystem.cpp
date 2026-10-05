@@ -71,41 +71,36 @@ void MarkUnlockableThingSeen(eUnlockableEntity entity, uint32 filter) {
     }
 }
 
-// UNSOLVED
 bool DoesCategoryHaveNewUnlock(eUnlockableEntity entity) {
     bool answer = false;
 
     switch (entity) {
         case UNLOCKABLE_THING_CUSTOMIZE_PARTS:
-            answer = TheUnlockData[UNLOCKABLE_THING_BODY_KIT].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_SPOILERS].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_RIM_BRANDS].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_ROOF_SCOOPS].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_HOODS].CareerIsNewPart != UNLOCK_IS_OLD;
-            break;
-        case UNLOCKABLE_THING_UNKNOWN:
-            return false;
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_BODY_KIT].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_SPOILERS].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_RIM_BRANDS].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_HOODS].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_ROOF_SCOOPS].CareerIsNewPart != UNLOCK_IS_OLD));
             break;
         case UNLOCKABLE_THING_CUSTOMIZE_PERFORMANCE:
-            answer = TheUnlockData[UNLOCKABLE_THING_PUT_TIRES].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_BRAKES].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_CHASSIS].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_TRANSMISSION].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_ENGINE].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_INDUCTION].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PUT_NOS].CareerIsNewPart != UNLOCK_IS_OLD;
-
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_TIRES].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_BRAKES].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_CHASSIS].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_TRANSMISSION].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_ENGINE].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_INDUCTION].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PUT_NOS].CareerIsNewPart != UNLOCK_IS_OLD));
             break;
-
         case UNLOCKABLE_THING_CUSTOMIZE_VISUAL:
-            answer = TheUnlockData[UNLOCKABLE_THING_CUSTOM_HUD].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_DECAL_HOOD].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_DECAL_NUMBERS].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_PAINTABLE_BODY].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_THING_WINDOW_TINT].CareerIsNewPart != UNLOCK_IS_OLD ||
-                     TheUnlockData[UNLOCKABLE_VINYLS_GROUP_BODY].CareerIsNewPart != UNLOCK_IS_OLD;
-
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_DECAL_HOOD].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_CUSTOM_HUD].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_DECAL_NUMBERS].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_PAINTABLE_BODY].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_THING_WINDOW_TINT].CareerIsNewPart != UNLOCK_IS_OLD));
+            answer = static_cast<bool>(answer | (TheUnlockData[UNLOCKABLE_VINYLS_GROUP_BODY].CareerIsNewPart != UNLOCK_IS_OLD));
             break;
+        default:
+            return false;
     }
 
     return answer;
