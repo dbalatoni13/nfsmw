@@ -108,6 +108,7 @@ bool DoesCategoryHaveNewUnlock(eUnlockableEntity entity) {
 
 bool QuickRaceUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, int player, bool backroom) {
     bool answer = false;
+    // Written as a conditional to match the original; a plain assignment compiles differently
     answer = answer ? true : UnlockAllThings != 0;
 #ifndef EA_BUILD_A124
     answer = static_cast<bool>(answer | FEDatabase->GetCareerSettings()->HasBeatenCareer());
@@ -121,14 +122,16 @@ bool QuickRaceUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, Ca
     bool answer = false;
     answer = answer ? true : UnlockAllThings != 0;
     answer = static_cast<bool>(answer | (part->GetUpgradeLevel() == 0));
-    return static_cast<bool>(answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0));
+    // backroom is passed as the player argument, as in the original (also in the calls below)
+    return static_cast<bool>(
+        answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0));
 }
 
 bool QuickRaceUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
     bool answer = false;
     answer = answer ? true : UnlockAllThings != 0;
 
-    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom, 0);
+    answer = static_cast<bool>(answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom, 0));
 
     return answer;
 }
@@ -143,145 +146,146 @@ bool QuickRaceUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash, i
     return answer;
 }
 
-// UNSOLVED
 bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, int player) {
-    bool answer = UnlockAllThings != 0;
+    bool answer = false;
+    answer = answer ? true : UnlockAllThings != 0;
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(player);
     FECarRecord *fe_car = stable->GetCarRecordByHandle(car);
 
     Attrib::Gen::frontend CarAttribs(fe_car->FEKey, 0, nullptr);
-    answer = static_cast<bool>(FEDatabase->GetCareerSettings()->GetCurrentBin() <= CarAttribs.UnlockedAt() | answer);
+    answer = static_cast<bool>(answer | (CarAttribs.UnlockedAt() >= FEDatabase->GetCareerSettings()->GetCurrentBin()));
 
     if (fe_car->MatchesFilter(FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_STOCK | FE_CAR_FILTER_LIST_CAREER | FE_CAR_FILTER_LIST_QUICK_RACE)) {
-        int type = fe_car->GetType();
-        if (type < 0x19) {
-            if (type >= 0x17 || type <= 4 || type == 5 || type == 6 || type == 8) {
+        switch (fe_car->GetType()) {
+            case CARTYPE_RX8:
+            case CARTYPE_IMPREZAWRX:
+            case CARTYPE_MUSTANGGT:
+            case CARTYPE_SL500:
+            case CARTYPE_997S:
+            case CARTYPE_IS300:
+            case CARTYPE_GTI:
+            case CARTYPE_GALLARDO:
+            case CARTYPE_COBALTSS:
+            case CARTYPE_PUNTO:
                 answer = true;
-            }
-        } else if (type < 0x45) {
-            if (type > 0x42 || type == 0x2F || type == 0x3E) {
-                answer = true;
-            }
-        } else if (type == 0x4A) {
-            answer = true;
+                break;
         }
-        return answer;
-    }
-    if (!fe_car->MatchesFilter(FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_BONUS)) {
-        return answer;
-    }
-
-    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
-    unsigned int handle = fe_car->Handle;
-    if (handle == STRINGHASH_CE_ELISE) {
-        return GetIsCollectorsEdition();
-    }
-    if (handle < 0x2D642B9) {
-        if (handle != 0x9665) {
-            if (handle > 0x9665) {
-                if (handle == 0x136250) {
-                    return currentBin < 0xC;
+    } else if (fe_car->MatchesFilter(FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_BONUS)) {
+        switch (fe_car->Handle) {
+            case STRINGHASH_BL2:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 2) {
+                    return true;
                 }
-                if (handle < 0x136251) {
-                    if (handle == 0x13624E) {
-                        return currentBin < 10;
-                    }
-                    if (handle < 0x13624F) {
-                        if (handle == 0x9666) {
-                            return currentBin < 9;
-                        }
-                    } else {
-                        return currentBin < 0xB;
-                    }
-                } else if (handle == 0x136252) {
-                    return currentBin < 0xE;
-                } else if (handle < 0x136252) {
-                    return currentBin < 0xD;
-                } else if (handle == 0x136253) {
-                    return currentBin < 0xF;
+                break;
+            case STRINGHASH_BL3:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 3) {
+                    return true;
                 }
-                return false;
-            }
-            if (handle == 0x9661) {
-                return currentBin < 4;
-            }
-            if (handle > 0x9661) {
-                if (handle == 0x9663) {
-                    return currentBin < 6;
+                break;
+            case STRINGHASH_BL4:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 4) {
+                    return true;
                 }
-                if (handle < 0x9664) {
-                    return currentBin < 5;
+                break;
+            case STRINGHASH_BL5:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 5) {
+                    return true;
                 }
-                return currentBin < 7;
-            }
-            if (handle == 0x965F) {
-                return currentBin < 2;
-            }
-            if (handle != 0x9660 || currentBin > 2) {
-                return false;
-            }
-            return true;
-        }
-        return currentBin < 8;
-    }
-    if (handle == STRINGHASH_CE_GTRSTREET) {
-        return GetIsCollectorsEdition();
-    }
-    if (handle > STRINGHASH_CE_GTRSTREET) {
-        if (handle != STRINGHASH_CE_CORVETTE) {
-            if (handle < 0x634D1BD3) {
-                if (handle != STRINGHASH_CE_GT2) {
-                    if (handle < 0x54655134) {
-                        if (handle != STRINGHASH_CE_C6R) {
-                            return false;
-                        }
-                    } else if (handle != STRINGHASH_CE_CAMARO) {
-                        return false;
-                    }
+                break;
+            case STRINGHASH_BL6:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 6) {
+                    return true;
                 }
-            } else if (handle != STRINGHASH_CE_997S) {
-                if (handle < 0xE1075863) {
-                    if (handle != 0xCB6AAF2F) {
-                        return false;
-                    }
-                    return (FEDatabase->GetCareerSettings()->SpecialFlags & 0x8000) != 0;
+                break;
+            case STRINGHASH_BL7:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 7) {
+                    return true;
                 }
-                if (handle != STRINGHASH_CE_SL65) {
-                    return false;
+                break;
+            case STRINGHASH_BL8:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 8) {
+                    return true;
                 }
-            }
-        }
-        return GetIsCollectorsEdition();
-    }
-    if (handle == STRINGHASH_CE_SUPRA) {
-        return GetIsCollectorsEdition();
-    }
-    if (handle < 0x3D8A6D2) {
-        if (handle == 0x3A94520) {
+                break;
+            case STRINGHASH_BL9:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 9) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL10:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 10) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL11:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 11) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL12:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 12) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL13:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 13) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL14:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 14) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BL15:
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 15) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_E3_DEMO_BMW:
+            case STRINGHASH_BONUS_C6R:
 #ifndef EA_BUILD_A124
-            return FEDatabase->GetCareerSettings()->HasBeatenCareer();
+                if (FEDatabase->GetCareerSettings()->HasBeatenCareer()) {
+                    return true;
+                }
+                break;
+#else
+                break;
 #endif
+            case STRINGHASH_BONUS_SL65:
+                if (FEDatabase->GetCareerSettings()->HasBeatenSpecialChallengeEvent()) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_BONUS_GT2:
+                if (FEDatabase->GetCareerSettings()->HasBeatenChallengeSeries()) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_CASTROLGT:
+                if (FEDatabase->GetCareerSettings()->HasBeenAwardedCastrolGT()) {
+                    return true;
+                }
+                break;
+            case STRINGHASH_CE_ELISE:
+            case STRINGHASH_CE_SL500:
+            case STRINGHASH_CE_SUPRA:
+            case STRINGHASH_CE_GTRSTREET:
+            case STRINGHASH_CE_C6R:
+            case STRINGHASH_CE_GT2:
+            case STRINGHASH_CE_CAMARO:
+            case STRINGHASH_CE_CORVETTE:
+            case STRINGHASH_CE_997S:
+            case STRINGHASH_CE_SL65:
+                if (GetIsCollectorsEdition()) {
+                    return true;
+                }
+                break;
         }
-        if (handle != STRINGHASH_CE_SL500) {
-            return false;
-        }
-        return GetIsCollectorsEdition();
-    }
-    if (handle == 0x2CF385B2) {
-        return (FEDatabase->GetCareerSettings()->SpecialFlags & 1) != 0;
-    }
-    if (handle < 0x2CF385B3) {
-        if (handle != 0x2CF370F0) {
-            return false;
-        }
-#ifndef EA_BUILD_A124
-        return FEDatabase->GetCareerSettings()->HasBeatenCareer();
-#endif
-    }
-    if (handle != 0x34498EB2) {
         return false;
     }
-    return (FEDatabase->GetCareerSettings()->SpecialFlags & 0x40000) != 0;
+
+    return answer;
 }
 
 bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level, int player) {
@@ -347,7 +351,8 @@ bool CareerUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPa
     bool answer = false;
     answer = answer ? true : UnlockAllThings != 0;
     answer = static_cast<bool>(answer | (part->GetUpgradeLevel() == 0));
-    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom));
+    return static_cast<bool>(answer |
+                             CareerUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom));
 }
 
 bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
