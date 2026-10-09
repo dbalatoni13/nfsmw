@@ -35,7 +35,13 @@ class SpeedScript {
     SpeedScript(const char *filename, void (*error_function)(const char *));
     SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *));
 
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     ~SpeedScript();
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     void InitFromFile(const char *filename);
     void Error(const char *format, ...);
     char *GetPositionName();
