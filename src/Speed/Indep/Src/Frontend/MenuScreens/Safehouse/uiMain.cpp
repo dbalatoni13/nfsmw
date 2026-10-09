@@ -16,7 +16,7 @@
 
 const char *gOnlineMainMenu = "OL_MAIN.fng";
 
-extern int UnlockAllThings;
+extern bool UnlockAllThings;
 
 class MainQuickRace : public IconOption {
   public:
