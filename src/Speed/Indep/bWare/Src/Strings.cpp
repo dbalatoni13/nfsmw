@@ -249,11 +249,23 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
 }
 
 char *bStrChr(const char *s1, int c) {
+#if defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124))
+    if (s1 != nullptr) {
+        do {
+            if (static_cast<int>(static_cast<signed char>(*s1)) == c) {
+                goto found;
+            }
+        } while (*s1++ != '\0');
+    }
+    s1 = nullptr;
+found:
+    return const_cast<char *>(s1);
+#else
     if (s1 == nullptr) {
         return nullptr;
     }
 
-    // Retail stops at the terminator without treating '\0' as a match.
+    // These platform paths stop before testing the terminator for a match.
     while (*s1 != '\0') {
         if (static_cast<int>(static_cast<signed char>(*s1)) == c) {
             return const_cast<char *>(s1);
@@ -261,6 +273,7 @@ char *bStrChr(const char *s1, int c) {
         s1++;
     }
     return nullptr;
+#endif
 }
 
 char *bToUpper(char *s) {
