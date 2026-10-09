@@ -108,16 +108,24 @@ void SpeedScript::ResizeEntryTable(int new_size) {
 }
 
 SpeedScriptEntry *SpeedScript::AddEntry() {
-#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
+#if defined(EA_PLATFORM_WIN32)
     if (this->MaxEntries == this->NumEntries) {
 #else
     if (this->NumEntries == this->MaxEntries) {
 #endif
+#ifdef EA_PLATFORM_XENON
+        this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
+#else
         this->ResizeEntryTable((this->NumEntries * 4) / 3 + 1);
+#endif
     }
     SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries];
     this->NumEntries++;
+#ifdef EA_PLATFORM_XENON
+    memset(entry, 0, sizeof(SpeedScriptEntry));
+#else
     bMemSet(entry, 0, sizeof(SpeedScriptEntry));
+#endif
     return entry;
 }
 

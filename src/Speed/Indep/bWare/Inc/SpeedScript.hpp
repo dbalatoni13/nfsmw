@@ -40,6 +40,9 @@ class SpeedScript {
     void Error(const char *format, ...);
     char *GetPositionName();
     void ResizeEntryTable(int new_size);
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     SpeedScriptEntry *AddEntry();
     bool ParseNextWord(char *word, const char *buffer, int buffer_size, int *pbuffer_pos, int *pline_number);
     void Init(const char *name, const char *buffer, int buffer_size);
