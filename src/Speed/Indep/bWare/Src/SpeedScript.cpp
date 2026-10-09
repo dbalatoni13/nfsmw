@@ -9,12 +9,26 @@
 #include <stdarg.h>
 
 bool IsWhiteSpace(char c) {
+#if !defined(EA_PLATFORM_GAMECUBE)
     if (c != ' ') {
         if (c != '\n' && c != '\t' && c != '=' && c != ',') {
             return c == '\r';
         }
     }
     return true;
+#else
+    if (c == ' ')
+        return true;
+    else if (c == '\n')
+        return true;
+    else if (c == '\t')
+        return true;
+    else if (c == '=')
+        return true;
+    else if (c == ',')
+        return true;
+    return c == '\r';
+#endif
 }
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
@@ -94,7 +108,11 @@ void SpeedScript::ResizeEntryTable(int new_size) {
 }
 
 SpeedScriptEntry *SpeedScript::AddEntry() {
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (this->MaxEntries == this->NumEntries) {
+#else
+    if (this->NumEntries == this->MaxEntries) {
+#endif
         this->ResizeEntryTable((this->NumEntries * 4) / 3 + 1);
     }
     SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries];
@@ -104,6 +122,7 @@ SpeedScriptEntry *SpeedScript::AddEntry() {
 }
 
 bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size, int *pbuffer_pos, int *pline_number) {
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     int buffer_pos = *pbuffer_pos;
     bool currently_in_comment = false;
 
@@ -157,6 +176,60 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
     word[word_length] = '\0';
     *pbuffer_pos = buffer_pos;
     return true;
+#else
+    int buffer_pos = *pbuffer_pos;
+    bool currently_in_comment = false;
+
+    do {
+        char c = buffer_pos < buffer_size ? buffer[buffer_pos] : '\0';
+        if (c == '\r') {
+            buffer_pos++;
+            c = buffer_pos < buffer_size ? buffer[buffer_pos] : '\0';
+        }
+        if (c == '\0') {
+            *pbuffer_pos = buffer_pos;
+            return false;
+        }
+        if (c == '\n') {
+            currently_in_comment = false;
+            (*pline_number)++;
+        }
+        if (!currently_in_comment) {
+            if ((c == '/') && (buffer[buffer_pos + 1] == '/')) {
+                currently_in_comment = true;
+            } else if (!IsWhiteSpace(c)) {
+                break;
+            }
+        }
+        buffer_pos++;
+    } while (true);
+
+    bool is_in_quotes = false;
+    int word_length = 0;
+
+    for (; buffer_pos < buffer_size; buffer_pos++) {
+        char c = buffer[buffer_pos];
+        if ((c != '\0') && (is_in_quotes || !IsWhiteSpace(c))) {
+            if (c == '\"') {
+                if (is_in_quotes && (buffer[buffer_pos + 1] == '\"')) {
+                    word[word_length] = '\"';
+                    buffer_pos++;
+                    word_length++;
+                } else {
+                    is_in_quotes = !is_in_quotes;
+                }
+            } else {
+                word[word_length] = c;
+                word_length++;
+            }
+        } else {
+            break;
+        }
+    }
+    word[word_length] = '\0';
+    *pbuffer_pos = buffer_pos;
+    return true;
+#endif
 }
 
 void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
@@ -178,11 +251,15 @@ void SpeedScript::Init(const char *name, const char *buffer, int buffer_size) {
         char *word = &file->ArgBuf[arg_buf_pos];
         int len = bStrLen(word);
 
+#ifdef EA_PLATFORM_WIN32
         if (this->NumEntries == this->MaxEntries) {
             this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
         }
         SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
         bMemSet(entry, 0, sizeof(SpeedScriptEntry));
+#else
+        SpeedScriptEntry *entry = this->AddEntry();
+#endif
         entry->LineNumber = line_number;
         entry->ArgBufPos = arg_buf_pos;
         if (word[len - 1] == ':') {
@@ -218,11 +295,15 @@ void SpeedScript::HandleIncludeScript(const char *filename) {
         this->Error("Too many nested INCLUDESCRIPT commands at %s\n", this->GetPositionName());
     } else {
         for (int n = 0; n < script.NumEntries; n++) {
+#ifdef EA_PLATFORM_WIN32
             if (this->NumEntries == this->MaxEntries) {
                 this->ResizeEntryTable((this->MaxEntries * 4) / 3 + 1);
             }
             SpeedScriptEntry *entry = &this->EntryTable[this->NumEntries++];
             bMemSet(entry, 0, sizeof(SpeedScriptEntry));
+#else
+            SpeedScriptEntry *entry = this->AddEntry();
+#endif
             *entry = script.EntryTable[n];
             entry->FileNumber += this->NumFiles;
         }
@@ -277,11 +358,20 @@ char *SpeedScript::GetCommandArgument(const char *command) {
 }
 
 bool SpeedScript::IsAnotherArgument() {
+#ifdef EA_PLATFORM_WIN32
     SpeedScriptEntry *entry = this->GetNextEntry();
     if (entry != nullptr && !entry->IsCommand) {
         return 1;
     }
     return 0;
+#else
+    SpeedScriptEntry *entry = this->GetNextEntry();
+    bool isArg = false;
+    if (entry) {
+        isArg = !entry->IsCommand;
+    }
+    return isArg;
+#endif
 }
 
 char *SpeedScript::GetNextArgument() {

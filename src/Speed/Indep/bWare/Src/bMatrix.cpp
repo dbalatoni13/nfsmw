@@ -8,6 +8,7 @@ extern "C" bMatrix4 *__stdcall D3DXMatrixTranspose(bMatrix4 *dest, const bMatrix
 #endif
 
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_PLAYSTATION2)
     float a = src->v0.x;
     float b = src->v0.y;
     float c = src->v0.z;
@@ -39,6 +40,9 @@ void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
     dest->v3.y = -(dest->v0.y * j + dest->v1.y * k + dest->v2.y * l);
     dest->v3.z = -(dest->v0.z * j + dest->v1.z * k + dest->v2.z * l);
     dest->v3.w = 1.0f;
+#else
+    eInvertMatrix(dest, const_cast<bMatrix4 *>(src));
+#endif
 }
 
 // Semantic reconstruction of the scalar four-by-four determinant. The
@@ -68,6 +72,7 @@ float fDeterminant(bMatrix4 *m) {
 }
 
 void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
+#ifdef EA_PLATFORM_WIN32
     float scale = 1.0f / fDeterminant(s);
 
     d->v0.x = (s->v1.y * s->v3.w * s->v2.z +
@@ -91,11 +96,64 @@ void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
     d->v3.y = scale * (((((s->v2.z * (s->v0.y * s->v3.x) - s->v0.z * (s->v2.y * s->v3.x)) + s->v0.z * (s->v3.y * s->v2.x)) - s->v2.z * (s->v0.x * s->v3.y)) - s->v0.y * (s->v3.z * s->v2.x)) + s->v0.x * (s->v3.z * s->v2.y));
     d->v3.z = scale * (((((s->v0.z * (s->v3.x * s->v1.y) - s->v1.z * (s->v0.y * s->v3.x)) - s->v0.z * (s->v3.y * s->v1.x)) + s->v1.z * (s->v0.x * s->v3.y)) + s->v0.y * (s->v3.z * s->v1.x)) - s->v0.x * (s->v3.z * s->v1.y));
     d->v3.w = scale * (((((s->v1.z * (s->v0.y * s->v2.x) - s->v0.z * (s->v2.x * s->v1.y)) + s->v0.z * (s->v2.y * s->v1.x)) - s->v1.z * (s->v0.x * s->v2.y)) - s->v2.z * (s->v0.y * s->v1.x)) + s->v2.z * (s->v0.x * s->v1.y));
+#else
+    float scale = 1.0f / fDeterminant(s);
+
+    d->v0.x = scale * (((((s->v1.z * s->v2.w * s->v3.y - s->v1.w * s->v2.z * s->v3.y) + s->v1.w * s->v2.y * s->v3.z) - s->v1.y * s->v2.w * s->v3.z) -
+                        s->v1.z * s->v2.y * s->v3.w) +
+                       s->v1.y * s->v2.z * s->v3.w);
+    d->v0.y = scale * ((((s->v0.w * s->v2.z * s->v3.y - s->v0.z * s->v2.w * s->v3.y) - s->v0.w * s->v2.y * s->v3.z) + s->v0.y * s->v2.w * s->v3.z +
+                        s->v0.z * s->v2.y * s->v3.w) -
+                       s->v0.y * s->v2.z * s->v3.w);
+    d->v0.z = scale * (((((s->v0.z * s->v1.w * s->v3.y - s->v0.w * s->v1.z * s->v3.y) + s->v0.w * s->v1.y * s->v3.z) - s->v0.y * s->v1.w * s->v3.z) -
+                        s->v0.z * s->v1.y * s->v3.w) +
+                       s->v0.y * s->v1.z * s->v3.w);
+    d->v0.w = scale * ((((s->v0.w * s->v1.z * s->v2.y - s->v0.z * s->v1.w * s->v2.y) - s->v0.w * s->v1.y * s->v2.z) + s->v0.y * s->v1.w * s->v2.z +
+                        s->v0.z * s->v1.y * s->v2.w) -
+                       s->v0.y * s->v1.z * s->v2.w);
+    d->v1.x = scale * ((((s->v1.w * s->v2.z * s->v3.x - s->v1.z * s->v2.w * s->v3.x) - s->v1.w * s->v2.x * s->v3.z) + s->v1.x * s->v2.w * s->v3.z +
+                        s->v1.z * s->v2.x * s->v3.w) -
+                       s->v1.x * s->v2.z * s->v3.w);
+    d->v1.y = scale * (((((s->v0.z * s->v2.w * s->v3.x - s->v0.w * s->v2.z * s->v3.x) + s->v0.w * s->v2.x * s->v3.z) - s->v0.x * s->v2.w * s->v3.z) -
+                        s->v0.z * s->v2.x * s->v3.w) +
+                       s->v0.x * s->v2.z * s->v3.w);
+    d->v1.z = scale * ((((s->v0.w * s->v1.z * s->v3.x - s->v0.z * s->v1.w * s->v3.x) - s->v0.w * s->v1.x * s->v3.z) + s->v0.x * s->v1.w * s->v3.z +
+                        s->v0.z * s->v1.x * s->v3.w) -
+                       s->v0.x * s->v1.z * s->v3.w);
+    d->v1.w = scale * (((((s->v0.z * s->v1.w * s->v2.x - s->v0.w * s->v1.z * s->v2.x) + s->v0.w * s->v1.x * s->v2.z) - s->v0.x * s->v1.w * s->v2.z) -
+                        s->v0.z * s->v1.x * s->v2.w) +
+                       s->v0.x * s->v1.z * s->v2.w);
+    d->v2.x = scale * (((((s->v1.y * s->v2.w * s->v3.x - s->v1.w * s->v2.y * s->v3.x) + s->v1.w * s->v2.x * s->v3.y) - s->v1.x * s->v2.w * s->v3.y) -
+                        s->v1.y * s->v2.x * s->v3.w) +
+                       s->v1.x * s->v2.y * s->v3.w);
+    d->v2.y = scale * ((((s->v0.w * s->v2.y * s->v3.x - s->v0.y * s->v2.w * s->v3.x) - s->v0.w * s->v2.x * s->v3.y) + s->v0.x * s->v2.w * s->v3.y +
+                        s->v0.y * s->v2.x * s->v3.w) -
+                       s->v0.x * s->v2.y * s->v3.w);
+    d->v2.z = scale * (((((s->v0.y * s->v1.w * s->v3.x - s->v0.w * s->v1.y * s->v3.x) + s->v0.w * s->v1.x * s->v3.y) - s->v0.x * s->v1.w * s->v3.y) -
+                        s->v0.y * s->v1.x * s->v3.w) +
+                       s->v0.x * s->v1.y * s->v3.w);
+    d->v2.w = scale * ((((s->v0.w * s->v1.y * s->v2.x - s->v0.y * s->v1.w * s->v2.x) - s->v0.w * s->v1.x * s->v2.y) + s->v0.x * s->v1.w * s->v2.y +
+                        s->v0.y * s->v1.x * s->v2.w) -
+                       s->v0.x * s->v1.y * s->v2.w);
+    d->v3.x = scale * ((((s->v1.z * s->v2.y * s->v3.x - s->v1.y * s->v2.z * s->v3.x) - s->v1.z * s->v2.x * s->v3.y) + s->v1.x * s->v2.z * s->v3.y +
+                        s->v1.y * s->v2.x * s->v3.z) -
+                       s->v1.x * s->v2.y * s->v3.z);
+    d->v3.y = scale * (((((s->v0.y * s->v2.z * s->v3.x - s->v0.z * s->v2.y * s->v3.x) + s->v0.z * s->v2.x * s->v3.y) - s->v0.x * s->v2.z * s->v3.y) -
+                        s->v0.y * s->v2.x * s->v3.z) +
+                       s->v0.x * s->v2.y * s->v3.z);
+    d->v3.z = scale * ((((s->v0.z * s->v1.y * s->v3.x - s->v0.y * s->v1.z * s->v3.x) - s->v0.z * s->v1.x * s->v3.y) + s->v0.x * s->v1.z * s->v3.y +
+                        s->v0.y * s->v1.x * s->v3.z) -
+                       s->v0.x * s->v1.y * s->v3.z);
+    d->v3.w = scale * (((((s->v0.y * s->v1.z * s->v2.x - s->v0.z * s->v1.y * s->v2.x) + s->v0.z * s->v1.x * s->v2.y) - s->v0.x * s->v1.z * s->v2.y) -
+                        s->v0.y * s->v1.x * s->v2.z) +
+                       s->v0.x * s->v1.y * s->v2.z);
+#endif
 }
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
+#ifdef EA_PLATFORM_WIN32
     // These matrices are completely populated before they are read.  The retail
-    // function reserves five aligned matrices and does not run bMatrix4's identity
+    // PC function reserves five aligned matrices and does not run the identity
     // constructor for them.
     struct ATTRIBUTE_ALIGN(16) RawMatrix4 {
         bVector4 v0;
@@ -114,6 +172,14 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     bMatrix4 &Mf = *reinterpret_cast<bMatrix4 *>(&raw_Mf);
     bMatrix4 &iMf = *reinterpret_cast<bMatrix4 *>(&raw_iMf);
     bMatrix4 &Nf = *reinterpret_cast<bMatrix4 *>(&raw_Nf);
+#else
+    bMatrix4 U;
+    bMatrix4 iU;
+    bMatrix4 Mf;
+    bMatrix4 iMf;
+    bMatrix4 K;
+    bMatrix4 Nf;
+#endif
 
     Mf.v0.x = 2.0f;
     Mf.v0.y = -2.0f;
@@ -167,8 +233,13 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     U.v3.w = 1.0f;
 
     fInvertMatrix(&iU, &U);
+#ifdef EA_PLATFORM_WIN32
     eMulMatrix(&U, &iMf, &iU);
     eMulMatrix(&Nf, &Mf, &U);
+#else
+    eMulMatrix(&K, &iMf, &iU);
+    eMulMatrix(&Nf, &Mf, &K);
+#endif
     eMulMatrix(b, &Nf, p);
 }
 
@@ -191,7 +262,7 @@ void bMulMatrix(bVector4 *dest, const bMatrix4 *m, const bVector4 *v) {
 }
 
 void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
-    eMulVector(reinterpret_cast<bVector4 *>(dest), m, reinterpret_cast<const bVector4 *>(v));
+    eMulVector(dest, m, v);
 }
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
@@ -199,6 +270,32 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
 #elif defined(EA_PLATFORM_WIN32)
     D3DXMatrixTranspose(dest, m);
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    // EE packed-word interleaves transpose all four rows before writing any
+    // output, so the operation also supports dest == m.
+    u_long128 row0, row1, row2, row3, upper, lower;
+    bMatrix4 *result;
+    asm volatile("lq %0, 0(%7)\n"
+                 "lq %1, 16(%7)\n"
+                 "lq %3, 48(%7)\n"
+                 "lq %2, 32(%7)\n"
+                 "pextuw %4, %1, %0\n"
+                 "pextlw %5, %3, %2\n"
+                 "pextlw %1, %1, %0\n"
+                 "pextuw %3, %3, %2\n"
+                 "pcpyld %0, %5, %1\n"
+                 "pcpyld %2, %3, %4\n"
+                 "sq %0, 0(%8)\n"
+                 "pcpyud %1, %1, %5\n"
+                 "sq %1, 16(%8)\n"
+                 "pcpyud %3, %4, %3\n"
+                 "sq %2, 32(%8)\n"
+                 "daddu %6, %8, $0\n"
+                 "sq %3, 48(%8)\n"
+                 : "=&r"(row0), "=&r"(row1), "=&r"(row2), "=&r"(row3), "=&r"(upper), "=&r"(lower), "=&r"(result)
+                 : "r"(m), "r"(dest)
+                 : "memory");
+    return result;
 #else
     float transposed[4][4];
     for (int row = 0; row < 4; ++row) {

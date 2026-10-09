@@ -52,6 +52,7 @@ char *bStrCpy(char *to, const char *from) {
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
+#ifdef EA_PLATFORM_WIN32
     if (m == 0) {
         return to;
     }
@@ -66,6 +67,20 @@ char *bStrNCpy(char *to, const char *from, int m) {
         ++n;
     } while (m != 0);
     return to;
+#else
+    int n = 0;
+    if (m-- != 0) {
+        to[0] = from[0];
+        while (to[n] != '\0') {
+            n++;
+            if (m-- == 0) {
+                return to;
+            }
+            to[n] = from[n];
+        }
+    }
+    return to;
+#endif
 }
 
 char *bSafeStrCpy(char *to, const char *from, int max_size) {
@@ -390,6 +405,7 @@ uint16 *bStrCpy(uint16 *to, const uint16 *from) {
 }
 
 uint16 *bStrCpy(uint16 *to, const char *from) {
+#ifdef EA_PLATFORM_WIN32
     to[0] = from[0];
     if (to[0] != 0) {
         uint16 *dest = to;
@@ -400,6 +416,16 @@ uint16 *bStrCpy(uint16 *to, const char *from) {
         } while (*dest != 0);
     }
     return to;
+#else
+    int n = 0;
+
+    to[0] = from[0];
+    while (to[n] != 0) {
+        n++;
+        to[n] = from[n];
+    }
+    return to;
+#endif
 }
 
 uint16 *bStrNCpy(uint16 *to, const uint16 *from, int m) {
@@ -417,6 +443,7 @@ uint16 *bStrNCpy(uint16 *to, const uint16 *from, int m) {
 }
 
 uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
+#ifdef EA_PLATFORM_WIN32
     int n = 0;
     while (m != 0) {
         uint16 c = from[n];
@@ -428,6 +455,20 @@ uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
         n++;
     }
     return to;
+#else
+    int n = 0;
+    if (m-- != 0) {
+        to[0] = from[0];
+        while (to[n] != '\0') {
+            n++;
+            if (m-- == 0) {
+                return to;
+            }
+            to[n] = from[n];
+        }
+    }
+    return to;
+#endif
 }
 
 int bStrCmp(uint16 *s1, uint16 *s2) {

@@ -13,6 +13,7 @@
 #include <dolphin.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
+extern "C" int snIsDebuggerRunning();
 #elif defined(EA_PLATFORM_WIN32)
 extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
 #endif
@@ -166,11 +167,14 @@ int bCheckForNewFiles(float seconds) {
 }
 
 bool bIsDebuggerConnected() {
+#ifdef EA_PLATFORM_PLAYSTATION2
     if (bIsCodeineConnected()) {
-        // TODO: from sn debug.c
-        // return snIsDebuggerRunning();
+        return true;
     }
+    return snIsDebuggerRunning() != 0;
+#else
     return false;
+#endif
 }
 
 static int GetCodeineString(char *string, int max_chars, int bfunk_num) {
@@ -284,8 +288,12 @@ unsigned int bGetTicker() {
 
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 #ifdef EA_PLATFORM_GAMECUBE
-    unsigned int ticks = end_ticks - start_ticks;
-    return OSTicksToMicroseconds(ticks) * 0.001f;
+    if (start_ticks < end_ticks) {
+        start_ticks = end_ticks - start_ticks;
+    } else {
+        start_ticks = end_ticks - start_ticks;
+    }
+    return OSTicksToMicroseconds(start_ticks) * 0.001f;
 #elif defined(EA_PLATFORM_WIN32)
     if (_ticker_msperfreq == 0.0f) {
         bInitTicker(60000.0f);

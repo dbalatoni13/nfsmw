@@ -67,12 +67,12 @@ void bFunkPacketHeader::InitReturnPacketHeader(const bFunkPacketHeader *sync_pac
 }
 
 void bFunkCallASync(const char *server_name, int function_num, const void *data, int size) {
+    bFunkPacketHeader header;
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
     if (!bIsCodeineConnected() || size > static_cast<int>(sizeof(((bFunkPacket *)0)->Data))) {
         return;
     }
 
-    bFunkPacketHeader header;
     bMemSet(&header, 0, sizeof(header));
     header.SetDataSize(size);
     header.Type = 0;
@@ -84,6 +84,8 @@ void bFunkCallASync(const char *server_name, int function_num, const void *data,
 }
 
 int bFunkCallSync(const char *server_name, int function_num, const void *data, int size, void *return_data, int max_return_size) {
+    volatile int return_code;
+    bFunkPacketHeader header;
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
     if (!bIsCodeineConnected()) {
         return -5;
@@ -93,8 +95,6 @@ int bFunkCallSync(const char *server_name, int function_num, const void *data, i
         return -6;
     }
 
-    volatile int return_code;
-    bFunkPacketHeader header;
     return_code = -10;
     bMemSet(&header, 0, sizeof(header));
     header.SetDataSize(size);

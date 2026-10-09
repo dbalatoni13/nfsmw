@@ -431,7 +431,7 @@ static inline float bDistBetween(const bVector2 &v1, const bVector2 &v2) {
 }
 
 // total size: 0x10
-struct ATTRIBUTE_ALIGN(16) bVector3 {
+struct ALIGN_16 bVector3 {
     float x;   // offset 0x0, size 0x4
     float y;   // offset 0x4, size 0x4
     float z;   // offset 0x8, size 0x4
@@ -1115,6 +1115,7 @@ struct bMatrix4 {
     bVector4 v3; // offset 0x30, size 0x10
 
     bMatrix4() {
+#ifdef EA_PLATFORM_WIN32
         // The retail PC constructor is the matrix identity constructor
         // (0x4450c0), rather than a zero-initialising default constructor.
         v0.x = 1.0f;
@@ -1133,6 +1134,7 @@ struct bMatrix4 {
         v3.y = 0.0f;
         v3.z = 0.0f;
         v3.w = 1.0f;
+#endif
     }
 
     bMatrix4(const bMatrix4 &m);

@@ -69,6 +69,7 @@ SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_
     SlotPool *slot_pool =
         reinterpret_cast<SlotPool *>(bMalloc(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), debug_name, 0, memory_pool));
     if (slot_pool) {
+#ifdef EA_PLATFORM_WIN32
         slot_pool->NumSlots = num_slots;
         slot_pool->SlotSize = slot_size;
         slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY |
@@ -77,7 +78,19 @@ SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_
         slot_pool->NextSlotPool = nullptr;
         slot_pool->MemoryPool = memory_pool;
         slot_pool->DebugName = debug_name;
+#else
+        slot_pool->SlotSize = slot_size;
+        slot_pool->MemoryPool = memory_pool;
+        slot_pool->DebugName = debug_name;
+        slot_pool->NumSlots = num_slots;
+#endif
         slot_pool->TotalNumSlots = num_slots;
+#ifndef EA_PLATFORM_WIN32
+        slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_WARN_IF_OVERFLOW |
+                                                      SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY | SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+        slot_pool->FreeSlots = nullptr;
+        slot_pool->NextSlotPool = nullptr;
+#endif
         slot_pool->NumAllocatedSlots = 0;
         slot_pool->MostNumAllocatedSlots = 0;
         slot_pool->FlushSlotPool();
@@ -95,10 +108,17 @@ void SlotPool::FlushSlotPool() {
     SlotPool *slot_pool = this;
     while (slot_pool) {
         int slot_size = slot_pool->SlotSize;
+#ifdef EA_PLATFORM_WIN32
         int num_slots = slot_pool->NumSlots;
         slot_pool->FreeSlots = nullptr;
         if (num_slots != 0) {
             --num_slots;
+#else
+        int num_slots;
+        slot_pool->FreeSlots = nullptr;
+        if (slot_pool->NumSlots != 0) {
+            num_slots = slot_pool->NumSlots - 1;
+#endif
             SlotPoolEntry *slot = slot_pool->Slots;
             slot_pool->FreeSlots = slot;
             for (int n = 0; n < num_slots; n++) {

@@ -56,6 +56,11 @@ class bSharedStringPool {
     }
 
     const char *GetString(int index) {
+#ifdef MILESTONE_BUILD
+        if (index == -1) {
+            return nullptr;
+        }
+#endif
         return this->GetSharedString(index)->String;
     }
 
@@ -91,6 +96,7 @@ int bStrNICmp(const char *s1, const char *s2, int n);
 int bStrICmp(const char *s1, const char *s2);
 const char *bAllocateSharedString(const char *s);
 void bFreeSharedString(const char *s);
+short bGetSharedStringIndex(const char *s);
 const char *bGetSharedString(int index);
 uint32 bStringHashUpper(const char *text);
 uint32 bStringHash(const char *text);

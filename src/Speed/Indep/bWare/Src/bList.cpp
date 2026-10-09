@@ -198,7 +198,11 @@ int bPListWantToClose = false;
 
 void bPListInit(int num_expected_bpnodes) {
     if (!bPNodeSlotPool) {
+#ifdef EA_PLATFORM_GAMECUBE
+        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", GetVirtualMemoryAllocParams());
+#else
         bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", 0);
+#endif
         bPListWantToClose = false;
     }
 }
