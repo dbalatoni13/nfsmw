@@ -122,8 +122,8 @@ bool QuickRaceUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, Ca
     answer |= UnlockAllThings;
     answer |= (part->GetUpgradeLevel() == 0);
     // backroom is passed as the player argument, as in the original (also in the calls below)
-    return static_cast<bool>(
-        answer | QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0));
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0);
+    return answer;
 }
 
 bool QuickRaceUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
@@ -293,20 +293,20 @@ bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEn
 }
 
 bool OnlineUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, bool backroom) {
-    bool answer;
-    answer = QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, backroom, 0) != false;
+    bool answer = false;
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, backroom, 0);
     return answer;
 }
 
 bool OnlineUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
-    bool answer;
-    answer = QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom, 0) != false;
+    bool answer = false;
+    answer |= QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom, 0);
     return answer;
 }
 
 bool OnlineUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
-    bool answer;
-    answer = QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom, 0) != false;
+    bool answer = false;
+    answer |= QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom, 0);
     return answer;
 }
 
@@ -350,20 +350,22 @@ bool CareerUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPa
     bool answer = false;
     answer |= UnlockAllThings;
     answer |= (part->GetUpgradeLevel() == 0);
-    return static_cast<bool>(answer |
-                             CareerUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom));
+    answer |= CareerUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom);
+    return answer;
 }
 
 bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
     bool answer = false;
     answer |= UnlockAllThings;
-    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom));
+    answer |= CareerUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom);
+    return answer;
 }
 
 bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
     bool answer = false;
     answer |= UnlockAllThings;
-    return static_cast<bool>(answer | GRaceDatabase::Get().IsCareerRaceUnlocked(event_hash));
+    answer |= GRaceDatabase::Get().IsCareerRaceUnlocked(event_hash);
+    return answer;
 }
 
 bool CareerUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
@@ -487,7 +489,8 @@ bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntit
         default:
             return false;
     }
-    return static_cast<bool>(answer) | static_cast<bool>(TheFEMarkerManager.IsMarkerAvailable(marker, 0));
+    answer |= TheFEMarkerManager.IsMarkerAvailable(marker, 0);
+    return answer;
 }
 
 bool UnlockSystem::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity thing, int level, int player, bool backroom) {
@@ -1030,35 +1033,30 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
     if (marker != MARKER_NONE) {
         int param = 0;
         if (immediate_reward) {
-            if (marker == MARKER_PINK_SLIP) {
-                goto award_pink_slip;
-            }
-            if (marker != MARKER_CASH) {
-                goto add_inventory;
-            }
-            param = static_cast<int>(inst.CashReward());
-            FEDatabase->GetCareerSettings()->AwardCash(param);
-            goto award_done;
-
-        award_pink_slip:
-            param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
-            {
-                FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
-                stable->AwardRivalCar(param);
-            }
-            goto award_done;
-
-        add_inventory:
-            AddMarkerToInventory(marker, 0);
-
-        award_done:;
-        } else {
-            if (marker != MARKER_PINK_SLIP) {
-                if (marker == MARKER_CASH) {
+            switch (marker) {
+                case MARKER_CASH:
                     param = static_cast<int>(inst.CashReward());
-                }
-            } else {
-                param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+                    FEDatabase->GetCareerSettings()->AwardCash(param);
+                    break;
+                case MARKER_PINK_SLIP:
+                    param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+                    {
+                        FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+                        stable->AwardRivalCar(param);
+                    }
+                    break;
+                default:
+                    AddMarkerToInventory(marker, 0);
+                    break;
+            }
+        } else {
+            switch (marker) {
+                case MARKER_CASH:
+                    param = static_cast<int>(inst.CashReward());
+                    break;
+                case MARKER_PINK_SLIP:
+                    param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+                    break;
             }
             AddMarkerForLaterSelection(marker, param);
         }

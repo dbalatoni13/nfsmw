@@ -87793,7 +87793,7 @@
     {"addr": "0x926114", "name": "dword_926114", "public": true, "weak": false, "is_func": false, "size": "0x4"},
     {"addr": "0x926118", "name": "UseRecordable", "public": true, "weak": false, "is_func": false, "size": "0x4"},
     {"addr": "0x926120", "name": "DisableCommunication", "public": true, "weak": false, "is_func": false, "size": "0x4"},
-    {"addr": "0x926124", "name": "?UnlockAllThings@@3HA", "public": true, "weak": false, "is_func": false, "size": "0x1"},
+    {"addr": "0x926124", "name": "?UnlockAllThings@@3_NA", "public": true, "weak": false, "is_func": false, "size": "0x1"},
     {"addr": "0x926125", "name": "?SkipCareerIntro@@3HA", "public": true, "weak": false, "is_func": false, "size": "0x1"},
     {"addr": "0x926126", "name": "?SkipDDayRaces@@3HA", "public": true, "weak": false, "is_func": false, "size": "0x1"},
     {"addr": "0x926127", "name": "?ShowAllCarsInFE@@3_NA", "public": true, "weak": false, "is_func": false, "size": "0x1"},
