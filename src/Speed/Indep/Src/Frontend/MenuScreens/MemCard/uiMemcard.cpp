@@ -151,7 +151,7 @@ void UIMemcardMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
             goto hide_loader;
         case 0xfe202e3b:
-            DoSaveFlow(4);
+            DoSaveFlow(MCSF_PromptForSave);
             break;
         case 0x461a18ee:
             if (MemoryCard::GetInstance()->InBootSequence()) {
@@ -175,17 +175,17 @@ void UIMemcardMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 
         case 0x8867412d:
         case 0xdc12af2e:
             PopChild();
-            if ((gMemcardSetup.mOp & 0x800) != 0 && FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
+            if ((gMemcardSetup.mOp & MCE_ProfileOnly) != 0 && FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
                 cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
                 goto hide_loader;
             }
             if (FEDatabase->IsCareerManagerMode() && FEDatabase->bProfileLoaded && FEDatabase->GetGameplaySettings()->AutoSaveOn &&
-                (gMemcardSetup.GetCommand()) != 0x10 && msg != 0xdc12af2e) {
+                (gMemcardSetup.GetCommand()) != MCO_LoadList && msg != 0xdc12af2e) {
                 MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
             } else {
-                if ((gMemcardSetup.GetCommand()) == 0x60 && msg == 0xdc12af2e) {
+                if ((gMemcardSetup.GetCommand()) == MCO_CreateNew && msg == 0xdc12af2e) {
                     FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
-                    ShowOK(0xb04da4ad, 0x7000000);
+                    ShowOK(0xb04da4ad, MCP_OK);
                 } else {
                     MemcardExit(msg);
                 }

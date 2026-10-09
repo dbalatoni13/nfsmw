@@ -273,6 +273,10 @@ class TrackStreamer {
     }
     bool AreAllSectionsActivated();
 
+    float GetLoadingBacklog() {
+        return this->LoadingBacklog;
+    }
+
     void RefreshLoading();
 
     void SetLoadingCallback(void (*callback)(intptr_t), intptr_t param);

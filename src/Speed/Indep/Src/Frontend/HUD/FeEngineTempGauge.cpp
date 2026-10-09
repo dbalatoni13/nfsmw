@@ -61,9 +61,8 @@ void EngineTempGauge::Update(IPlayer *player) {
 }
 
 void EngineTempGauge::SetEngineTemp(float temp) {
-    if (mEngineTemp == temp) {
-        return;
+    if (mEngineTemp != temp) {
+        mEngineTempChanged = true;
+        mEngineTemp = temp;
     }
-    mEngineTemp = temp;
-    mEngineTempChanged = true;
 }

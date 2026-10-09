@@ -79,7 +79,7 @@ void InGameAnyMovieScreen::LaunchMovie(const char *filename) {
 
 void InGameAnyMovieScreen::DismissMovie() {
     gInGameMoviePlaying = false;
-    MNotifyMovieFinished().Post(0x20d60dbf);
+    MNotifyMovieFinished().Post(UCRC32_Gameplay);
     cFEng::Get()->QueuePackagePop(0);
     new EFadeScreenOn(false);
 }

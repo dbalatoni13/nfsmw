@@ -75,7 +75,6 @@ class FERenderObject : public bTNode<FERenderObject> {
     void Render(); // Decl: 166
 
     void ReadyToRender() { // Decl: 168
-        mulNumTimesRendered++;
         mulFlags |= 2;
     }
     bool IsReadyToRender() { // Decl: 169

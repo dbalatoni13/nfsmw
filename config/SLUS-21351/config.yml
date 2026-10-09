@@ -9,6 +9,7 @@ options:
   target_path: orig/SLUS-21351/SLUS_213.51
   elf_path: build/SLUS-21351/SLUS_213.51
   base_path: ../..
+  cache_path: build/SLUS-21351/.splache
   platform: ps2
   compiler: EEGCC
 

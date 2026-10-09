@@ -32,7 +32,7 @@ inline void *operator new[](size_t size, const char *file, int line, DummyFEngNe
     return FEngMalloc(size, file, line);
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 #define FNEW new (__FILE__, __LINE__, (DummyFEngNewType *)NULL) // :88
 #else
 #define FNEW new (0, 0, (DummyFEngNewType *)NULL)

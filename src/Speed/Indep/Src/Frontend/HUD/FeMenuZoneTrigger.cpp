@@ -52,8 +52,8 @@ bool MenuZoneTrigger::IsPlayerInsideTrigger() {
 }
 
 void MenuZoneTrigger::EnterTrigger(GRuntimeInstance *pRaceActivity) {
-    mpRaceActivity = pRaceActivity;
     mbInsideTrigger = true;
+    mpRaceActivity = pRaceActivity;
     PulseDPadButton(ENGAGE_DPAD_ELEMENT_UP, mEventIcon);
     GActivity *activity = static_cast<GActivity *>(mpRaceActivity);
     GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromActivity(activity);
@@ -61,8 +61,8 @@ void MenuZoneTrigger::EnterTrigger(GRuntimeInstance *pRaceActivity) {
 }
 
 void MenuZoneTrigger::EnterTrigger(const char *zoneType) {
-    mZoneType = zoneType;
     mbInsideTrigger = true;
+    mZoneType = zoneType;
     PulseDPadButton(ENGAGE_DPAD_ELEMENT_UP, mEventIcon);
     FEngSetTextureHash(mEventIcon, FEDatabase->GetSafehouseIconHash(zoneType));
 }
@@ -87,7 +87,7 @@ void MenuZoneTrigger::RequestEventInfoDialog(int port) {
 
 void MenuZoneTrigger::RequestZoneInfoDialog(int port) {
     if (bStrCmp(mZoneType, "safehouse") == 0 || bStrCmp(mZoneType, "carlot") == 0 || bStrCmp(mZoneType, "customshop") == 0) {
-        MEnterSafeHouse(mZoneType).Post(0x20D60DBF);
+        MEnterSafeHouse(mZoneType).Post(UCRC32_Gameplay);
     }
 }
 

@@ -66,8 +66,8 @@ void CARSFX_Turbo::AttachController(SFXCTL *psfxctl) {
 
 void CARSFX_Turbo::SetupSFX(CSTATE_Base *_StateBase) {
     this->SndBase::SetupSFX(_StateBase);
-    this->eTurboState = SFXTURBO_NONE;
     this->m_pTurboData = &this->m_pEAXCar->GetTurboInfo();
+    this->eTurboState = SFXTURBO_NONE;
 }
 
 void CARSFX_Turbo::InitSFX() {

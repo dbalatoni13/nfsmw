@@ -309,8 +309,8 @@ void HudResourceManager::ChooseLoadableTextures(ePlayerHudType hudType, int &tex
 void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pkg_name) {
     mPhase = 0;
     const char *hud_tex_file = GetHudTexPackFilename(ht);
-    int allocation_params = 0x2000;
     eWaitUntilRenderingDone();
+    int allocation_params = 0x2000;
     if (ht == PHT_DRAG) {
         allocation_params = 0x2047;
         TheTrackStreamer.MakeSpaceInPool(bFileSize(hud_tex_file), true);
@@ -325,6 +325,7 @@ void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pk
 
 void HudResourceManager::LoadingCompleteCallback() {
     mPhase++;
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     if (mPhase == 1) {
         char minimap_texture_name[64];
         char texture_name[32];
@@ -359,6 +360,7 @@ void HudResourceManager::LoadingCompleteCallback() {
     } else if (mPhase == 3) {
         TheHudResourceManager.mHudResourcesState = HRM_LOADED;
         cFEng::Get()->MakeLoadedPackagesDirty();
+
         SetSoundControlState(false, SNDSTATE_STOP_MUSIC, "HUDLoaded");
     }
 }

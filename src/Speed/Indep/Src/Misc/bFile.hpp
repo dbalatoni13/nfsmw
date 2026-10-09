@@ -1,24 +1,38 @@
-#ifndef MISC_BFILE_H
-#define MISC_BFILE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+#ifndef BFILE_HPP
+#define BFILE_HPP // Decl: 6
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "Speed/Indep/bWare/Inc/Strings.hpp"
-#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
 
-extern SlotPool *bFileSlotPool;
-
+// Decl: 14
 enum bFileOpenMode {
-    BOPEN_MODE_APPEND = 2,
-    BOPEN_MODE_WRITE = 6,
     BOPEN_MODE_READONLY = 1,
+    BOPEN_MODE_WRITE = 6,
+    BOPEN_MODE_APPEND = 2,
+};
+
+#define BOPEN_FLAG_READONLY (0x01)     // Decl: 22
+#define BOPEN_FLAG_WRITE (0x02 + 0x04) // Decl: 23
+#define BOPEN_FLAG_APPEND (0x02)       // Decl: 24
+
+#define MAX_DISCULATOR_GIANT_FILES 30 // Decl: 76
+
+// total size: 0x18
+// Decl: 81
+struct bFileDirectoryEntry {
+    uint32 Hash;             // offset 0x0, size 0x4
+    int32 FileNumber;        // offset 0x4, size 0x4
+    int32 LocalSectorOffset; // offset 0x8, size 0x4
+    int32 TotalSectorOffset; // offset 0xC, size 0x4
+    int32 Size;              // offset 0x10, size 0x4
+    uint32 Checksum;         // offset 0x14, size 0x4
 };
 
 // total size: 0x14
+// Decl: 105
 struct MemoryFileEntry {
     uint32 Hash;      // offset 0x0, size 0x4
     int32 Offset;     // offset 0x4, size 0x4
@@ -27,7 +41,10 @@ struct MemoryFileEntry {
     uint8 *Data;      // offset 0x10, size 0x4
 };
 
+#define MEMORY_FILE_MAGIC 0x53219999 // Decl: 114
+
 // total size: 0x28010
+// Decl: 118
 class MemoryFile : public bTNode<MemoryFile> {
   public:
     uint32 Magic;                      // offset 0x8, size 0x4
@@ -57,7 +74,6 @@ MemoryFileEntry *FindMemoryFileEntry(const char *filename);
 void AsyncCloseFileCallback(int fop, int status, void *userdata);
 void AsyncCloseFile(int file_handle);
 
-void ServiceFileStats();
 bool bIsMainThread();
 void bThreadYield(int a);
 void bSyncTaskRun();
@@ -68,27 +84,6 @@ void bWrite(bFile *f, const void *buf, int num_bytes);
 bool bIsAsyncDone(bFile *f);
 void bWaitUntilAsyncDone(bFile *f);
 void bInitFileSystem();
-
-// total size: 0x18
-struct bFileDirectoryEntry {
-    uint32 Hash;             // offset 0x0, size 0x4
-    int32 FileNumber;        // offset 0x4, size 0x4
-    int32 LocalSectorOffset; // offset 0x8, size 0x4
-    int32 TotalSectorOffset; // offset 0xC, size 0x4
-    int32 Size;              // offset 0x10, size 0x4
-    uint32 Checksum;         // offset 0x14, size 0x4
-};
-
-extern SlotPool *OpenDisculatorFileSlotPool;
-
-class FileStats {
-  public:
-    void AddStatEntry(const char *filename, int seek_sector, int read_size, void *read_buf) {
-        // TODO based on Undercover
-    }
-
-    void CaptureTimings() {}
-};
 
 bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
 

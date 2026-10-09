@@ -108,18 +108,18 @@ bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisio
 }
 
 static void CalcCollisionFaceNormal(UMath::Vector3 *norm, UMath::Vector4 *facePts) {
-    UMath::Vector3 vecZ;
     UMath::Vector3 vecX;
+    UMath::Vector3 vecZ;
     UMath::Vector3 normal;
 
-    vecX.x = facePts[1].x - facePts[0].x;
-    vecX.y = facePts[1].y - facePts[0].y;
-    vecX.z = facePts[1].z - facePts[0].z;
+    vecZ.x = facePts[1].x - facePts[0].x;
+    vecZ.y = facePts[1].y - facePts[0].y;
+    vecZ.z = facePts[1].z - facePts[0].z;
 
-    vecZ.x = facePts[0].x - facePts[2].x;
-    vecZ.y = facePts[0].y - facePts[2].y;
-    vecZ.z = facePts[0].z - facePts[2].z;
-    v3crossprod(&vecX, &vecZ, &normal);
+    vecX.x = facePts[0].x - facePts[2].x;
+    vecX.y = facePts[0].y - facePts[2].y;
+    vecX.z = facePts[0].z - facePts[2].z;
+    v3crossprod(&vecZ, &vecX, &normal);
     if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
         norm->x = 0.0f;
         norm->z = 0.0f;
@@ -620,8 +620,8 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
         WGridNode *node = grid.fNodes[*iter];
 
         if (node != nullptr) {
-            WGridNode::iterator eIter(node, WGrid_kInstance);
             const unsigned int *instIndPtr;
+            WGridNode::iterator eIter(node, WGrid_kInstance);
 
             while ((instIndPtr = eIter.GetIndPtr()) != nullptr) {
                 unsigned int instInd = *instIndPtr;
@@ -646,7 +646,7 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
                     OrthoInverse(invMat);
 #endif
 
-                    const UMath::Vector3 &instPos = *UMath::Vector4To3(&invMat[3]);
+                    const UMath::Vector3 &instPos = reinterpret_cast<const UMath::Vector3 &>(invMat[3]);
 
                     NearPtLineXZ(instPos, UMath::Vector4To3(seg[0]), invDen, npVec, nearPt);
 
@@ -1005,7 +1005,6 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
     return cInfo.HitSomething();
 }
 
-// UNSOLVED https://decomp.me/scratch/hGkzc
 void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pos,
                                    float radius) {
     float radiusSq = radius * radius;
@@ -1054,8 +1053,7 @@ void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCo
                     UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[0]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[0]));
                     UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[1]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[1]));
 
-                    // TODO GetSurface is probably wrong
-                    const Attrib::Collection *collection = cArt->GetSurface(wBarrier.GetWSurface().Surface());
+                    const Attrib::Collection *collection = cInst.fCollisionArticle->GetSurface(wBarrier.GetWSurface().Surface());
                     WCollisionBarrierListEntry ble(wBarrier, collection, distsqr);
 
                     if (1) {

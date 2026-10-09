@@ -1,9 +1,7 @@
-#ifndef MISC_MAIN_H
-#define MISC_MAIN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+#ifndef MAIN_HPP
+#define MAIN_HPP
 
 void MiniMainLoop();
 

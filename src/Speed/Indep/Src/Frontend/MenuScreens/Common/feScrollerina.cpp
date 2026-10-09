@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 
 void ScrollerSlot::SetScript(uint32 script_hash) {
     for (ScrollerSlotNode *node = FEStrings.GetHead(); node != FEStrings.EndOfList(); node = node->GetNext()) {
@@ -89,6 +90,14 @@ void Scrollerina::AddSlot(ScrollerSlot *slot) {
     if (SelectedSlot == nullptr) {
         SelectedSlot = Slots.GetHead();
     }
+}
+
+ScrollerDatum *Scrollerina::AddData(const char *string) {
+    ScrollerDatum *datum = new ("ScrollerDatum", 0) ScrollerDatum(string, 0);
+
+    Data.AddTail(datum);
+
+    return datum;
 }
 
 void Scrollerina::AddData(ScrollerDatum *datum) {
@@ -441,6 +450,27 @@ void Scrollerina::Enable(ScrollerDatum *datum) {
     }
 }
 
+// UNSOLVED
+void Scrollerina::Disable(ScrollerDatum *datum) {
+    if (datum == nullptr) {
+        return;
+    }
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return;
+    }
+    datum->Disable();
+    ScrollerSlot *slot = FindSlotWithDatum(datum);
+    if (slot != nullptr) {
+        if (datum == SelectedDatum) {
+            if (!ScrollWrapped(eSD_NEXT)) {
+                ScrollWrapped(eSD_PREV);
+            }
+        }
+
+        slot->Disable();
+    }
+}
+
 void Scrollerina::CountListIndices() {
     bool found_view = false;
     iNumSlots = 0;
@@ -486,8 +516,8 @@ void Scrollerina::SetSelected(ScrollerSlot *slot) {
         ScrollerDatum *datum = FindDatumInSlot(slot);
         if (datum != nullptr) {
             UnHighlightSelected();
-            SelectedDatum = datum;
             SelectedSlot = slot;
+            SelectedDatum = datum;
             HighlightSelected();
             Update(true);
             bViewNeedsSync = false;

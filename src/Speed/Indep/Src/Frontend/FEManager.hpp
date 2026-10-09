@@ -106,10 +106,10 @@ class FEManager {
         }
         if (port == 4) {
             for (int i = 0; i < 8; i++) {
-                bWantControllerError[i] = 0;
+                bWantControllerError[i] = false;
             }
         } else {
-            bWantControllerError[port] = 0;
+            bWantControllerError[port] = false;
         }
     }
 
@@ -118,6 +118,12 @@ class FEManager {
     void SuppressControllerError(bool b) {
         bSuppressControllerError = b;
     }
+
+#ifdef EA_PLATFORM_WIN32 // TODO: might be v1.3
+    bool IsSuppressingControllerError() {
+        return bSuppressControllerError;
+    }
+#endif
 
     void AllowControllerError(bool b) {
         bAllowControllerError = b;

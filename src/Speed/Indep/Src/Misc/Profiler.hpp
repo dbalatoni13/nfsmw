@@ -3,17 +3,17 @@
 
 #include "types.h"
 
-#define NO_PROFILER                                                   // :73
-#define PROFILE_TOP_LEVEL 1                                           // :89
-#define PROFILE_RENDERING 2                                           // :90
-#define PROFILE_PHYSICS 4                                             // :91
-#define PROFILE_SIM 8                                                 // :92
-#define PROFILE_SOUND 16                                              // :93
-#define PROFILE_MISC 32                                               // :94
-#define PROFILE_RESOURCE_LOADING 64                                   // :95
-#define PROFILE_VINYLS 128                                            // :96
-#define PROFILE_FE 256                                                // :97
-#define profile_node(name, categories) profile_node(NULL, categories) // :243
+#define NO_PROFILER // :73
+
+#define PROFILE_TOP_LEVEL 1         // :89
+#define PROFILE_RENDERING 2         // :90
+#define PROFILE_PHYSICS 4           // :91
+#define PROFILE_SIM 8               // :92
+#define PROFILE_SOUND 16            // :93
+#define PROFILE_MISC 32             // :94
+#define PROFILE_RESOURCE_LOADING 64 // :95
+#define PROFILE_VINYLS 128          // :96
+#define PROFILE_FE 256              // :97
 
 // total size: 0xC
 // Decl: 102
@@ -35,7 +35,7 @@ class ProfileManager {
 
     void EndProfiling(bool profile_section_results) {} // Decl: 124
 
-    struct ProfileDataEntry *BeginSection(const char *section_name, int categories) {} // Decl: 126
+    ProfileDataEntry *BeginSection(const char *section_name, int categories) {} // Decl: 126
 
     void EndSection() {} // Decl: 127
 
@@ -48,8 +48,9 @@ class ProfileManager {
     void PrintResults() {} // Decl: 134
 };
 
-extern ProfileManager TheProfiler;
+#define profile_node(name, categories) profile_node(NULL, categories) // :243
 
+// Decl: 247
 class ProfileNode {
   public:
     ProfileNode() {}                                        // Decl: 251

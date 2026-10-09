@@ -2,6 +2,20 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstring>
 
+static const int32 JLZ_HTSize = 8192; // Decl: 53
+
+static const int32 NEAR_RUNBITS = 12;  // Decl: 55
+static const int32 NEAR_OFFBITS = 4;   // Decl: 56
+static const int32 NEAR_RUNMAX = 4098; // Decl: 57
+static const int32 NEAR_OFFMAX = 16;   // Decl: 58
+static const int32 NEAR_RUNMASK = 15;  // Decl: 59
+
+static const int32 FAR_RUNBITS = 5;  // Decl: 61
+static const int32 FAR_RUNMAX = 34;  // Decl: 62
+static const int32 FAR_RUNMASK = 31; // Decl: 63
+
+static const int32 WINDOWSIZE = 2064; // Decl: 65
+
 static int Compare(unsigned char *a, unsigned char *b, int max) {
     int Result = 0;
     while (Result < max && a[Result] == b[Result]) {
@@ -19,6 +33,7 @@ static void ShortMove(unsigned char *pDest, uint8 *pSrc, int Len) {
 }
 
 // total size: 0x10
+// Decl: 100
 class JLZHash {
   public:
     int32 Offset;
@@ -28,23 +43,24 @@ class JLZHash {
 };
 
 // total size: 0xC
-struct JLZHashPool {
+// Decl: 108
+class JLZHashPool {
+  private:
+    JLZHash *pPool;  // Decl: 110
+    JLZHash **pHead; // Decl: 111
+    int32 PoolSize;  // Decl: 112
+
   public:
     JLZHashPool(int WindowSize);
     ~JLZHashPool();
     void Update(uint8 *pData, int32 Offset);
     JLZHash *FindList(uint8 *pData);
-
-  private:
-    JLZHash *pPool;
-    JLZHash **pHead;
-    int32 PoolSize;
 };
 
 JLZHashPool::JLZHashPool(int WindowSize) {
     PoolSize = WindowSize;
     pPool = new ("JLZHash", 0) JLZHash[WindowSize];
-    pHead = new ("JLZHash", 0) JLZHash *[0x2000];
+    pHead = new ("JLZHash", 0) JLZHash *[JLZ_HTSize];
     bMemSet(pPool, 0, PoolSize << 4);
     bMemSet(pHead, 0, 0x8000);
 }
@@ -91,7 +107,7 @@ JLZHash *JLZHashPool::FindList(unsigned char *pData) {
 }
 
 int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
-    JLZHashPool Pool(0x810);
+    JLZHashPool Pool(WINDOWSIZE);
     int Pos = 0;
     uint8 *pOut;
     JLZHash *pHash;
@@ -123,8 +139,8 @@ int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
     pOut = pRunType + 1;
 
     while (Size >= 0) {
-        if (Size > 0x1001) {
-            MaxLen = 0x1002;
+        if (Size >= NEAR_RUNMAX) {
+            MaxLen = NEAR_RUNMAX;
         } else {
             MaxLen = Size;
         }
@@ -138,21 +154,21 @@ int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
                 Run = Compare(pHash->pData, pSrc, MaxLen);
                 if (Run > LongRun) {
                     RunOffset = Pos - pHash->Offset;
-                    if (Run < 0x23 || RunOffset < 0x10 || LongRun < 0x23) {
+                    if (Run <= FAR_RUNMAX || RunOffset < 0x10 || LongRun <= FAR_RUNMAX) {
                         LongRun = Run;
                         pLongRun = pHash;
                     }
                 }
                 pHash = pHash->pNext;
-            } while (pHash != nullptr && LongRun < 0x1002);
+            } while (pHash != nullptr && LongRun < NEAR_RUNMAX);
         }
 
         if (LongRun > 2) {
             Control >>= 1;
             RunOffset = Pos - pLongRun->Offset - 1;
-            if (RunOffset > 0xf) {
-                if (LongRun > 0x22) {
-                    LongRun = 0x22;
+            if (RunOffset > NEAR_RUNMASK) {
+                if (LongRun > FAR_RUNMAX) {
+                    LongRun = FAR_RUNMAX;
                 }
                 RunType = (RunType >> 1) & 0x7f7f;
                 pOut[0] = (((RunOffset - 0x10) >> 8) << 5) | (LongRun - 3);
@@ -181,13 +197,13 @@ int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
             pSrc++;
         }
 
-        if (Control < 0x100) {
+        if (Control < 256) {
             *pControl = Control;
             pControl = pOut;
             Control = 0xff00;
             pOut++;
         }
-        if (RunType < 0x100) {
+        if (RunType < 256) {
             *pRunType = RunType;
             pRunType = pOut;
             RunType = 0xff00;
@@ -231,21 +247,21 @@ int JLZDecompress(uint8 *pSrc, uint8 *pDest) {
     if (header->Version != JLZCOMP_VERSION) {
         return 0;
     }
-    Size -= 0x12;
+    Size -= 18;
     pEnd = pOut + header->UncompressedSize;
-    Control = pSrc[0x10] | 0x100;
-    RunType = pSrc[0x11] | 0x100;
-    pSrc += 0x12;
+    Control = pSrc[16] | 0x100;
+    RunType = pSrc[17] | 0x100;
+    pSrc += 18;
     while (Size != 0) {
         if ((Control & 1) != 0) {
             if ((RunType & 1) != 0) {
                 Run = (((pSrc[0]) >> 4 << 8) | pSrc[1]) + 3;
-                Offset = ((pSrc[0] & 0xf) + 1);
+                Offset = ((pSrc[0] & NEAR_RUNMASK) + 1);
 
                 ShortMove(pOut, pOut - Offset, Run);
             } else {
-                Offset = (((pSrc[0]) >> 5 << 8) | pSrc[1]) + 0x11;
-                Run = ((pSrc[0] & 0x1f) + 3);
+                Offset = (((pSrc[0]) >> 5 << 8) | pSrc[1]) + 17;
+                Run = ((pSrc[0] & FAR_RUNMASK) + 3);
 
                 ShortMove(pOut, pOut - Offset, Run);
             }
@@ -363,245 +379,243 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
     ulen = 0L;
 
     if (qs != nullptr) {
-        {
-            int mostbits;
-            int i;
-            int bitnumtbl[16];
-            unsigned int deltatbl[16];
-            unsigned int cmptbl[16];
-            unsigned char codetbl[256];
-            unsigned char quickcodetbl[256];
-            unsigned char quicklentbl[256];
+        int mostbits;
+        int i;
+        int bitnumtbl[16];
+        unsigned int deltatbl[16];
+        unsigned int cmptbl[16];
+        unsigned char codetbl[256];
+        unsigned char quickcodetbl[256];
+        unsigned char quicklentbl[256];
 
-            bitsleft = -16;
-            bits = 0;
-            SQgetbits(v, ZERO);
-            SQgetbits(type, 16);
+        bitsleft = -16;
+        bits = 0;
+        SQgetbits(v, ZERO);
+        SQgetbits(type, 16);
 
-            if (type & 0x8000) {
-                if (type & 0x100) {
-                    SQgetbits(v, 16);
-                    SQgetbits(v, 16);
-                }
-                type &= ~0x100;
+        if (type & 0x8000) {
+            if (type & 0x100) {
                 SQgetbits(v, 16);
-                SQgetbits(ulen, 16);
-                ulen |= (v << 16);
-            } else {
-                if (type & 0x100) {
-                    SQgetbits(v, 8);
-                    SQgetbits(v, 16);
-                }
-                type &= ~0x100;
+                SQgetbits(v, 16);
+            }
+            type &= ~0x100;
+            SQgetbits(v, 16);
+            SQgetbits(ulen, 16);
+            ulen |= (v << 16);
+        } else {
+            if (type & 0x100) {
                 SQgetbits(v, 8);
-                SQgetbits(ulen, 16);
-                ulen |= (v << 16);
+                SQgetbits(v, 16);
             }
+            type &= ~0x100;
+            SQgetbits(v, 8);
+            SQgetbits(ulen, 16);
+            ulen |= (v << 16);
+        }
 
+        {
             {
+                int numchars;
                 {
-                    int numchars;
-                    {
-                        unsigned int basecmp;
-                        {
-                            unsigned int t;
-                            SQgetbits(t, 8);
-                            clue = (unsigned char)t;
-                        }
-                        numchars = 0;
-                        numbits = 1;
-                        basecmp = (unsigned int)0;
-                        do {
-                            basecmp <<= 1;
-                            deltatbl[numbits] = basecmp - numchars;
-                            SQgetnum(bitnum);
-                            bitnumtbl[numbits] = bitnum;
-                            numchars += bitnum;
-                            basecmp += bitnum;
-                            cmp = 0;
-                            if (bitnum)
-                                cmp = (basecmp << (16 - numbits) & 0xffff);
-                            cmptbl[numbits++] = cmp;
-                        } while (!bitnum || cmp);
-                    }
-                    cmptbl[numbits - 1] = 0xffffffff;
-                    mostbits = numbits - 1;
-                    {
-                        signed char leap[256];
-                        unsigned char nextchar;
-                        SQmemset(leap, 0, 256);
-                        nextchar = (unsigned char)-1;
-                        for (i = 0; i < numchars; ++i) {
-                            int leapdelta = 0;
-                            SQgetnum(leapdelta);
-                            ++leapdelta;
-                            do {
-                                ++nextchar;
-                                if (!leap[nextchar])
-                                    --leapdelta;
-                            } while (leapdelta);
-                            leap[nextchar] = 1;
-                            codetbl[i] = nextchar;
-                        }
-                    }
-                }
-
-                SQmemset(quicklentbl, 64, 256);
-                {
-                    int bits;
-                    int bitnum;
-                    int numbitentries;
-                    int nextcode;
-                    int nextlen;
-                    int i;
-                    unsigned char *codeptr;
-                    unsigned char *quickcodeptr;
-                    unsigned char *quicklenptr;
-                    codeptr = codetbl;
-                    quickcodeptr = quickcodetbl;
-                    quicklenptr = quicklentbl;
-                    for (bits = 1; bits <= mostbits; ++bits) {
-                        bitnum = bitnumtbl[bits];
-                        if (bits >= 9)
-                            break;
-                        numbitentries = 1 << (8 - bits);
-                        while (bitnum--) {
-                            nextcode = *codeptr++;
-                            nextlen = bits;
-                            if (nextcode == clue) {
-                                cluelen = bits;
-                                nextlen = 96;
-                            }
-                            for (i = 0; i < numbitentries; ++i) {
-                                *quickcodeptr++ = (unsigned char)nextcode;
-                                *quicklenptr++ = (unsigned char)nextlen;
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (;;) {
-                unsigned char *quickcodeptr = quickcodetbl;
-                unsigned char *quicklenptr = quicklentbl;
-                goto nextloop;
-                do {
-                    *qd++ = quickcodeptr[bits >> 24];
-                    GET16BITS();
-                    bits = bitsunshifted << (16 - bitsleft);
-                nextloop:
-                    numbits = quicklenptr[bits >> 24];
-                    bitsleft -= numbits;
-                    if (bitsleft >= 0) {
-                        do {
-                            *qd++ = quickcodeptr[bits >> 24];
-                            bits <<= numbits;
-                            numbits = quicklenptr[bits >> 24];
-                            bitsleft -= numbits;
-                            if (bitsleft < 0)
-                                break;
-                            *qd++ = quickcodeptr[bits >> 24];
-                            bits <<= numbits;
-                            numbits = quicklenptr[bits >> 24];
-                            bitsleft -= numbits;
-                            if (bitsleft < 0)
-                                break;
-                            *qd++ = quickcodeptr[bits >> 24];
-                            bits <<= numbits;
-                            numbits = quicklenptr[bits >> 24];
-                            bitsleft -= numbits;
-                            if (bitsleft < 0)
-                                break;
-                            *qd++ = quickcodeptr[bits >> 24];
-                            bits <<= numbits;
-                            numbits = quicklenptr[bits >> 24];
-                            bitsleft -= numbits;
-                        } while (bitsleft >= 0);
-                    }
-                    bitsleft += 16;
-                } while (bitsleft >= 0);
-
-                bitsleft = bitsleft - 16 + numbits;
-                {
-                    unsigned char code;
-                    if (numbits != 96) {
-                        cmp = (unsigned int)(bits >> 16);
-                        numbits = 8;
-                        do {
-                            ++numbits;
-                        } while (cmp >= cmptbl[numbits]);
-                    } else
-                        numbits = cluelen;
-
-                    cmp = bits >> (32 - (numbits));
-                    bits <<= (numbits);
-                    bitsleft -= (numbits);
-                    code = codetbl[cmp - deltatbl[numbits]];
-
-                    if (code != clue && bitsleft >= 0) {
-                        *qd++ = code;
-                        goto nextloop;
-                    }
-
-                    if (bitsleft < 0) {
-                        GET16BITS();
-                        bits = bitsunshifted << -bitsleft;
-                        bitsleft += 16;
-                    }
-
-                    if (code != clue) {
-                        *qd++ = code;
-                        goto nextloop;
-                    }
-
-                    {
-                        int runlen = 0;
-                        unsigned char *d = qd;
-                        unsigned char *dest;
-                        SQgetnum(runlen);
-                        if (runlen) {
-                            dest = d + runlen;
-                            code = *(d - 1);
-                            do {
-                                *d++ = code;
-                            } while (d < dest);
-                            qd = d;
-                            goto nextloop;
-                        }
-                    }
-
-                    SQgetbits(v, 1);
-                    if (v)
-                        break;
+                    unsigned int basecmp;
                     {
                         unsigned int t;
                         SQgetbits(t, 8);
-                        code = (unsigned char)t;
+                        clue = (unsigned char)t;
                     }
-                    *qd++ = code;
-                    goto nextloop;
+                    numchars = 0;
+                    numbits = 1;
+                    basecmp = (unsigned int)0;
+                    do {
+                        basecmp <<= 1;
+                        deltatbl[numbits] = basecmp - numchars;
+                        SQgetnum(bitnum);
+                        bitnumtbl[numbits] = bitnum;
+                        numchars += bitnum;
+                        basecmp += bitnum;
+                        cmp = 0;
+                        if (bitnum)
+                            cmp = (basecmp << (16 - numbits) & 0xffff);
+                        cmptbl[numbits++] = cmp;
+                    } while (!bitnum || cmp);
+                }
+                cmptbl[numbits - 1] = 0xffffffff;
+                mostbits = numbits - 1;
+                {
+                    signed char leap[256];
+                    unsigned char nextchar;
+                    SQmemset(leap, 0, 256);
+                    nextchar = (unsigned char)-1;
+                    for (i = 0; i < numchars; ++i) {
+                        int leapdelta = 0;
+                        SQgetnum(leapdelta);
+                        ++leapdelta;
+                        do {
+                            ++nextchar;
+                            if (!leap[nextchar])
+                                --leapdelta;
+                        } while (leapdelta);
+                        leap[nextchar] = 1;
+                        codetbl[i] = nextchar;
+                    }
                 }
             }
 
+            SQmemset(quicklentbl, 64, 256);
             {
+                int bits;
+                int bitnum;
+                int numbitentries;
+                int nextcode;
+                int nextlen;
                 int i;
-                int nextchar;
-                if (type == 0x32fb || type == 0xb2fb) {
-                    i = 0;
-                    qd = unpackbuf;
-                    while (qd < unpackbuf + ulen) {
-                        i += (int)*qd;
-                        *qd++ = (unsigned char)i;
+                unsigned char *codeptr;
+                unsigned char *quickcodeptr;
+                unsigned char *quicklenptr;
+                codeptr = codetbl;
+                quickcodeptr = quickcodetbl;
+                quicklenptr = quicklentbl;
+                for (bits = 1; bits <= mostbits; ++bits) {
+                    bitnum = bitnumtbl[bits];
+                    if (bits >= 9)
+                        break;
+                    numbitentries = 1 << (8 - bits);
+                    while (bitnum--) {
+                        nextcode = *codeptr++;
+                        nextlen = bits;
+                        if (nextcode == clue) {
+                            cluelen = bits;
+                            nextlen = 96;
+                        }
+                        for (i = 0; i < numbitentries; ++i) {
+                            *quickcodeptr++ = (unsigned char)nextcode;
+                            *quicklenptr++ = (unsigned char)nextlen;
+                        }
                     }
-                } else if (type == 0x34fb || type == 0xb4fb) {
-                    i = 0;
-                    nextchar = 0;
-                    qd = unpackbuf;
-                    while (qd < unpackbuf + ulen) {
-                        i += (int)*qd;
-                        nextchar += i;
-                        *qd++ = (unsigned char)nextchar;
+                }
+            }
+        }
+
+        for (;;) {
+            unsigned char *quickcodeptr = quickcodetbl;
+            unsigned char *quicklenptr = quicklentbl;
+            goto nextloop;
+            do {
+                *qd++ = quickcodeptr[bits >> 24];
+                GET16BITS();
+                bits = bitsunshifted << (16 - bitsleft);
+            nextloop:
+                numbits = quicklenptr[bits >> 24];
+                bitsleft -= numbits;
+                if (bitsleft >= 0) {
+                    do {
+                        *qd++ = quickcodeptr[bits >> 24];
+                        bits <<= numbits;
+                        numbits = quicklenptr[bits >> 24];
+                        bitsleft -= numbits;
+                        if (bitsleft < 0)
+                            break;
+                        *qd++ = quickcodeptr[bits >> 24];
+                        bits <<= numbits;
+                        numbits = quicklenptr[bits >> 24];
+                        bitsleft -= numbits;
+                        if (bitsleft < 0)
+                            break;
+                        *qd++ = quickcodeptr[bits >> 24];
+                        bits <<= numbits;
+                        numbits = quicklenptr[bits >> 24];
+                        bitsleft -= numbits;
+                        if (bitsleft < 0)
+                            break;
+                        *qd++ = quickcodeptr[bits >> 24];
+                        bits <<= numbits;
+                        numbits = quicklenptr[bits >> 24];
+                        bitsleft -= numbits;
+                    } while (bitsleft >= 0);
+                }
+                bitsleft += 16;
+            } while (bitsleft >= 0);
+
+            bitsleft = bitsleft - 16 + numbits;
+            {
+                unsigned char code;
+                if (numbits != 96) {
+                    cmp = (unsigned int)(bits >> 16);
+                    numbits = 8;
+                    do {
+                        ++numbits;
+                    } while (cmp >= cmptbl[numbits]);
+                } else
+                    numbits = cluelen;
+
+                cmp = bits >> (32 - (numbits));
+                bits <<= (numbits);
+                bitsleft -= (numbits);
+                code = codetbl[cmp - deltatbl[numbits]];
+
+                if (code != clue && bitsleft >= 0) {
+                    *qd++ = code;
+                    goto nextloop;
+                }
+
+                if (bitsleft < 0) {
+                    GET16BITS();
+                    bits = bitsunshifted << -bitsleft;
+                    bitsleft += 16;
+                }
+
+                if (code != clue) {
+                    *qd++ = code;
+                    goto nextloop;
+                }
+
+                {
+                    int runlen = 0;
+                    unsigned char *d = qd;
+                    unsigned char *dest;
+                    SQgetnum(runlen);
+                    if (runlen) {
+                        dest = d + runlen;
+                        code = *(d - 1);
+                        do {
+                            *d++ = code;
+                        } while (d < dest);
+                        qd = d;
+                        goto nextloop;
                     }
+                }
+
+                SQgetbits(v, 1);
+                if (v)
+                    break;
+                {
+                    unsigned int t;
+                    SQgetbits(t, 8);
+                    code = (unsigned char)t;
+                }
+                *qd++ = code;
+                goto nextloop;
+            }
+        }
+
+        {
+            int i;
+            int nextchar;
+            if (type == 0x32fb || type == 0xb2fb) {
+                i = 0;
+                qd = unpackbuf;
+                while (qd < unpackbuf + ulen) {
+                    i += (int)*qd;
+                    *qd++ = (unsigned char)i;
+                }
+            } else if (type == 0x34fb || type == 0xb4fb) {
+                i = 0;
+                nextchar = 0;
+                qd = unpackbuf;
+                while (qd < unpackbuf + ulen) {
+                    i += (int)*qd;
+                    nextchar += i;
+                    *qd++ = (unsigned char)nextchar;
                 }
             }
         }
@@ -1581,6 +1595,8 @@ int RAWCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
 
 #define TOP_WORD 0xFFFF0000 // Decl: 2158
 
+static const int32 HashSize = 32768; // Decl: 2149
+
 // Decl: 2290
 uint32 OldLZDecompress(uint8 *p_src_first, uint8 *p_dst_first) {
     LZHeader *header = reinterpret_cast<LZHeader *>(p_src_first);
@@ -1706,7 +1722,36 @@ unsigned int LZDecompress(uint8 *pSrc, uint8 *pDst) {
 #define COMPRESS_IN_PLACE_SIZE 32768       // Decl: 2475
 #define COMPRESS_IN_PLACE_MAGIC 0x55441122 // Decl: 2476
 
+// total size: 0x18
+// Decl: 2479
+struct CIPHeader {
+    int Magic;       // offset 0x0, size 0x4, Decl: 2480
+    int USize;       // offset 0x4, size 0x4, Decl: 2481
+    int CSize;       // offset 0x8, size 0x4, Decl: 2482
+    int UPos;        // offset 0xC, size 0x4, Decl: 2483
+    int CPos;        // offset 0x10, size 0x4, Decl: 2484
+    CIPHeader *Prev; // offset 0x14, size 0x4, Decl: 2485
+
+    // Decl: 2487
+    uint8 *GetCData() {}
+
+    // Decl: 2489
+    void EndianSwap() {}
+};
+
 // STRIPPED
 bool IsCompressInPlaceData(const void *data) {
     return false;
 }
+
+// STRIPPED
+CIPHeader *CompressToFit(const unsigned char *source_data, int max_source_data_size, unsigned char *dest_data, int max_dest_data_size) {}
+
+// STRIPPED
+void PrintCIPHeader(const char *title, CIPHeader *header) {}
+
+// STRIPPED
+int CompressInPlace(const void *source_data_void, int source_data_size, void *dest_data_void) {}
+
+// STRIPPED
+void DecompressInPlace(void *data_void, int uncompressed_size, int compressed_size) {}

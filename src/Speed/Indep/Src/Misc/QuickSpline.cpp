@@ -3,11 +3,11 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "SpeedChunks.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h" // HEADER_ORDER: needed before OverhauserBasisMatricies
 
-int BasisMatrixInitDone = false;
+bMatrix4 OverhauserBasisMatricies[3]; // Decl: 27
 
-bMatrix4 OverhauserBasisMatricies[3];
-bPList<QuickSpline> LoadedSplineList;
+int BasisMatrixInitDone = 0; // Decl: 29
 
 void InitBasisMatricies() {
     if (BasisMatrixInitDone) {
@@ -48,7 +48,7 @@ void InitBasisMatricies() {
     bTransposeMatrix(&OverhauserBasisMatricies[1], &OverhauserBasisMatricies[1]);
     bTransposeMatrix(&OverhauserBasisMatricies[2], &OverhauserBasisMatricies[2]);
 
-    BasisMatrixInitDone = true;
+    BasisMatrixInitDone = 1;
 }
 
 // Stripped
@@ -71,29 +71,29 @@ void QuickSpline::DoSnapshot(ReplaySnapshot *snapshot, int num_fields) {}
 void QuickSpline::SetNumControlPoints(int num_control_points) {}
 
 void QuickSpline::FixupEndpoints() {
-    int num_control_points = NumControlPoints;
-    if (num_control_points == 0) {
+    if (this->NumControlPoints == 0) {
         return;
     }
-    bVector4 *control_points = pControlPoints;
+    bVector4 *control_points = this->pControlPoints;
+    int num_control_points = this->NumControlPoints;
 
     switch (EndPointType) {
         case QUICKSPLINE_LOOP:
             control_points[-1] = control_points[num_control_points - 1];
             control_points[num_control_points] = control_points[0];
             control_points[num_control_points + 1] = control_points[1];
-            if (Length != 0.0f) {
-                control_points[-1].w = control_points[num_control_points - 1].w - Length;
-                control_points[num_control_points].w = Length + control_points->w;
-                control_points[num_control_points + 1].w = Length + control_points[1].w;
+            if (this->Length != 0.0f) {
+                control_points[-1].w = control_points[num_control_points - 1].w - this->Length;
+                control_points[num_control_points].w = this->Length + control_points->w;
+                control_points[num_control_points + 1].w = this->Length + control_points[1].w;
             }
             break;
         case QUICKSPLINE_LINE:
             control_points[-1] = control_points[0];
             control_points[num_control_points] = control_points[num_control_points - 1];
-            if (Length != 0.0f) {
+            if (this->Length != 0.0f) {
                 control_points[-1].w = -control_points[1].w;
-                control_points[num_control_points].w = (2 * Length) - control_points[num_control_points - 1].w;
+                control_points[num_control_points].w = (2 * this->Length) - control_points[num_control_points - 1].w;
             }
             break;
         case QUICKSPLINE_EXTRAPOLATED: {
@@ -145,16 +145,22 @@ float QuickSpline::FindClosestLateralOffset(const bVector3 &point, float initial
     return 0.0f;
 }
 
+static const float fQuickSplineDistanceTolerance = 0.001f; // Decl: 597
+static const int nQuickSplineDistanceMaxIterations = 40;   // Decl: 598
+int nQuickSplineDistanceWorstCaseIterations = 0;           // Decl: 599
+float fQuickSplineDistanceWorstCaseError = 0.0f;           // Decl: 600
+
 // Stripped
 float QuickSpline::GetParam(float f_distance) {
     return 0.0f;
 }
 
+// Stripped
 void QuickSpline::CalibrateLength(int num_steps) {}
 
 void QuickSpline::MemoryImageLoad(bVector4 *control_point_buffer) {
     pControlPoints = &control_point_buffer[1];
-    ControlPointsDirty = false;
+    ControlPointsDirty = 0;
     pBasisMatricies = nullptr;
     pControlPointBuffer = control_point_buffer;
     if (BasisType == QUICKSPLINE_OVERHAUSER) {
@@ -168,8 +174,8 @@ void QuickSpline::MemoryImageUnload() {}
 
 bool QuickSpline::HasKink() {
     if (ControlPointsDirty) {
-        FixupEndpoints();
-        ControlPointsDirty = false;
+        this->FixupEndpoints();
+        ControlPointsDirty = 0;
     }
     int nPoints = NumControlPoints + 3;
     if (nPoints < 3) {
@@ -200,8 +206,10 @@ void QuickSpline::MakeControlPointsEquiDistant() {}
 // Stripped
 void QuickSpline::ZeroAllZValues() {}
 
-BOOL LoaderQuickSpline(bChunk *pChunk) {
-    if (pChunk->GetID() == BCHUNK_QUICK_SPLINES) {
+bPList<QuickSpline> LoadedSplineList; // Decl: 836
+
+int LoaderQuickSpline(bChunk *pChunk) {
+    if (pChunk->GetID() == BCHUNK_SPEED_SPLINE_PACK) {
         for (bChunk *c = pChunk->GetFirstChunk(); c < pChunk->GetLastChunk(); c = c->GetNext()) {
             bChunk *pInstance = c->GetFirstChunk();
             bChunk *pControlPoints = pInstance->GetNext();
@@ -223,9 +231,9 @@ BOOL LoaderQuickSpline(bChunk *pChunk) {
             LoadedSplineList.AddTail(pSpline);
             pSpline->HasKink();
         }
-        return true;
+        return 1;
     } else {
-        return false;
+        return 0;
     }
 }
 
@@ -241,15 +249,18 @@ void UnloadSpline(QuickSpline *pSplineToRemove) {
     }
 }
 
-BOOL UnloaderQuickSpline(bChunk *pChunk) {
-    if (pChunk->GetID() == BCHUNK_QUICK_SPLINES) {
+int UnloaderQuickSpline(bChunk *pChunk) {
+    if (pChunk->GetID() == BCHUNK_SPEED_SPLINE_PACK) {
         for (bChunk *c = pChunk->GetFirstChunk(); c < pChunk->GetLastChunk(); c = c->GetNext()) {
             bChunk *pInstance = c->GetFirstChunk();
             QuickSpline *pSpline = reinterpret_cast<QuickSpline *>(pInstance->GetAlignedData(16));
             UnloadSpline(pSpline);
         }
-        return true;
+        return 1;
     } else {
-        return false;
+        return 0;
     }
 }
+
+// STRIPPED
+QuickSpline *GetSpline(unsigned int hash) {}

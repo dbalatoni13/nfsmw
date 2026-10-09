@@ -11,7 +11,11 @@ enum JoystickPort {
     JOYSTICK_PORT_ALL = 4,
 };
 
-#define NUM_JOYSTICK_PORTS 2  // :37
+#ifdef EA_PLATFORM_WIN32
+#define NUM_JOYSTICK_PORTS 1 // :37
+#else
+#define NUM_JOYSTICK_PORTS 2 // :37
+#endif
 #define DEBUG_JOYSTICK_PORT 1 // :43
 
 #endif

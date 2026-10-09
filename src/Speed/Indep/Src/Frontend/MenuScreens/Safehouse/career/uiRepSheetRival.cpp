@@ -1,5 +1,6 @@
 #include "uiRepSheetRival.hpp"
 
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
@@ -51,7 +52,7 @@ void uiRepSheetRival::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u3
         case __PAD_ACCEPT__:
             if (bMidRivalFlow) {
                 new ERaceSheetOff();
-                MFlowReadyForOutro().Post(0x20d60dbf);
+                MFlowReadyForOutro().Post(UCRC32_Gameplay);
             } else if (FEDatabase->IsPostRivalMode()) {
                 new EEnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin() - 1);
                 uiRepSheetRivalFlow::Get()->StartFlow(1);

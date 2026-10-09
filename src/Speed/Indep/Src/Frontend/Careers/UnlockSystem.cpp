@@ -809,6 +809,18 @@ int UnlockSystem::GetCarPartCost(eUnlockFilters filter, int carslot, CarPart *pa
     return static_cast<int>(price);
 }
 
+int UnlockSystem::GetCarPartRep(eUnlockFilters filter, int carslot, CarPart *part, int player) {
+    eUnlockableEntity unlockable = MapCarPartToUnlockable(carslot, part);
+    float price = 0.0f;
+    if (unlockable != UNLOCKABLE_THING_UNKNOWN) {
+        const FECarPartInfo *info = LookupFEPartInfo(unlockable, part->GetUpgradeLevel());
+        if (info != nullptr) {
+            price = info->Rep;
+        }
+    }
+    return static_cast<int>(price);
+}
+
 bool UnlockSystem::IsEventAvailable(uint32 event_hash) {
     if (event_hash == Attrib::StringHash32("99.1.1")) {
         return false;
@@ -826,6 +838,13 @@ bool UnlockSystem::IsEventAvailable(uint32 event_hash) {
             }
             return false;
         }
+    }
+    return true;
+}
+
+bool UnlockSystem::IsBonusCarAvailable(uint32 name_hash) {
+    if (IsBonusCarCEOnly(name_hash)) {
+        return GetIsCollectorsEdition();
     }
     return true;
 }
@@ -872,6 +891,14 @@ void FEMarkerManager::Default() {
         OwnedMarkers[i].State = MARKER_STATE_NOT_OWNED;
     }
     ClearMarkersForLaterSelection();
+}
+
+void FEMarkerManager::CheatToGetMarkers() {
+    for (int i = MARKER_FIRST; i <= MARKER_LAST; i++) {
+        if (i != MARKER_CASH && i != MARKER_PINK_SLIP) {
+            AddMarkerToInventory(static_cast<ePossibleMarker>(i), 0);
+        }
+    }
 }
 
 void FEMarkerManager::GetMarkerForLaterSelection(int index, ePossibleMarker &marker, int &param) {

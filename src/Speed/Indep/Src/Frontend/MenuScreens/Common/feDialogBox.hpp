@@ -45,28 +45,31 @@ class feDialogConfig {
 
     feDialogConfig();
 
-    char BlurbString[512];            // offset 0x0, size 0x200
-    eDialogTitle Title;               // offset 0x200, size 0x4
-    uint32 Button1TextHash;           // offset 0x204, size 0x4
-    uint32 Button1PressedMessage;     // offset 0x208, size 0x4
-    uint32 Button2TextHash;           // offset 0x20C, size 0x4
-    uint32 Button2PressedMessage;     // offset 0x210, size 0x4
-    uint32 Button3TextHash;           // offset 0x214, size 0x4
-    uint32 Button3PressedMessage;     // offset 0x218, size 0x4
-    uint32 DialogCancelledMessage;    // offset 0x21C, size 0x4
-    uint32 FirstButton;               // offset 0x220, size 0x4
-    const char *ParentPackage;        // offset 0x224, size 0x4
-    const char *DialogPackage;        // offset 0x228, size 0x4
-    int NumButtons;                   // offset 0x22C, size 0x4
-    bool bIsDismissable;              // offset 0x230, size 0x1
-    bool bDetectController;           // offset 0x234, size 0x1
-    bool bBlurbIsUTF8;                // offset 0x238, size 0x1
-    uint32 DismissedByOtherDialogMsg; // offset 0x23C, size 0x4
-    dialog_handle DialogHandle;       // offset 0x240, size 0x4
-    float fCountdown;                 // offset 0x244, size 0x4
+    char BlurbString[DIALOG_BLURB_MAX_LENGTH]; // offset 0x0, size 0x200
+    eDialogTitle Title;                        // offset 0x200, size 0x4
+    uint32 Button1TextHash;                    // offset 0x204, size 0x4
+    uint32 Button1PressedMessage;              // offset 0x208, size 0x4
+    uint32 Button2TextHash;                    // offset 0x20C, size 0x4
+    uint32 Button2PressedMessage;              // offset 0x210, size 0x4
+    uint32 Button3TextHash;                    // offset 0x214, size 0x4
+    uint32 Button3PressedMessage;              // offset 0x218, size 0x4
+    uint32 DialogCancelledMessage;             // offset 0x21C, size 0x4
+    uint32 FirstButton;                        // offset 0x220, size 0x4
+    const char *ParentPackage;                 // offset 0x224, size 0x4
+    const char *DialogPackage;                 // offset 0x228, size 0x4
+    int NumButtons;                            // offset 0x22C, size 0x4
+    bool bIsDismissable;                       // offset 0x230, size 0x1
+    bool bDetectController;                    // offset 0x234, size 0x1
+    bool bBlurbIsUTF8;                         // offset 0x238, size 0x1
+    uint32 DismissedByOtherDialogMsg;          // offset 0x23C, size 0x4
+    dialog_handle DialogHandle;                // offset 0x240, size 0x4
+#ifdef EA_BUILD_A124
+    uint32 ControlMask;
+#else
+    float fCountdown; // offset 0x244, size 0x4
+#endif
 };
 
-// TODO
 class DialogInterface {
   private:
     static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list);
@@ -85,12 +88,12 @@ class DialogInterface {
 
   public:
     static dialog_handle ShowDialog(struct feDialogConfig *conf);
-    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *msg_fmt);
-    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash);
+    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *msg_fmt, ...);
+    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...);
     static dialog_handle ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, ...);
     static dialog_handle ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...);
-    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt);
-    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash);
+    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, ...);
+    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...);
     static dialog_handle ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
                                        uint32 button_pressed_message, uint32 cancel_message, const char *fmt, ...);
     static dialog_handle ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
@@ -113,7 +116,7 @@ class DialogInterface {
                                         eDialogFirstButtons first_button, uint32 blurb_fm, ...);
     static dialog_handle ShowTwoButtonCountdown(const char *from_pkg, const char *dlg_pkg, uint32 button1_text_hash, uint32 button2_text_hash,
                                                 uint32 button1_pressed_message, uint32 button2_pressed_message, uint32 cancel_message,
-                                                eDialogFirstButtons first_button, float timer, uint32 blurb_fmt, ...);
+                                                eDialogFirstButtons first_button, float timer, uint32 blurb_fmt);
     static dialog_handle ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                           uint32 button2_text_hash, uint32 button3_text_hash, uint32 button1_pressed_message,
                                           uint32 button2_pressed_message, uint32 button3_pressed_message, uint32 cancel_message,
@@ -145,7 +148,9 @@ class feDialogScreen : public MenuScreen {
     uint32 mLastButtonHash;   // offset 0x30
     feDialogConfig Config;    // offset 0x34, size 0x248
     u32 ControllerPort;       // offset 0x27C
-    Timer tCountdownTimer;    // offset 0x280
+#ifndef EA_BUILD_A124
+    Timer tCountdownTimer; // offset 0x280
+#endif
 };
 
 #endif

@@ -3,61 +3,16 @@
 
 #include <types.h>
 #include <string.h>
+
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
-#include "Packages/realmemcard/3.04.01-layer2/include/common/realmemcard/memcard_interface.h"
+#include "realcore/system.h"
+#include "realmemcard/memcard_interface.h"
+#include "realmemcard/memcard_system.h"
 
-#include "Speed/Indep/Src/Misc/Joylog.hpp"
-
-struct IAllocator;
-
-typedef int (*ThreadEntryFunc)(void *);
-
-class IThread {
-  public:
-    enum Priority {
-        IDLE_PRIORITY = -3,
-        LOW_PRIORITY = -2,
-        BELOW_PRIORITY = -1,
-        NORM_PRIORITY = 0,
-        ABOVE_PRIORITY = 1,
-        HIGH_PRIORITY = 2,
-        CRIT_PRIORITY = 3,
-    };
-
-    virtual IThread *CreateInstance() = 0;
-    virtual int AddRef() = 0;
-    virtual int Release() = 0;
-    virtual void SetStackSize(unsigned int stacksize) = 0;
-    virtual void Begin(ThreadEntryFunc func) = 0;
-    virtual void WaitForEnd(int) = 0;
-    virtual void Sleep(int ticks) = 0;
-    virtual void SetPriority(int priority) = 0;
-};
-
-class IMutex {
-  public:
-    virtual int AddRef() = 0;
-    virtual int Release() = 0;
-    virtual IMutex *CreateInstance() = 0;
-    virtual void Lock() = 0;
-    virtual void Unlock() = 0;
-};
-
-struct THREAD {
-    int reserved[198]; // offset 0x0, size 0x318
-};
-
-void THREAD_sleep(int ticks);
-void THREAD_create(THREAD *thread, int (*func)(void *), void *param, void *stack, int stackSize, int priority);
-void THREAD_waitexit(THREAD *thread, int status);
-void THREAD_setpriority(THREAD *thread, int priority);
-void THREAD_yield(int ticks);
-void THREAD_destroy(THREAD *thread);
-
-class MyMutex : public IMutex {
+class MyMutex : public Realmc::IMutex {
   private:
     MUTEX mMutex;  // offset 0x4, size 0x1C
     int mRefcount; // offset 0x20, size 0x4
@@ -81,10 +36,8 @@ class MyMutex : public IMutex {
 
     int Release() override { // Decl: 54
         mRefcount--;
-        if (mRefcount < 1) {
-            if (this != nullptr) {
-                delete this;
-            }
+        if (mRefcount <= 0) {
+            delete this;
             return 0;
         }
         return mRefcount;
@@ -97,15 +50,15 @@ class MyMutex : public IMutex {
     };
 };
 
-class MyThread : public IThread {
+class MyThread : public Realmc::IThread {
   private:
-    int mRefcount;              // offset 0x4, size 0x4
-    ThreadEntryFunc mEntryFunc; // offset 0x8, size 0x4
-    unsigned int mStackSize;    // offset 0xC, size 0x4
-    void *mStackBuffer;         // offset 0x10, size 0x4
-    THREAD mThreadData;         // offset 0x14, size 0x318
-    int mPriority;              // offset 0x32C, size 0x4
-    bool mActive;               // offset 0x330, size 0x1
+    int mRefcount;                      // offset 0x4, size 0x4
+    Realmc::ThreadEntryFunc mEntryFunc; // offset 0x8, size 0x4
+    unsigned int mStackSize;            // offset 0xC, size 0x4
+    void *mStackBuffer;                 // offset 0x10, size 0x4
+    THREAD mThreadData;                 // offset 0x14, size 0x318
+    int mPriority;                      // offset 0x32C, size 0x4
+    bool mActive;                       // offset 0x330, size 0x1
 
   public:
     MyThread() : mRefcount(1), mStackSize(0x1000), mStackBuffer(nullptr), mThreadData(), mPriority(0), mActive(false) {}
@@ -125,10 +78,8 @@ class MyThread : public IThread {
     };
     int Release() override { // Decl: 99
         mRefcount--;
-        if (mRefcount < 1) {
-            if (this != nullptr) {
-                delete this;
-            }
+        if (mRefcount <= 0) {
+            delete this;
             return 0;
         }
         return mRefcount;
@@ -144,7 +95,7 @@ class MyThread : public IThread {
         pThread->MyThread::GetEntryFunc()(pContext);
         return 0;
     };
-    void Begin(ThreadEntryFunc func) override { // Decl: 129
+    void Begin(Realmc::ThreadEntryFunc func) override { // Decl: 129
         mEntryFunc = func;
         mStackBuffer = new char[mStackSize];
         THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
@@ -152,69 +103,27 @@ class MyThread : public IThread {
     };
     void WaitForEnd(int) override { // Decl: 137
         THREAD_waitexit(&mThreadData, 0);
-        if (mStackBuffer != nullptr) {
-            delete[] static_cast<char *>(mStackBuffer);
-        }
+        delete[] static_cast<char *>(mStackBuffer);
         mActive = false;
     };
     void Sleep(int ticks) override { // Decl: 143
         THREAD_yield(ticks);
     };
     void SetPriority(int priority) override { // Decl: 148
+#ifdef EA_PLATFORM_WIN32
+        mPriority = priority;
+        THREAD_setpriority(&mThreadData, priority);
+#else
         mPriority = 0;
         THREAD_setpriority(&mThreadData, 0);
+#endif
     };
-    virtual ThreadEntryFunc GetEntryFunc() { // Decl: 153
+    virtual Realmc::ThreadEntryFunc GetEntryFunc() { // Decl: 153
         return mEntryFunc;
     };
     virtual bool IsActive() { // Decl: 154
         return mActive;
     };
-};
-
-// TODO belongs to C:/packages/realmemcard/3.04.01-layer2
-namespace Realmc {
-
-// total size: 0x10
-struct SystemInterface {
-    IAllocator *mAllocator;              // offset 0x0, size 0x4
-    IThread *mThread;                    // offset 0x4, size 0x4
-    IMutex *mMutex;                      // offset 0x8, size 0x4
-    const char *(*mGetStrCallback)(int); // offset 0xC, size 0x4
-
-    void Clear();
-
-    SystemInterface() {
-        Clear();
-    }
-};
-
-} // namespace Realmc
-
-struct MemoryCard;
-
-// TODO belongs to C:/packages/realmemcard/3.04.01-layer2
-struct IGameInterface {
-    virtual void ShowMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options) = 0;
-    virtual void ClearMessage() = 0;
-    virtual void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults res) = 0;
-    virtual void SaveCheckDone(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
-    virtual void SaveDone(const char *filename) = 0;
-    virtual RealmcIface::DataStatus CheckLoadedData(const char *data) = 0;
-    virtual void LoadDone(const char *filename) = 0;
-    virtual void DeleteDone(const char *filename) = 0;
-    virtual void ClearEntries() = 0;
-    virtual void FoundEntry(const RealmcIface::EntryInfo *info) = 0;
-    virtual void FindEntriesDone(RealmcIface::CardStatus status) = 0;
-    virtual void Retry(RealmcIface::CardStatus status) = 0;
-    virtual void Failed(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
-    virtual void CardChanged(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
-    virtual void CardChecked(const RealmcIface::CardInfo *info) = 0;
-    virtual void CardRemoved() = 0;
-    virtual void SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface::CardStatus status, RealmcIface::AutosaveState flag) = 0;
-    virtual void SetMonitorDone(RealmcIface::CardStatus status, RealmcIface::MonitorState state) = 0;
-    virtual RealmcIface::TaskStatus LoadReady(const char *entryName, unsigned int headerSize, unsigned int bodySize, char *&headerData,
-                                              char *&bodyData) = 0;
 };
 
 // Decl: 22

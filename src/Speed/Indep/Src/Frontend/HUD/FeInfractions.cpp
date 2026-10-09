@@ -19,7 +19,7 @@ Infractions::Infractions(UTL::COM::Object *pOutter, const char *pkg_name, int pl
 
 void Infractions::Update(IPlayer *player) {
     bool infractionStringShowing = false;
-    for (int i = 0; i <= 3; i++) {
+    for (int i = 0; i < 4; i++) {
         if (!FEngIsScriptSet(mpDataInfractionStrings[i], FEHASH_HIDE)) {
             infractionStringShowing = true;
             break;

@@ -2999,7 +2999,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         nisPlaying = nis->IsPlaying();
     }
 
-    if (reflexion == 0) {
+    if (!reflexion) {
         biased_local_world->v3.z += fCarFudgeElevation;
         float fBias = (fDistanceToCamera - fCarFudgeBias) / fDistanceToCamera;
         if (in_front_end) {
@@ -3035,7 +3035,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     this->TheCarPartCuller.CullParts(&camera_eye_in_car_space, steerAngle);
 
     unsigned int body_render_flags;
-    if (DrawCarShadow != 0 && reflexion == 0) {
+    if (DrawCarShadow != 0 && !reflexion) {
         this->DrawAmbientShadow(view, &position, shadow_scale, local_world, &world_local, biased_identity);
         if (!IsGameFlowInFrontEnd() && this->pRideInfo->Type != CARTYPE_COPHELI && !is_traffic_car) {
             this->DrawKeithProjShadow(view, &position, local_world, &world_local, biased_identity, car_body_lod);
@@ -3043,7 +3043,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     }
 
     body_render_flags = 0;
-    if (IsGameFlowInGame() && view->GetID() != 3) {
+    if (IsGameFlowInGame() && view->GetID() != EVIEW_PLAYER1_RVM) {
         body_render_flags = 0x8000;
     }
 
@@ -3218,7 +3218,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
                         case CARSLOTID_LEFT_SIDE_MIRROR:
                         case CARSLOTID_RIGHT_SIDE_MIRROR:
-                            if (reflexion == 0) {
+                            if (!reflexion) {
                                 eModel *model = model_lod_base->GetModel();
                                 model->ReplaceLightMaterial(STRINGHASH_CARSKIN, this->LightMaterial_CarSkin);
                                 view->Render(model, biased_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags,
@@ -4117,7 +4117,6 @@ inline bVector3 sh_Adjust(const bVector3 &p, const bVector3 &mid) {
 
 int dshad = 1;
 
-// UNSOLVED r29, r24
 void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
                                         int body_lod) {
     if (body_lod >= 3) {
@@ -4185,9 +4184,9 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         unsigned int colour = static_cast<unsigned int>(bClamp(i, 0, 0xFE) << 24) | 0x00808080;
 
         if (dshad != 0) {
-            int nv = (nVert & ~1) - 1;
+            int nv = (nVert & ~1);
 
-            for (i = 0; i < nv; i += 2) {
+            for (i = 0; i < nv - 1; i += 2) {
                 if (eBeginStrip(this->ShadowRampTexture, 4, biasedIdentity)) {
                     eAddVertex(p[i]);
                     eAddVertex(mid);

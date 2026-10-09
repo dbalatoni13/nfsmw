@@ -213,12 +213,12 @@ void uiRepSheetBounty::RefreshTrack() {
 void uiRepSheetBounty::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
 
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum() + 1);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %$d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(GetCurrentDatumNum() - 1);
+    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(GetCurrentDatumNum());
     FEngSetTextureHash(GetPackageName(), 0xf97ec5d5, FEDatabase->GetBountyIconHash(loc_tag));
     BountyDatum *d = static_cast<BountyDatum *>(GetCurrentDatum());
     if (d != nullptr) {
@@ -227,7 +227,7 @@ void uiRepSheetBounty::RefreshHeader() {
         } else {
             cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
         }
-        FEngSetLanguageHash(GetPackageName(), 0x28049d6, FEDatabase->GetBountyDescHash(GetCurrentDatumNum()));
+        FEngSetLanguageHash(GetPackageName(), 0x28049d6, FEDatabase->GetBountyDescHash(GetCurrentDatumNum() + 1));
         for (int i = 0; i < GetNumSlots(); i++) {
             ArrayDatum *datum = GetDatumAt(i + GetStartDatumNum());
             uint32 check_hash = FEngHashString("CHECK_%d", i + 1);

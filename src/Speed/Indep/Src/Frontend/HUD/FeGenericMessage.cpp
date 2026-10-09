@@ -42,9 +42,9 @@ bool GenericMessage::RequestGenericMessage(const char *string, bool singleFrame,
         FEngSetScript(GetPackageName(), 0xe0ba07ec, FEHASH_INIT, true);
     }
     mPriority = priority;
+    mFengHash = fengHash;
     mNumFramesPlayed = 0;
     mPlayOneFrame = singleFrame;
-    mFengHash = fengHash;
     if (string != nullptr) {
         bSafeStrCpy(mStringBuffer, string, sizeof(mStringBuffer));
         if (fengHash) {

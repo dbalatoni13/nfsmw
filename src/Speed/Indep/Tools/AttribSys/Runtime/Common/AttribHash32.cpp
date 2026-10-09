@@ -1,6 +1,7 @@
 #include <cstring>
 
 #include "../AttribHash.h"
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include <types.h>
 
 #define mix(a, b, c)                                                                                                                                 \

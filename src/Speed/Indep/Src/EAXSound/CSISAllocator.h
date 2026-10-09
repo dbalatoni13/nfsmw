@@ -1,10 +1,38 @@
-#ifndef EAXSOUND_CSISALLOCATOR_H
-#define EAXSOUND_CSISALLOCATOR_H
+#ifndef CSISALLOCATOR_H
+#define CSISALLOCATOR_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Allocator/iallocator.h"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
+extern SlotPool *pCsisSlotPools[1];
+extern char *g_pcsCSISAllocString;
 
+// total size: 0x4
+// Decl: 44
+class CSISCoreAllocator : public EA::Allocator::ICoreAllocator {
+  public:
+    // Overrides: ICoreAllocator
+    void *Alloc(size_t size, const char *name, unsigned int flags) override {
+        return bOMalloc(pCsisSlotPools[0]);
+    }
+
+    void *Alloc(size_t size, const char *name, unsigned int flags, unsigned int align, unsigned int alignOffset) override {
+        return this->Alloc(size, g_pcsCSISAllocString, 0);
+    }
+
+    void Free(void *block, size_t size) override {
+        bFree(pCsisSlotPools[0], block);
+    }
+};
+
+extern CSISCoreAllocator g_CSISCoreAllocator;
+
+static void *CSISAllocatorMemAlloc(unsigned int numBytes) {
+    return bOMalloc(pCsisSlotPools[0]);
+}
+
+static void CSISAllocatorMemFree(void *memPtr) {
+    bFree(pCsisSlotPools[0], memPtr);
+}
 
 #endif

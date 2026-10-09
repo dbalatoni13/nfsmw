@@ -4,7 +4,7 @@
 
 void CPropAnimEntity::EndianSwapEntityData(void *data, int size) {
     PropAnimEntityInfo *info = reinterpret_cast<PropAnimEntityInfo *>(data);
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     bPlatEndianSwap(&info->mThisInstanceNameHash);
     bPlatEndianSwap(&info->mParentInstanceNameHash);
     bPlatEndianSwap(&info->mLocalMatrix);

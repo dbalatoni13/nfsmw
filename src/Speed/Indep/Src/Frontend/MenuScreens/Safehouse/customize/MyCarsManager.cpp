@@ -213,7 +213,7 @@ void MyCarsManager::RefreshHeader() {
             FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i))->SetSelectedCar(static_cast<CarDatum *>(GetCurrentDatum())->Handle, 0);
         }
     }
-    FEPrintf(GetPackageName(), 0x6f25a248, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x6f25a248, "%d", GetCurrentDatumNum() + 1);
     FEPrintf(GetPackageName(), 0xb2037bdc, "%d", GetNumDatum());
     UpdateSliders();
     UpdateCar();

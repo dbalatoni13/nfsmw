@@ -181,8 +181,8 @@ void CSTATE_Base::SortSFXCtl() {
                 bFound = true;
 
                 if (TmpSFXCTLArray[n]->GetSFX_ID() < LastSmalledID) {
-                    UsedIndex = n;
                     LastSmalledID = TmpSFXCTLArray[n]->GetSFX_ID();
+                    UsedIndex = n;
                 }
             }
         }

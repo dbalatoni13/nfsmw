@@ -1,11 +1,12 @@
 #ifndef SUPPORT_UTILITY_UVECTOR_H
 #define SUPPORT_UTILITY_UVECTOR_H
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "types.h"
 #include "UMath.h"
 
 // TODO class
-struct ALIGN_16 UVector3 : public UMath::Vector3 {
+struct PS2ALIGN16 UVector3 : public UMath::Vector3 {
     UVector3() {
         Clear(*this);
     }

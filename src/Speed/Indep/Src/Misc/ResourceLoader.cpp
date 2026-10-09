@@ -11,18 +11,53 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "SpeedChunks.hpp"
 
-#define LOADER_AMOUNT (26)
+static const int PrintChunkLoading = 0; // Decl: 31
 
-bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];
-bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
+static const int PrintChunkLoadingTime = 0; // Decl: 33
+
+static const int PrintResourceLoaderMemory = 0; // Decl: 35
+
+int NumResourcesBeingLoaded = 0; // Decl: 37
+
+// total size: 0x8
+// Decl: 44
+struct DelayedResourceCallback {
+    void (*pCallback)(void *); // offset 0x0, size 0x4
+    void *Param;               // offset 0x4, size 0x4
+};
+
+int NumDelayedResourceCallbacks = 0;                 // Decl: 49
+DelayedResourceCallback DelayedResourceCallbacks[8]; // Decl: 50
+
+// STRIPPED
+void InitHotChunks() {}
+
+// STRIPPED
+void CloseHotChunks() {}
+
+// STRIPPED
+void HotChunkMonitor() {}
+
+// STRIPPED
+int IsChunkValid(bChunk *chunks, int sizeof_chunks, const char *debug_name) {}
+
+// total size: 0x10
+// Decl: 187
+struct LoadedHotFileEntry {
+    bChunk *pChunk;        // offset 0x0, size 0x4
+    int OriginalSize;      // offset 0x4, size 0x4
+    int MaxSize;           // offset 0x8, size 0x4
+    unsigned int Checksum; // offset 0xC, size 0x4
+};
 
 static int LoaderStub(bChunk *chunk) {
     switch (chunk->ID) {
-        case BCHUNK_SMOKEABLES:
-        case BCHUNK_STYLE_MOMENTS_INFO:
+        case BCHUNK_SPEED_SMOKEABLE_INFO:
+        case BCHUNK_SPEED_STYLE_MOMENT_TABLE:
         case 0x34b00:
             return 1;
         default:
@@ -30,16 +65,130 @@ static int LoaderStub(bChunk *chunk) {
     }
 }
 
+int ChunkMovementOffset = 0; // Decl: 215
+
+int LoaderFEngFont(bChunk *chunk);
+int LoaderEventManager(bChunk *chunk);
+int LoaderVisibleSections(bChunk *chunk);
+int LoaderEAGLAnimations(bChunk *chunk);
+int LoaderEAGLSkeletons(bChunk *chunk);
+int LoaderAnimSceneData(bChunk *chunk);
+int LoaderAnimDirectoryData(bChunk *chunk);
+int LoaderWorldAnimEntityData(bChunk *chunk);
+int LoaderWorldAnimDirectoryData(bChunk *chunk);
+int LoaderWorldAnimTreeMarker(bChunk *chunk);
+int LoaderWorldAnimInstanceEntry(bChunk *chunk);
+int LoaderSun(bChunk *chunk);
+int LoaderCarInfo(bChunk *chunk);
+int LoaderLanguage(bChunk *chunk);
+int LoaderWeatherMan(bChunk *chunk);
+int LoaderFEngPackage(bChunk *chunk);
+int LoaderQuickSpline(bChunk *chunk);
+int LoaderICECameras(bChunk *chunk);
+int LoaderSoundStichs(bChunk *chunk);
+int LoaderFEPresetCars(bChunk *chunk);
+int LoaderParameterMaps(bChunk *chunk);
+int LoaderWCollisionPack(bChunk *chunk);
+int LoaderBounds(bChunk *chunk);
+int LoaderTrigger(bChunk *chunk);
+int LoaderColourCube(bChunk *chunk);
+
+// Decl: 254
+bChunkLoaderFunction LoaderTable[26] = {
+    LoaderFEngFont,
+    LoaderEventManager,
+    LoaderVisibleSections,
+    LoaderEAGLAnimations,
+    LoaderEAGLSkeletons,
+    LoaderAnimSceneData,
+    LoaderAnimDirectoryData,
+    LoaderWorldAnimEntityData,
+    LoaderWorldAnimDirectoryData,
+    LoaderWorldAnimTreeMarker,
+    LoaderWorldAnimInstanceEntry,
+    LoaderSun,
+    LoaderCarInfo,
+    LoaderLanguage,
+    LoaderWeatherMan,
+    LoaderFEngPackage,
+    LoaderQuickSpline,
+    LoaderICECameras,
+    LoaderSoundStichs,
+    LoaderFEPresetCars,
+    LoaderParameterMaps,
+    LoaderWCollisionPack,
+    LoaderBounds,
+    LoaderTrigger,
+    LoaderColourCube,
+    LoaderStub,
+};
+
+int UnloaderFEngFont(bChunk *chunk);
+int UnloaderEventManager(bChunk *chunk);
+int UnloaderVisibleSections(bChunk *chunk);
+int UnloaderEAGLAnimations(bChunk *chunk);
+int UnloaderEAGLSkeletons(bChunk *chunk);
+int UnloaderAnimSceneData(bChunk *chunk);
+int UnloaderAnimDirectoryData(bChunk *chunk);
+int UnloaderWorldAnimEntityData(bChunk *chunk);
+int UnloaderWorldAnimDirectoryData(bChunk *chunk);
+int UnloaderWorldAnimTreeMarker(bChunk *chunk);
+int UnloaderWorldAnimInstanceEntry(bChunk *chunk);
+int UnloaderSun(bChunk *chunk);
+int UnloaderCarInfo(bChunk *chunk);
+int UnloaderLanguage(bChunk *chunk);
+int UnloaderWeatherMan(bChunk *chunk);
+int UnloaderFEngPackage(bChunk *chunk);
+int UnloaderQuickSpline(bChunk *chunk);
+int UnloaderICECameras(bChunk *chunk);
+int UnloaderSoundStichs(bChunk *chunk);
+int UnloaderFEPresetCars(bChunk *chunk);
+int UnloaderParameterMaps(bChunk *chunk);
+int UnloaderWCollisionPack(bChunk *chunk);
+int UnloaderBounds(bChunk *chunk);
+int UnloaderTrigger(bChunk *chunk);
+int UnloaderColourCube(bChunk *chunk);
+
+// Decl: 334
+bChunkLoaderFunction UnloaderTable[26] = {
+    UnloaderFEngFont,
+    UnloaderEventManager,
+    UnloaderVisibleSections,
+    UnloaderEAGLAnimations,
+    UnloaderEAGLSkeletons,
+    UnloaderAnimSceneData,
+    UnloaderAnimDirectoryData,
+    UnloaderWorldAnimEntityData,
+    UnloaderWorldAnimDirectoryData,
+    UnloaderWorldAnimTreeMarker,
+    UnloaderWorldAnimInstanceEntry,
+    UnloaderSun,
+    UnloaderCarInfo,
+    UnloaderLanguage,
+    UnloaderWeatherMan,
+    UnloaderFEngPackage,
+    UnloaderQuickSpline,
+    UnloaderICECameras,
+    UnloaderSoundStichs,
+    UnloaderFEPresetCars,
+    UnloaderParameterMaps,
+    UnloaderWCollisionPack,
+    UnloaderBounds,
+    UnloaderTrigger,
+    UnloaderColourCube,
+    LoaderStub,
+};
+
 int CallChunkLoader(bChunk *chunk) {
     if (chunk->GetID() == 0) {
         return 1;
     }
     bChunkLoader *loader = bChunkLoader::FindLoader(chunk->ID);
-    if (loader) {
+    if (loader != nullptr) {
         int result = loader->GetLoaderFunction()(chunk);
         return result;
     }
-    for (int loader_num = 0; loader_num < LOADER_AMOUNT; loader_num++) {
+    for (int loader_num = 0; loader_num < NUM_ELEMENTS(LoaderTable); loader_num++) {
         bChunkLoaderFunction loader_function = LoaderTable[loader_num];
         if (loader_function(chunk)) {
             return 1;
@@ -53,11 +202,11 @@ int CallChunkUnloader(bChunk *chunk) {
         return 1;
     }
     bChunkLoader *loader = bChunkLoader::FindLoader(chunk->ID);
-    if (loader) {
+    if (loader != nullptr) {
         int result = loader->GetUnloaderFunction()(chunk);
         return result;
     }
-    for (int loader_num = 0; loader_num < LOADER_AMOUNT; loader_num++) {
+    for (int loader_num = 0; loader_num < NUM_ELEMENTS(LoaderTable); loader_num++) {
         bChunkLoaderFunction loader_function = UnloaderTable[loader_num];
         if (loader_function(chunk)) {
             return 1;
@@ -103,7 +252,7 @@ void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name) {
             bChunk *chunk = prev_chunk_table[(num_prev_chunks - 1 - n) % max_prev_chunks];
             const char *chunkname = GetChunkName(chunk->GetID());
             uint32 start_time = bGetTicker();
-            if (CallChunkLoader(chunk) == 0) {
+            if (CallChunkUnloader(chunk) == 0) {
                 bBreak();
             }
             last_chunk = chunk;
@@ -112,12 +261,16 @@ void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name) {
     PostLoadFixup();
 }
 
+float MoveChunkMemcpyTime = 0.0f; // Decl: 600
+#ifdef FIX_BUGS
+uint32 MoveChunkMemcpyAmount = 0.0f;
+#else
+float MoveChunkMemcpyAmount = 0.0f; // Decl: 601
+#endif
+
 void ScratchPadMemCpy(void *dest, const void *src, unsigned int numbytes) {
     bOverlappedMemCpy(dest, src, numbytes);
 }
-
-float MoveChunkMemcpyTime;
-float MoveChunkMemcpyAmount; // BUG (float)
 
 void MoveChunksRange(bChunk *source_chunks, int sizeof_chunks, int movement_offset, const char *debug_name) {
     UnloadChunks(source_chunks, sizeof_chunks, debug_name);
@@ -131,8 +284,6 @@ void MoveChunksRange(bChunk *source_chunks, int sizeof_chunks, int movement_offs
     MoveChunkMemcpyAmount += sizeof_chunks;
     LoadChunks(dest_chunks, sizeof_chunks, debug_name);
 }
-
-extern int ChunkMovementOffset;
 
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int32 sizeof_chunks, const char *debug_name) {
     int num_chunk_ranges = 0;
@@ -183,7 +334,7 @@ void LoadEmbeddedChunks(bChunk *chunk, int32 sizeof_chunks, const char *debug_na
 }
 
 void EndianSwapChunkHeader(bChunk *chunk) {
-    bPlatEndianSwap(&chunk->ID);
+    bPlatEndianSwap(&chunk->ID); // TODO using the int override, huh?
     bPlatEndianSwap(&chunk->Size);
 }
 
@@ -192,8 +343,8 @@ void EndianSwapChunkHeadersRecursive(bChunk *chunks, int32 sizeof_chunks) {
     EndianSwapChunkHeadersRecursive(chunks, last_chunk);
 }
 
-int PrintChunks;
-int PrintChunkLevel;
+int PrintChunks = 0;     // Decl: 944
+int PrintChunkLevel = 0; // Decl: 945
 
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk) {
     for (bChunk *chunk = first_chunk; chunk < last_chunk; chunk = chunk->GetNext()) {
@@ -228,7 +379,7 @@ int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunk
             if ((pad_size != 0) && (pad_size < 9)) {
                 pad_size += alignment_amount;
             }
-            if (dest_buffer && pad_size != 0) {
+            if ((dest_buffer != nullptr) && (pad_size != 0)) {
                 bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
                 dest_chunk->ID = 0;
                 dest_chunk->Size = pad_size - sizeof(bChunk);
@@ -240,7 +391,7 @@ int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunk
             int new_dest_position = SplitPermTempChunks(split_temp, source_chunk->GetFirstChunk(), source_chunk->GetSize(), dest_buffer,
                                                         dest_position + sizeof(bChunk), depth);
             if (new_dest_position != dest_position + sizeof(bChunk)) {
-                if (dest_buffer) {
+                if (dest_buffer != nullptr) {
                     bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
                     dest_chunk->ID = source_chunk->ID;
                     dest_chunk->Size = new_dest_position - dest_position - sizeof(bChunk);
@@ -248,7 +399,7 @@ int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunk
                 dest_position = new_dest_position;
             }
         } else if (is_temp_chunk == split_temp) {
-            if (dest_buffer) {
+            if (dest_buffer != nullptr) {
                 bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
                 bMemCpy(dest_chunk, source_chunk, source_chunk->GetSize() + sizeof(bChunk));
             }
@@ -280,7 +431,7 @@ void ClobberPermChunks(bChunk *source_chunks, int source_chunks_size) {
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name) {
     bChunk *chunks = *ppchunks;
     int sizeof_chunks = *psizeof_chunks;
-    if (!chunks || sizeof_chunks == 0) {
+    if ((chunks == nullptr) || (sizeof_chunks == 0)) {
         return false;
     }
     int sizeof_perm_chunks = SplitPermTempChunks(false, chunks, sizeof_chunks, nullptr, 0, 0);
@@ -289,7 +440,7 @@ bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_p
         LoadChunks(chunks, sizeof_chunks, debug_name);
         return false;
     } else {
-        bChunk *perm_chunks = (bChunk *)bMalloc(sizeof_perm_chunks, "TODO", __LINE__, allocation_params);
+        bChunk *perm_chunks = static_cast<bChunk *>(bMalloc(sizeof_perm_chunks, debug_name, 0, allocation_params));
         bChunk *temp_chunks = chunks;
 
         SplitPermTempChunks(false, temp_chunks, sizeof_chunks, reinterpret_cast<uint8 *>(perm_chunks), 0, 0);
@@ -304,8 +455,9 @@ bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_p
     }
 }
 
+bool PostLoadFixupDisabled = false; // Decl: 213
+
 // TODO
-extern bool PostLoadFixupDisabled;
 extern int32 eDirtyTextures;
 
 void PostLoadFixup() {
@@ -321,7 +473,7 @@ void PostLoadFixup() {
 // STRIPPED
 void HotChunksPostLoadFixup() {}
 
-SlotPool *ResourceFileSlotPool;
+SlotPool *ResourceFileSlotPool = nullptr;
 
 void InitResourceLoader() {
     ResourceFileSlotPool = bNewSlotPool(80, 80, "ResourceFileSlotPool", 0);
@@ -331,44 +483,44 @@ void InitResourceLoader() {
 void CloseResourceLoader() {}
 
 ResourceFile::ResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size) {
-    Flags = flags;
-    FileOffset = file_offset;
-    FileSize = file_size;
-    mEnableFreeMemory = true;
-    Type = type;
-    Filename = bAllocateSharedString(filename);
-    HotFilename = nullptr;
-    FileTransfersInProgress = 0;
-    LoadingFinishedFlag = 0;
-    HotFileNumber = 0;
-    pLoadedHotFileEntries = nullptr;
-    NumLoadedHotFileEntries = 0;
-    Callback = nullptr;
-    CallbackParam = nullptr;
-    SetAllocationParams(0x2000, filename);
-    HotFilename = nullptr;
-    SizeofChunks = bFileSize(Filename);
-    if (SizeofChunks < 0) {
-        SizeofChunks = 0;
+    this->Flags = flags;
+    this->FileOffset = file_offset;
+    this->FileSize = file_size;
+    this->mEnableFreeMemory = true;
+    this->Type = type;
+    this->Filename = bAllocateSharedString(filename);
+    this->HotFilename = nullptr;
+    this->FileTransfersInProgress = 0;
+    this->LoadingFinishedFlag = 0;
+    this->HotFileNumber = 0;
+    this->pLoadedHotFileEntries = nullptr;
+    this->NumLoadedHotFileEntries = 0;
+    this->Callback = nullptr;
+    this->CallbackParam = nullptr;
+    this->SetAllocationParams(0x2000, filename);
+    this->HotFilename = nullptr;
+    this->SizeofChunks = bFileSize(Filename);
+    if (this->SizeofChunks < 0) {
+        this->SizeofChunks = 0;
     }
-    if (SizeofChunks != 0 && FileSize != 0) {
-        SizeofChunks = FileSize;
+    if (this->SizeofChunks != 0 && this->FileSize != 0) {
+        this->SizeofChunks = this->FileSize;
     }
-    pFirstChunk = nullptr;
+    this->pFirstChunk = nullptr;
 }
 
 void ResourceFile::SetAllocationParams(int allocation_params, const char *debug_name) {
-    AllocationParams = allocation_params;
-    AllocationName = bAllocateSharedString(debug_name);
+    this->AllocationParams = allocation_params;
+    this->AllocationName = bAllocateSharedString(debug_name);
 }
 
 void ResourceFile::AllocateMemory(bool loading_compressed_file) {
-    if (SizeofChunks == 0) {
+    if (this->SizeofChunks == 0) {
         return;
     }
     // TODO magic flags
-    int allocation_params = AllocationParams;
-    if (Flags & 2) {
+    int allocation_params = this->AllocationParams;
+    if (this->Flags & 2) {
         allocation_params |= 0x40;
     }
     int pool_num = bMemoryGetPoolNum(allocation_params);
@@ -379,10 +531,10 @@ void ResourceFile::AllocateMemory(bool loading_compressed_file) {
             allocation_params &= ~0xF;
         }
     }
-    if (pool_num != 0 && SizeofChunks > bLargestMalloc(allocation_params)) {
+    if (pool_num != 0 && this->SizeofChunks > bLargestMalloc(allocation_params)) {
         allocation_params &= ~0xF;
     }
-    pFirstChunk = reinterpret_cast<bChunk *>(bMalloc(SizeofChunks, AllocationName, 0, allocation_params));
+    this->pFirstChunk = reinterpret_cast<bChunk *>(bMalloc(this->SizeofChunks, this->AllocationName, 0, allocation_params));
 }
 
 // STRIPPED
@@ -394,66 +546,65 @@ bool ResourceFile::IsFreeMemoryEnabled() {
 void ResourceFile::SetFreeMemoryEnabled(bool enable) {}
 
 void ResourceFile::FreeMemory() {
-    if (mEnableFreeMemory && pFirstChunk) {
-        bFree(pFirstChunk);
-        pFirstChunk = nullptr;
+    if (this->mEnableFreeMemory && (this->pFirstChunk != nullptr)) {
+        bFree(this->pFirstChunk);
+        this->pFirstChunk = nullptr;
     }
 }
 
-int NumResourcesBeingLoaded;
-
 void ResourceFile::BeginLoading(void (*callback)(void *), void *callback_param) {
-    Callback = callback;
-    CallbackParam = callback_param;
+    this->Callback = callback;
+    this->CallbackParam = callback_param;
     NumResourcesBeingLoaded++;
-    if (!GetMemory()) {
-        bool loading_compressed_file = (Flags >> 3) & 1;
-        AllocateMemory(loading_compressed_file);
+    if (this->GetMemory() == nullptr) {
+        bool loading_compressed_file = ((Flags >> 3) & 1) != 0;
+        this->AllocateMemory(loading_compressed_file);
     }
     if (SizeofChunks != 0) {
-        FileTransfersInProgress++;
-        AddQueuedFile(pFirstChunk, Filename, FileOffset, SizeofChunks, FileTransferCallback, this, nullptr);
+        this->FileTransfersInProgress++;
+        AddQueuedFile(pFirstChunk, this->Filename, this->FileOffset, this->SizeofChunks, ResourceFile::FileTransferCallback, this, nullptr);
     }
 }
 
 void ResourceFile::ManualUnload() {
-    UnloadChunks(pFirstChunk, SizeofChunks, GetFilename());
-    pFirstChunk = nullptr;
+    UnloadChunks(this->pFirstChunk, this->SizeofChunks, this->GetFilename());
+    this->pFirstChunk = nullptr;
 }
 
 void ResourceFile::ManualReload(bChunk *new_chunks) {
-    pFirstChunk = new_chunks;
-    LoadChunks(new_chunks, SizeofChunks, GetFilename());
+    this->pFirstChunk = new_chunks;
+    LoadChunks(new_chunks, this->SizeofChunks, this->GetFilename());
 }
 
 ResourceFile::~ResourceFile() {
-    if (pFirstChunk) {
-        UnloadChunks(pFirstChunk, this->SizeofChunks, GetFilename());
-        FreeMemory();
+    if (this->pFirstChunk != nullptr) {
+        UnloadChunks(this->pFirstChunk, this->SizeofChunks, this->GetFilename());
+        this->FreeMemory();
     }
-    bFreeSharedString(Filename);
-    bFreeSharedString(HotFilename);
-    bFreeSharedString(AllocationName);
+    bFreeSharedString(this->Filename);
+    bFreeSharedString(this->HotFilename);
+    bFreeSharedString(this->AllocationName);
 }
 
+// TODO get rid of goto
 void ResourceFile::LoadResourceIfFileTransferFinished() {
-    if (LoadingFinishedFlag || FileTransfersInProgress) {
+    if (this->LoadingFinishedFlag || this->FileTransfersInProgress) {
         return;
     }
-    if (Flags & 8) {
-        LZHeader *header = reinterpret_cast<LZHeader *>(pFirstChunk);
-        if (header) {
+    if (this->Flags & 8) {
+        LZHeader *header = reinterpret_cast<LZHeader *>(this->pFirstChunk);
+        if (header != nullptr) {
             bPlatEndianSwap(&header->ID);
             bPlatEndianSwap(&header->Flags);
             bPlatEndianSwap(&header->UncompressedSize);
             bPlatEndianSwap(&header->CompressedSize);
             if (LZValidHeader(header)) {
-                uint8 *compressed_data = reinterpret_cast<uint8 *>(pFirstChunk);
-                SizeofChunks = header->UncompressedSize;
-                pFirstChunk = nullptr;
-                if (SizeofChunks != 0) {
-                    AllocateMemory(false);
-                    LZDecompress(compressed_data, reinterpret_cast<uint8 *>(pFirstChunk));
+                uint8 *compressed_data = reinterpret_cast<uint8 *>(this->pFirstChunk);
+                this->SizeofChunks = header->UncompressedSize;
+                this->pFirstChunk = nullptr;
+                if (this->SizeofChunks != 0) {
+                    this->AllocateMemory(false);
+                    LZDecompress(compressed_data, reinterpret_cast<uint8 *>(this->pFirstChunk));
                 }
                 bFree(compressed_data);
             }
@@ -461,18 +612,18 @@ void ResourceFile::LoadResourceIfFileTransferFinished() {
         }
     } else {
     block_8:
-        if (pFirstChunk) {
-            EndianSwapChunkHeadersRecursive(pFirstChunk, SizeofChunks);
+        if (this->pFirstChunk != nullptr) {
+            EndianSwapChunkHeadersRecursive(this->pFirstChunk, this->SizeofChunks);
         }
     }
-    LoadTempPermChunks(&pFirstChunk, &SizeofChunks, AllocationParams, AllocationName);
-    if (Flags & 4) {
-        if (pFirstChunk) {
-            FreeMemory();
+    LoadTempPermChunks(&this->pFirstChunk, &this->SizeofChunks, this->AllocationParams, this->AllocationName);
+    if (this->Flags & 4) {
+        if (this->pFirstChunk != nullptr) {
+            this->FreeMemory();
         }
-        SizeofChunks = 0;
+        this->SizeofChunks = 0;
     }
-    LoadingFinishedFlag = 1;
+    this->LoadingFinishedFlag = 1;
 }
 
 void ResourceFile::FileTransferCallback(void *param, int error_status) {
@@ -486,9 +637,8 @@ int ResourceFile::GetSize(int chunk_id, int *pnum_chunks) {
 
 bTList<ResourceFile> ResourceFileList;
 
-ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size) {
-    ResourceFile *r = new ResourceFile(filename, type, flags, flag_offset, file_size);
-    ResourceFileList.AddTail(r);
+ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size) {
+    ResourceFile *r = ResourceFileList.AddTail(new ResourceFile(filename, type, flags, file_offset, file_size));
     return r;
 }
 
@@ -500,7 +650,7 @@ ResourceFile *LoadResourceFile(const char *filename, enum ResourceFileType type,
 }
 
 void UnloadResourceFile(ResourceFile *resource_file) {
-    if (!resource_file) {
+    if (resource_file == nullptr) {
         return;
     }
     while (!resource_file->IsFinishedLoading()) {
@@ -509,15 +659,6 @@ void UnloadResourceFile(ResourceFile *resource_file) {
     ResourceFileList.Remove(resource_file);
     delete resource_file;
 }
-
-// total size: 0x8
-struct DelayedResourceCallback {
-    void (*pCallback)(void *); // offset 0x0, size 0x4
-    void *Param;               // offset 0x4, size 0x4
-};
-
-int NumDelayedResourceCallbacks;
-DelayedResourceCallback DelayedResourceCallbacks[8];
 
 int ServiceResourceLoading() {
     ProfileNode profile_node("TODO", 0);
@@ -551,7 +692,7 @@ int ServiceResourceLoading() {
 }
 
 int IsResourceLoadingComplete() {
-    return NumResourcesBeingLoaded == 0 && NumDelayedResourceCallbacks == 0;
+    return static_cast<int>(NumResourcesBeingLoaded == 0 && NumDelayedResourceCallbacks == 0);
 }
 
 void WaitForResourceLoadingComplete() {
@@ -585,44 +726,56 @@ ResourceFile *FindResourceFile(ResourceFileType type) {
     return nullptr;
 }
 
-int CurrentlyHotChunking;
+// STRIPPED
+int GetResourceFileSize(ResourceFileType type, int chunk_id, int *pnum_chunks) {}
+
+// STRIPPED
+int GetResourceFileSize(int chunk_id, int *pnum_chunks) {}
+
+// STRIPPED
+void PrintResourceFiles(ResourceFileType type) {}
+
+// STRIPPED
+void PrintResourceFiles(ResourceFileType type, bFile *file) {}
+
+int CurrentlyHotChunking = 0; // Decl: 1826
 
 bool IsCurrentlyHotChunking() {
-    return CurrentlyHotChunking;
+    return CurrentlyHotChunking != 0;
 }
 
 int LoaderWCollisionPack(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_W_COLLISION_ASSETS) {
         WCollisionAssets::Get().LoadCollisionPack(chunk);
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 int UnloaderWCollisionPack(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_W_COLLISION_ASSETS) {
         WCollisionAssets::Get().UnLoadCollisionPack(chunk);
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 int LoaderColourCube(bChunk *chunk) {
-    return chunk->GetID() == BCHUNK_COLOUR_CUBE;
+    return static_cast<int>(chunk->GetID() == BCHUNK_COLOUR_CUBE);
 }
 
 int UnloaderColourCube(bChunk *chunk) {
-    return chunk->GetID() == BCHUNK_FENG_FONT;
+    return static_cast<int>(chunk->GetID() == BCHUNK_FENG_FONT);
 }
 
 VMFile::VMFile() {
-    mInit = false;
-    mCompressed = false;
-    mSize = 0;
-    mSizeOfChunks = 0;
-    mVirtMemAddr = nullptr;
-    mUsedTrackPool = false;
-    bMemSet(mFilename, 0, sizeof(mFilename));
+    this->mInit = false;
+    this->mCompressed = false;
+    this->mSize = 0;
+    this->mSizeOfChunks = 0;
+    this->mVirtMemAddr = nullptr;
+    this->mUsedTrackPool = false;
+    bMemSet(this->mFilename, 0, sizeof(this->mFilename));
 }
 
 VMFile queued_vm_files[5];
@@ -679,7 +832,7 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
         bFree(old_memory);
     }
 
-    if (new_mem) {
+    if (new_mem != nullptr) {
         EndianSwapChunkHeadersRecursive(static_cast<bChunk *>(new_mem), sizeofchunks);
     }
 
@@ -702,7 +855,7 @@ void UnloadFileFromVirtualMemory(VMFile *vm_file) {
 
 VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool use_trackstreampool_as_temp) {
     VMFile *vm_file = GetVMFile();
-    if (!vm_file) {
+    if (vm_file == nullptr) {
         return nullptr;
     }
 

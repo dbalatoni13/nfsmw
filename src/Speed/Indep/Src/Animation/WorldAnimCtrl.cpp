@@ -93,7 +93,7 @@ void CWorldAnimCtrl::Cleanup() {
     m_animPart.Purge();
     for (int i = 0; i < 4; i++) {
         if (m_pFnAnim[i]) {
-            EAGL4Anim::MemoryPoolManager::DeleteFnAnim(m_pFnAnim[i]);
+            EAGL4Anim::AnimBank::DeleteFnAnim(m_pFnAnim[i]);
             m_pFnAnim[i] = nullptr;
         }
     }
@@ -121,7 +121,7 @@ int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int anim
     m_pFnAnim[dof]->GetLength(m_animLength);
 
     if (m_pFnAnim[dof] != nullptr) {
-        m_isAllocated = 1;
+        SetAllocated();
         return 1;
     }
     return 0;
@@ -131,8 +131,8 @@ int CWorldAnimCtrl::CreateFnAnimFromNamehash(uint32 namehash, int dof) {
     EAGL4Anim::AnimBank *animBank = nullptr;
     int item_index = 0;
     if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {
-        CreateFnAnimFromBank(animBank, item_index, dof);
-        m_isAllocated = 1;
+        int res = CreateFnAnimFromBank(animBank, item_index, dof);
+        SetAllocated();
         return 1;
     }
     return 0;
@@ -196,19 +196,21 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
 
     float end_of_anim = m_flags & 0x40 ? GetLoopRangeScaledEnd() : m_animLength;
 
-    bool linear = m_flags & 8;
     bool triggered = m_flags & 0x800;
+    bool linear = m_flags & 8;
     bool loop = m_flags & 0x20 ? !triggered : false;
     bool pingpong = m_flags & 0x10;
+    bool range;
+    bool print_out_here;
 
     if (linear) {
         if (pingpong) {
-            ClearFlags(0x10);
+            m_flags &= ~0x10;
             pingpong = false;
         }
     } else {
         if (!pingpong) {
-            SetFlags(8);
+            m_flags |= 8;
             linear = true;
         }
     }
@@ -224,17 +226,19 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
     }
 
     if (delay_world_start) {
-        float new_timestep = this_master_delay_elapsed + this_time_step;
+        this_master_delay_elapsed = this_master_delay_elapsed + this_time_step;
+        float new_timestep = this_master_delay_elapsed;
         if (new_timestep > this_master_delay_len) {
             new_evaltime += bFMod(new_timestep, this_master_delay_len);
         }
-        MasterDelayElapsed = (new_timestep / effective_time_scale) / 30;
+        MasterDelayElapsed = (this_master_delay_elapsed / effective_time_scale) / 30;
     } else if (delay_loop_start) {
-        float new_timestep = this_local_delay_elapsed + this_time_step;
+        this_local_delay_elapsed = this_local_delay_elapsed + this_time_step;
+        float new_timestep = this_local_delay_elapsed;
         if (new_timestep > this_local_delay_len) {
             new_evaltime += bFMod(new_timestep, this_local_delay_len);
         }
-        LocalDelayElapsed = (new_timestep / effective_time_scale) / 30;
+        LocalDelayElapsed = (this_local_delay_elapsed / effective_time_scale) / 30;
     } else if (linear) {
         if (m_flags & 0x1000) {
             new_evaltime -= this_time_step;
@@ -312,7 +316,8 @@ int CWorldAnimCtrl::UpdateAnimPose() {
     EAGL4Anim::Skeleton *world_skel = m_animPart.GetSkeleton()->GetEAGLSkeleton();
     float *sqtBuffer = m_animPart.GetSQTptr();
     EAGL4::Transform *skinningMatrices = m_animPart.GetGlobalMatrices();
-    float eval_time = GetEvalTime();
+    CWorldAnimCtrl *anim_ctrl = this;
+    float eval_time = anim_ctrl->GetEvalTime();
 
     if (GetFnAnim(1)) {
         GetFnAnim(1)->EvalSQT(eval_time, sqtBuffer, nullptr);
@@ -327,9 +332,10 @@ int CWorldAnimCtrl::UpdateAnimPose() {
     world_skel->PoseSQTToGlobal(sqtBuffer, skinningMatrices, nullptr);
 
     if (m_flags & 1) {
+        bMatrix4 *blended_matrices;
         EAGL4Anim::Skeleton *pSkeleton = m_animPart.GetSkeleton()->GetEAGLSkeleton();
         int number_of_bones = pSkeleton->GetNumBones();
-        bMatrix4 *blended_matrices = reinterpret_cast<bMatrix4 *>(m_animPart.GetGlobalMatrices());
+        blended_matrices = reinterpret_cast<bMatrix4 *>(m_animPart.GetGlobalMatrices());
 
         for (int bone_index = 0; bone_index < number_of_bones; bone_index++) {
             EAGL4Anim::BoneData *bone_data = &pSkeleton->GetBoneData(bone_index);

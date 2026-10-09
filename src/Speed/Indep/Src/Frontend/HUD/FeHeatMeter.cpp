@@ -89,14 +89,14 @@ void HeatMeter::SetVehicleHeat(float heat) {
     if (mVehicleHeat == heat) {
         return;
     }
-    mVehicleHeat = heat;
     mHeatChanged = true;
+    mVehicleHeat = heat;
 }
 
 void HeatMeter::SetPursuitHeat(float heat) {
     if (mPursuitHeat == heat) {
         return;
     }
-    mPursuitHeat = heat;
     mHeatChanged = true;
+    mPursuitHeat = heat;
 }

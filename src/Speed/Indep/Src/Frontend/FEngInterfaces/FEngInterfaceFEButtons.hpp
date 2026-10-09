@@ -5,6 +5,8 @@
 
 void FEngSetCurrentButton(const char *pkg_name, uint32 hash);
 
+void FEngSetCurrentButton(const char *pkg_name, FEObject *obj);
+
 FEObject *FEngGetCurrentButton(const char *pkg_name);
 
 void FEngSetButtonState(const char *pkg_name, uint32 button_hash, bool enabled);

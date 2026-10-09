@@ -1,7 +1,9 @@
 #include "uiOptionWidgets.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
@@ -45,6 +47,20 @@ void OMController::React(const char *pkg_name, uint32 data, FEObject *obj, uint3
     FEDatabase->GetOptionsSettings()->CurrentCategory = OC_CONTROLS;
 }
 
+void OMTrailers::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
+    if (data != __BUTTON_PRESSED__) {
+        return;
+    }
+    FEDatabase->GetOptionsSettings()->CurrentCategory = OC_TRAILERS;
+}
+
+void OMOnline::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
+    if (data != __BUTTON_PRESSED__) {
+        return;
+    }
+    FEDatabase->GetOptionsSettings()->CurrentCategory = OC_ONLINE;
+}
+
 void OMEATrax::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data != __BUTTON_PRESSED__) {
         return;
@@ -64,6 +80,7 @@ void AOSFXMasterVol::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetAudioSettings()->SoundEffectsVol = GetValue();
     g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), GetValue());
     Update(data);
+    Draw();
 }
 
 void AOSFXMasterVol::Draw() {
@@ -81,6 +98,7 @@ void AOInteractiveMusicMode::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetAudioSettings()->InteractiveMusicMode = static_cast<int>(FEDatabase->GetAudioSettings()->InteractiveMusicMode == 0);
     }
     Update(data);
+    Draw();
 }
 
 void AOInteractiveMusicMode::Draw() {
@@ -94,6 +112,7 @@ void AOEATraxMusicMode::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetAudioSettings()->EATraxMode = static_cast<int>(FEDatabase->GetAudioSettings()->EATraxMode == 0);
     }
     Update(data);
+    Draw();
 }
 
 void AOEATraxMusicMode::Draw() {
@@ -107,6 +126,7 @@ void AOCarVol::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetAudioSettings()->CarVol = GetValue();
     g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), GetValue());
     Update(data);
+    Draw();
 }
 
 void AOCarVol::Draw() {
@@ -124,6 +144,7 @@ void AOSpeechVol::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetAudioSettings()->SpeechVol = GetValue();
     g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), GetValue());
     Update(data);
+    Draw();
 }
 
 void AOSpeechVol::Draw() {
@@ -145,6 +166,7 @@ void AOFEMusicVol::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetAudioSettings()->FEMusicVol = value;
     g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), GetValue());
     Update(data);
+    Draw();
 }
 
 void AOFEMusicVol::Draw() {
@@ -162,6 +184,7 @@ void AOIGMusicVol::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetAudioSettings()->IGMusicVol = GetValue();
     g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), GetValue());
     Update(data);
+    Draw();
 }
 
 void AOIGMusicVol::Draw() {
@@ -194,6 +217,7 @@ void AOAudioMode::Act(const char *parent_pkg, uint32 data) {
     }
     FEDatabase->GetAudioSettings()->AudioMode = mode;
     Update(data);
+    Draw();
 }
 
 void AOAudioMode::Draw() {
@@ -218,6 +242,7 @@ void VOWideScreen::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetVideoSettings()->WideScreen = !FEDatabase->GetVideoSettings()->WideScreen;
     }
     Update(data);
+    Draw();
 }
 
 void VOWideScreen::Draw() {
@@ -231,6 +256,7 @@ void GODamage::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetGameplaySettings()->Damage = !FEDatabase->GetGameplaySettings()->Damage;
     }
     Update(data);
+    Draw();
 }
 
 void GODamage::Draw() {
@@ -247,6 +273,7 @@ void GOAutoSave::Act(const char *parent_pkg, uint32 data) {
         }
     }
     Update(data);
+    Draw();
 }
 
 void GOAutoSave::Draw() {
@@ -260,6 +287,7 @@ void GOJumpCams::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetGameplaySettings()->JumpCam = !FEDatabase->GetGameplaySettings()->JumpCam;
     }
     Update(data);
+    Draw();
 }
 
 void GOJumpCams::Draw() {
@@ -273,6 +301,7 @@ void GORearview::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetGameplaySettings()->RearviewOn = !FEDatabase->GetGameplaySettings()->RearviewOn;
     }
     Update(data);
+    Draw();
 }
 
 void GORearview::Draw() {
@@ -290,6 +319,7 @@ void GOSpeedoUnits::Act(const char *parent_pkg, uint32 data) {
         }
     }
     Update(data);
+    Draw();
 }
 
 void GOSpeedoUnits::Draw() {
@@ -313,6 +343,7 @@ void GORacingMiniMap::Act(const char *parent_pkg, uint32 data) {
     }
     FEDatabase->GetGameplaySettings()->RacingMiniMapMode = static_cast<unsigned char>(mode);
     Update(data);
+    Draw();
 }
 
 void GORacingMiniMap::Draw() {
@@ -347,6 +378,7 @@ void GOExploringMiniMap::Act(const char *parent_pkg, uint32 data) {
     }
     FEDatabase->GetGameplaySettings()->ExploringMiniMapMode = static_cast<unsigned char>(mode);
     Update(data);
+    Draw();
 }
 
 void GOExploringMiniMap::Draw() {
@@ -377,6 +409,7 @@ void POTransmission::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Transmission = trans;
     }
     Update(data);
+    Draw();
 }
 
 void POTransmission::Draw() {
@@ -412,6 +445,7 @@ void PODriveCam::Act(const char *parent_pkg, uint32 data) {
     }
     FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->CurCam = static_cast<ePlayerSettingsCameras>(cam);
     Update(data);
+    Draw();
 }
 
 void PODriveCam::Draw() {
@@ -442,6 +476,7 @@ void POGauges::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->GaugesOn = !FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->GaugesOn;
     }
     Update(data);
+    Draw();
 }
 
 void POGauges::Draw() {
@@ -456,6 +491,7 @@ void POPosition::Act(const char *parent_pkg, uint32 data) {
             !FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->PositionOn;
     }
     Update(data);
+    Draw();
 }
 
 void POPosition::Draw() {
@@ -469,6 +505,7 @@ void POScore::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->ScoreOn = !FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->ScoreOn;
     }
     Update(data);
+    Draw();
 }
 
 void POScore::Draw() {
@@ -488,6 +525,7 @@ void POSplitTime::Act(const char *parent_pkg, uint32 data) {
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->SplitTimeType = type;
     }
     Update(data);
+    Draw();
 }
 
 void POSplitTime::Draw() {
@@ -519,6 +557,7 @@ void POLeaderBoard::Act(const char *parent_pkg, uint32 data) {
             !FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->LeaderboardOn;
     }
     Update(data);
+    Draw();
 }
 
 void POLeaderBoard::Draw() {
@@ -570,6 +609,7 @@ void COVibration::Act(const char *parent_pkg, uint32 data) {
     }
 
     Update(data);
+    Draw();
 }
 
 void COVibration::Draw() {
@@ -634,6 +674,7 @@ void COConfig::Act(const char *parent_pkg, uint32 data) {
     FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config = static_cast<eControllerConfig>(config);
     cFEng::Get()->QueueGameMessage(FEMSG_REFRESH_WIDGETS, parent_pkg, 0xFF);
     Update(data);
+    Draw();
 }
 
 void COConfig::Draw() {

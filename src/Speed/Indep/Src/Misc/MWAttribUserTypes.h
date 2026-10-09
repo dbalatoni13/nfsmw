@@ -13,7 +13,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
-#include "Speed/Indep/Src/EAXSound/SND_GEN/copspeech.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/COPSPEECH.hpp"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/P2temp.h"
 #include "Speed/Indep/Src/EAXSound/SND_GEN/STITCH_COL.h"
@@ -21,12 +21,14 @@
 #include "Speed/Indep/Src/Sim/SimSurfaceTypes.h"
 
 // total size: 0x8
+// Decl: 24
 struct DamageScaleRecord {
     float VisualScale;   // offset 0x0, size 0x4
     float HitPointScale; // offset 0x4, size 0x4
 };
 
 // total size: 0x20
+// Decl: 30
 struct ControllerDataRecord {
     Attrib::StringKey mDeviceID; // offset 0x0, size 0x10
     InputUpdateType mUpdateType; // offset 0x10, size 0x4
@@ -35,18 +37,22 @@ struct ControllerDataRecord {
 };
 
 // total size: 0x20
+// Decl: 44
 struct EffectLinkageRecord {
     Attrib::RefSpec mSurface; // offset 0x0, size 0xC
     Attrib::RefSpec mEffect;  // offset 0xC, size 0xC
     float mMinSpeed;          // offset 0x18, size 0x4
     float mMaxSpeed;          // offset 0x1C, size 0x4
 
+    // Decl: 50
     void mSurfaceClean() {}
 
+    // Decl: 51
     void mEffectClean() {}
 };
 
 // total size: 0x20
+// Decl: 54
 struct FFBWaveRecord {
     float Frequency_A; // offset 0x0, size 0x4
     float Amplitude_A; // offset 0x4, size 0x4
@@ -55,12 +61,14 @@ struct FFBWaveRecord {
     float Frequency_B; // offset 0x10, size 0x4
     float Amplitude_B; // offset 0x14, size 0x4
     float Offset_B;    // offset 0x18, size 0x4
-    float Threshold_B; // offset 0x1C, size 0x4
+    float Threshold_B; // offset 0x1C, size 0x4, Decl: 62
 
+    // Decl: 64
     bool Sample(float x, float &frequency, float &amplitude, float &offset) const {}
 };
 
 // total size: 0xC
+// Decl: 79
 struct CarBodyMotion {
     float DegPerG;   // offset 0x0, size 0x4
     float MaxGs;     // offset 0x4, size 0x4
@@ -68,22 +76,23 @@ struct CarBodyMotion {
 };
 
 // total size: 0x8
+// Decl: 87
 struct AxlePair {
     float Front; // offset 0x0, size 0x4
     float Rear;  // offset 0x4, size 0x4
 
+    // Decl: 93
     float At(int index) const {
         return (&Front)[index];
     }
 };
 
 // total size: 0x10
+// Decl: 98
 struct RoadNoiseRecord {
     RoadNoiseRecord() : Frequency(0.0f), Amplitude(0.0f), MinSpeed(0.0f), MaxSpeed(0.0f) {}
-
     RoadNoiseRecord(float frequency, float amplitude, float minspeed, float maxspeed)
         : Frequency(frequency), Amplitude(amplitude), MinSpeed(minspeed), MaxSpeed(maxspeed) {}
-
     RoadNoiseRecord(const RoadNoiseRecord &rhs) {}
 
     float Frequency; // offset 0x0, size 0x4
@@ -93,6 +102,7 @@ struct RoadNoiseRecord {
 };
 
 // total size: 0xC
+// Decl: 113
 struct JunkmanMod {
     Attrib::Key ClassKey;      // offset 0x0, size 0x4
     Attrib::Key DefinitionKey; // offset 0x4, size 0x4
@@ -100,6 +110,7 @@ struct JunkmanMod {
 };
 
 // total size: 0x18
+// Decl: 121
 struct TrafficPatternRecord {
     Attrib::RefSpec Vehicle;             // offset 0x0, size 0xC
     EA::Reflection::Float Rate;          // offset 0xC, size 0x4
@@ -108,6 +119,7 @@ struct TrafficPatternRecord {
 };
 
 // total size: 0x8
+// Decl: 131
 struct ParticleAnimationInfo {
     EffectParticleAnimation AnimType;       // offset 0x0, size 0x4
     EA::Reflection::UInt8 FPS;              // offset 0x4, size 0x1
@@ -115,6 +127,7 @@ struct ParticleAnimationInfo {
 };
 
 // total size: 0x14
+// Decl: 139
 struct TireEffectRecord {
     Attrib::RefSpec mEmitter;        // offset 0x0, size 0xC
     EA::Reflection::Float mMinSpeed; // offset 0xC, size 0x4
@@ -122,21 +135,23 @@ struct TireEffectRecord {
 };
 
 // total size: 0x8
+// Decl: 146
 struct ParticleTextureRecord {
     eTEG_ParticleTextures mEnum; // offset 0x0, size 0x4
     uint32_t mIndex;             // offset 0x4, size 0x4
 };
 
 // total size: 0x18
+// Decl: 164
 struct CollisionReactionRecord {
+    CollisionReactionRecord() {}
+
     float Elasticity; // offset 0x0, size 0x4
     float RollHeight; // offset 0x4, size 0x4
     float WeightBias; // offset 0x8, size 0x4
     float MassScale;  // offset 0xC, size 0x4
     float StunSpeed;  // offset 0x10, size 0x4
     float StunTime;   // offset 0x14, size 0x4
-
-    CollisionReactionRecord() {}
 };
 
 #endif

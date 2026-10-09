@@ -9,7 +9,7 @@ const Collection *FindCollection(unsigned int classKey, unsigned int collectionK
 const Collection *FindCollectionWithDefault(unsigned int classKey, unsigned int collectionKey);
 unsigned int GetCollectionKey(const Collection *c);
 const Collection *GetCollectionParent(const Collection *c);
-unsigned int StringToLowerCaseKey(const char *str);
+Key StringToLowerCaseKey(const char *str);
 
 } // namespace Attrib
 

@@ -1,6 +1,7 @@
 #ifndef ONLINE_ONLINECFG_H
 #define ONLINE_ONLINECFG_H
 
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -39,7 +40,44 @@ enum eOnlineState {
 };
 
 // total size: 0x114
-struct cOnlineSettings {
+class cOnlineSettings {
+  public:
+    cOnlineSettings() {
+        this->Default();
+    }
+    void Default();
+    void RestoreDefaultSettings();
+    TODO::eOnlineState SetState();
+    TODO::eOnlineState GetState() {
+        return this->onlineState;
+    }
+    TODO::eOnlineState GetLastState();
+    void SetErrorState();
+    bool IsInErrorState() {
+        return this->inErrorState;
+    }
+    OnlineRaceParameters *GetRaceSettings();
+    char *GetLobbyAccountName();
+    char *GetLobbyPersona();
+    char *GetLobbyPassword();
+    void SetLobbyAccountName(const char *name);
+    void SetLobbyPersona(const char *persona);
+    void SetLobbyPassword(const char *password);
+    char *GetLobbyServerAddr();
+    uint16 GetLobbyServerPort();
+    char *SaveToBuffer(char *buf);
+    char *LoadFromBuffer(const char *buf);
+    int32 GetSaveBufferSize();
+    char *GetGamePassword() {
+        return this->Password;
+    }
+    void SetGamePassword(const char *pwd) {
+        bStrNCpy(this->Password, pwd, sizeof(this->Password) - 1);
+    }
+    void SetGameVerifyPassword(const char *pwd);
+    void SetBuddyServerLoggedIn();
+    bool IsLoggedInToBuddyServer();
+
     /* 0x000 */ int iNumPlayers;
     static uint8 MaxOnlinePlayers;
     /* 0x004 */ uint8 MinOnlinePlayers;
@@ -83,33 +121,6 @@ struct cOnlineSettings {
     /* 0x110 */ bool bLoggedInToBuddyServer;
     static char LobbyServerAddr[32];
     static uint16 LobbyServerPort;
-
-  public:
-    cOnlineSettings();
-    void Default();
-    void RestoreDefaultSettings();
-    TODO::eOnlineState SetState();
-    TODO::eOnlineState GetState();
-    TODO::eOnlineState GetLastState();
-    void SetErrorState();
-    bool IsInErrorState();
-    OnlineRaceParameters *GetRaceSettings();
-    char *GetLobbyAccountName();
-    char *GetLobbyPersona();
-    char *GetLobbyPassword();
-    void SetLobbyAccountName(const char *name);
-    void SetLobbyPersona(const char *persona);
-    void SetLobbyPassword(const char *password);
-    char *GetLobbyServerAddr();
-    uint16 GetLobbyServerPort();
-    char *SaveToBuffer(char *buf);
-    char *LoadFromBuffer(const char *buf);
-    int32 GetSaveBufferSize();
-    char *GetGamePassword();
-    void SetGamePassword(const char *pwd);
-    void SetGameVerifyPassword(const char *pwd);
-    void SetBuddyServerLoggedIn();
-    bool IsLoggedInToBuddyServer();
 };
 
 enum OnlineGender { eMale = 0, eFemale = 1, eNum_Gender = 2 };

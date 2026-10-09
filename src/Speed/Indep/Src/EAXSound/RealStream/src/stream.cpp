@@ -6,8 +6,7 @@
 #include "endian/big/endian.h"
 
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
-#include "realcore/system/systask.h"
-#include "realcore/system/threads.h"
+#include "realcore/system.h"
 
 #include <cstring>
 
@@ -70,7 +69,7 @@ typedef struct REQUESTSTRUCTtag {
     REQUESTSTRUCTtag *prev;   // offset 0x8, size 0x4
     REQUESTSTRUCTtag *next;   // offset 0xC, size 0x4
     READTYPE type;            // offset 0x10, size 0x4
-    char fname[255];          // offset 0x14, size 0xFF
+    char fname[MAX_PATH];     // offset 0x14, size 0xFF
     char *address;            // offset 0x114, size 0x4
     int parm;                 // offset 0x118, size 0x4
     int endchunkid;           // offset 0x11C, size 0x4
@@ -116,7 +115,7 @@ typedef struct STREAMHEADERtag {
     REQUESTSTRUCT *curreq;   // offset 0x6C, size 0x4
     REQUESTSTRUCT *lastreq;  // offset 0x70, size 0x4
     REQUESTSTRUCT *freereq;  // offset 0x74, size 0x4
-    char fname[255];         // offset 0x78, size 0xFF
+    char fname[MAX_PATH];    // offset 0x78, size 0xFF
     intptr_t fhandle;        // offset 0x178, size 0x4 TODO 64 bit, does this being intptr_t mess with it?
     int foffset;             // offset 0x17C, size 0x4
     FILEOP fop;              // offset 0x180, size 0x4
@@ -753,8 +752,8 @@ void STREAM_setfilter(STREAMHANDLE handle, int filternum, int mask, int value, i
     STREAMHEADER *strm;
     FILTERSTRUCT *filt;
     TAPSTRUCT *tap;
-    if (validatehandle(handle, &strm, &tap) == 0 && filternum > 0) {
-        if (filternum <= strm->filters && (filternum != strm->filters || (mask | value) == 0) && (tapnum > 0 || tapnum == -1 || tapnum == -2) &&
+    if (validatehandle(handle, &strm, &tap) == 0 && filternum >= 1) {
+        if (filternum <= strm->filters && (filternum != strm->filters || (mask | value) == 0) && (tapnum >= 1 || tapnum == -1 || tapnum == -2) &&
             tapnum <= strm->taps && strm->state == STREAM_IDLE) {
             filt = strm->filter + (filternum - 1);
             filt->mask = mask;
@@ -832,7 +831,7 @@ void STREAM_setgreedystate(STREAMHANDLE sndstreamhandle, int greedystate) {
 intptr_t STREAM_taphandle(STREAMHANDLE handle, int tapnum) {
     STREAMHEADER *strm;
     TAPSTRUCT *tap;
-    if (validatehandle(handle, &strm, &tap) != 0 || tapnum <= 0) {
+    if (validatehandle(handle, &strm, &tap) != 0 || tapnum < 1) {
         return 0;
     }
     if (tapnum <= strm->taps) {

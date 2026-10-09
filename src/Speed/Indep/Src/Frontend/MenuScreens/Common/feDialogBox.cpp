@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/AemsDef.hpp"
+#include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngHashes/ScriptHashes.hpp"
@@ -6,9 +7,11 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
@@ -18,6 +21,7 @@
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include <cstdarg>
 
 static feDialogConfig SecretDialogInfo;
 static int gDialogHandle = 4;
@@ -40,7 +44,9 @@ feDialogConfig::feDialogConfig() {
     bDetectController = false;
     bBlurbIsUTF8 = false;
     DialogHandle = 0;
+#ifndef EA_BUILD_A124
     fCountdown = 0.0f;
+#endif
 }
 
 // UNSOLVED
@@ -76,7 +82,7 @@ void feDialogScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32
                 mLastButtonHash = Config.FirstButton;
             }
             break;
-
+#ifndef EA_BUILD_A124
         case FEMSG_SCREEN_TICK:
             if (Config.Title == dialog_countdown) {
                 int elapsed = static_cast<int>((RealTimer - tCountdownTimer).GetSeconds());
@@ -87,6 +93,7 @@ void feDialogScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32
                 }
             }
             break;
+#endif
 
         case __PAD_BACK__:
             if (Config.bIsDismissable) {
@@ -140,13 +147,21 @@ void feDialogScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32
     }
 }
 
-feDialogScreen::feDialogScreen(ScreenConstructorData *sd) : MenuScreen(sd), tCountdownTimer() {
+feDialogScreen::feDialogScreen(ScreenConstructorData *sd)
+    : MenuScreen(sd)
+#ifndef EA_BUILD_A124
+      ,
+      tCountdownTimer()
+#endif
+{
     ControllerPort = 0xff;
     ReturnWithMessage = 0;
     feDialogConfig *conf = reinterpret_cast<feDialogConfig *>(sd->Arg);
     Config = *conf;
     BuildFromConfig();
+#ifndef EA_BUILD_A124
     tCountdownTimer = RealTimer;
+#endif
 }
 
 feDialogScreen::~feDialogScreen() {
@@ -243,6 +258,9 @@ MenuScreen *DialogCreater(ScreenConstructorData *sd) {
     return new ("feDialogScreen", 0) feDialogScreen(sd);
 }
 
+// TODO
+feDialogScreen *DialogInterface::FindDialogBox(int handle) {}
+
 void DialogInterface::DismissDialog(int handle) {
     if (SecretDialogInfo.DialogHandle == handle) {
         if (cFEng::Get()->IsPackageInControl(SecretDialogInfo.DialogPackage)) {
@@ -300,9 +318,34 @@ static void FormatMessage(char *buffer, int bufsize, const char *fmt, va_list ar
     bVSPrintf(buffer, fmt, arglist);
 }
 
+dialog_handle DialogInterface::ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list) {
+    feDialogConfig conf;
+    FormatMessage(conf.BlurbString, sizeof(conf.BlurbString), fmt, arg_list);
+    conf.Title = title;
+    conf.NumButtons = 0;
+    conf.bIsDismissable = false;
+    conf.ParentPackage = from_pkg;
+    conf.DialogPackage = dlg_pkg;
+    return ShowDialog(&conf);
+}
+
+dialog_handle DialogInterface::ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *msg_fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, msg_fmt);
+    return ShowMessage(from_pkg, dlg_pkg, title, msg_fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...) {
+    va_list arg_list;
+    va_start(arg_list, message_hash);
+    char msg_fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
+    GetLocalizedString(msg_fmt, sizeof(msg_fmt), message_hash);
+    return ShowMessage(from_pkg, dlg_pkg, title, msg_fmt, arg_list);
+}
+
 dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list) {
     feDialogConfig conf;
-    FormatMessage(conf.BlurbString, 0x200, fmt, arg_list);
+    FormatMessage(conf.BlurbString, sizeof(conf.BlurbString), fmt, arg_list);
     conf.Title = title;
     conf.Button1TextHash = 0x417b2601;
     conf.Button1PressedMessage = 0x34dc1bec;
@@ -315,19 +358,49 @@ dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg,
     return ShowDialog(&conf);
 }
 
-// STRIPPED
 dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, ...) {
     va_list arg_list;
-    va_start(arg_list, title);
+    va_start(arg_list, fmt);
     return ShowOk(from_pkg, dlg_pkg, title, fmt, arg_list);
 }
 
 dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), message_hash);
     va_start(arg_list, message_hash);
     return ShowOk(from_pkg, dlg_pkg, title, fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list) {
+    feDialogConfig conf;
+    FormatMessage(conf.BlurbString, sizeof(conf.BlurbString), fmt, arg_list);
+    conf.Title = title;
+    conf.FirstButton = 1;
+    conf.bIsDismissable = true;
+    conf.NumButtons = 2;
+    conf.Button1TextHash = 0x417b2601;
+    conf.Button1PressedMessage = 0x34dc1bec;
+    conf.Button2TextHash = 0x1a294dad;
+    conf.Button2PressedMessage = 0x1fab5998;
+    conf.DialogCancelledMessage = dialog_message_cancelled;
+    conf.ParentPackage = from_pkg;
+    conf.DialogPackage = dlg_pkg;
+    return ShowDialog(&conf);
+}
+
+dialog_handle DialogInterface::ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    return ShowOkCancel(from_pkg, dlg_pkg, title, fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 message_hash, ...) {
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
+    va_list arg_list;
+    GetLocalizedString(fmt, sizeof(fmt), message_hash);
+    va_start(arg_list, message_hash);
+    return ShowOkCancel(from_pkg, dlg_pkg, title, fmt, arg_list);
 }
 
 dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
@@ -348,8 +421,15 @@ dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *d
 }
 
 dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
+                                             uint32 button_pressed_message, uint32 cancel_message, const char *fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    return ShowOneButton(from_pkg, dlg_pkg, title, button_text_hash, button_pressed_message, cancel_message, true, fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
                                              uint32 button_pressed_message, uint32 cancel_message, uint32 blurb_fmt, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
     va_start(arg_list, blurb_fmt);
@@ -357,8 +437,15 @@ dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *d
 }
 
 dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
+                                             uint32 button_pressed_message, const char *fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    return ShowOneButton(from_pkg, dlg_pkg, title, button_text_hash, button_pressed_message, button_pressed_message, true, fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
                                              uint32 button_pressed_message, uint32 blurb_fmt, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
     va_start(arg_list, blurb_fmt);
@@ -397,7 +484,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
                                               uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
                                               uint32 cancel_message, eDialogFirstButtons first_button, const char *fmt, ...) {
     va_list arg_list;
-    va_start(arg_list, first_button);
+    va_start(arg_list, fmt);
     return ShowTwoButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button1_pressed_message, button2_pressed_message,
                           cancel_message, true, first_button, fmt, arg_list);
 }
@@ -405,7 +492,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
 dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                               uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
                                               uint32 cancel_message, eDialogFirstButtons first_button, uint32 blurb_fmt, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
     va_start(arg_list, blurb_fmt);
@@ -413,10 +500,52 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
                           cancel_message, true, first_button, fmt, arg_list);
 }
 
+dialog_handle DialogInterface::ShowTwoButtonCountdown(const char *from_pkg, const char *dlg_pkg, uint32 button1_text_hash, uint32 button2_text_hash,
+                                                      uint32 button1_pressed_message, uint32 button2_pressed_message, uint32 cancel_message,
+                                                      eDialogFirstButtons first_button, float timer, uint32 blurb_fmt) {
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
+    GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
+    feDialogConfig conf;
+    bStrNCpy(conf.BlurbString, fmt, sizeof(conf.BlurbString));
+    conf.ParentPackage = from_pkg;
+    conf.Button1TextHash = button1_text_hash;
+    conf.Button1PressedMessage = button1_pressed_message;
+    conf.Button2TextHash = button2_text_hash;
+    conf.Button2PressedMessage = button2_pressed_message;
+    conf.DialogCancelledMessage = cancel_message;
+    conf.DialogCancelledMessage = cancel_message;
+    conf.FirstButton = first_button;
+    conf.Title = dialog_countdown;
+    conf.NumButtons = 2;
+    conf.DialogPackage = dlg_pkg;
+    conf.bIsDismissable = true;
+#ifndef EA_BUILD_A124
+    conf.fCountdown = timer;
+#endif
+    if (!conf.bIsDismissable) { // TODO: unknown
+        FEPackage *pkg = cFEng::Get()->FindPackage(from_pkg);
+        if (pkg != nullptr) {
+            if (pkg->GetControlMask() != 0xff) {
+                conf.bDetectController = true;
+            }
+        }
+    }
+    return ShowDialog(&conf);
+}
+
+dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
+                                              uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
+                                              eDialogFirstButtons first_button, const char *fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    return ShowTwoButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button1_pressed_message, button2_pressed_message, 0, false,
+                          first_button, fmt, arg_list);
+}
+
 dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                               uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
                                               eDialogFirstButtons first_button, uint32 blurb_fmt, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
     va_start(arg_list, blurb_fmt);
@@ -449,11 +578,44 @@ dialog_handle DialogInterface::ShowThreeButtons(const char *from_pkg, const char
 dialog_handle DialogInterface::ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                                 uint32 button2_text_hash, uint32 button3_text_hash, uint32 button1_pressed_message,
                                                 uint32 button2_pressed_message, uint32 button3_pressed_message, uint32 cancel_message,
+                                                eDialogFirstButtons first_button, const char *fmt, ...) {
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    return ShowThreeButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button3_text_hash, button1_pressed_message,
+                            button2_pressed_message, button3_pressed_message, cancel_message, first_button, fmt, arg_list);
+}
+
+dialog_handle DialogInterface::ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
+                                                uint32 button2_text_hash, uint32 button3_text_hash, uint32 button1_pressed_message,
+                                                uint32 button2_pressed_message, uint32 button3_pressed_message, uint32 cancel_message,
                                                 eDialogFirstButtons first_button, uint32 blurb_fmt, ...) {
-    char fmt[512];
+    char fmt[feDialogConfig::DIALOG_BLURB_MAX_LENGTH];
     va_list arg_list;
     GetLocalizedString(fmt, sizeof(fmt), blurb_fmt);
     va_start(arg_list, blurb_fmt);
     return ShowThreeButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button3_text_hash, button1_pressed_message,
                             button2_pressed_message, button3_pressed_message, cancel_message, first_button, fmt, arg_list);
+}
+
+bool DialogInterface::SetButtonText(int ButtonNum, const char *pText, bool bTextIsUTF8) {
+    bool bRet = false;
+
+    if (SecretDialogInfo.DialogHandle != 0) {
+        MenuScreen *pDialog = FEPackageManager::Get()->FindScreen(SecretDialogInfo.DialogPackage); // r3
+        if (pDialog != nullptr) {
+            int ButtonNames[3] = {static_cast<int>(0xf9363f30), static_cast<int>(0xfb8b67d1), static_cast<int>(0xfde09072)};
+            FEString *pString = FEngFindString(pDialog->GetPackageName(), ButtonNames[ButtonNum]);
+            if (pString != nullptr) {
+                if (bTextIsUTF8) {
+                    pString->SetStringFromUTF8(pText);
+                    bRet = true;
+                } else {
+                    pString->SetString(pText);
+                    bRet = true;
+                }
+            }
+        }
+    }
+
+    return bRet;
 }

@@ -259,7 +259,7 @@ void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap *pSpeedTrap) {
 // UNSOLVED
 void uiRepSheetMilestones::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum() + 1);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());

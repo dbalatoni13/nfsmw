@@ -6,9 +6,7 @@
 #include "CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
-typedef int32 CarLoaderHandle;
-
-extern int CarLoaderMemoryPoolNumber;
+extern int CarLoaderMemoryPoolNumber; // Decl: 28
 
 class LoadedTexturePack;
 class LoadedSolidPack;
@@ -43,7 +41,9 @@ class CarLoader {
         return bMalloc(size, debug_name, 0, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
     };
 
-    void FreeUserMemory(void *mem);
+    void FreeUserMemory(void *mem) {
+        bFree(mem);
+    }
 
     CarLoaderHandle Load(RideInfo *ride_info);
 

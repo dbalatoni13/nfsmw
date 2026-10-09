@@ -28,26 +28,32 @@ class SED_NISSFX : public Module {
 
     static void LoadingCallback(int32 param, int error_status);
 
+    // Decl: 58
     bool IsInitted() {
         return this->m_moduleIsInitted;
-    } // Decl: 58
+    }
+    // Decl: 59
     // Overrides: Module
     char *GetCSIptr() override {
         return this->m_csisData;
-    } // Decl: 59
+    }
+    // Decl: 60
     int GetChannel() override {
         return this->m_channel;
-    } // Decl: 60
+    }
+    // Decl: 61
     char *GetEventDat() override {
         return this->m_eventDat;
-    } // Decl: 61
+    }
+    // Decl: 62
     bool IsDataLoaded() override {
         return this->m_dataIsLoaded;
-    } // Decl: 62
+    }
 
+    // Decl: 64
     eNISSFX_TYPE GetStreamType() {
         return this->m_SyncObject.id;
-    } // Decl: 64
+    }
 
     std::deque<int> mLoadState; // offset 0x58, size 0x30, Decl: 68
 

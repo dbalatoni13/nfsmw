@@ -1,6 +1,7 @@
 #ifndef WORLD_WROADNETWORK_H
 #define WORLD_WROADNETWORK_H
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -21,6 +22,7 @@ struct TrackPathBarrier;
 class IBody;
 
 // total size: 0x1
+// Decl: 83
 class WRoadNetwork : public Debugable {
   public:
     USE_FASTALLOC(WRoadNetwork);
@@ -50,7 +52,7 @@ class WRoadNetwork : public Debugable {
     int GetRightMostTrafficEntrance(int node_number, int onto_segment);
     bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
     int GetSegmentNumTrafficLanes(const WRoadSegment &segment);
-    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count);
+    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int laneCount);
     void GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vector3 &start, UMath::Vector3 &end);
     void GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point);
     void GetPointOnSegment(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);
@@ -152,7 +154,35 @@ class WRoadNetwork : public Debugable {
     static unsigned int nTotalMemoryUsage;        // size: 0x4, address: 0x80438FF8
 };
 
+// total size: 0x40
+// Decl: 397
+struct NavCookie {
+    UMath::Vector2 Left;               // offset 0x0, size 0x8
+    UMath::Vector2 Right;              // offset 0x8, size 0x8
+    UMath::Vector2 Forward;            // offset 0x10, size 0x8
+    float Length;                      // offset 0x18, size 0x4
+    float Curvature;                   // offset 0x1C, size 0x4
+    float LeftOffset;                  // offset 0x20, size 0x4
+    float RightOffset;                 // offset 0x24, size 0x4
+    unsigned int Flags;                // offset 0x28, size 0x4
+    float Padding;                     // offset 0x2C, size 0x4
+    UMath::Vector3 Centre;             // offset 0x30, size 0xC
+    short SegmentParameter;            // offset 0x3C, size 0x2
+    unsigned short SegmentNumber : 15; // offset 0x3E, size 0x2
+    unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
+
+    void SetSegmentParameter(float t) {
+        SegmentParameter = static_cast<short>(bClamp(t, 0.0f, 1.0f) * 65535.0f);
+    }
+
+    float GetSegmentParameter() const {
+        const float recip = 1.0f / 65535.0f;
+        return static_cast<float>(SegmentParameter) * recip;
+    }
+};
+
 // total size: 0x2F0
+// Decl: 425
 class WRoadNav {
   public:
     enum ENavType {
@@ -494,66 +524,66 @@ class WRoadNav {
     int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *interpolated_cookie);
     int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *cookies, int num_cookies, NavCookie *interpolated_cookie);
 
-    int nCookieIndex;                           // offset 0x0, size 0x4
-    CookieTrail<NavCookie, 32> *pCookieTrail;   // offset 0x4, size 0x4
-    NavCookie mCurrentCookie;                   // offset 0x8, size 0x40
-    float mOutOfBounds;                         // offset 0x48, size 0x4
-    bool fValid;                                // offset 0x4C, size 0x1
-    bool bRaceFilter;                           // offset 0x50, size 0x1
-    bool bTrafficFilter;                        // offset 0x54, size 0x1
-    bool bCopFilter;                            // offset 0x58, size 0x1
-    bool bDecisionFilter;                       // offset 0x5C, size 0x1
-    bool bCookieTrail;                          // offset 0x60, size 0x1
-    int nRoadOcclusion;                         // offset 0x64, size 0x4
-    int nAvoidableOcclusion;                    // offset 0x68, size 0x4
-    bool bOccludedFromBehind;                   // offset 0x6C, size 0x1
-    float fOccludingTrailSpeed;                 // offset 0x70, size 0x4
-    bVector2 vCookieTrailBoxMin;                // offset 0x74, size 0x8
-    bVector2 vCookieTrailBoxMax;                // offset 0x7C, size 0x8
-    ENavType fNavType;                          // offset 0x84, size 0x4
-    EPathType fPathType;                        // offset 0x88, size 0x4
-    ELaneType fLaneType;                        // offset 0x8C, size 0x4
-    AIVehicle *pAIVehicle;                      // offset 0x90, size 0x4
-    float fVehicleHalfWidth;                    // offset 0x94, size 0x4
-    char fNodeInd;                              // offset 0x98, size 0x1
-    short fSegmentInd;                          // offset 0x9A, size 0x2
-    float fSegTime;                             // offset 0x9C, size 0x4
-    float fCurvature;                           // offset 0xA0, size 0x4
-    ALIGN_16 UMath::Vector3 fPosition;          // offset 0xA4, size 0xC
-    ALIGN_16 UMath::Vector3 fLeftPosition;      // offset 0xB0, size 0xC
-    ALIGN_16 UMath::Vector3 fRightPosition;     // offset 0xBC, size 0xC
-    ALIGN_16 UMath::Vector3 fForwardVector;     // offset 0xC8, size 0xC
-    ALIGN_16 UMath::Vector3 fEndPos;            // offset 0xD4, size 0xC
-    ALIGN_16 UMath::Vector3 fStartPos;          // offset 0xE0, size 0xC
-    ALIGN_16 UMath::Vector3 fEndControl;        // offset 0xEC, size 0xC
-    ALIGN_16 UMath::Vector3 fStartControl;      // offset 0xF8, size 0xC
-    ALIGN_16 UMath::Vector3 fLeftEndPos;        // offset 0x104, size 0xC
-    ALIGN_16 UMath::Vector3 fLeftStartPos;      // offset 0x110, size 0xC
-    ALIGN_16 UMath::Vector3 fLeftEndControl;    // offset 0x11C, size 0xC
-    ALIGN_16 UMath::Vector3 fLeftStartControl;  // offset 0x128, size 0xC
-    ALIGN_16 UMath::Vector3 fRightEndPos;       // offset 0x134, size 0xC
-    ALIGN_16 UMath::Vector3 fRightStartPos;     // offset 0x140, size 0xC
-    ALIGN_16 UMath::Vector3 fRightEndControl;   // offset 0x14C, size 0xC
-    ALIGN_16 UMath::Vector3 fRightStartControl; // offset 0x158, size 0xC
-    ALIGN_16 UMath::Vector3 fApexPosition;      // offset 0x164, size 0xC
-    ALIGN_16 UMath::Vector3 fOccludedPosition;  // offset 0x170, size 0xC
-    USpline fRoadSpline;                        // offset 0x17C, size 0x6C
-    USpline fLeftSpline;                        // offset 0x1E8, size 0x6C
-    USpline fRightSpline;                       // offset 0x254, size 0x6C
-    char fDeadEnd;                              // offset 0x2C0, size 0x1
-    char fLaneInd;                              // offset 0x2C1, size 0x1
-    char fFromLaneInd;                          // offset 0x2C2, size 0x1
-    char fToLaneInd;                            // offset 0x2C3, size 0x1
-    float fLaneOffset;                          // offset 0x2C4, size 0x4
-    float fFromLaneOffset;                      // offset 0x2C8, size 0x4
-    float fToLaneOffset;                        // offset 0x2CC, size 0x4
-    float fLaneChangeDist;                      // offset 0x2D0, size 0x4
-    float fLaneChangeInc;                       // offset 0x2D4, size 0x4
-    bool bCrossedPathGoal;                      // offset 0x2D8, size 0x1
-    uint16 nPathGoalSegment;                    // offset 0x2DC, size 0x2
-    float fPathGoalParam;                       // offset 0x2E0, size 0x4
-    int nPathSegments;                          // offset 0x2E4, size 0x4
-    uint16 *pPathSegments;                      // offset 0x2E8, size 0x4
+    int nCookieIndex;                             // offset 0x0, size 0x4
+    CookieTrail<NavCookie, 32> *pCookieTrail;     // offset 0x4, size 0x4
+    NavCookie mCurrentCookie;                     // offset 0x8, size 0x40
+    float mOutOfBounds;                           // offset 0x48, size 0x4
+    bool fValid;                                  // offset 0x4C, size 0x1
+    bool bRaceFilter;                             // offset 0x50, size 0x1
+    bool bTrafficFilter;                          // offset 0x54, size 0x1
+    bool bCopFilter;                              // offset 0x58, size 0x1
+    bool bDecisionFilter;                         // offset 0x5C, size 0x1
+    bool bCookieTrail;                            // offset 0x60, size 0x1
+    int nRoadOcclusion;                           // offset 0x64, size 0x4
+    int nAvoidableOcclusion;                      // offset 0x68, size 0x4
+    bool bOccludedFromBehind;                     // offset 0x6C, size 0x1
+    float fOccludingTrailSpeed;                   // offset 0x70, size 0x4
+    bVector2 vCookieTrailBoxMin;                  // offset 0x74, size 0x8
+    bVector2 vCookieTrailBoxMax;                  // offset 0x7C, size 0x8
+    ENavType fNavType;                            // offset 0x84, size 0x4
+    EPathType fPathType;                          // offset 0x88, size 0x4
+    ELaneType fLaneType;                          // offset 0x8C, size 0x4
+    AIVehicle *pAIVehicle;                        // offset 0x90, size 0x4
+    float fVehicleHalfWidth;                      // offset 0x94, size 0x4
+    char fNodeInd;                                // offset 0x98, size 0x1
+    short fSegmentInd;                            // offset 0x9A, size 0x2
+    float fSegTime;                               // offset 0x9C, size 0x4
+    float fCurvature;                             // offset 0xA0, size 0x4
+    PS2ALIGN16 UMath::Vector3 fPosition;          // offset 0xA4, size 0xC
+    PS2ALIGN16 UMath::Vector3 fLeftPosition;      // offset 0xB0, size 0xC
+    PS2ALIGN16 UMath::Vector3 fRightPosition;     // offset 0xBC, size 0xC
+    PS2ALIGN16 UMath::Vector3 fForwardVector;     // offset 0xC8, size 0xC
+    PS2ALIGN16 UMath::Vector3 fEndPos;            // offset 0xD4, size 0xC
+    PS2ALIGN16 UMath::Vector3 fStartPos;          // offset 0xE0, size 0xC
+    PS2ALIGN16 UMath::Vector3 fEndControl;        // offset 0xEC, size 0xC
+    PS2ALIGN16 UMath::Vector3 fStartControl;      // offset 0xF8, size 0xC
+    PS2ALIGN16 UMath::Vector3 fLeftEndPos;        // offset 0x104, size 0xC
+    PS2ALIGN16 UMath::Vector3 fLeftStartPos;      // offset 0x110, size 0xC
+    PS2ALIGN16 UMath::Vector3 fLeftEndControl;    // offset 0x11C, size 0xC
+    PS2ALIGN16 UMath::Vector3 fLeftStartControl;  // offset 0x128, size 0xC
+    PS2ALIGN16 UMath::Vector3 fRightEndPos;       // offset 0x134, size 0xC
+    PS2ALIGN16 UMath::Vector3 fRightStartPos;     // offset 0x140, size 0xC
+    PS2ALIGN16 UMath::Vector3 fRightEndControl;   // offset 0x14C, size 0xC
+    PS2ALIGN16 UMath::Vector3 fRightStartControl; // offset 0x158, size 0xC
+    PS2ALIGN16 UMath::Vector3 fApexPosition;      // offset 0x164, size 0xC
+    PS2ALIGN16 UMath::Vector3 fOccludedPosition;  // offset 0x170, size 0xC
+    USpline fRoadSpline;                          // offset 0x17C, size 0x6C
+    USpline fLeftSpline;                          // offset 0x1E8, size 0x6C
+    USpline fRightSpline;                         // offset 0x254, size 0x6C
+    char fDeadEnd;                                // offset 0x2C0, size 0x1
+    char fLaneInd;                                // offset 0x2C1, size 0x1
+    char fFromLaneInd;                            // offset 0x2C2, size 0x1
+    char fToLaneInd;                              // offset 0x2C3, size 0x1
+    float fLaneOffset;                            // offset 0x2C4, size 0x4
+    float fFromLaneOffset;                        // offset 0x2C8, size 0x4
+    float fToLaneOffset;                          // offset 0x2CC, size 0x4
+    float fLaneChangeDist;                        // offset 0x2D0, size 0x4
+    float fLaneChangeInc;                         // offset 0x2D4, size 0x4
+    bool bCrossedPathGoal;                        // offset 0x2D8, size 0x1
+    uint16 nPathGoalSegment;                      // offset 0x2DC, size 0x2
+    float fPathGoalParam;                         // offset 0x2E0, size 0x4
+    int nPathSegments;                            // offset 0x2E4, size 0x4
+    uint16 *pPathSegments;                        // offset 0x2E8, size 0x4
 };
 
 // total size: 0xB00

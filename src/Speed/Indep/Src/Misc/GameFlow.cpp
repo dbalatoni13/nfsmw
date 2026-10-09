@@ -7,10 +7,12 @@
 #include "Speed/Indep/Src/EAXSound/SoundPause.h"
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
+#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
@@ -27,7 +29,6 @@
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
-#include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
@@ -35,6 +36,8 @@
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "EasterEggs.hpp"
+#include "Speed/Indep/bWare/Inc/SpeedScript.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Stomper.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
@@ -56,38 +59,12 @@
 #include "ResourceLoader.hpp"
 #include "bFile.hpp"
 
-// TODO why do these two end up below in .bss?
-RegionLoader TheRegionLoader;
-TrackLoader TheTrackLoader;
-
-GameFlowManager TheGameFlowManager;
-static Timer last_any_joy;
-
 // Forward declarations
-void BeginGameFlowLoadTrack();
 void BeginWorldLoad();
 void BeginGameFlowLoadingFrontEnd();
 void BeginGameFlowUnloadingFrontEnd();
 
-// TODO move these
-extern int EnableCodeOverlay;
-extern int EnableCodeOverlayDebuggingOnly;
-extern int CodeOverlayMemoryPoolNumber;
-extern int CodeOverlayFirstTime;
-
-extern void (*CodeOverlayCallback)(int);
-extern char _overlay_start[];
-extern char _overlay_end[];
-
-// TODO GET RID OF THESE
-extern void *InGameMemoryFile;
-extern VMFile *pFrontEndVirtualMemBundle;
-extern const char *LoadingControllerScreenPackageName;
-extern const char *LoadingBootName;
-extern int WeHaveCheckedIfJR2ServerExists;
-extern int DisableSoundUpdate;
-
-// TODO GET RID OF THESE
+// TODO GET RID OF THESE ?
 // External functions
 void eInitFEEnvMapPlat();
 void eRemoveFEEnvMapPlat();
@@ -96,57 +73,43 @@ void CloseCarEffects();
 void LoadAemsFrontEnd(void (*)(int), int);
 void UnloadAemsFrontEnd();
 void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking);
-void NotifySkyUnloader();
 const char *GetLoadingScreenPackageName();
-void EstablishRemoteCaffeineConnection();
 void StartWorldAnimations();
 void MiniMainLoop();
 void eWaitUntilRenderingDone();
 void CloseAllGarageDoors();
 void DisableAllSceneryGroups();
-void SoundPause(bool, eSNDPAUSE_REASON);
 void SetSoundControlState(bool, eSNDCTLSTATE, const char *);
-void ServiceSpaceNodes();
-void CloseSound();
 void CloseWorldModels();
-extern unsigned int bDefaultSeed;
-void GenerateMissingCarParts();
-void InitializeSoundLoad();
-extern int AllowCompressedStreamingTexturesInThisPoolNum;
-extern int EmergencySaveMemory;
-extern int CarLoaderPoolSizes[];
-extern void *GlobalMemoryFile;
-extern int FinishedLoadingGlobalSuccesful;
 void LoadAemsInGame(void (*)(intptr_t), intptr_t);
 void UnloadAemsInGame();
 void InitSkyHash(void (*)(intptr_t), intptr_t);
-void UnloadSkyTextures();
-void bCacheCodeineDirs(char *, int, int);
-void ResetCapturedLoadingTimes();
-void CodeOverlayUnloadingGame();
 
-// TODO move
-class LoadingTips {
-  public:
-    static bool IsDoneShowingLoadingTips() {
-        return mDoneShowingLoadingTips;
-    }
+const char *WheelsModelPackFilename = "CARS\\WHEELS\\GEOMETRY.BIN";
+const char *SpoilerModelPackFilename = "CARS\\SPOILER\\GEOMETRY.BIN";
+const char *SpoilerCarreraModelPackFilename = "CARS\\SPOILER_CARRERA\\GEOMETRY.BIN";
+const char *SpoilerHatchModelPackFilename = "CARS\\SPOILER_HATCH\\GEOMETRY.BIN";
+const char *SpoilerPorschesModelPackFilename = "CARS\\SPOILER_PORSCHES\\GEOMETRY.BIN";
+const char *RoofScoopModelPackFilename = "CARS\\ROOF\\GEOMETRY.BIN";
+const char *BrakesModelPackFilename = "CARS\\BRAKES\\GEOMETRY.BIN";
+const char *BrakesTexturePackFilename = "CARS\\BRAKES\\TEXTURES.BIN";
+const char *CarTexturePackFilename = "CARS\\TEXTURES.BIN";
+const char *WheelsTexturePackFilename = "CARS\\WHEELS\\TEXTURES.BIN";
+const char *DynamicTexturePackFilename = "GLOBAL\\DYNTEX.BIN"; // Decl: 201
+const char *HudDragTexturePackFilename = "GLOBAL\\HUDTEXDRAG.BIN";
+const char *HudSingleRaceTexturePackFilename = "GLOBAL\\HUDTEXRACE.BIN";
+const char *HudSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXSPLIT.BIN"; // Decl: 206
+const char *HudDragSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXDRAGSPLIT.BIN";
+const char *LoadingBootName = "loading_boot.fng"; // Decl: 218
 
-    static void SetDoneLoading(bool done) {
-        mDoneLoading = done;
-    }
+const char *LoadingControllerScreenPackageName = "Loading_Controller.fng"; // Decl: 220
 
-  private:
-    static bool mDoneLoading;
-    static bool mDoneShowingLoadingTips;
-    static void *mLoadingTipsScreenPtr;
-};
+VMFile *pFrontEndVirtualMemBundle = nullptr;
 
-Attrib::Vault *gDatabaseVault = nullptr;
+static const int PrintGameFlow = 0; // Decl: 226
 
-static Attrib::Vault *sFrontEndVault = nullptr;
-static unsigned char *sFrontEndVaultData = nullptr;
-static int sFrontEndVaultHigh = 0;
+static const int MaxAICars = 49;             // Decl: 239
+static const int ExtraMemoryPerAICar = 3136; // Decl: 240
 
 void RenderTrackMarkers(eView *view) {}
 
@@ -162,10 +125,13 @@ Sim::eUserMode CalculateSimMode() {
     return mode;
 }
 
+// Decl: 349
+int CarLoaderPoolSizes[2] = {3500, 1750};
+
 void GetBuildVersionName(char *build_version_name) {
-#ifdef DEBUG_OPT
+#ifdef DEBUG
     *build_version_name = '\0';
-#elif defined(MILESTONE_OPT)
+#elif defined(MILESTONE_BUILD)
     bStrCpy(build_version_name, "Milestone");
 #else
     bStrCpy(build_version_name, "Release");
@@ -176,6 +142,27 @@ inline void CodeOverlayFlushCaches() {
     // TODO two FlushCache calls on PS2
     FlushCaches();
 }
+
+extern int EmergencySaveMemory; // Decl: 438
+
+extern char BuildVersionMachine; // Decl: 498
+
+extern char *BuildVersionChangelistName; // Decl: 500 TODO where is this defined?
+extern int BuildVersionChangelistNumber; // Decl: 501
+
+extern char BuildVersionName; // Decl: 503
+
+int CodeOverlayMemoryPoolNumber = 0; // Decl: 693
+
+int EnableCodeOverlayDebuggingOnly = 0;
+
+int EnableCodeOverlay = 1;
+void (*CodeOverlayCallback)(int) = nullptr;
+
+extern char _overlay_start[];
+extern char _overlay_end[];
+
+int CodeOverlayFirstTime = 1;
 
 inline char *GetCodeOverlayStart() {
     return _overlay_start;
@@ -189,10 +176,10 @@ inline int GetCodeOverlaySize() {
     return GetCodeOverlayEnd() - GetCodeOverlayStart();
 }
 
-void CodeOverlayLoadedFrontendCallback(intptr_t param, int error_status) {
+void CodeOverlayLoadedFrontendCallback(int param, int error_status) {
     CodeOverlayFlushCaches();
-    void (*callback)(intptr_t) = CodeOverlayCallback;
-    if (CodeOverlayCallback) {
+    void (*callback)(int) = CodeOverlayCallback;
+    if (CodeOverlayCallback != nullptr) {
         CodeOverlayCallback = nullptr;
         callback(param);
     }
@@ -204,7 +191,7 @@ void CodeOverlayLoadingFrontend(void (*callback)(int), int param) {
         char filename[64];
 
         GetBuildVersionName(build_version_name);
-        bSPrintf(filename, "%s.ovl", build_version_name);
+        bSPrintf(filename, "Frontend\\CodeOverlay%s.bin", build_version_name);
         if (CodeOverlayFirstTime) {
             int file_size = 0;
             void *file_buf = nullptr;
@@ -215,18 +202,18 @@ void CodeOverlayLoadingFrontend(void (*callback)(int), int param) {
             unsigned int code_checksum = bCalculateCrc32(GetCodeOverlayStart(), GetCodeOverlaySize(), 0xFFFFFFFF);
             if (file_checksum != code_checksum) {
                 bool explained_by_breakpoints; // TODO
-                EnableCodeOverlay = false;
-                EnableCodeOverlayDebuggingOnly = false;
+                EnableCodeOverlay = 0;
+                EnableCodeOverlayDebuggingOnly = 0;
             }
             bFree(file_buf);
-            CodeOverlayFirstTime = false;
+            CodeOverlayFirstTime = 0;
         } else {
             CodeOverlayCallback = callback;
             AddQueuedFile(GetCodeOverlayStart(), filename, 0, GetQueuedFileSize(filename), CodeOverlayLoadedFrontendCallback, param, nullptr);
             return;
         }
     }
-    if (callback) {
+    if (callback != nullptr) {
         callback(param);
     }
 }
@@ -236,7 +223,7 @@ void CodeOverlayUnloadingFrontend() {}
 void CodeOverlayLoadingGame() {
     if (!TheOnlineManager.IsOnlineRace() && (EnableCodeOverlayDebuggingOnly || EnableCodeOverlay)) {
         if (CodeOverlayFirstTime) {
-            CodeOverlayFirstTime = false;
+            CodeOverlayFirstTime = 0;
         }
         if (EnableCodeOverlayDebuggingOnly) {
             for (int n = 0; n < GetCodeOverlaySize() - 8; n += 8) {
@@ -270,29 +257,61 @@ void CodeOverlayUnloadingGame() {
     }
 }
 
-// TODO move?
-int FreeMemoryEnteringGame = 0;
-int RealTimeFramesEnteringGame = 0;
-extern int RealTimeFrames;
+static const int EnableMemorySponge = 0; // Decl: 928
+
+static const int MemorySpongeLevel = 358400; // Decl: 930
+
+int FreeMemoryEnteringGame = 0;     // Decl: 932
+int RealTimeFramesEnteringGame = 0; // Decl: 933
+
+void *pMemorySpongeMemory = nullptr; // size: 0x4, Decl: 935
 
 void ActivateMemorySponge() {
-    // TODO how is this the bMalloc inline?
-    int amount_to_waste = bLargestMalloc(0);
-    FreeMemoryEnteringGame = amount_to_waste;
+    FreeMemoryEnteringGame = bLargestMalloc(0);
     RealTimeFramesEnteringGame = RealTimeFrames;
+    bPrintf("Free memory entering game = %dK\n", FreeMemoryEnteringGame / 1024);
+
+    if (EnableMemorySponge == 0) {
+        return;
+    }
+    if (FreeMemoryEnteringGame < MemorySpongeLevel) {
+        bPrintf("ERROR:  Not enough free memory to safely run game.  Largest = %dK, required = %dK (amount free = %dK)\n",
+                FreeMemoryEnteringGame / 1024, MemorySpongeLevel / 1024, bCountFreeMemory(0) / 1024);
+        bPrintf("        Continue from this point at your own risk\n");
+        // TODO from undercover
+        // if (!MetricsManager::mThis)
+        //     bBreak();
+    }
+    int amount_to_waste = FreeMemoryEnteringGame - MemorySpongeLevel;
+    if (amount_to_waste > 0) {
+        pMemorySpongeMemory = bMalloc(amount_to_waste, "MemorySponge", 0, 0);
+    }
 }
 
 void DeactivateMemorySponge() {
     FreeMemoryEnteringGame = 0;
     RealTimeFramesEnteringGame = 0;
+
+    if (EnableMemorySponge == 0) {
+        return;
+    }
+    if (pMemorySpongeMemory != nullptr) {
+        bFree(pMemorySpongeMemory);
+        pMemorySpongeMemory = nullptr;
+    }
 }
 
-void LoadMemoryFileCallback(intptr_t param, int error_status) {
-    void *memory_file = reinterpret_cast<void *>(param);
+static const bool DisableMemoryFiles = false; // Decl: 988
+
+void LoadMemoryFileCallback(intptr_t callback_param, int error_status) {
+    void *memory_file = reinterpret_cast<void *>(callback_param);
     AddMemoryFile(memory_file);
 }
 
 void *LoadMemoryFile(const char *filename) {
+    if (DisableMemoryFiles) {
+        return nullptr;
+    }
     int file_size = GetQueuedFileSize(filename);
     // TODO magic
     void *memory_file = bMalloc(file_size, filename, 0, 0x1040);
@@ -300,8 +319,8 @@ void *LoadMemoryFile(const char *filename) {
     return memory_file;
 }
 
-void BlockUntilMemoryFileLoaded(void *mem) {
-    if (mem) {
+void BlockUntilMemoryFileLoaded(void *memory_file) {
+    if (memory_file != nullptr) {
         while (IsQueuedFileBusy()) {
             DVDErrorTask(nullptr, 0);
             bThreadYield(8);
@@ -310,16 +329,18 @@ void BlockUntilMemoryFileLoaded(void *mem) {
     }
 }
 
-void UnloadMemoryFile(void *mem) {
-    if (mem) {
-        RemoveMemoryFile(mem);
-        bFree(mem);
+void UnloadMemoryFile(void *memory_file) {
+    if (memory_file != nullptr) {
+        RemoveMemoryFile(memory_file);
+        bFree(memory_file);
     }
 }
 
-int LeakDetectorFreeMemory = 0;
-int LeakDetectorLargestAlloc = 0;
-int LeakDetectorAllocationNumber = 0;
+int LeakDetectorFreeMemory = 0;       // Decl: 1036
+int LeakDetectorLargestAlloc = 0;     // Decl: 1037
+int LeakDetectorAllocationNumber = 0; // Decl: 1038
+
+static const int PrintLeakDetector = 0; // Decl: 1040
 
 void SetLeakDetector() {
     LeakDetectorFreeMemory = bCountFreeMemory(0);
@@ -327,11 +348,144 @@ void SetLeakDetector() {
     LeakDetectorLargestAlloc = bLargestMalloc(0);
 }
 
-void CheckLeakDetector(const char *debug_name) {}
+// STRIPPED
+void LeakDetectorFailed() {}
 
-// TODO memory profile stuff stripped from here
+// TODO undercover and A124
+void CheckLeakDetector(const char *debug_name) {
+    if (PrintLeakDetector) {
+        bPrintf("CheckLeakDetector - %s\n", debug_name);
+        bMemoryPrintAllocationsByAddress(0, 0, 0x7FFFFFFF);
+    }
+}
+
+// total size: 0xC
+struct MemoryProfileEntry {
+    int Depth;  // offset 0x0, size 0x4
+    int Size;   // offset 0x4, size 0x4
+    char *Name; // offset 0x8, size 0x4
+};
+
+// total size: 0x788
+class MemoryProfileTable {
+  public:
+    MemoryProfileTable() {}
+
+    void AddEntry(int depth, const char *name, int size);
+
+    int GetNumEntries() {}
+
+    MemoryProfileEntry *GetEntry(int index) {}
+
+    int FindEntry(const char *name, int depth, int start_index);
+    int FindEntry(const char *name0, const char *name1, const char *name2);
+
+    void AddSize(int size, const char *name0, const char *name1, const char *name2);
+    int GetEntrySize(int index);
+    int GetCurrentHeadingSize();
+    int GetTotalSize();
+
+  private:
+    int NumEntries;                     // offset 0x0, size 0x4
+    int TotalSize;                      // offset 0x4, size 0x4
+    MemoryProfileEntry EntryTable[160]; // offset 0x8, size 0x780
+};
+
+// STRIPPED
+void MemoryProfileTable::AddEntry(int depth, const char *name, int size) {}
+
+// STRIPPED
+int MemoryProfileTable::FindEntry(const char *name, int depth, int start_index) {}
+
+// STRIPPED
+int MemoryProfileTable::FindEntry(const char *name0, const char *name1, const char *name2) {}
+
+// STRIPPED
+void MemoryProfileTable::AddSize(int size, const char *name0, const char *name1, const char *name2) {}
+
+// STRIPPED
+int MemoryProfileTable::GetEntrySize(int index) {}
+
+// STRIPPED
+int MemoryProfileTable::GetCurrentHeadingSize() {}
+
+// STRIPPED
+int MemoryProfileTable::GetTotalSize() {}
+
+// STRIPPED
+void AddAllocationToTable(const char *allocation_name, const int allocation_size, const int allocation_pool, int &ignored_size, int &unknown_size,
+                          const char *sectionName, MemoryProfileTable &table, SpeedScript &script, bFile *file) {}
+
+// total size: 0x1C
+class MemoryProfileTableFastMemDumpRecorder : public FastMem::DumpRecorder {
+  public:
+    MemoryProfileTableFastMemDumpRecorder(int &ignoredSize, int &unknownSize, const char *sectionName, MemoryProfileTable &Table, SpeedScript &Script,
+                                          bFile *File)
+        : ignored_size(ignoredSize), unknown_size(unknownSize), sectionName(sectionName), table(Table), script(Script), file(File) {}
+
+    void ReportBlockKind(const char *name, unsigned int bytes, unsigned int count, unsigned int highwater) override {}
+
+    void ReportBlockSize(unsigned int size, unsigned int freeblocks, unsigned int usedblocks) override {}
+
+  private:
+    int &ignored_size;         // offset 0x4, size 0x4
+    int &unknown_size;         // offset 0x8, size 0x4
+    const char *sectionName;   // offset 0xC, size 0x4
+    MemoryProfileTable &table; // offset 0x10, size 0x4
+    SpeedScript &script;       // offset 0x14, size 0x4
+    bFile *file;               // offset 0x18, size 0x4
+};
+
+// total size: 0x4
 
 void MaybeDoMemoryProfile() {}
+
+void WriteMemoryProfileEntry(const char *category, const char *name, int size) {}
+
+struct MemoryProfileFastMemDumpRecorder : public FastMem::DumpRecorder {
+    void ReportBlockKind(const char *name, unsigned int bytes, unsigned int count, unsigned int highwater) override {}
+
+    void ReportBlockSize(unsigned int size, unsigned int freeblocks, unsigned int usedblocks) override {}
+};
+
+void *InGameMemoryFile = nullptr; // Decl: 1235
+
+// total size: 0x20
+// Decl: 1238
+class RegionLoader {
+  public:
+    RegionLoader() : Phase(0) {}
+
+    static void LoadHandler(void *object) {
+        reinterpret_cast<RegionLoader *>(object)->LoadHandler();
+    }
+    static void LoadHandler(uintptr_t object) {
+        reinterpret_cast<RegionLoader *>(object)->LoadHandler();
+    }
+    // Decl: 1246
+    static void LoadHandler(intptr_t object) {
+        reinterpret_cast<RegionLoader *>(object)->LoadHandler();
+    }
+    void LoadHandler();  // Decl: 1247
+    void BeginLoading(); // Decl: 1248
+
+    void FinishedLoading(); // Decl: 1250
+    void Unload();          // Decl: 1251
+
+  private:
+    int Phase;                                // offset 0x0, size 0x4
+    ResourceFile *pResourceInGameA;           // offset 0x4, size 0x4
+    ResourceFile *pResourceInGameB;           // offset 0x8, size 0x4
+    ResourceFile *pResourceInGameSplitScreen; // offset 0xC, size 0x4
+    ResourceFile *pResourceRegion;            // offset 0x10, size 0x4
+    VMFile *pResourceGlobalB_VM;              // offset 0x14, size 0x4
+    VMFile *pResourceInGameB_VM;              // offset 0x18, size 0x4
+    VMFile *pResourceRegion_VM;               // offset 0x1C, size 0x4
+};
+
+RegionLoader TheRegionLoader; // Decl: 1273
+
+static const int DumpMemoryAtFragmentation = 0; // Decl: 1280
 
 void BeginGameFlowLoadRegion() {
     TheRegionLoader.BeginLoading();
@@ -362,7 +516,7 @@ void RegionLoader::BeginLoading() {
     if (two_player) {
         GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
         bool loadingDrag;
-        if (startupRace) {
+        if (startupRace != nullptr) {
             loadingDrag = startupRace->GetRaceType() == GRace::kRaceType_Drag;
         } else {
             loadingDrag = false;
@@ -372,10 +526,10 @@ void RegionLoader::BeginLoading() {
         }
     }
     TheCarLoader.SetMemoryPoolSize(pool_size << 10);
-    TheCarLoader.SetLoadingMode(CarLoader::MODE_IN_GAME, two_player);
+    TheCarLoader.SetLoadingMode(CarLoader::MODE_IN_GAME, static_cast<int>(two_player));
     new ELoadingScreenOn(LoadingScreen::LS_LOADING_GAME_FROM_FE);
-    Phase = 0;
-    LoadHandler();
+    this->Phase = 0;
+    this->LoadHandler();
 }
 
 void GetTODFilename(eTimeOfDay tod, const char *filename_in, char *filename_out, int bufsize_out) {
@@ -383,54 +537,56 @@ void GetTODFilename(eTimeOfDay tod, const char *filename_in, char *filename_out,
     if (NeedsSeperateTODStreamingFile(bGetPlatformName())) {
         char *extension_in = bStrStr(filename_in, ".");
         char *extension_out = bStrStr(filename_out, ".");
-        bSPrintf(extension_out, "_%s%s", GetTimeOfDaySuffix(tod), extension_in);
+        bSPrintf(extension_out, "%s%s", GetTimeOfDaySuffix(tod), extension_in);
     }
 }
 
 void RegionLoader::LoadHandler() {
-    Phase++;
+    this->Phase++;
     TheGameFlowManager.ClearWaitingForCallback();
-    TheGameFlowManager.SetWaitingForCallback("RegionLoader::LoadHandler", Phase);
-    if (Phase == 1) {
+    TheGameFlowManager.SetWaitingForCallback("RegionLoader::LoadHandler", this->Phase);
+    if (this->Phase == 1) {
         bool load_global = true;
         bool load_frontend = false;
         bool load_ingame = true;
         LoadLanguageResources(load_global, load_frontend, load_ingame, false);
 
         int ingamea_allocation_params = 0x2000;
-        pResourceInGameA = CreateResourceFile("Global\\InGameA.bun", RESOURCE_FILE_INGAME, 0, 0, 0);
-        pResourceInGameA->SetAllocationParams(ingamea_allocation_params, "Global\\InGameA.bun");
-        pResourceInGameA->BeginLoading();
-        pResourceInGameB_VM = LoadFileIntoVirtualMemory("GLOBAL\\INGAMEB_VM_NGC.BUN", false, false);
-        pResourceInGameSplitScreen = nullptr;
+        this->pResourceInGameA = CreateResourceFile("Global\\InGameA.bun", RESOURCE_FILE_INGAME, 0, 0, 0);
+        this->pResourceInGameA->SetAllocationParams(ingamea_allocation_params, "Global\\InGameA.bun");
+        this->pResourceInGameA->BeginLoading();
+        this->pResourceInGameB_VM = LoadFileIntoVirtualMemory("GLOBAL\\INGAMEB_VM_NGC.BUN", false, false);
+        this->pResourceInGameSplitScreen = nullptr;
 
         load_frontend = FEDatabase->IsSplitScreenMode();
         if (load_frontend) {
-            pResourceInGameSplitScreen = LoadResourceFile("Global\\InGameSplitScreen.bun", RESOURCE_FILE_INGAME, 0);
+            this->pResourceInGameSplitScreen = LoadResourceFile("Global\\InGameSplitScreen.bun", RESOURCE_FILE_INGAME, 0);
         }
-        pResourceInGameB =
+        this->pResourceInGameB =
             LoadResourceFile("GLOBAL\\INGAMEB.LZC", RESOURCE_FILE_INGAME, 9, &RegionLoader::LoadHandler, reinterpret_cast<intptr_t>(this), 0, 0);
-        pResourceInGameB->ChangeFilenameForHotChunking("GLOBAL\\INGAMEB.BUN");
-    } else if (Phase == 2) {
+        this->pResourceInGameB->ChangeFilenameForHotChunking("GLOBAL\\INGAMEB.BUN");
+    } else if (this->Phase == 2) {
         char basefilename[32];
         char filename[32];
         bSPrintf(basefilename, "TRACKS\\%s.BUN", TrackInfo::GetLoadedTrackInfo()->RegionName);
         GetTODFilename(GetCurrentTimeOfDay(), basefilename, filename, sizeof(filename));
-        pResourceRegion = LoadResourceFile(filename, RESOURCE_FILE_TRACK, 1, &RegionLoader::LoadHandler, reinterpret_cast<intptr_t>(this), 0, 0);
+        this->pResourceRegion =
+            LoadResourceFile(filename, RESOURCE_FILE_TRACK, 1, &RegionLoader::LoadHandler, reinterpret_cast<intptr_t>(this), 0, 0);
 
         char vm_basefilename[48];
         char vm_filename[48];
         bSPrintf(vm_basefilename, "TRACKS\\%s_VM_NGC.BUN", TrackInfo::GetLoadedTrackInfo()->RegionName);
         GetTODFilename(GetCurrentTimeOfDay(), vm_basefilename, vm_filename, sizeof(vm_filename));
-        pResourceRegion_VM = LoadFileIntoVirtualMemory(vm_filename, false, true);
-    } else if (Phase == 3) {
+        this->pResourceRegion_VM = LoadFileIntoVirtualMemory(vm_filename, false, true);
+    } else if (this->Phase == 3) {
+        void LoadPrecullerBooBooScripts();
         LoadPrecullerBooBooScripts();
         LoadAemsInGame(&RegionLoader::LoadHandler, reinterpret_cast<intptr_t>(this));
-    } else if (Phase == 4) {
+    } else if (this->Phase == 4) {
         InitSkyHash(&RegionLoader::LoadHandler, reinterpret_cast<intptr_t>(this));
-    } else if (Phase == 5) {
+    } else if (this->Phase == 5) {
         TheGameFlowManager.ClearWaitingForCallback();
-        FinishedLoading();
+        this->FinishedLoading();
     }
 }
 
@@ -439,28 +595,14 @@ void RegionLoader::FinishedLoading() {
     char region_filename[64];
     bSPrintf(baseregion_filename, "TRACKS\\STREAM%s.BUN", TrackInfo::GetLoadedTrackInfo()->RegionName);
     GetTODFilename(GetCurrentTimeOfDay(), baseregion_filename, region_filename, sizeof(region_filename));
+
+    void EstablishRemoteCaffeineConnection(); // Decl: 1609
     EstablishRemoteCaffeineConnection();
     TheTrackStreamer.InitRegion(region_filename, FEDatabase->IsSplitScreenMode());
-    TheGameFlowManager.SetSingleFunction(BeginGameFlowLoadTrack, "LoadTrack");
-}
 
-const char *WheelsModelPackFilename = "CARS\\WHEELS\\GEOMETRY.BIN";
-const char *SpoilerModelPackFilename = "CARS\\SPOILER\\GEOMETRY.BIN";
-const char *SpoilerCarreraModelPackFilename = "CARS\\SPOILER_CARRERA\\GEOMETRY.BIN";
-const char *SpoilerHatchModelPackFilename = "CARS\\SPOILER_HATCH\\GEOMETRY.BIN";
-const char *SpoilerPorschesModelPackFilename = "CARS\\SPOILER_PORSCHES\\GEOMETRY.BIN";
-const char *RoofScoopModelPackFilename = "CARS\\ROOF\\GEOMETRY.BIN";
-const char *BrakesModelPackFilename = "CARS\\BRAKES\\GEOMETRY.BIN";
-const char *BrakesTexturePackFilename = "CARS\\BRAKES\\TEXTURES.BIN";
-const char *CarTexturePackFilename = "CARS\\TEXTURES.BIN";
-const char *WheelsTexturePackFilename = "CARS\\WHEELS\\TEXTURES.BIN";
-const char *DynamicTexturePackFilename = "GLOBAL\\DYNTEX.BIN";
-const char *HudDragTexturePackFilename = "GLOBAL\\HUDTEXDRAG.BIN";
-const char *HudSingleRaceTexturePackFilename = "GLOBAL\\HUDTEXRACE.BIN";
-const char *HudSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXSPLIT.BIN";
-const char *HudDragSplitScreenTexturePackFilename = "GLOBAL\\HUDTEXDRAGSPLIT.BIN";
-const char *LoadingBootName = "loading_boot.fng";
-const char *LoadingControllerScreenPackageName = "Loading_Controller.fng";
+    void BeginGameFlowLoadTrack(); // Decl: 1610
+    TheGameFlowManager.SetSingleFunction(BeginGameFlowLoadTrack, "BeginGameFlowLoadTrack");
+}
 
 void RegionLoader::Unload() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_REGION);
@@ -476,26 +618,28 @@ void RegionLoader::Unload() {
     }
 
     UnloadAemsInGame();
+
+    void UnloadSkyTextures(); // Decl: 1669
     UnloadSkyTextures();
     eUnloadAllStreamingTextures(HudDragTexturePackFilename);
     eUnloadAllStreamingTextures(HudSingleRaceTexturePackFilename);
     eUnloadAllStreamingTextures(HudSplitScreenTexturePackFilename);
     eUnloadAllStreamingTextures(HudDragSplitScreenTexturePackFilename);
     eUnloadAllStreamingTextures(DynamicTexturePackFilename);
-    UnloadResourceFile(pResourceRegion);
-    UnloadResourceFile(pResourceInGameB);
-    if (pResourceInGameSplitScreen) {
-        UnloadResourceFile(pResourceInGameSplitScreen);
+    UnloadResourceFile(this->pResourceRegion);
+    UnloadResourceFile(this->pResourceInGameB);
+    if (this->pResourceInGameSplitScreen != nullptr) {
+        UnloadResourceFile(this->pResourceInGameSplitScreen);
     }
-    UnloadResourceFile(pResourceInGameA);
-    pResourceRegion = nullptr;
-    pResourceInGameB = nullptr;
-    pResourceInGameSplitScreen = nullptr;
-    pResourceInGameA = nullptr;
-    UnloadFileFromVirtualMemory(pResourceRegion_VM);
-    UnloadFileFromVirtualMemory(pResourceInGameB_VM);
-    pResourceRegion_VM = nullptr;
-    pResourceInGameB_VM = nullptr;
+    UnloadResourceFile(this->pResourceInGameA);
+    this->pResourceRegion = nullptr;
+    this->pResourceInGameB = nullptr;
+    this->pResourceInGameSplitScreen = nullptr;
+    this->pResourceInGameA = nullptr;
+    UnloadFileFromVirtualMemory(this->pResourceRegion_VM);
+    UnloadFileFromVirtualMemory(this->pResourceInGameB_VM);
+    this->pResourceRegion_VM = nullptr;
+    this->pResourceInGameB_VM = nullptr;
     TheTrackStreamer.MakeSpaceInPool(1, true);
 
     bool load_global = true;
@@ -513,31 +657,52 @@ void RegionLoader::Unload() {
     dummy++;
 }
 
+// total size: 0x4
+// Decl: 1779
+class TrackLoader {
+  public:
+    TrackLoader() : Phase(0) {}
+
+    void LoadHandler(); // Decl: 1788
+
+    void BeginLoading();    // Decl: 1790
+    void FinishedLoading(); // Decl: 1791
+    void Unload();          // Decl: 1792
+
+    void InitTopologyAndSceneryGroups();  // Decl: 1794
+    void CloseTopologyAndSceneryGroups(); // Decl: 1795
+
+  private:
+    int Phase; // offset 0x0, size 0x4
+};
+
+TrackLoader TheTrackLoader; // Decl: 1807
+
 void BeginGameFlowLoadTrack() {
     TheTrackLoader.BeginLoading();
 }
 
 void TrackLoader::BeginLoading() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
-    Phase = 0;
+    this->Phase = 0;
     int track_number = TheRaceParameters.TrackNumber;
     TrackInfo::SetLoadedTrackInfo(track_number);
-    LoadHandler();
+    this->LoadHandler();
 }
 
 void TrackLoader::LoadHandler() {
-    Phase++;
+    this->Phase++;
     TheGameFlowManager.ClearWaitingForCallback();
-    TheGameFlowManager.SetWaitingForCallback("TrackLoader::LoadHandler", Phase);
-    if (Phase == 1) {
+    TheGameFlowManager.SetWaitingForCallback("TrackLoader::LoadHandler", this->Phase);
+    if (this->Phase == 1) {
         TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
-        LoadHandler();
-    } else if (Phase == 2) {
-        LoadHandler();
-    } else if (Phase == 3) {
+        this->LoadHandler();
+    } else if (this->Phase == 2) {
+        this->LoadHandler();
+    } else if (this->Phase == 3) {
         InitWorldModels();
         TheGameFlowManager.ClearWaitingForCallback();
-        FinishedLoading();
+        this->FinishedLoading();
     }
 }
 
@@ -547,16 +712,22 @@ void TrackLoader::FinishedLoading() {
 
 void TrackLoader::Unload() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_TRACK);
+
+    void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause); // Decl: 1966
     SoundPause(false, eSNDPAUSE_QUITTOFE);
+
     SetSoundControlState(false, SNDSTATE_OFF, "TrackLoader::Unload");
     cFEng::Get()->QueuePackagePop(0);
     cFEng::Get()->ServiceFengOnly();
     DeactivateMemorySponge();
     g_pEAXSound->StopSND11();
     TheAnimPlayer.KillWorldAnimScene(true, false);
+
+    void ServiceSpaceNodes(); // Decl: 1995
     ServiceSpaceNodes();
     ServiceSpaceNodes();
     IVisualTreatment::Get()->SetState(IVisualTreatment::FE_LOOK);
+
     CloseVisualTreatment();
     if (TheOnlineManager.IsOnlineRace()) {
         TheOnlineManager.EndOnlineRace(true);
@@ -569,9 +740,15 @@ void TrackLoader::Unload() {
     TheCarLoader.UnloadEverything();
     eWaitUntilRenderingDone();
     CloseWorldModels();
+
+    void SunTrackUnloader(); // Decl: 2043
     SunTrackUnloader();
+
+    void NotifySkyUnloader(); // Decl: 2047
     NotifySkyUnloader();
-    CloseTopologyAndSceneryGroups();
+    this->CloseTopologyAndSceneryGroups();
+
+    void CloseSound(); // Decl: 2059
     CloseSound();
     WorldConn::RestoreServices();
     TheSlotPoolManager.CleanupExpandedSlotPools();
@@ -580,7 +757,7 @@ void TrackLoader::Unload() {
     TheTrackPathManager.Close();
     SkipFE = 0;
     bDefaultSeed = Joylog::AddOrGetData(bDefaultSeed, 0x20, JOYLOG_CHANNEL_RANDOM);
-    if (TheRaceParameters.AIDemoMode == 0 && TheRaceParameters.ReplayDemoMode == 0) {
+    if (!TheRaceParameters.AIDemoMode && !TheRaceParameters.ReplayDemoMode) {
         ResetRenderEggs();
         gEasterEggs.ClearNonPersistent();
     }
@@ -590,7 +767,7 @@ static const int PrintSceneryGroups = ENABLE_IN_DEBUG;
 
 void EnableBarrierSceneryGroup(const char *group_name, bool flip_artwork) {
     VisibleGroupInfo *group_info = VisibleSectionManager::GetGroupInfo(group_name);
-    if (group_info) {
+    if (group_info != nullptr) {
         unsigned int group_name_hash = bStringHash(group_name);
         TheVisibleSectionManager.EnableGroup(group_name_hash);
         EnableSceneryGroup(group_name_hash, flip_artwork);
@@ -606,7 +783,7 @@ void InitTopologyAndSceneryGroups() {
 }
 
 void TrackLoader::InitTopologyAndSceneryGroups() {
-    if (FindSceneryGroup(bStringHash("SCENERY_GROUP_DOOR"))) {
+    if (FindSceneryGroup(bStringHash("SCENERY_GROUP_DOOR")) != nullptr) {
         EnableBarrierSceneryGroup("SCENERY_GROUP_DOOR", false);
     }
     CloseAllGarageDoors();
@@ -677,8 +854,7 @@ void FinishedGameLoading() {
 }
 
 void WaitForSimulation() {
-    int state = Sim::GetState();
-    if (state < 2) {
+    if (Sim::GetState() < 2) {
         TheGameFlowManager.SetSingleFunction(WaitForSimulation, "WaitForSimulation");
     } else {
         TheGameFlowManager.SetSingleFunction(FinishedGameLoading, "FinishedGameLoading");
@@ -690,9 +866,15 @@ void BeginWorldLoad() {
         cFEng::Get()->QueuePackagePop(1);
     }
     eFixUpTables();
+
+    void EstablishRemoteCaffeineConnection(); // Decl: 2449
     EstablishRemoteCaffeineConnection();
     TheTrackLoader.InitTopologyAndSceneryGroups();
+
+    void SunTrackLoader(void); // Decl: 2467
     SunTrackLoader();
+
+    extern int WeHaveCheckedIfJR2ServerExists;
     WeHaveCheckedIfJR2ServerExists = 0;
     if (!TheRaceParameters.AIDemoMode && !TheRaceParameters.ReplayDemoMode) {
         ActivateAnyRenderEggs();
@@ -705,6 +887,8 @@ void BeginWorldLoad() {
     SoundConn::InitServices();
     g_pEAXSound->StartSND11();
     StartWorldAnimations();
+
+    extern int DisableSoundUpdate;
     DisableSoundUpdate = 0;
     new ("World", 0) World();
     Sim::eUserMode mode = CalculateSimMode();
@@ -720,6 +904,14 @@ void BeginWorldLoad() {
     TheGameFlowManager.SetSingleFunction(WaitForSimulation, "WaitForSimulation");
 }
 
+// STRIPPED
+void GameFlowBeginRacing() {}
+
+// STRIPPED
+void GameFlowEndRacing() {}
+
+GameFlowManager TheGameFlowManager; // Decl: 2620
+
 GameFlowManager::GameFlowManager()
     : pSingleFunction(nullptr),      //
       SingleFunctionParam(0),        //
@@ -731,57 +923,57 @@ GameFlowManager::GameFlowManager()
       CallbackPhase(0) {}
 
 void GameFlowManager::SetSingleFunction(void (*function)(int32), const char *debug_name, int32 param) {
-    if (pSingleFunction) {
-        pSingleFunction = nullptr;
+    if (this->pSingleFunction != nullptr) {
+        this->pSingleFunction = nullptr;
     }
-    if (WaitingForCallback) {
-        WaitingForCallback = false;
+    if (this->WaitingForCallback) {
+        this->WaitingForCallback = false;
     }
-    pSingleFunction = function;
-    pSingleFunctionName = debug_name;
-    SingleFunctionParam = param;
+    this->pSingleFunction = function;
+    this->pSingleFunctionName = debug_name;
+    this->SingleFunctionParam = param;
 }
 
-void GameFlowManager::SetWaitingForCallback(const char *name, int debug_phase) {
-    if (pSingleFunction) {
-        pSingleFunction = nullptr;
+void GameFlowManager::SetWaitingForCallback(const char *debug_name, int debug_phase) {
+    if (this->pSingleFunction != nullptr) {
+        this->pSingleFunction = nullptr;
     }
-    if (WaitingForCallback) {
-        WaitingForCallback = false;
+    if (this->WaitingForCallback) {
+        this->WaitingForCallback = false;
     }
-    WaitingForCallback = true;
-    pCallbackName = name;
-    CallbackPhase = debug_phase;
+    this->WaitingForCallback = true;
+    this->pCallbackName = debug_name;
+    this->CallbackPhase = debug_phase;
 }
 
 void GameFlowManager::ClearWaitingForCallback() {
-    if (WaitingForCallback) {
-        WaitingForCallback = false;
+    if (this->WaitingForCallback) {
+        this->WaitingForCallback = false;
     }
 }
 
 void GameFlowManager::Service() {
-    while (pSingleFunction) {
-        void (*function)(int32) = pSingleFunction;
-        int32 param = SingleFunctionParam;
+    while (this->pSingleFunction != nullptr) {
+        void (*function)(int32) = this->pSingleFunction;
+        int32 param = this->SingleFunctionParam;
 
-        pSingleFunction = nullptr;
-        SingleFunctionParam = 0;
-        pSingleFunctionName = nullptr;
+        this->pSingleFunction = nullptr;
+        this->SingleFunctionParam = 0;
+        this->pSingleFunctionName = nullptr;
         function(param);
 
-        if (pSingleFunction == function) {
+        if (this->pSingleFunction == function) {
             break;
         }
     }
-    if (pLoopingFunction) {
-        pLoopingFunction();
+    if (this->pLoopingFunction != nullptr) {
+        this->pLoopingFunction();
     }
-    CheckForDemoDiscTimeout();
+    this->CheckForDemoDiscTimeout();
 }
 
 void GameFlowManager::SetState(GameFlowState state) {
-    CurrentGameFlowState = state;
+    this->CurrentGameFlowState = state;
 }
 
 Attrib::Vault *InitializeSingleAttributeVault(void *buf, const char *name, unsigned char **outPermBuffer, unsigned int allocFlags) {
@@ -804,11 +996,36 @@ Attrib::Vault *InitializeSingleAttributeVault(void *buf, const char *name, unsig
     bool success = AddDepFile(text, bin_buffer_perm, entry.mBinSize);
     bSPrintf(text, "%s.vlt", name);
     Attrib::Vault *vault = AddVault(text, vlt_buffer, entry.mVltSize);
-    if (outPermBuffer) {
+    if (outPermBuffer != nullptr) {
         *outPermBuffer = bin_buffer_perm;
     }
     return vault;
 }
+
+// Decl: 2852
+class HighAttribAlloc : public IAttribAllocator {
+  public:
+    void *Allocate(std::size_t bytes, const char *name) override {
+        if (bytes <= 0x400) {
+            return gFastMem.Alloc(bytes, name);
+        } else {
+            return bMalloc(bytes, name, 0, 0x40);
+        }
+    }
+
+    void Free(void *ptr, std::size_t bytes, const char *name) override {
+        if (bytes <= 0x400) {
+            gFastMem.Free(ptr, bytes, name);
+        } else {
+            bFree(ptr);
+        }
+    }
+};
+
+Attrib::Vault *gDatabaseVault = nullptr;            // Decl: 2873
+static Attrib::Vault *sFrontEndVault = nullptr;     // Decl: 2874
+static unsigned char *sFrontEndVaultData = nullptr; // Decl: 2875
+static int sFrontEndVaultHigh = 0;                  // Decl: 2876
 
 void LoadFrontEndVault(bool allocHigh) {
     if (sFrontEndVault != nullptr)
@@ -829,13 +1046,13 @@ void LoadFrontEndVault(bool allocHigh) {
     allocFlagsBin |= GetVirtualMemoryAllocParams();
 
     HighAttribAlloc highAllocator;
-    sFrontEndVaultHigh = allocHigh;
+    sFrontEndVaultHigh = static_cast<int>(allocHigh);
     IAttribAllocator *oldAllocator = nullptr;
     if (allocHigh) {
         oldAllocator = AttribAlloc::OverrideAllocator(&highAllocator);
     }
     sFrontEndVault = InitializeSingleAttributeVault(buf, "frontend", &sFrontEndVaultData, allocFlagsBin);
-    if (oldAllocator) {
+    if (oldAllocator != nullptr) {
         AttribAlloc::OverrideAllocator(oldAllocator);
     }
     bFree(buf);
@@ -844,7 +1061,7 @@ void LoadFrontEndVault(bool allocHigh) {
 void GameFlowManager::LoadFrontend() {
     SetLeakDetector();
     LoadFrontEndVault(false);
-    SetSingleFunction(BeginGameFlowLoadingFrontEnd, "LoadingFrontEnd");
+    this->SetSingleFunction(BeginGameFlowLoadingFrontEnd, "LoadingFrontEnd");
 }
 
 void UnloadFrontEndVault() {
@@ -862,17 +1079,17 @@ void UnloadFrontEndVault() {
     RemoveVault("frontend.vlt");
     bFree(sFrontEndVaultData);
     sFrontEndVaultData = nullptr;
-    if (oldAllocator) {
+    if (oldAllocator != nullptr) {
         AttribAlloc::OverrideAllocator(oldAllocator);
     }
     sFrontEndVaultHigh = 0;
 }
 
 void GameFlowManager::UnloadFrontend() {
-    SetSingleFunction(BeginGameFlowUnloadingFrontEnd, "UnloadingFrontEnd");
+    this->SetSingleFunction(BeginGameFlowUnloadingFrontEnd, "UnloadingFrontEnd");
 }
 void GameFlowManager::LoadTrack() {
-    SetSingleFunction(BeginGameFlowLoadRegion, "LoadingRegion");
+    this->SetSingleFunction(BeginGameFlowLoadRegion, "LoadingRegion");
 }
 
 void GameFlowManager::ReloadTrack() {
@@ -889,17 +1106,25 @@ bool GameFlowManager::IsPaused() {
     return TheOnlineManager.IsOnlineRace() ? false : Sim::GetState() == Sim::STATE_IDLE;
 }
 
+bool SwappedFrenchTextures = false; // Decl: 3148
+
+// STRIPPED
+void GameFlowNotifyLanguageChange(eLanguages new_language, eLanguages old_language) {}
+
+void *GlobalMemoryFile = nullptr; // Decl: 3200
+void *PermanentMemoryFile;        // Decl: 3201
+
+int FinishedLoadingGlobalSuccesful = 0;
+
 // TODO
 extern unsigned char bin_globala_bun[];
 
 void LoadGlobalAChunks() {
-#define ALIGN(n, align) ((n + align) & ~(align - 1))
     int alignment = 0x80;
-    unsigned char *dest = reinterpret_cast<unsigned char *>(ALIGN(reinterpret_cast<uintptr_t>(bin_globala_bun), alignment));
-#undef ALIGN
+    unsigned char *aligned_mem = reinterpret_cast<unsigned char *>((reinterpret_cast<uintptr_t>(bin_globala_bun) + alignment) & ~(alignment - 1));
     // TODO hardcoded size?
-    bOverlappedMemCpy(dest, &bin_globala_bun[1], 0x15df4);
-    LoadEmbeddedChunks(reinterpret_cast<bChunk *>(dest), 0x15df4, "Embedded GlobalA.bun");
+    bOverlappedMemCpy(aligned_mem, &bin_globala_bun[1], 0x15df4);
+    LoadEmbeddedChunks(reinterpret_cast<bChunk *>(aligned_mem), 0x15df4, "Embedded GlobalA.bun");
     WaitForResourceLoadingComplete();
 }
 
@@ -924,6 +1149,8 @@ void LoadGlobalChunks() {
 
     eLoadStreamingTexturePack(DynamicTexturePackFilename);
     eWaitForStreamingTexturePackLoading(DynamicTexturePackFilename);
+
+    void LoadCurrentLanguage(); // Decl: 3364
     LoadCurrentLanguage();
 
     if (eIsWidescreen()) {
@@ -931,11 +1158,12 @@ void LoadGlobalChunks() {
     } else {
         LoadResourceFile("GLOBAL\\THINSCREEN_GLOBAL.BUN", RESOURCE_FILE_GLOBAL, 0);
     }
-    // TODO magic
-    if (!GetTextureInfo(0xab0e817d, 0, 0)) {
-        eLoadStreamingTexture(0xab0e817d);
+    if (GetTextureInfo(STRINGHASH_LOADING, 0, 0) == nullptr) {
+        eLoadStreamingTexture(STRINGHASH_LOADING);
     }
     WaitForResourceLoadingComplete();
+
+    void eDisplayFrame(); // Decl: 3404
     eDisplayFrame();
     eLoadStreamingTexturePack(CarTexturePackFilename);
     eLoadStreamingTexturePack(WheelsTexturePackFilename);
@@ -949,6 +1177,11 @@ void LoadGlobalChunks() {
     eWaitForStreamingSolidPackLoading(nullptr);
     WaitForResourceLoadingComplete();
     FinishedLoadingGlobalSuccesful = 1;
+
+    void InitializeSoundLoad(); // Decl: 3429
+
+    void GenerateMissingCarParts(); // Decl: 3472
+
     GenerateMissingCarParts();
     int size = 0x4cf400;
     int car_loader_size = CarLoaderPoolSizes[0] * 0x400;
@@ -957,13 +1190,15 @@ void LoadGlobalChunks() {
         size = 0x48f400;
     }
     TheTrackStreamer.InitMemoryPool(size + car_loader_size);
+
+    extern int AllowCompressedStreamingTexturesInThisPoolNum;
     AllowCompressedStreamingTexturesInThisPoolNum = 7;
     TheCarLoader.SetMemoryPoolSize(car_loader_size);
     InitializeSoundLoad();
     BlockWhileQueuedFileBusy();
     UnloadMemoryFile(GlobalMemoryFile);
     GlobalMemoryFile = nullptr;
-    bool sunset_exists = bFileExists("TRACKS/L2RA_Sunset.BUN");
+    bool sunset_exists = bFileExists("TRACKS/L2RA_Sunset.BUN") != 0;
     if (Joylog::IsCapturing()) {
         Joylog::AddData(static_cast<int>(sunset_exists), 8, JOYLOG_CHANNEL_CONFIG);
     } else if (Joylog::IsReplaying()) {
@@ -975,11 +1210,12 @@ void LoadGlobalChunks() {
     LoadFrontEndVault(true);
 }
 
-void EndGameFlowLoadingFrontEnd();
-void FinishedGameLoading();
+// STRIPPED
+void BeginGameFlowNone() {}
 
 void DelayWaitForLoadingScreen() {
     if (LoadingTips::IsDoneShowingLoadingTips()) {
+        void EndGameFlowLoadingFrontEnd();
         TheGameFlowManager.SetSingleFunction(EndGameFlowLoadingFrontEnd, "EndGameFlowLoadingFrontEnd");
     } else {
         TheGameFlowManager.SetSingleFunction(DelayWaitForLoadingScreen, "Delay wait for Frontennd\n");
@@ -1030,7 +1266,7 @@ void BeginGameFlowLoadingFrontEnd() {
     bool load_global = true;
     bool load_frontend = true;
     bool load_ingame = false;
-    LoadLanguageResources(load_global, load_frontend, load_ingame, 0);
+    LoadLanguageResources(load_global, load_frontend, load_ingame, false);
     LoadResourceFile("FRONTEND\\FRONTA.BUN", RESOURCE_FILE_FRONTEND, 0);
     TheGameFlowManager.SetWaitingForCallback("GameFlowLoadingFrontEndPart1", 0);
 
@@ -1038,6 +1274,9 @@ void BeginGameFlowLoadingFrontEnd() {
     r->SetAllocationParams(0x2007, "FRONTEND\\FRONTB.LZC");
     r->ChangeFilenameForHotChunking("FRONTEND\\FRONTB.BUN");
 }
+
+// STRIPPED
+void GameFlowLoadingFrontEnd() {}
 
 void EndGameFlowLoadingFrontEnd() {
     eFixUpTables();
@@ -1070,12 +1309,15 @@ void BeginGameFlowUnloadingFrontEnd() {
     if (IsQueuedFileBusy()) {
         BlockWhileQueuedFileBusy();
     }
+
+    void NotifySkyUnloader();
     NotifySkyUnloader();
+
     CloseCarEffects();
     UnloadAemsFrontEnd();
     while (true) {
         ResourceFile *r = FindResourceFile(RESOURCE_FILE_FRONTEND);
-        if (!r)
+        if (r == nullptr)
             break;
         UnloadResourceFile(r);
     }
@@ -1085,7 +1327,7 @@ void BeginGameFlowUnloadingFrontEnd() {
     bool load_global = true;
     bool load_frontend = false;
     bool load_ingame = false;
-    LoadLanguageResources(load_global, load_frontend, load_ingame, 0);
+    LoadLanguageResources(load_global, load_frontend, load_ingame, false);
 
     gEmitterSystem.KillEverything();
     TheSlotPoolManager.CleanupExpandedSlotPools();
@@ -1097,7 +1339,9 @@ void BeginGameFlowUnloadingFrontEnd() {
     TheGameFlowManager.LoadTrack();
 }
 
-int TrackStreamerLoadingBarUp = false;
+static const bool EnableTrackStreamerLoadingBar = true; // Decl: 3914
+bool TrackStreamerLoadingBarUp = false;                 // Decl: 3915
+
 #ifndef EA_BUILD_A124
 void HandleTrackStreamerLoadingBar() {
     if (!TrackStreamerLoadingBarUp) {
@@ -1107,7 +1351,7 @@ void HandleTrackStreamerLoadingBar() {
             new EFadeScreenOn(true);
         }
     } else {
-        if (TheTrackStreamer.CheckLoadingBar() == 0) {
+        if (!TheTrackStreamer.CheckLoadingBar()) {
             TrackStreamerLoadingBarUp = false;
             new EFadeScreenOff(FEHASH_HIDE);
             FEManager::RequestUnPauseSimulation("TrackStreamerLoadingBar");
@@ -1115,6 +1359,25 @@ void HandleTrackStreamerLoadingBar() {
     }
 }
 #endif
+
+// STRIPPED
+void LaunchDemoDiscMarketingScreens() {}
+
+bool ExitDemoResourcesLoaded = false;
+
+// STRIPPED
+void NotifyExitDemoResourcesLoaded(int param) {}
+
+// STRIPPED
+void GameFlowWaitForExitDemoResourcesLoaded() {}
+
+// STRIPPED
+void LaunchExitDemoSequence() {}
+
+int ExitDemoDiscJoyHandlerHit = 0; // Decl: 3978
+
+// STRIPPED
+void ExitDemoDiscJoyHandler(int port, int event, unsigned char param, void *object) {}
 
 void BootLoadingScreen() {
     if (!cFEng::Get()->IsPackagePushed(LoadingBootName)) {
@@ -1125,5 +1388,6 @@ void BootLoadingScreen() {
         }
     }
     FEManager::Get()->Update();
+    void eDisplayFrame(); // Decl: 4069
     eDisplayFrame();
 }

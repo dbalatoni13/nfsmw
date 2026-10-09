@@ -261,6 +261,9 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
     }
 }
 
+// TODO
+uint32 UIWidgetMenu::AddStatOption(FEStatWidget *option) {}
+
 uint32 UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
     option->SetTitleObject(GetCurrentFEString(pTitleName));
     option->SetBacking(GetCurrentFEObject(pBackingName));
@@ -306,6 +309,9 @@ uint32 UIWidgetMenu::AddToggleOption(FEToggleWidget *option, bool use_arrow) {
     return iIndexToAdd - 1;
 }
 
+// TODO
+uint32 UIWidgetMenu::AddToggleImageOption(FEToggleImageWidget *option, bool use_arrow) {}
+
 uint32 UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arrow) {
     char sztemp[64];
     FEngSNPrintf(sztemp, sizeof(sztemp), "%s%d", pSliderName, iIndexToAdd);
@@ -333,6 +339,12 @@ uint32 UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arrow) {
     option->SetHeight(bAbs(FEngGetSizeY(option->GetTitleObject())));
     return iIndexToAdd - 1;
 }
+
+// TODO
+uint32 UIWidgetMenu::AddInputOption(FEInputWidget *option) {}
+
+// TODO
+uint32 UIWidgetMenu::AddDateOption(FEDateWidget *option) {}
 
 FEString *UIWidgetMenu::GetCurrentFEString(const char *string_name) {
     char sztemp[32];

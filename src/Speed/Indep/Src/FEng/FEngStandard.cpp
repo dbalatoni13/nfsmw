@@ -26,11 +26,25 @@ void InitFEngMemoryPool() {
     }
 }
 
-// STRIPPED
-void CloseFEngMemoryPool() {}
+void CloseFEngMemoryPool() {
+    if (pFEngMemoryPoolMemory != nullptr) {
+        bCloseMemoryPool(FEngMemoryPoolNumber);
+        bFree(pFEngMemoryPoolMemory);
+        pFEngMemoryPoolMemory = nullptr;
+    }
+}
 
 // STRIPPED
-void *FEngMalloc(unsigned int size) {}
+void *FEngMalloc(unsigned int size) {
+    int pool_num = 0;
+    if (FEngMemoryPoolNumber != -1) {
+        if (bLargestMalloc(FEngMemoryPoolNumber) > static_cast<int>(size) + 0x40) {
+            pool_num = FEngMemoryPoolNumber;
+        }
+    }
+    void *ptr = bMalloc(size, (pool_num & 0xf) | 0x100);
+    return ptr;
+}
 
 void *FEngMalloc(unsigned int size, const char *pFilename, int Line) {
     int pool_num = 0;

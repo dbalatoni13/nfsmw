@@ -121,16 +121,7 @@ void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
     const WCollisionInstance *cInst;
     unsigned int ind = 0;
 
-    while (true) {
-        cInst = collisionPack->Instance(static_cast<unsigned short>(ind));
-        if (cInst == nullptr) {
-            break;
-        }
-
-        if (ind >= collisionPack->InstanceCount()) {
-            break;
-        }
-
+    while ((cInst = collisionPack->Instance(static_cast<unsigned short>(ind))) != nullptr && ind < collisionPack->InstanceCount()) {
         unsigned int flags = 0;
         if (cInst->fGroupNumber != 0) {
             flags = 0xC0;

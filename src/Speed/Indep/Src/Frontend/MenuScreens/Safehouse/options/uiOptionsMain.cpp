@@ -120,6 +120,12 @@ void UIOptionsMain::Setup() {
     AddOption(new ("OMPlayer", 0) OMPlayer(0xD708EFEF, 0xF760EABE, 0));
     AddOption(new ("OMController", 0) OMController(0xA04A7B26, 0x04DC6DB5, 0));
 
+#ifdef EA_PLATFORM_WIN32
+    if (FEDatabase->IsOnlineMode()) {
+        AddOption(new ("OMOnline", 0) OMOnline(0x5a5e5137, 0x7d347e05, 0));
+    }
+#endif
+
     if (!mCalledFromPauseMenu && !FEDatabase->IsOnlineMode()) {
         AddOption(new ("OMEATrax", 0) OMEATrax(0xC52CCBF6, 0xDCFB6B36, 0));
         AddOption(new ("OMCredits", 0) OMCredits(0x51009E20, 0x0905101F, 0));

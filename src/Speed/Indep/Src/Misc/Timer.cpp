@@ -16,21 +16,9 @@ extern float TimeDifferenceInSeconds;
 extern float MilisecondsToSeconds;
 extern float MicrosecondsToMiliseconds;
 
-volatile int32 FrameCounter = 0;
-volatile uint32 LastFrameCounterTick = 0;
-VIDEO_MODE CurrentVideoMode = MODE_NTSC;
-int32 RealTimeFrames = 1;
-int32 RealTime = 1;
-int32 RealTimeFramesElapsed = 2;
-int RealTimeElapsedQuantized = 0;
-float RealTimeElapsedFrame = 0;
-float RealTimeElapsedError = 0;
-Timer RealTimer;
-float RealTimeElapsed;
-int32 RealLoopCounter = 0;
-float DefaultLimitMinimumVideoTimeElapsed = 1.0f / 60.0f;
-float LimitMinimumVideoTimeElapsed;
-float MaxTicksPerTimestep = 4.0f;
+volatile int32 FrameCounter = 0;          // Decl: 34
+volatile uint32 LastFrameCounterTick = 0; // Decl: 35
+VIDEO_MODE CurrentVideoMode = MODE_NTSC;  // Decl: 44
 
 VIDEO_MODE GetVideoMode() {
     return CurrentVideoMode;
@@ -52,6 +40,29 @@ VIDEO_MODE GetBuildRegionVideoMode() {
     return video_mode;
 }
 
+Timer RealTimer;          // Decl: 103
+int32 RealTimeFrames = 1; // Decl: 104
+int32 RealTime = 1;       // Decl: 105
+
+int32 RealTimeFramesElapsed = 2;                       // Decl: 109
+float RealTimeElapsed = RealTimeFramesElapsed / 30.0f; // Decl: 110
+int RealTimeElapsedQuantized = 0;                      // Decl: 111
+float RealTimeElapsedFrame = 0;                        // Decl: 112
+float RealTimeElapsedError = 0;                        // Decl: 113
+int32 RealLoopCounter = 0;                             // Decl: 114
+
+float DefaultLimitMinimumVideoTimeElapsed = 1.0f / 60.0f;                 // Decl: 119
+float LimitMinimumVideoTimeElapsed = DefaultLimitMinimumVideoTimeElapsed; // Decl: 121
+
+// STRIPPED
+void SetFPSLimiter(float fps) {}
+
+// STRIPPED
+void ResetFPSLimiter() {}
+
+// STRIPPED
+float GetMaxFPS() {}
+
 float GetRealTimeElapsedFromQuantized(int real_time_elapsed_quantized) {
     return static_cast<float>(real_time_elapsed_quantized) * (1.0f / 3600.0f);
 }
@@ -59,6 +70,8 @@ float GetRealTimeElapsedFromQuantized(int real_time_elapsed_quantized) {
 int GetQuantizedRealTimeElapsed(float real_time_elapsed) {
     return static_cast<int>(real_time_elapsed * 3600.0f + 0.5f);
 }
+
+float MaxTicksPerTimestep = 4.0f; // Decl: 148
 
 void PrepareRealTimestep(float video_time_elapsed) {
     float start_video_time_elapsed = video_time_elapsed;
@@ -151,15 +164,16 @@ void AdvanceRealTime() {
     RealLoopCounter++;
 }
 
-float WorldTimeSeconds = 1.0f;
-int WorldTime = 1;
-int WorldTimeFrames = 1;
-int WorldTimeFramesElapsed = 0;
-float WorldTimeElapsed = 0;
-float WorldTimeElapsedFrame = 0;
-int WorldLoopCounter = 100000;
-Timer WorldTimer;
-int NeedToPrepareWorldTimestep = 1;
+Timer WorldTimer;                // Decl: 545
+float WorldTimeSeconds = 1.0f;   // Decl: 546
+int WorldTime = 1;               // Decl: 547
+int WorldTimeFrames = 1;         // Decl: 548
+int WorldTimeFramesElapsed = 0;  // Decl: 549
+float WorldTimeElapsed = 0;      // Decl: 550
+float WorldTimeElapsedFrame = 0; // Decl: 551
+int WorldLoopCounter = 100000;   // Decl: 552
+
+int NeedToPrepareWorldTimestep = 1; // Decl: 556
 
 void ResetWorldTime() {
     WorldTimer.SetTime(Sim::GetTime());
@@ -436,3 +450,15 @@ void Timer::PrintToString(char *string, int flags) {
         ::PrintToString(string, flags, hours, minutes, seconds, thousandths_seconds / 10);
     }
 }
+
+// STRIPPED
+void Timer::PrintToString(char *string, float fIota, int flags) {}
+
+// STRIPPED
+int Timer::CountDown(float fSeconds) {}
+
+// STRIPPED
+float Timer::GetSecondsRounded(float fIotaSeconds) {}
+
+// STRIPPED
+void Timer::RoundTime(float fIotaSeconds) {}

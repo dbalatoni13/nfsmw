@@ -650,7 +650,6 @@ void GarageMainScreen::HandleHidePackage(uint32 msg) {
     RenderingCar->Visible = 0;
 }
 
-// UNSOLVED
 void GarageMainScreen::HandleJoyEvents() {
     int firstPortToCheck = 0;
     int lastPortToCheck = 2;

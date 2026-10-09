@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
@@ -177,10 +178,7 @@ bool LoadingTips::TipTestLastCarWithTwoStrikes(LoadingScreen::LoadingScreenTypes
 }
 
 bool LoadingTips::TipTestFirstTimeOutOfSafeHouse(LoadingScreen::LoadingScreenTypes loading_direction) {
-    bool lolley_says_this_means_free_roam = false;
-    if (GRaceDatabase::Exists() && GRaceDatabase::Get().GetStartupRace() == nullptr) {
-        lolley_says_this_means_free_roam = true;
-    }
+    bool lolley_says_this_means_free_roam = GRaceDatabase::Exists() && GRaceDatabase::Get().GetStartupRace() == nullptr;
 
     if (FEDatabase->IsCareerMode() && lolley_says_this_means_free_roam && loading_direction == LoadingScreen::LS_LOADING_GAME_FROM_FE) {
         CareerSettings *career = FEDatabase->GetCareerSettings();
@@ -211,6 +209,10 @@ void LoadingTips::AllowInput() {
         mPressAcceptHasBeenShown = true;
         cFEng::Get()->QueuePackageMessage(0x9938A38F, nullptr, nullptr);
         FEManager::Get()->AllowControllerError(true);
+#ifdef EA_PLATFORM_WIN32 // TODO: might be v1.3
+        mSuppressingControllerError = FEManager::Get()->IsSuppressingControllerError();
+        FEManager::Get()->SuppressControllerError(false);
+#endif
     }
 }
 
@@ -224,6 +226,11 @@ GameTipInfo *LoadingTips::GetGameTip(eGameTips tip) {
 void LoadingTips::InitLoadingTipsScreen() {
     mLoadingTipsScreenPtr = bMalloc(sizeof(LoadingTips), "LoadingTips", 0, 0);
 }
+
+void LoadingTips::CloseLoadingTipsScreen() {
+    bFree(mLoadingTipsScreenPtr);
+    mLoadingTipsScreenPtr = nullptr;
+};
 
 void LoadingTips::FinishLoadingTexCallback(uint32 p) {
     ShowTipInfo();

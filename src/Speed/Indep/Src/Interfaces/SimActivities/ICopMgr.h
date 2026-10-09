@@ -35,11 +35,17 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual float GetLockoutTimeRemaining() const = 0;
 #endif
 
-    static void EnableCops() {}
+    static void EnableCops() {
+        mDisableCops = 0;
+    }
 
-    static void DisableCops() {}
+    static void DisableCops() {
+        mDisableCops = 1;
+    }
 
-    static bool AreCopsEnabled() {}
+    static bool AreCopsEnabled() {
+        return mDisableCops == 0;
+    }
 };
 
 #endif

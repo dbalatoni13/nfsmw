@@ -4,9 +4,9 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
-// TODO this file was made up. What should we use instead? Maybe Speed.hpp?
+// TODO this file was made up
 
-extern const char *BuildVersionChangelistName;
+extern char *BuildVersionChangelistName;
 
 extern int IsSoundEnabled;
 extern int IsAudioStreamingEnabled;

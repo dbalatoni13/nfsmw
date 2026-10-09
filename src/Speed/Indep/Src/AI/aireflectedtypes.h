@@ -1,6 +1,7 @@
 #ifndef _aireflectedtypes_h_
 #define _aireflectedtypes_h_
 
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x18

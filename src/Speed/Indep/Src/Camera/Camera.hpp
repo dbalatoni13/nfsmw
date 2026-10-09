@@ -52,7 +52,7 @@ struct CameraParams {
 // total size: 0x50
 struct JollyRancherResponsePacket {
     // Functions
-    inline JollyRancherResponsePacket() {}
+    JollyRancherResponsePacket() {}
 
     // Members
     volatile int UseMatrix;             // offset 0x0, size 0x4
@@ -97,18 +97,20 @@ class Camera {
     void ApplyNoise(bMatrix4 *p_matrix, float time, float intensity);
 
     float GetFocalDistance() {
-        return CurrentKey.FocalDistance;
+        return this->CurrentKey.FocalDistance;
     }
 
     float GetDepthOfField() {
-        return CurrentKey.DepthOfField;
+        return this->CurrentKey.DepthOfField;
     }
 
     unsigned short GetFieldOfView() {
-        return CurrentKey.FieldOfView;
+        return this->CurrentKey.FieldOfView;
     }
 
-    // bMatrix4 *GetWorldToCameraMatrix() {}
+    bMatrix4 *GetWorldToCameraMatrix() {
+        return &this->CurrentKey.Matrix;
+    }
 
     bVector3 *GetPosition() {
         return &this->CurrentKey.Position;
@@ -122,10 +124,12 @@ class Camera {
         return &this->CurrentKey.Target;
     }
 
-    // unsigned short GetFov() {}
+    unsigned short GetFov() {
+        return this->CurrentKey.FieldOfView;
+    }
 
     bVector3 GetPositionSimSpace() {
-        bVector3 vec(CurrentKey.Position);
+        bVector3 vec(this->CurrentKey.Position);
         eUnSwizzleWorldVector(vec, vec);
 
         return vec;
@@ -154,53 +158,53 @@ class Camera {
     void ClearVelocity() {}
 
     void SetRenderDash(int r) {
-        if (!StopUpdating) {
-            RenderDash = r;
+        if (!this->StopUpdating) {
+            this->RenderDash = r;
         }
     }
 
     void SetTargetDistance(float f) {
-        CurrentKey.TargetDistance = f;
+        this->CurrentKey.TargetDistance = f;
     }
 
     void SetFocalDistance(float f) {
-        CurrentKey.FocalDistance = f;
+        this->CurrentKey.FocalDistance = f;
     }
 
     void SetDepthOfField(float f) {
-        CurrentKey.DepthOfField = f;
+        this->CurrentKey.DepthOfField = f;
     }
 
     void SetFieldOfView(unsigned short fov) {
-        CurrentKey.FieldOfView = fov;
+        this->CurrentKey.FieldOfView = fov;
     }
 
-    inline void SetNoiseFrequency1(float x, float y, float z, float w) {
-        CurrentKey.NoiseFrequency1.x = x;
-        CurrentKey.NoiseFrequency1.y = y;
-        CurrentKey.NoiseFrequency1.z = z;
-        CurrentKey.NoiseFrequency1.w = w;
+    void SetNoiseFrequency1(float x, float y, float z, float w) {
+        this->CurrentKey.NoiseFrequency1.x = x;
+        this->CurrentKey.NoiseFrequency1.y = y;
+        this->CurrentKey.NoiseFrequency1.z = z;
+        this->CurrentKey.NoiseFrequency1.w = w;
     }
 
-    inline void SetNoiseFrequency2(float x, float y, float z, float w) {
-        CurrentKey.NoiseFrequency2.x = x;
-        CurrentKey.NoiseFrequency2.y = y;
-        CurrentKey.NoiseFrequency2.z = z;
-        CurrentKey.NoiseFrequency2.w = w;
+    void SetNoiseFrequency2(float x, float y, float z, float w) {
+        this->CurrentKey.NoiseFrequency2.x = x;
+        this->CurrentKey.NoiseFrequency2.y = y;
+        this->CurrentKey.NoiseFrequency2.z = z;
+        this->CurrentKey.NoiseFrequency2.w = w;
     }
 
-    inline void SetNoiseAmplitude1(float x, float y, float z, float w) {
-        CurrentKey.NoiseAmplitude1.x = x;
-        CurrentKey.NoiseAmplitude1.y = y;
-        CurrentKey.NoiseAmplitude1.z = z;
-        CurrentKey.NoiseAmplitude1.w = w;
+    void SetNoiseAmplitude1(float x, float y, float z, float w) {
+        this->CurrentKey.NoiseAmplitude1.x = x;
+        this->CurrentKey.NoiseAmplitude1.y = y;
+        this->CurrentKey.NoiseAmplitude1.z = z;
+        this->CurrentKey.NoiseAmplitude1.w = w;
     }
 
-    inline void SetNoiseAmplitude2(float x, float y, float z, float w) {
-        CurrentKey.NoiseAmplitude2.x = x;
-        CurrentKey.NoiseAmplitude2.y = y;
-        CurrentKey.NoiseAmplitude2.z = z;
-        CurrentKey.NoiseAmplitude2.w = w;
+    void SetNoiseAmplitude2(float x, float y, float z, float w) {
+        this->CurrentKey.NoiseAmplitude2.x = x;
+        this->CurrentKey.NoiseAmplitude2.y = y;
+        this->CurrentKey.NoiseAmplitude2.z = z;
+        this->CurrentKey.NoiseAmplitude2.w = w;
     }
 
     void SetNoiseFrequency1(bVector4 *p) {
@@ -220,35 +224,35 @@ class Camera {
     }
 
     void SetNoiseFrequency1(float *p) {
-        SetNoiseFrequency1(*p, *p, *p, *p);
+        this->SetNoiseFrequency1(*p, *p, *p, *p);
     }
 
     void SetNoiseFrequency2(float *p) {
-        SetNoiseFrequency2(*p, *p, *p, *p);
+        this->SetNoiseFrequency2(*p, *p, *p, *p);
     }
 
     void SetNoiseAmplitude1(float *p) {
-        SetNoiseAmplitude1(*p, *p, *p, *p);
+        this->SetNoiseAmplitude1(*p, *p, *p, *p);
     }
 
     void SetNoiseAmplitude2(float *p) {
-        SetNoiseAmplitude1(*p, *p, *p, *p);
+        this->SetNoiseAmplitude1(*p, *p, *p, *p);
     }
 
     void SetNearZ(float near_z) {
-        CurrentKey.NearZ = near_z;
+        this->CurrentKey.NearZ = near_z;
     }
 
     void SetFarZ(float far_z) {
-        CurrentKey.FarZ = far_z;
+        this->CurrentKey.FarZ = far_z;
     }
 
     float GetNearZ() {
-        return CurrentKey.NearZ;
+        return this->CurrentKey.NearZ;
     }
 
     float GetFarZ() {
-        return CurrentKey.FarZ;
+        return this->CurrentKey.FarZ;
     }
 
     void SetLetterBox(float LB_h) {}
@@ -256,7 +260,7 @@ class Camera {
     // float GetLetterBox() {}
 
     void SetSimTimeMultiplier(float multiplier) {
-        CurrentKey.SimTimeMultiplier = multiplier;
+        this->CurrentKey.SimTimeMultiplier = multiplier;
     }
 
     // float GetSimTimeMultiplier() {}

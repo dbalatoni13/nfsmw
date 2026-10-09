@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/FEng/FEChunk.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FEPackageChunks.h"
@@ -97,8 +98,13 @@ const char *GetLoadingScreenPackageName() {
     return gLoadinScreenPackageName;
 }
 
-// STRIPPED
-const char *GetSplashScreenPackageName() {}
+const char *GetSplashScreenPackageName() {
+    if (eIsWidescreen()) {
+        return "WS_MW_LS_Splash.fng";
+    } else {
+        return "MW_LS_Splash.fng";
+    }
+}
 
 // Decl: 194
 // Range: 0x8016BDF4 -> 0x8016BE2C

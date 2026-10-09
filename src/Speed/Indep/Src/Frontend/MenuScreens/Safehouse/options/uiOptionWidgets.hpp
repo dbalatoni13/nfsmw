@@ -55,14 +55,28 @@ class OMEATrax : public IconOption {
 };
 
 // 0x5C
+class OMTrailers : public IconOption {
+  public:
+    OMTrailers(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~OMTrailers() override {}
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
+};
+
+// 0x5C
+class OMOnline : public IconOption {
+  public:
+    OMOnline(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~OMOnline() override {}
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
+};
+
+// 0x5C
 class OMCredits : public IconOption {
   public:
     OMCredits(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMCredits() override {}
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
-
-// ===== AO* slider classes (extend FESliderWidget) =====
 
 // 0xA4
 class AOSFXMasterVol : public FESliderWidget {
@@ -114,8 +128,6 @@ class AOIGMusicVol : public FESliderWidget {
     void SetInitialValues() override;
 };
 
-// ===== AO* toggle classes (extend FEToggleWidget) =====
-
 // 0x64
 class AOInteractiveMusicMode : public FEToggleWidget {
   public:
@@ -143,7 +155,14 @@ class AOAudioMode : public FEToggleWidget {
     void Draw() override;
 };
 
-// ===== VO* classes (extend FEToggleWidget) =====
+// 0x64 made up name
+class VOScreenResolution : public FEToggleWidget {
+  public:
+    VOScreenResolution(bool enabled) : FEToggleWidget(enabled) {}
+    ~VOScreenResolution() override {}
+    void Act(const char *parent_pkg, uint32 data) override;
+    void Draw() override;
+};
 
 // 0x64
 class VOWideScreen : public FEToggleWidget {
@@ -153,8 +172,6 @@ class VOWideScreen : public FEToggleWidget {
     void Act(const char *parent_pkg, uint32 data) override;
     void Draw() override;
 };
-
-// ===== GO* classes (extend FEToggleWidget) =====
 
 // 0x64
 class GODamage : public FEToggleWidget {
@@ -283,8 +300,6 @@ class POLeaderBoard : public FEToggleWidget {
     void Act(const char *parent_pkg, uint32 data) override;
     void Draw() override;
 };
-
-// ===== CO* classes (extend FEToggleWidget) =====
 
 // 0x64
 class COVibration : public FEToggleWidget {

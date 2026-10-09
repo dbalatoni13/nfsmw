@@ -1,12 +1,19 @@
-#ifndef MISC_JOYLOG_H
-#define MISC_JOYLOG_H
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef JOYLOG_HPP
+#define JOYLOG_HPP // Decl: 10
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define MAX_JOYLOG_CHANNELS 14 // Decl: 12
 
 #include <types.h>
 
+// Decl: 15
 enum JoylogChannel {
     JOYLOG_CHANNEL_NONE = 0,
     JOYLOG_CHANNEL_CONFIG = 1,
@@ -25,154 +32,74 @@ enum JoylogChannel {
     JOYLOG_NUM_CHANNELS = 14,
 };
 
-// total size: 0xC
-struct JoylogBufferEntry {
-    int ChannelNumber; // offset 0x0, size 0x4
-    int DataSize;      // offset 0x4, size 0x4
-    uint32 Data;       // offset 0x8, size 0x4
-};
-
-// total size: 0x4118
-class JoylogBuffer {
-  public:
-    JoylogBuffer(const char *filename, int top_position);
-
-    void SaveBuffer();
-
-    void LoadBuffer(int position);
-
-    void AddData(int32 data, int data_size, int channel_number);
-
-    uint32 GetData(int data_size, int channel_number);
-
-    int AddEntry(JoylogBufferEntry *entry, int position);
-
-    int GetEntry(JoylogBufferEntry *entry, int position);
-
-    static int GetEntry(JoylogBufferEntry *entry, uint8 *pbuf);
-
-    void PrintNearbyJoylogEntries(int error_pos);
-
-    char *GetFilename() {
-        return Filename;
-    }
-
-    int GetTotalSize() {
-        return TopPosition;
-    }
-
-    int IsMoreData() {
-        return CurrentPosition < TopPosition;
-    }
-
-    int GetPosition() {
-        return CurrentPosition;
-    }
-
-    void SetPosition(int position) {}
-
-  private:
-    int32 CurrentPosition;     // offset 0x0, size 0x4
-    int32 NumBytesInBuffer;    // offset 0x4, size 0x4
-    int32 CurrentLoadPosition; // offset 0x8, size 0x4
-    int32 BufferStartPosition; // offset 0xC, size 0x4
-    int32 TopPosition;         // offset 0x10, size 0x4
-    char Filename[260];        // offset 0x14, size 0x104
-    uint8 Buffer[16384];       // offset 0x118, size 0x4000
-};
+class JoylogBuffer;
 
 // total size: 0x1
+// Decl: 40
 class Joylog {
   public:
-    static void StopReplaying();
-
-    static void SetChecksumError();
-
-    static void PrintNearbyJoylogEntries(int error_pos);
-
-    static int GetPosition();
-
-    static void SetPosition(int position);
-
-    static void LoadReadAheadBuffer();
-
-    static int ReadAheadFromChannel(void *buf, int size, int channel_number);
-
-    static void FreeReadAheadBuffer();
-
-    static uint32 GetData(int data_size, JoylogChannel channel_number);
-
-    static int32 GetSignedData(int data_size, JoylogChannel channel_number);
-
-    static void GetData(void *data, int data_size_bytes, JoylogChannel channel_number);
-
-    static void AddData(int32 data, int data_size_bits, JoylogChannel channel_number);
-
-    static void AddData(const void *data, int data_size_bytes, JoylogChannel channel_number);
-
-    static uint32 AddOrGetData(uint32 data, int data_size, JoylogChannel channel_number);
-
-    static int32 AddOrGetSignedData(int data, int data_size, JoylogChannel channel_number);
-
-    static float AddOrGetData(float data, JoylogChannel channel_number);
-
-    static void AddOrGetData(char *string, JoylogChannel channel_number);
-
-    static void AddOrGetData(uint16 *string, JoylogChannel channel_number);
-
-    static void VerifyData(int32 data, int data_size, JoylogChannel channel_number);
-
-    static void Init();
-
-    static void Save();
-
-    static void Suspend();
-
-    static void Resume();
-
-    static uint32 IsCapturing();
-
-    static int IsReplaying();
-
+    static int IsReplaying();                                                // Decl: 43
+    static uint32 GetData(int data_size, JoylogChannel channel_number);      // Decl: 44
+    static int32 GetSignedData(int data_size, JoylogChannel channel_number); // Decl: 45
+    // Decl: 46
     static float GetData(JoylogChannel channel_number) {
         int data = static_cast<int>(GetData(32, channel_number));
         return *reinterpret_cast<float *>(&data);
     }
+    static void GetData(void *data, int data_size_bytes, JoylogChannel channel_number); // Decl: 47
 
+    static uint32 IsCapturing();                                                       // Decl: 50
+    static void AddData(int32 data, int data_size_bits, JoylogChannel channel_number); // Decl: 51
+    // Decl: 52
     static void AddData(float data, JoylogChannel channel_number) {
         AddData(*reinterpret_cast<int *>(&data), 32, channel_number);
     }
+    static void AddData(const void *data, int data_size_bytes, JoylogChannel channel_number); // Decl: 53
 
-    static void RewindReadAheadBuffer() {}
+    static uint32 AddOrGetData(uint32 data, int data_size, JoylogChannel channel_number);     // Decl: 56
+    static int32 AddOrGetSignedData(int32 data, int data_size, JoylogChannel channel_number); // Decl: 57
+    static float AddOrGetData(float data, JoylogChannel channel_number);                      // Decl: 58
+    static void AddOrGetData(char *string, JoylogChannel channel_number);                     // Decl: 59
+    static void AddOrGetData(uint16 *string, JoylogChannel channel_number);                   // Decl: 60
+
+    static void VerifyData(int32 data, int data_size, JoylogChannel channel_number); // Decl: 63
+
+    static void Init(); // Decl: 65
+    static void Save(); // Decl: 66
+
+    static void StopReplaying(); // Decl: 68
+
+    static void SetChecksumError(); // Decl: 70
+
+    static void PrintNearbyJoylogEntries(int error_pos); // Decl: 72
+
+    static void Suspend();                 // Decl: 75
+    static void Resume();                  // Decl: 76
+    static int GetPosition();              // Decl: 77
+    static void SetPosition(int position); // Decl: 78
+
+    static void LoadReadAheadBuffer();                                        // Decl: 81
+    static void FreeReadAheadBuffer();                                        // Decl: 82
+    static int ReadAheadFromChannel(void *buf, int size, int channel_number); // Decl: 83
+
+    // static void RewindReadAheadBuffer() {}
 
     // static unsigned int IsJuiceReplay() {}
 
-    static void SetJuiceReplay(int val) {}
+    // static void SetJuiceReplay(int val) {}
 
   private:
-    static int ReplayingFlag;              // size: 0x4
-    static int CapturingFlag;              // size: 0x4
-    static JoylogBuffer *pReplayingBuffer; // size: 0x4
-    static JoylogBuffer *pCapturingBuffer; // size: 0x4
-    static int32 ReadAheadBufferSize;      // size: 0x4
-    static int32 ReadAheadBufferPos;       // size: 0x4
-    static uint8 *ReadAheadBuffer;         // size: 0x4
-    static int JuiceReplayFlag;            // size: 0x4
+    static int ReplayingFlag;              // size: 0x4, Decl: 91
+    static int CapturingFlag;              // size: 0x4, Decl: 92
+    static JoylogBuffer *pReplayingBuffer; // size: 0x4, Decl: 93
+    static JoylogBuffer *pCapturingBuffer; // size: 0x4, Decl: 94
+
+    static int32 ReadAheadBufferSize; // size: 0x4, Decl: 96
+    static int32 ReadAheadBufferPos;  // size: 0x4, Decl: 97
+
+    static uint8 *ReadAheadBuffer; // size: 0x4, Decl: 99
+    static int JuiceReplayFlag;    // size: 0x4, Decl: 100
 };
-
-// total size: 0xC
-struct JoylogChannelInfo {
-    JoylogChannel ChannelNumber; // offset 0x0, size 0x4
-    char *Name;                  // offset 0x4, size 0x4
-    int8 YieldRepeatCount;       // offset 0x8, size 0x1
-    int8 ReadAheadOnly;          // offset 0x9, size 0x1
-};
-
-extern JoylogChannelInfo NFSJoylogChannelInfoTable[14];
-
-inline JoylogChannelInfo *GetJoylogChannelInfo(int channel_number) {
-    return &NFSJoylogChannelInfoTable[channel_number];
-}
 
 void InitJoylog();
 void ServiceJoylog();

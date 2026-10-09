@@ -113,7 +113,7 @@ void WorldAnimInstanceDirectory::RemoveEntityInfo(WorldAnimEntityInfo *entity_in
         return;
     }
     for (bPNode *node = mLoadedWorldAnimEntityInfos.GetHead(); node != mLoadedWorldAnimEntityInfos.EndOfList(); node = node->GetNext()) {
-        WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
+        WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
         if (waei == entity_info) {
             mLoadedWorldAnimEntityInfos.Remove(node);
             return;
@@ -201,7 +201,7 @@ void WorldAnimInstanceDirectory::RemoveInstanceEntryAndInfo(WorldAnimInstanceEnt
     }
     for (bPNode *node = mResidentWorldAnimInstanceEntryInfos.GetHead(); node != mResidentWorldAnimInstanceEntryInfos.EndOfList();
          node = node->GetNext()) {
-        WorldAnimInstanceEntryInfo *info = reinterpret_cast<WorldAnimInstanceEntryInfo *>(node->GetpObject());
+        WorldAnimInstanceEntryInfo *info = reinterpret_cast<WorldAnimInstanceEntryInfo *>(node->GetObject());
         if (info == entry_info) {
             mResidentWorldAnimInstanceEntryInfos.Remove(node);
             break;

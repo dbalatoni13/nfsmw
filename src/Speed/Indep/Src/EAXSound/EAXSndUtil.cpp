@@ -161,9 +161,9 @@ void cInterpLine::Initialize(float _Start, float _Finish, int _Length, eCURVETYP
     }
 
     this->Finish = _Finish;
+    this->Start = _Start;
     this->CurveTypes = _Curve;
     this->bComplete = false;
-    this->Start = _Start;
     this->CurValue = _Start;
     this->ElapsedTime = 0.0f;
 }
@@ -264,7 +264,6 @@ Slope::Slope(float _Min, float _Max, float _Start, float _Finish) {
 
 Slope::~Slope() {}
 
-// UNSOLVED
 void Slope::Initialize(float _Min, float _Max, float _Start, float _Finish) {
     this->Min = _Min;
     this->Max = _Max;

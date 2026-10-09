@@ -19,7 +19,7 @@ void Reputation::Update(IPlayer *player) {
         return;
     }
 
-    if (mNumFramesLeftToShow >= 1) {
+    if (mNumFramesLeftToShow > 0) {
         mNumFramesLeftToShow = mNumFramesLeftToShow - 1;
         FEngSetLanguageHash(mDataTitle, 0x7D0171E4);
         FEPrintf(mDataReputationCareer, "%$d", mReputationCareer);

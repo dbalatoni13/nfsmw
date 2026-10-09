@@ -4,10 +4,10 @@
 #include "bList.hpp"
 
 enum SlotPoolFlags {
-    SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE = 8,
-    SLOTPOOL_FLAG_WARN_IF_OVERFLOW = 4,
-    SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY = 2,
     SLOTPOOL_FLAG_OVERFLOW_IF_FULL = 1,
+    SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY = 2,
+    SLOTPOOL_FLAG_WARN_IF_OVERFLOW = 4,
+    SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE = 8,
 };
 
 #define DEFAULT_SLOTPOOL_FLAGS                                                                                                                       \
@@ -21,7 +21,6 @@ class SlotPoolEntry {
 
 // total size: 0x34
 class SlotPool : public bTNode<SlotPool> {
-
     friend class SlotPoolManager; // only way I can think to allow SlotPoolManager::DeleteSlotPool to access NextSlotPool
 
     SlotPool *NextSlotPool;    // offset 0x8, size 0x4
@@ -100,8 +99,8 @@ class SlotPool : public bTNode<SlotPool> {
     }
 };
 
+// total size: 0xC
 class SlotPoolManager {
-    // total size: 0xC
     int Initialized;               // offset 0x0, size 0x4
     bTList<SlotPool> SlotPoolList; // offset 0x4, size 0x8
 

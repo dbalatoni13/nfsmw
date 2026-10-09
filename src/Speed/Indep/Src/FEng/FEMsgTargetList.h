@@ -16,9 +16,7 @@ class FEMsgTargetList {
     FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {} // Decl: 20
     FEMsgTargetList(u32 NewID) : MsgID(NewID), Alloc(0), Count(0), pTargets(nullptr) {}
     ~FEMsgTargetList() {
-        if (pTargets) {
-            delete[] pTargets;
-        }
+        delete[] pTargets;
     }
 
     void SetMsgID(u32 NewID) {

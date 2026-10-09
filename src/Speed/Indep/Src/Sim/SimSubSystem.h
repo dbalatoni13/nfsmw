@@ -19,9 +19,10 @@ class SubSystem {
         : mInit(initcb),       //
           mRestore(restorecb), //
           mSig(name),          //
-          mNext(mHead),        //
           mName(name) {
 #endif
+        mNext = mHead;
+        mHead = this;
     }
 
     static void Init(const UCrc32 &sig) {

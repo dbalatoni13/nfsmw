@@ -43,9 +43,7 @@ void Countdown::Update(IPlayer *player) {
                 FEngSetLanguageHash(pMessage, 0x61223ab5);
                 FEngSetLanguageHash(pMessageShadow, 0x61223ab5);
 
-                extern Timer WorldTimer; // Not exactly sure what is extern here
-
-                MCountdownDone().Post(UCrc32(0x20d60dbf));
+                MCountdownDone().Post(UCrc32(UCRC32_Gameplay));
                 mSecondTimer = WorldTimer;
 
                 new ENISWorldAnimTrigger("EN_TollBoothArm_01", 0.0f, 0, 0);
@@ -53,6 +51,7 @@ void Countdown::Update(IPlayer *player) {
                 new ENISWorldAnimTrigger("EN_TollBoothArm_03", 0.0f, 0, 0);
                 new ENISWorldAnimTrigger("EN_TollBoothArm_04", 0.0f, 0, 0);
 
+                void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
                 SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
                 return;
             }
@@ -84,6 +83,7 @@ void Countdown::Update(IPlayer *player) {
 
 void Countdown::BeginCountdown() {
     mCountdown = RACE_COUNTDOWN_NUMBER_4;
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     SetSoundControlState(true, SNDSTATE_NIS_321, "BeginCountdown");
 }
 

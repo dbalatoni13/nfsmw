@@ -138,7 +138,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     if (GetCurrentDatum() == nullptr)
         return;
 
-    FEPrintf(GetPackageName(), __NUMBER_GROUP__, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), __NUMBER_GROUP__, "%d", GetCurrentDatumNum() + 1);
     FEPrintf(GetPackageName(), __NUMBER_OF_GROUP__, "%d", GetNumDatum());
 
     GRaceParameters *race = static_cast<ChallengeDatum *>(GetCurrentDatum())->race;
@@ -181,7 +181,7 @@ void UIQRChallengeSeries::RefreshHeader() {
 
     if (static_cast<ChallengeDatum *>(GetCurrentDatum())->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
-        int index = GetCurrentDatumNum() - 1;
+        int index = GetCurrentDatumNum();
         int mod = (index + 1) % 5;
         if (index < 61) {
             int page = (index + 1) / 5;

@@ -7,12 +7,15 @@ SlotPool *FERenderEPolySlotPool;
 SlotPool *FERenderEPolySlotPoolOverflow;
 
 void FERenderObject::Initialize() {
-    mpobFERenderObjectSlotPool = bNewSlotPool(0x64, 0x180, "FERenderObjectSlotPool", 0);
-    FERenderEPolySlotPool = bNewSlotPool(0xA4, 0x348, "FERenderEPolySlotPool", 0);
+    mpobFERenderObjectSlotPool = bNewSlotPool(sizeof(FERenderObject), 0x180, "FERenderObjectSlotPool", 0);
+    FERenderEPolySlotPool = bNewSlotPool(sizeof(FERenderEPoly), 0x348, "FERenderEPolySlotPool", 0);
 }
 
-// STRIPPED
-void FERenderObject::Terminate() {}
+void FERenderObject::Terminate() {
+    bDeleteSlotPool(mpobFERenderObjectSlotPool);
+    mpobFERenderObjectSlotPool = nullptr;
+    bDeleteSlotPool(FERenderEPolySlotPool);
+}
 
 FERenderObject::FERenderObject(FEObject *pOwner, TextureInfo *pTexture)
     : mpobOwner(pOwner), mpobTexture(pTexture), mobPolyList(), mulNumTimesRendered(0), mulFlags(0), mPolyCount(0) {
@@ -297,6 +300,7 @@ void FERenderObject::Render() {
         }
     }
     view->FEEndBatchRender();
+    mulNumTimesRendered++;
     ReadyToRender();
 }
 

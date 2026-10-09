@@ -1,6 +1,7 @@
 #ifndef __MWROADNAMES_H
 #define __MWROADNAMES_H 1
 
+// Decl: 23
 enum RoadNames {
     untagged = 0,
     on_Highway99 = 1,

@@ -12,6 +12,7 @@
 #ifndef __AITARGET_H
 #define __AITARGET_H 1
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
@@ -97,13 +98,13 @@ class AITarget : public bTNode<AITarget> {
   private:
     void TrackInternal();
 
-    ISimable *mOwner;                         // offset 0x8, size 0x4
-    ALIGN_16 UMath::Vector3 mTargetPosition;  // offset 0xC, size 0xC
-    ISimable *mTargetSimable;                 // offset 0x18, size 0x4
-    ALIGN_16 UMath::Vector3 mTargetDirection; // offset 0x1C, size 0xC
-    bool mValid;                              // offset 0x28, size 0x1
-    ALIGN_16 UMath::Vector3 mDirTo;           // offset 0x2C, size 0xC
-    float mDistTo;                            // offset 0x38, size 0x4
+    ISimable *mOwner;                           // offset 0x8, size 0x4
+    PS2ALIGN16 UMath::Vector3 mTargetPosition;  // offset 0xC, size 0xC
+    ISimable *mTargetSimable;                   // offset 0x18, size 0x4
+    PS2ALIGN16 UMath::Vector3 mTargetDirection; // offset 0x1C, size 0xC
+    bool mValid;                                // offset 0x28, size 0x1
+    PS2ALIGN16 UMath::Vector3 mDirTo;           // offset 0x2C, size 0xC
+    float mDistTo;                              // offset 0x38, size 0x4
 };
 
 #endif

@@ -1,4 +1,4 @@
-
+//
 #ifndef _SNDVOX_
 #define _SNDVOX_ // Decl: 3
 
@@ -44,12 +44,16 @@ struct SPCHType_SampleRequestData {
     int interruptFlag;   // offset 0x1C, size 0x4, Decl: 99
 };
 
+typedef void (*AbortMessageVec)(const char *, ...); // Decl: 102
+typedef int (*DebugPrintVec)(const char *, ...);    // Decl: 103
+typedef int (*GetTicksVec)();                       // Decl: 104
+
 // total size: 0xC
 // Decl: 114
 typedef struct {
-    void (*spchAbortMessage)(const char *, ...); // offset 0x0, size 0x4, Decl: 115
-    int (*spchPrint)(const char *, ...);         // offset 0x4, size 0x4, Decl: 116
-    int (*spchGetTick)();                        // offset 0x8, size 0x4, Decl: 117
+    AbortMessageVec spchAbortMessage; // offset 0x0, size 0x4, Decl: 115
+    DebugPrintVec spchPrint;          // offset 0x4, size 0x4, Decl: 116
+    GetTicksVec spchGetTick;          // offset 0x8, size 0x4, Decl: 117
 } SPCHType_ExtVecs;
 
 // Decl: 123
@@ -57,5 +61,46 @@ typedef struct {
     extVecs->spchAbortMessage = REAL_abortmessage;                                                                                                   \
     extVecs->spchPrint = printf;                                                                                                                     \
     extVecs->spchGetTick = TIMER_gettick
+
+typedef int (*AddEventFuncPtr)(int, int, ...); // Decl: 134
+
+typedef int (*SampleRequestFuncPtr)(SPCHType_SampleRequestData *);      // Decl: 137
+typedef int (*TestSentenceRuleFuncPtr)(EventSpec *, int, int, int);     // Decl: 138
+typedef void (*SetSentenceRuleFuncPtr)(EventSpec *, int, int, int);     // Decl: 139
+typedef int (*ReparmFuncPtr)(int, unsigned int *);                      // Decl: 140
+typedef enum SPCHType_EventRuleResult (*EventRuleFuncPtr)(EventSpec *); // Decl: 141
+
+typedef void *(*MemAllocFuncPtr)(unsigned int); // Decl: 147
+typedef void (*MemFreeFuncPtr)(void *);         // Decl: 148
+
+void SPCH_ReinitBanks(unsigned int gameSeed);
+int SPCH_GetBankPtrMemSize(int numBanks);
+void SPCH_InitBankMem(int numBanks, char *bankMem);
+char *SPCH_GetBankPtr(int bankHandle);
+void SPCH_InitSampleRepeat(int bankHandle);
+void SPCH_FreeBank(int bankHandle);
+int SPCH_AddBank(char *bankHdr);
+
+void SPCH_PlayLastEvent(unsigned int inChannel);
+int SPCH_Play(unsigned int inChannel);
+void SPCH_PlaySpeech();
+int SPCH_Choose(unsigned int inChannel);
+int SPCH_ChooseSpeech();
+void SPCH_SetFilter(int filterSetting, unsigned int channel);
+void SPCH_SetMemCallbacks(MemAllocFuncPtr memAlloc, MemFreeFuncPtr memFree);
+
+int SPCH_GetSampleDataRate(int sampleRate, int sampleBits, CompressionType type);
+void SPCH_InitRuleCallbacks(TestSentenceRuleFuncPtr ruleTest, SetSentenceRuleFuncPtr ruleSet);
+void SPCH_InitReparmCallback(ReparmFuncPtr reparmer);
+void SPCH_InitEventRuleCallback(EventRuleFuncPtr eventRuleTest);
+int SPCH_Init(SampleRequestFuncPtr sampleRequest, unsigned int gameSeed, int sampleDataRate);
+void SPCH_Deinit();
+
+SPCHType_ExtVecs *SPCH_GetExtVecs();
+
+void SPCH_ClearMatchParmSettings(unsigned long inChannel);
+int SPCH_AddEventDB(char *dataFile, unsigned int channel);
+int SPCH_RemoveEventDB(char *dataFile, unsigned int channel);
+int SPCH_ResolveData(char *dataFile);
 
 #endif

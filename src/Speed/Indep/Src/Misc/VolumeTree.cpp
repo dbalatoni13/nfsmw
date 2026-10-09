@@ -2,6 +2,20 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#define __abs bAbs // Decl: 59
+
+// STRIPPED
+void vAABB::Empty() {}
+
+// STRIPPED
+void vAABB::Create(bVector3 *position, bVector3 *extent) {}
+
+// STRIPPED
+void vAABB::Create(vSphere *vsphere) {}
+
+// STRIPPED
+float vAABB::GetVolume() {}
+
 // TODO Dwarf non-matching
 int vAABB::Contains(float x, float y, float z) {
     float delta_x = x - PositionX;
@@ -18,6 +32,12 @@ int vAABB::Contains(float x, float y, float z) {
     }
     return 1;
 }
+
+// STRIPPED
+int vAABB::Encloses(vAABB *test_aabb) {}
+
+// STRIPPED
+int vAABB::Intersects(vAABB *test_aabb) {}
 
 void vAABBTree::SwapEndian() {
     bPlatEndianSwap(&NumLeafNodes);
@@ -48,8 +68,8 @@ vAABB *vAABBTree::QueryLeafHelper(vAABB *aabb, float x, float y, float z) {
         if (child->Contains(x, y, z)) {
             if (child->NumChildren <= 0)
                 return child;
-            child = QueryLeafHelper(child, x, y, z);
-            if (child)
+            child = this->QueryLeafHelper(child, x, y, z);
+            if (child != nullptr)
                 return child;
         }
     }
@@ -58,12 +78,12 @@ vAABB *vAABBTree::QueryLeafHelper(vAABB *aabb, float x, float y, float z) {
 
 vAABB *vAABBTree::QueryLeaf(float x, float y, float z) {
     vAABB *root = NodeArray;
-    if (!root)
+    if (root == nullptr)
         return nullptr;
     if (!root->Contains(x, y, z))
         return nullptr;
     if (root->NumChildren <= 0)
         return root;
 
-    return QueryLeafHelper(root, x, y, z);
+    return this->QueryLeafHelper(root, x, y, z);
 }

@@ -75,13 +75,11 @@ class AnimDirectory {
         while (file_name[pos] != '_') {
             pos++;
         }
-        int len = pos - start_pos;
-        if (len != 0) {
-            pos = start_pos;
-            len--;
-            do {
-                *buffer++ = file_name[pos++];
-            } while (len-- != 0);
+        int end_pos = pos;
+        int len = end_pos - start_pos;
+        pos = start_pos;
+        while (len-- != 0) {
+            *buffer++ = file_name[pos++];
         }
         *buffer = '\0';
     }
@@ -89,8 +87,7 @@ class AnimDirectory {
     void GetNameOfSceneHash(uint32 scene_hash, char *buffer) {
         *buffer = '\0';
         for (uint32 i = 0; i < GetSceneCount(); i++) {
-            AnimSceneLoadInfo *info = GetSceneLoadInfo(i);
-            if (scene_hash == info->mAnimSceneHash) {
+            if (scene_hash == GetSceneLoadInfo(i)->mAnimSceneHash) {
                 GetNameOfSceneNumber(i, buffer);
                 return;
             }

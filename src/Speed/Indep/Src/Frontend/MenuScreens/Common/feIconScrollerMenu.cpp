@@ -150,13 +150,13 @@ void IconPanel::Scroll(eScrollDir dir) {
     }
     IconOption *new_option = pCurrentNode;
     if (dir == eSD_PREV) {
-        if (new_option != Options.GetHead()) {
+        if (pCurrentNode != Options.GetHead()) {
             do {
                 new_option = new_option->GetPrev();
             } while (new_option->IsGreyOut && new_option != Options.GetHead());
         }
     } else if (dir == eSD_NEXT) {
-        if (new_option != Options.GetTail()) {
+        if (pCurrentNode != Options.GetTail()) {
             do {
                 new_option = new_option->GetNext();
             } while (new_option->IsGreyOut && new_option != Options.GetTail());
@@ -247,6 +247,30 @@ void IconPanel::AnimateSelected(float &list_width, float &list_height) {
         if (opt != Options.GetTail()) {
             list_width += fIconSpacing;
             list_height += fIconSpacing;
+        }
+    }
+}
+
+// UNSOLVED
+void IconPanel::ResizeList(float list_width, float list_height) {
+    if (bJustScrolled) {
+        float master_x = 0.0f;
+        float master_y = 0.0f;
+        FEngGetCenter(GetMaster(), master_x, master_y);
+        float start_x = master_x - list_width / 2;
+        float start_y = master_y - list_height / 2;
+
+        for (IconOption *opt = Options.GetHead(); opt != Options.EndOfList(); opt = opt->GetNext()) {
+            if (bHorizontal) {
+                FEngSetTopLeftX(GetMaster(), start_x);
+                float size_x = FEngGetSizeX(GetMaster());
+                start_x = size_x + this->fIconSpacing + start_x;
+
+            } else {
+                FEngSetTopLeftY(GetMaster(), start_y);
+                float size_y = FEngGetSizeY(GetMaster());
+                start_y = size_y + this->fIconSpacing + start_y;
+            }
         }
     }
 }
@@ -443,13 +467,13 @@ void IconScroller::Scroll(eScrollDir dir) {
 
     IconOption *new_option = pCurrentNode;
     if (dir == eSD_PREV) {
-        if (new_option != HeadBookEnd->GetNext()) {
+        if (pCurrentNode != HeadBookEnd->GetNext()) {
             do {
                 new_option = new_option->GetPrev();
             } while (new_option->IsGreyOut && new_option != HeadBookEnd->GetNext());
         }
     } else if (dir == eSD_NEXT) {
-        if (new_option != TailBookEnd->GetPrev()) {
+        if (pCurrentNode != TailBookEnd->GetPrev()) {
             do {
                 new_option = new_option->GetNext();
             } while (new_option->IsGreyOut && new_option != TailBookEnd->GetPrev());
@@ -467,7 +491,7 @@ void IconScroller::Scroll(eScrollDir dir) {
 }
 
 void IconScroller::ScrollWrapped(eScrollDir dir) {
-    if (Options.CountElements() - iNumBookEnds <= 0) {
+    if (Options.CountElements() - iNumBookEnds < 1) {
         return;
     }
 

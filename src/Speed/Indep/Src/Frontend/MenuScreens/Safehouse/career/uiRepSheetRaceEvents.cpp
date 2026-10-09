@@ -126,7 +126,7 @@ void UISafehouseRaceSheet::NotificationMessage(u32 msg, FEObject *obj, u32 param
 void UISafehouseRaceSheet::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
 
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum() + 1);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     uint32 hash = 0x6475236d;
     if (currentEvents) {
@@ -201,9 +201,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
         }
     }
 #ifndef EA_BUILD_A124
-    if (currentIndex != GetCurrentDatumNum() - 1 && GetCurrentDatum() != nullptr) {
+    if (currentIndex != GetCurrentDatumNum() && GetCurrentDatum() != nullptr) {
         TrackMapStreamer.Init(static_cast<RaceDatum *>(GetCurrentDatum())->race, TrackMap, 0, 0);
-        currentIndex = GetCurrentDatumNum() - 1;
+        currentIndex = GetCurrentDatumNum();
     }
 #endif
 }

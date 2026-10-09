@@ -267,13 +267,13 @@ class ePoly {
   public:
     bVector3 Vertices[4]; // offset 0x0, size 0x40
     float UVs[4][2];      // offset 0x40, size 0x20
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     uint16 UVsMask[4][2];
 #else
     float UVsMask[4][2]; // offset 0x60, size 0x20
 #endif
     uint8 Colours[4][4]; // offset 0x80, size 0x10
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
     uint8 flags;   // offset 0x90, size 0x1
     uint8 Flailer; // offset 0x91, size 0x1
 #endif
@@ -285,25 +285,25 @@ class ePoly {
     void operator delete(void *ptr) {}
 
     void SetFlags(uint8 i) {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         flags = i;
 #endif
     }
 
     void SetFlailer(uint8 i) {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         Flailer = i;
 #endif
     }
 
     uint8 GetFlags() {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         return flags;
 #endif
     }
 
     uint8 GetFlailer() {
-#ifndef EA_BUILD_A124
+#ifndef EA_PLATFORM_PLAYSTATION2
         return Flailer;
 #endif
     }

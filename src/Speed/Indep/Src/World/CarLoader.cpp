@@ -460,7 +460,7 @@ class LoadedRideInfo : public bTNode<LoadedRideInfo> {
 int LoadedRideInfo::sNextID = 1;
 
 LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car)
-    : TheRideInfo(*ride_info),                                 //
+    : TheRideInfo(*ride_info),                                       //
       TheLoadedCar(&this->TheRideInfo, in_front_end, is_two_player), //
       TheLoadedWheel(&this->TheRideInfo, in_front_end != 0),         //
       TheLoadedSkin(&this->TheRideInfo, in_front_end, is_player_car) {
@@ -1928,10 +1928,10 @@ int CarLoader::DefragmentPool() {
     int ticks = bGetTicker();
     void *allocation_table[1152];
     int num_allocations = bMemoryGetAllocations(CarLoaderMemoryPoolNumber, allocation_table, NUM_ELEMENTS(allocation_table));
-    
+
     bMemSet(&DefragmentParams, 0, sizeof(DefragmentParams));
     DefragmentParams.LargestAllocationSize = 0;
-    
+
     int allocation_num = 0;
     while (allocation_num < num_allocations) {
         void *allocation = allocation_table[allocation_num];
@@ -1973,10 +1973,7 @@ int CarLoader::DefragmentPool() {
             while (true) {
                 void *hole = bMalloc(1, DefragmentParams.AllocationName, 0, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
 
-                if (reinterpret_cast<intptr_t>(hole) < reinterpret_cast<intptr_t>(first_hole) - 128) {
-                    hole_filling_allocations[num_hole_filling_allocations] = hole;
-                    num_hole_filling_allocations++;
-                } else {
+                if (reinterpret_cast<intptr_t>(hole) >= reinterpret_cast<intptr_t>(first_hole) - 128) {
                     bFree(hole);
                     DefragmentParams.pNewAllocation = hole;
                     movement = reinterpret_cast<intptr_t>(hole) - reinterpret_cast<intptr_t>(DefragmentParams.pAllocation);
@@ -1986,10 +1983,14 @@ int CarLoader::DefragmentPool() {
                         movement = 0;
                     }
 
-                    ChunkMovementOffset = 0;
                     break;
                 }
+
+                hole_filling_allocations[num_hole_filling_allocations] = hole;
+                num_hole_filling_allocations++;
             }
+
+            ChunkMovementOffset = 0;
         }
 
         gDefragFixer.Add(allocation, allocation_size, movement);

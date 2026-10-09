@@ -351,8 +351,7 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 
     void DisableRendering() {
         for (int n = 0; n < this->GetNumObjects(); n++) {
-            SceneryOverrideInfo *override_info = this->GetOverrideInfo(n);
-            override_info->SetExcludeFlags(0xFFFF, 0x10);
+            this->GetOverrideInfo(n)->SetExcludeFlags(0xFFFF, 0x10);
         }
     }
 
@@ -391,7 +390,6 @@ extern int DisablePrecullerCounter;
 void InitVisibleZones();
 void CloseVisibleZones();
 void ServicePreculler();
-void LoadPrecullerBooBooScripts();
 void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork);
 SceneryGroup *FindSceneryGroup(unsigned int name_hash);
 SceneryInstance *FindSceneryInstance(unsigned int name_hash);

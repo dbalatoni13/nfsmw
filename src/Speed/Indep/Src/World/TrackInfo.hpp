@@ -4,6 +4,42 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+enum eTrackDifficulty { TRACK_DIFFICULTY_EASY = 0, TRACK_DIFFICULTY_MEDIUM = 1, TRACK_DIFFICULTY_HARD = 2 };
+
+enum eTrackUsageTypes {
+    eTRACKUSAGE_CIRCUIT = 1,
+    eTRACKUSAGE_DRAG_RACE = 2,
+    eTRACKUSAGE_SPRINT = 4,
+    eTRACKUSAGE_DRIFT_RACE = 8,
+    eTRACKUSAGE_FREE_RUN = 16,
+    eTRACKUSAGE_TOURNAMENT = 32,
+    eTRACKUSAGE_LAP_KNOCKOUT = 64,
+    eTRACKUSAGE_SMOKESHOW = 128,
+    eTRACKUSAGE_CASH_KNOCKOUT = 256,
+    eTRACKUSAGE_PARTY_MODE = 512,
+    eTRACKUSAGE_CARSHOW = 1024,
+    eTRACKUSAGE_SHORT_TRACK = 2048,
+    eTRACKUSAGE_STREET_CROSS = 4096,
+    eTRACKUSAGE_RACING_LEAGUE = 8192
+};
+
+enum eTrackDirectionForTrackInfo {
+    eDIRECTION_FORWARD_FOR_TRACK_INFO = 0,
+    eDIRECTION_BACKWARD_FOR_TRACK_INFO = 1,
+    NUM_TRACK_DIRECTIONS_FOR_TRACK_INFO = 2
+};
+
+enum eCarRaceStartConfig {
+    eCarRaceStartConfig_NONE = 0,
+    eCarRaceStartConfig_1_ROW_OF_4 = 1,
+    eCarRaceStartConfig_2_ROWS_OF_2 = 2,
+    eCarRaceStartConfig_3_ROWS_OF_2 = 3,
+    eCarRaceStartConfig_2_ROWS_OF_1_FRONT_ON_LEFT = 4,
+    eCarRaceStartConfig_2_ROWS_OF_1_FRONT_ON_RIGHT = 5,
+    eCarRaceStartConfig_1_ROW_OF_1 = 6,
+    eCarRaceStartConfig_1_UP_3_DOWN = 7
+};
+
 enum eLocationName {
     UPPER_CLASS = 0,
     CITY_CORE = 1,
@@ -19,10 +55,9 @@ enum eDriftType {
     TEAM = 2,
 };
 
-enum eTrackDifficulty {
-    TRACK_DIFFICULTY_EASY = 0,
-    TRACK_DIFFICULTY_MEDIUM = 1,
-    TRACK_DIFFICULTY_HARD = 2,
+struct NeighbourhoodNameInfo {
+    char *Name;
+    uint32 NameHash;
 };
 
 // total size: 0x120

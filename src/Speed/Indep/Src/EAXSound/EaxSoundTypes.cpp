@@ -1,5 +1,4 @@
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
-#include "Speed/Indep/Src/Speech/EAXCop.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/Speech/SpeechCache.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
@@ -192,13 +191,13 @@ ScheduledSpeechEvent::ScheduledSpeechEvent()
       flags(0) {
     Manager::m_frameindex++;
 
-    for (short i = 0; i < NUM_ELEMENTS(this->assoc_samples); i++) {
+    for (short i = 0; i < MAX_STITCH_SAMPLES_PER_EVENT; i++) {
         this->assoc_samples[i] = nullptr;
     }
 }
 
 ScheduledSpeechEvent::~ScheduledSpeechEvent() {
-    for (short i = 0; i < NUM_ELEMENTS(this->assoc_samples); ++i) {
+    for (short i = 0; i < MAX_STITCH_SAMPLES_PER_EVENT; ++i) {
         SpeechSampleData *stitch = this->assoc_samples[i];
         if (stitch != nullptr && stitch->lock == true) {
             stitch->Unlock();

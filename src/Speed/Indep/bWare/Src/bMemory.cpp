@@ -30,7 +30,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     const char *GetDebugText() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
         const char *debug_text = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
         return debug_text != nullptr ? debug_text : allocation_info + 6;
@@ -40,7 +40,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetAllocationNumber() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding);
 #else
         return 0;
@@ -48,7 +48,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetDebugLine() {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding + 2);
 #else
         return 0;
@@ -981,7 +981,7 @@ void bMemoryUpdateTraceInformation() {
     }
 }
 
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
 }
@@ -1320,7 +1320,7 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
 }
 
 void *bMemoryAllocator::Alloc(size_t size) {
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     return bMalloc(static_cast<int>(size), "bMemoryAllocator", 0, this->PoolNumber);
 #else
     return bWareMalloc(static_cast<int>(size), nullptr, 0, 0);

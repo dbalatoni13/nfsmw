@@ -1447,20 +1447,20 @@ bool AICopManager::GetHeavySupportVehicles(GroundSupportRequest *gsr) {
     int numVehicles = 0;
     switch (gsr->mHeavySupport->HeavyStrategy) {
         case E_BRAKE:
-            numVehicles = 1;
             vgoals = ebrakegoals;
+            numVehicles = 1;
             break;
         case COORDINATED_E_BRAKE:
-            numVehicles = 2;
             vgoals = coebrakegoals;
+            numVehicles = 2;
             break;
         case RAM:
-            numVehicles = 2;
             vgoals = ramgoals;
+            numVehicles = 2;
             break;
         case HEAVY_ROADBLOCK:
-            numVehicles = 4;
             vgoals = hrblockgoals;
+            numVehicles = 4;
             break;
     }
     int BigSuvChance = gsr->mHeavySupport->ChanceBigSUV;

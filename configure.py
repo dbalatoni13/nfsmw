@@ -169,7 +169,7 @@ elif version_num in [2, 3]:
     config.binutils_tag = "2.45"
 elif version_num in [4]:
     config.platform = Platform.WIN32
-    config.delink_tag = "v0.16.1"
+    config.delink_tag = "v0.16.4"
 
 config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.2"
@@ -216,7 +216,7 @@ elif config.platform == Platform.X360:
         "/NODEFAULTLIB",
         "/MACHINE:PPCBE",
         "/XEX:NO",
-        f"/PDB:./build/{config.version}/{config.version}.pdb",
+        # f"/PDB:./build/{config.version}/{config.version}.pdb",
         f"/DEBUG",
         f"/LTCG",
     ]
@@ -236,9 +236,16 @@ elif config.platform == Platform.PS2:
     ]  # TODO what about undefined_syms_auto.txt?
 elif config.platform == Platform.WIN32:
     config.ldflags = [
+        "/nologo",
+        "/MACHINE:X86",
+        "/SUBSYSTEM:WINDOWS,4.0",
+        "/ENTRY:entry",
         "/NODEFAULTLIB",
+        "/FIXED",
+        "/INCREMENTAL:NO",
+        "/BASE:0x400000",
+        "/FILEALIGN:0x1000",
         f"/PDB:./build/{config.version}/{config.version}.pdb",
-        f"/DEBUG",
     ]
 
 # Use for any additional files that should cause a re-configure when modified
@@ -367,6 +374,9 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
         "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "-I src/Speed/Indep/Libs/realgraph/6.09.01/include/common",
+        "-I src/Speed/Indep/Libs/rcmp/4.00.11/include",
+        "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -466,7 +476,7 @@ elif config.platform == Platform.X360:
     cflags_game = [
         *cflags_base_prodg,
         "/DLUA_NUMBER=float",
-        "/DMILESTONE_OPT",
+        "/DMILESTONE_BUILD",
         "/DDEFAULT_ALLOCATOR=0",
         "/I src/Speed/Indep/Libs/allocator/1.5.0",
         "/I src/Speed/Indep/Libs/csis/dev/include",
@@ -476,6 +486,9 @@ elif config.platform == Platform.X360:
         "/I src/Speed/Indep/Libs/path/5.01.04/include",
         "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "/I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "/I src/Speed/Indep/Libs/realgraph/6.09.01/include/common",
+        "/I src/Speed/Indep/Libs/rcmp/4.00.11/include",
+        "/I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -492,35 +505,154 @@ elif config.platform == Platform.X360:
 elif config.platform == Platform.PS2:
     config.linker_version = "PS2/ee-gcc2.9-991111"
 
-    cflags_base_prodg = [
-        "-O2",
-        "-g2",
-        "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
-        # "-Wall",
-        "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
-        "-I src/Speed/Indep/Libs/Support/stlps2",
-        "-I src/Speed/PSX2/Libs/stl/gpp",
-        "-I src/Speed/PSX2/bWare/src/ee/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
-        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
-        "-I src/Packages",
-        "-I src",
-        "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
-        "-DEA_BUILD_A124",
-        "-D_NOTHREADS",  # TODO is this necessary?
-        f"-I build/{config.version}/include",
-        f"-DBUILD_VERSION={version_num}",
-        # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
-    ]
+    if config.version == "SLES-53558-A124":
+        cflags_base_prodg = [
+            "-O2",
+            "-g2",
+            "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
+            # "-Wall",
+            "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
+            "-I src/Speed/Indep/Libs/Support/stlps2",
+            "-I src/Speed/PSX2/Libs/stl/gpp",
+            "-I src/Speed/PSX2/bWare/src/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
+            "-I src/Packages",
+            "-I src",
+            "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
+            "-DEA_BUILD_A124",
+            "-D_NOTHREADS",  # TODO is this necessary?
+            f"-I build/{config.version}/include",
+            f"-DBUILD_VERSION={version_num}",
+            # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+        ]
 
-    config.context_defines = [
-        "EA_PLATFORM_PLAYSTATION2",
-        "EA_REGION_AMERICA",
-        "EA_BUILD_A124",
-        "_NOTHREADS",
-    ]
+        config.context_defines = [
+            "EA_PLATFORM_PLAYSTATION2",
+            "EA_REGION_AMERICA",
+            "EA_BUILD_A124",
+            "_NOTHREADS",
+        ]
+
+        cflags_game = [
+            *cflags_base_prodg,
+            "-G0",
+            "-ffast-math",
+            "-fno-exceptions",
+            "-fno-rtti",
+            # "-funaligned-pointers",
+            # "-funaligned-struct-hack",
+            # "-fsched-interblock",
+            # "-fsched-spec",
+            # "-fsched-spec-load-dangerous",
+            # "-fedge-sm",
+            # "-fedge-lm",
+            # "-fedge-lcm",
+            # "-fforce-addr",
+            # "-fcse-follow-jumps",
+            # "-fcse-skip-blocks",
+            # "-fforce-mem",
+            # "-fgcse",
+            # "-fstrength-reduce",
+            # "-frerun-cse-after-loop",
+            # "-fschedule-insns",
+            # "-fschedule-insns2",
+            # "-fexpensive-optimizations",
+            # "-frerun-loop-opt",
+            # "-fmove-all-movables",
+            # "-fregmove",
+            # "-fcaller-saves",
+            "-DLUA_NUMBER=float",
+            "-DMILESTONE_BUILD",
+            "-DDEFAULT_ALLOCATOR=0",
+            "-I src/Speed/Indep/Libs/allocator/1.5.0",
+            "-I src/Speed/Indep/Libs/csis/dev/include",
+            "-I src/Packages/eathread/1.1.0/include",
+            "-I src/Speed/Indep/Libs/snd/9/include",
+            "-I src/Speed/Indep/Libs/spch/dev/include",
+            "-I src/Speed/Indep/Libs/path/5.01.04/include",
+            "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+            "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+            "-I src/Speed/Indep/Libs/realgraph/6.09.01/include/common",
+            "-I src/Speed/Indep/Libs/rcmp/4.00.11/include",
+            "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
+        ]
+        
+    else:
+        cflags_base_prodg = [
+            "-O2",
+            "-g2",
+            "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
+            # "-Wall",
+            "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
+            "-I src/Speed/Indep/Libs/Support/stlps2",
+            "-I src/Speed/PSX2/Libs/stl/gpp",
+            "-I src/Speed/PSX2/bWare/src/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
+            "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
+            "-I src/Packages",
+            "-I src",
+            "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
+            "-D_NOTHREADS",  # TODO is this necessary?
+            f"-I build/{config.version}/include",
+            f"-DBUILD_VERSION={version_num}",
+            # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+        ]
+
+        config.context_defines = [
+            "EA_PLATFORM_PLAYSTATION2",
+            "EA_REGION_AMERICA",
+            "_NOTHREADS",
+        ]
+
+        cflags_game = [
+            *cflags_base_prodg,
+            "-G0",
+            "-ffast-math",
+            "-fno-exceptions",
+            "-fno-rtti",
+            # "-funaligned-pointers",
+            # "-funaligned-struct-hack",
+            # "-fsched-interblock",
+            # "-fsched-spec",
+            # "-fsched-spec-load-dangerous",
+            # "-fedge-sm",
+            # "-fedge-lm",
+            # "-fedge-lcm",
+            # "-fforce-addr",
+            # "-fcse-follow-jumps",
+            # "-fcse-skip-blocks",
+            # "-fforce-mem",
+            # "-fgcse",
+            # "-fstrength-reduce",
+            # "-frerun-cse-after-loop",
+            # "-fschedule-insns",
+            # "-fschedule-insns2",
+            # "-fexpensive-optimizations",
+            # "-frerun-loop-opt",
+            # "-fmove-all-movables",
+            # "-fregmove",
+            # "-fcaller-saves",
+            "-DLUA_NUMBER=float",
+            "-DMILESTONE_BUILD",
+            "-DDEFAULT_ALLOCATOR=0",
+            "-I src/Speed/Indep/Libs/allocator/1.5.0",
+            "-I src/Speed/Indep/Libs/csis/dev/include",
+            "-I src/Packages/eathread/1.1.0/include",
+            "-I src/Speed/Indep/Libs/snd/9/include",
+            "-I src/Speed/Indep/Libs/spch/dev/include",
+            "-I src/Speed/Indep/Libs/path/5.01.04/include",
+            "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+            "-I src/Speed/Indep/Libs/endian/0.5.2/include",
+            "-I src/Speed/Indep/Libs/realgraph/6.09.01/include/common",
+            "-I src/Speed/Indep/Libs/rcmp/4.00.11/include",
+            "-I src/Packages/realmemcard/3.04.01-layer2/include/common",
+        ]
+        
 
     # Debug flags
     # TODO
@@ -529,46 +661,7 @@ elif config.platform == Platform.PS2:
     # else:
     #     cflags_base.append("-DNDEBUG=1")
 
-    cflags_game = [
-        *cflags_base_prodg,
-        "-G0",
-        "-ffast-math",
-        "-fno-exceptions",
-        "-fno-rtti",
-        # "-funaligned-pointers",
-        # "-funaligned-struct-hack",
-        # "-fsched-interblock",
-        # "-fsched-spec",
-        # "-fsched-spec-load-dangerous",
-        # "-fedge-sm",
-        # "-fedge-lm",
-        # "-fedge-lcm",
-        # "-fforce-addr",
-        # "-fcse-follow-jumps",
-        # "-fcse-skip-blocks",
-        # "-fforce-mem",
-        # "-fgcse",
-        # "-fstrength-reduce",
-        # "-frerun-cse-after-loop",
-        # "-fschedule-insns",
-        # "-fschedule-insns2",
-        # "-fexpensive-optimizations",
-        # "-frerun-loop-opt",
-        # "-fmove-all-movables",
-        # "-fregmove",
-        # "-fcaller-saves",
-        "-DLUA_NUMBER=float",
-        "-DMILESTONE_OPT",
-        "-DDEFAULT_ALLOCATOR=0",
-        "-I src/Speed/Indep/Libs/allocator/1.5.0",
-        "-I src/Speed/Indep/Libs/csis/dev/include",
-        "-I src/Packages/eathread/1.1.0/include",
-        "-I src/Speed/Indep/Libs/snd/9/include",
-        "-I src/Speed/Indep/Libs/spch/dev/include",
-        "-I src/Speed/Indep/Libs/path/5.01.04/include",
-        "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
-        "-I src/Speed/Indep/Libs/endian/0.5.2/include",
-    ]
+    
 
     cflags_snd = [
         *cflags_game,
@@ -643,6 +736,9 @@ elif config.platform == Platform.WIN32:
         "/I src/Speed/Indep/Libs/path/5.01.04/include",
         "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
         "/I src/Speed/Indep/Libs/endian/0.5.2/include",
+        "/I src/Speed/Indep/Libs/realgraph/6.09.01/include/common",
+        "/I src/Speed/Indep/Libs/rcmp/4.00.11/include",
+        "/I src/Packages/realmemcard/3.04.01-layer2/include/common",
     ]
 
     cflags_snd = [
@@ -652,6 +748,7 @@ elif config.platform == Platform.WIN32:
 
     config.extra_clang_flags = [
         "-std=c++98",
+        "-DCLANGD_DAMNIT",
         "-D_WIN32",
         "-D_WCHAR_T_DEFINED",
         "-fms-extensions",
@@ -770,125 +867,37 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c",
-            ),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c",
-            ),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c"),
+            Object(MatchingFor("GOWE69"), "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
@@ -900,7 +909,6 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sinitdts.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/smixer.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/snddrv.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/spoutlat.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c"),
@@ -921,9 +929,7 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstovrhd.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstpmult.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstqreqi.c"),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstrmdry.cpp"
-            ),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstrmdry.cpp"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstrstat.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sstsetgl.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sststat.c"),

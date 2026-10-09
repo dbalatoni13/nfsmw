@@ -1401,7 +1401,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         } else {
             if (car_render_info->Render(view, &Position, &render_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices, render_flags,
                                         0, reflection, 1.0f, car_render_info->GetMinLodLevel(), car_render_info->GetMinLodLevel()) &&
-                view->GetID() < 4) {
+                view->GetID() < EVIEW_PLAYER1_GLOW) {
                 this->mLastVisibleFrame = eGetFrameCounter();
             }
         }

@@ -202,8 +202,8 @@ BIND_BEHAVIOR_FACTORY(AIVehicleHuman);
 
 AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp), IHumanAI(bp.fowner) {
     this->MakeDebugable(DBG_AI);
-    this->fMomentRadius = 0.0f;
     this->bAiControl = false;
+    this->fMomentRadius = 0.0f;
     this->mWrongWay = false;
 }
 
@@ -1004,9 +1004,9 @@ float AIVehicle::GetPathDistanceRemaining() {
 }
 
 void AIVehicle::ClearReverseOverride() {
+    this->mReverseOverrideTimer = 0.0f;
     this->mSteeringBehind = false;
     this->mReversingSpeed = false;
-    this->mReverseOverrideTimer = 0.0f;
 }
 
 void AIVehicle::SetReverseOverride(float time) {

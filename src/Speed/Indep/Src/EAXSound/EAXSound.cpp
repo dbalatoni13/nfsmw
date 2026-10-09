@@ -37,6 +37,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Speech/SpeechCache.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
 #define USE_DYNAMIC_MIXER // Decl: 176
@@ -203,6 +204,7 @@ bool EAXSound::IsNISStreamQueued() {
 }
 
 void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 void EAXSound::NISFinished() {
     if (IsSoundEnabled == 0 || IsAudioStreamingEnabled == 0) {
@@ -462,13 +464,12 @@ SndBase *EAXSound::GetSndBase_Object(int nID) {
     return ReturnObj;
 }
 
-// TODO after we merge FE
-// float EAXSound::GetCurMusicVolume() {
-//     if (this->m_eSndGameMode == SND_FRONTEND) {
-//         return this->m_pCurAudioSettings->GetMasteredFEMusicVol();
-//     }
-//     return this->m_pCurAudioSettings->GetMasteredIGMusicVol();
-// }
+float EAXSound::GetCurMusicVolume() {
+    if (this->m_eSndGameMode == SND_FRONTEND) {
+        return this->m_pCurAudioSettings->GetMasteredFEMusicVol();
+    }
+    return this->m_pCurAudioSettings->GetMasteredIGMusicVol();
+}                       
 
 void EAXSound::ReInitMasterVolumes() {
     int i;
@@ -1272,7 +1273,7 @@ void LoadCommonIngameFiles() {
     g_LoadSndAsset(g_pEAXSound->GetAttributes().AEMS_MiscBanks(6), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM);
     g_LoadSndAsset(g_pEAXSound->GetAttributes().AEMS_MiscBanks(7), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM);
 
-    for (int n = 0; n < 12; n++) {
+    for (int n = 0; n < NUM_ELEMENTS(csfxedit); n++) {
         g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, SDT_GENERIC_DATA);
     }
 }

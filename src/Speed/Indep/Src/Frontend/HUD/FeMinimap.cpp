@@ -481,10 +481,23 @@ void Minimap::UpdatePlayer2Element() {
 
 bool GPS_IsEngaged();
 
+void Minimap::UpdateTriggerElement(FEImage *image, GTrigger *trigger) {
+    UMath::Vector3 position;
+    trigger->GetPosition(position);
+    bVector2 pos2D;
+    pos2D.y = -position.x;
+    pos2D.x = position.z;
+    bVector2 dir2D;
+    dir2D.x = 1.0f;
+    dir2D.y = 0.0f;
+    UpdateElementArt(&pos2D, &dir2D, image, false);
+    FEngSetRotationZ(image, 0.0f);
+}
+
 void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
     bVector2 pos2D;
-    bVector2 dir2D;
     icon->GetPosition2D(pos2D);
+    bVector2 dir2D;
     dir2D.x = 1.0f;
     dir2D.y = 0.0f;
     if (icon->GetType() != GIcon::kType_AreaUnlock && !GPS_IsEngaged() && icon->GetIsGPSing()) {

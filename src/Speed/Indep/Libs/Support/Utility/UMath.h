@@ -113,6 +113,10 @@ inline void Set(Matrix4 &m, unsigned int row, const Vector4 &a) {
     VU0_v4Copy(a, m[row]);
 }
 
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    r = a;
+}
+
 inline void Copy(const Vector4 &a, Vector4 &r) {
     VU0_v4Copy(a, r);
 }
@@ -553,6 +557,8 @@ inline size_t Max(const size_t a, const size_t b) {
     return a < b ? b : a;
 }
 #endif
+
+float Mod(const float x, const float e);
 
 // Credits: Brawltendo
 // Limits the input value to the range [a,l]

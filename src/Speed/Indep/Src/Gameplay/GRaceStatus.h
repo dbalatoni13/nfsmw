@@ -1,6 +1,7 @@
 #ifndef GAMEPLAY_GRACE_STATUS_H
 #define GAMEPLAY_GRACE_STATUS_H
 
+#include "Speed/Indep/Libs/Support/Utility/UDefs.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -270,13 +271,13 @@ class GRacerInfo {
     float mSplitTimes[4];  // offset 0x140, size 0x10
     int mSplitRankings[4]; // offset 0x150, size 0x10
 #endif
-    GTimer mRaceTimer;                       // offset 0x160, size 0xC
-    GTimer mLapTimer;                        // offset 0x16C, size 0xC
-    GTimer mCheckTimer;                      // offset 0x178, size 0xC
-    ALIGN_16 UMath::Vector3 mSavedPosition;  // offset 0x184, size 0xC
-    float mSavedHeatLevel;                   // offset 0x190, size 0x4
-    ALIGN_16 UMath::Vector3 mSavedDirection; // offset 0x194, size 0xC
-    float mSavedSpeed;                       // offset 0x1A0, size 0x4
+    GTimer mRaceTimer;                         // offset 0x160, size 0xC
+    GTimer mLapTimer;                          // offset 0x16C, size 0xC
+    GTimer mCheckTimer;                        // offset 0x178, size 0xC
+    PS2ALIGN16 UMath::Vector3 mSavedPosition;  // offset 0x184, size 0xC
+    float mSavedHeatLevel;                     // offset 0x190, size 0x4
+    PS2ALIGN16 UMath::Vector3 mSavedDirection; // offset 0x194, size 0xC
+    float mSavedSpeed;                         // offset 0x1A0, size 0x4
 #ifndef EA_BUILD_A124
     bool mDNF; // offset 0x1A4, size 0x1
 #endif

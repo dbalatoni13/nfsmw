@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 Chyron::Chyron(ScreenConstructorData *sd) : MenuScreen(sd), mDelayTimer() {}
 
@@ -15,7 +16,10 @@ void InitChyron() {
     ChyronScreenPtr = static_cast<MenuScreen *>(bMalloc(sizeof(Chyron), "Chyron", 0, 0));
 }
 
-void CloseChyron() {}
+void CloseChyron() {
+    bFree(ChyronScreenPtr);
+    ChyronScreenPtr = nullptr;
+}
 
 MenuScreen *CreateChyronScreen(ScreenConstructorData *sd) {
     return new Chyron(sd);

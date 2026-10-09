@@ -8,10 +8,13 @@
 #include "Platform.h"
 #include "QueuedFile.hpp"
 #include "ResourceLoader.hpp"
+#include "Stomper.hpp"
+#include "bFile.hpp"
 #include "Speed/Indep/Src/Animation/AnimCtrl.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Debug/Dcyclecount.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
@@ -21,6 +24,7 @@
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
@@ -41,7 +45,6 @@
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/TimeOfDay.hpp"
-#include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/VehiclePartDamage.h"
 #include "Speed/Indep/Src/World/WWorld.h"
@@ -50,50 +53,78 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Stomper.hpp"
-#include "bFile.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UDebug.h"
 
-int ExitTheGameFlag = false;
-static int32 last_frame_count = 0;
-int32 CurrentLoopCounter = 0;
-uint32 TimeDifferenceInMicroseconds = 0;
-float TimeDifferenceInMiliseconds = 0.0f;
-float TimeDifferenceInSeconds = 0.0f;
-float MicrosecondsToMiliseconds = 0.001f;
-float MilisecondsToSeconds = 1000.0f;
-
-// TODO
-// OUTSIDE ZMISC //
-extern int frames_elapsed;
-extern int loop_ticker;
-
-// zFoundation
-extern void (*UFoundation_AssertMessage)(const char *, ...);
-
-////
-
-bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
-
-#ifdef EA_PLATFORM_PLAYSTATION2
-void bMonitorService();
-#endif
-
-class RaceStarter {
-  public:
-    static void StartSkipFERace();
-};
-
-FastMem gFastMem;
-
-extern bool twkDumpProfileMarks;
-////
-
+FastMem gFastMem; // Decl: 227
 void FastMemEmergencyInitialization(unsigned int &bytes, const char *&name, unsigned int &expansionsize, unsigned int &trackingsize) {
     bytes = 0x11f400;
     name = "gFastMem";
     expansionsize = 0x2000;
     trackingsize = 0x200;
 }
+
+// STRIPPED
+void GetTheMiliseconds() {}
+
+// STRIPPED
+void GetTheSeconds() {}
+
+int ExitTheGameFlag = 0; // Decl: 258
+
+int frames_elapsed;                // Decl: 260 TODO probably extern
+int loop_ticker;                   // Decl: 261 TODO probably extern
+static int32 last_frame_count = 0; // Decl: 262
+static int32 num_race_iterations;  // Decl: 263
+
+static const int PrintAllSlotPools = 0; // Decl: 266
+static const int DumpSharedStrings = 0; // Decl: 267
+
+int g_discErrorNumber = 0;  // Decl: 270
+int g_discErrorOccured = 0; // Decl: 271
+unsigned int CurrentTicksDiff;
+int32 CurrentLoopCounter = 0;
+int SaveTheLoopCounter1;
+int SaveTheLoopCounter2;
+
+uint32 TimeDifferenceInMicroseconds = 0;
+float TimeDifferenceInMiliseconds = 0.0f;
+float TimeDifferenceInSeconds = 0.0f;
+float MicrosecondsToMiliseconds = 0.001f;
+float MilisecondsToSeconds = 1000.0f;
+
+static const float PLATFORM_TARGET_FPS = 60.0f; // Decl: 313
+static const float PLATFORM_WARN_FPS = 25.0f;   // Decl: 314
+
+static const float PLATFORM_TARGET_TIME_SLICE = (1.0f / PLATFORM_TARGET_FPS) * 1000.0f; // Decl: 316
+static const float PLATFORM_TARGET_SIM_SLICE = PLATFORM_TARGET_TIME_SLICE / 2.0f;       // Decl: 317
+static const float PLATFORM_TARGET_RENDER_SLICE = PLATFORM_TARGET_TIME_SLICE / 2.0f;    // Decl: 318
+static const unsigned int PLATFORM_MINIMUM_SIMFRAME = 1;                                // Decl: 319 TODO use in DisplayDebugScreenPrints
+
+// Decl: 353
+// STRIPPED
+void PrintTimingStat(const char *name, int *ticks, int *start_tick) {}
+
+static const bool TweakShowUTLWarnings = false; // Decl: 364
+
+// Decl: 365
+// STRIPPED
+void ShowUTLWarnings(const char *who, const char *warning) {}
+
+static const int DoProfileAttribSearches = 0; // Decl: 377
+
+// Decl: 393
+// STRIPPED
+void ProfileAttribSearch(unsigned int key, bool collections) {}
+
+static const bool DoAttribOverrunCheck = false; // Decl: 463
+
+// Decl: 464
+// STRIPPED
+void AttribOverrunCheck(int currententries, int overrun) {}
+
+// Decl: 501
+// STRIPPED
+int DoWithMainMemoryStack(void *function, int arg1, int arg2) {}
 
 void SeedRandomNumber() {
     int seed;
@@ -118,6 +149,8 @@ int InitializeEverythingTicks = 0;
 
 void InitScreenPrintf();
 void DebugMenuInit();
+
+static const bool Events_Verbose = false; // Decl: 792
 
 void InitializeEverything(int argc, char **argv) {
     ResetCapturedLoadingTimes();
@@ -175,7 +208,7 @@ void InitializeEverything(int argc, char **argv) {
     Scheduler::Init(0.016666668f);
     WWorld::Init();
     EventSequencer::Init(0.0f);
-#ifdef MILESTONE_OPT
+#ifdef MILESTONE_BUILD
     InitScreenPrintf();
     DebugMenuInit();
 #endif
@@ -203,7 +236,58 @@ void InitializeEverything(int argc, char **argv) {
 
 void WriteFreekerBaseAddressBeacon() {}
 
+float PreviousCpuFrameTime = 0.0f;    // Decl: 1585
+float PreviousGpuFrameTime = 0.0f;    // Decl: 1586
+float PreviousCpuFrameRate = 0.0f;    // Decl: 1587
+float PreviousGpuFrameRate = 0.0f;    // Decl: 1588
+float PreviousSimFrameTime = 0.0f;    // Decl: 1589
+float PreviousRenderFrameTime = 0.0f; // Decl: 1590
+int PreviousSimCallCount = 0.0f;      // Decl: 1591
+float PreviousProfileTime = 0.0f;     // Decl: 1592
+
+static const int nPolCountX = 30;    // Decl: 1594
+static const int nPolCountY = 0;     // Decl: 1595
+static const int nPolCountXPC = 170; // Decl: 1596
+static const int nPolCountXMC = 260; // Decl: 1597
+
+static const int nTimerInfoX = -300; // Decl: 1599
+static const int nTimerInfoY = -245; // Decl: 1600
+
+static const int nFrameRateX = -300; // Decl: 1603
+static const int nFrameRateY = -60;  // Decl: 1604
+
+static const int nWorldPositionX = -300; // Decl: 1607
+static const int nWorldPositionY = 15;   // Decl: 1608
+
+static const int nTimeY = -90; // Decl: 1610
+
+int DisplayPolyCount = 0;         // Decl: 1612
+bool gDoFrameRateSummary = false; // Decl: 1613
+
+static const int DisplayFrameRateDetailed = 0; // Decl: 1615
+static const int DisplayChangelist = 1;        // Decl: 1616
+static const int DisplayWalkPathTime = 1;      // Decl: 1617
+
+int RenderTimingStart = 0; // Decl: 1619
+int RenderTimingEnd = 0;   // Decl: 1620
+
+int FrameTimingStartTime = 0;              // Decl: 1622
+int FrameTimingEndTime = 0;                // Decl: 1623
+eProfMeter MainCycleCounter = kPROFRender; // Decl: 1624
+static const bool Tweak_PrintTime = false; // Decl: 1625
+
+float tframe = 0.0f;   // Decl: 1630
+float tframe30 = 0.0f; // Decl: 1631
+float over30 = 0.0f;   // Decl: 1632
+int DisplayOver30 = 0; // Decl: 1633
+int ResetOver30 = 0;   // Decl: 1634
+
 void DisplayDebugScreenPrints() {}
+
+extern int DoScreenPrintf; // Decl: 1824
+
+static const int StopOnJoylogChecksumError = 1; // Decl: 2207
+static const int DoDetailedJoylogChecksum = 1;  // Decl: 2208
 
 void VerifyJoylogChecksum() {
     if (!Joylog::IsCapturing() && !Joylog::IsReplaying()) {
@@ -257,12 +341,15 @@ void VerifyJoylogChecksum() {
         Joylog::AddData(real_loop_counter_checksum, 16, JOYLOG_CHANNEL_CHECKSUM);
     }
     if (checksum_error) {
-        bBreak();
-        Joylog::StopReplaying();
+        // TODO warning print
+        if (StopOnJoylogChecksumError) {
+            bBreak();
+            Joylog::StopReplaying();
+        }
     }
 }
 
-int TweakerPauseCamera = 0;
+int TweakerPauseCamera = 0; // Decl: 2337
 
 static float Main_AnimateFrame(float real_dT) {
     ProfileNode profile_node;
@@ -306,21 +393,20 @@ static float Main_AnimateFrame(float real_dT) {
     return game_dT;
 }
 
-int gFramesToSkip = 0;
+static const int StopOnRealLoopCounter = -1; // Decl: 2346
+
+// STRIPPED
+void Main_LimitFrameRate() {}
+
+int gFramesToSkip = 0; // Decl: 2376
 
 void Main_SkipFrame(int numToSkip) {
     gFramesToSkip = bMax(numToSkip, gFramesToSkip);
 }
 
-int RenderTimingStart;
-int RenderTimingEnd;
-int FrameTimingStartTime;
-int FrameTimingEndTime;
-
-extern float HackTime;
-
 void Main_DisplayFrame() {
     ProfileNode profile_node;
+    extern float HackTime;
     static float timeStep = 0.01666f;
     if (gFramesToSkip >= 1) {
         gFramesToSkip--;
@@ -329,6 +415,8 @@ void Main_DisplayFrame() {
         FrameTimingEndTime = bGetTicker();
         RenderTimingStart = bGetTicker();
         profile_node.Begin("eDisplayFrame()", 0);
+
+        void eDisplayFrame(); // Decl: 2403
         eDisplayFrame();
         RenderTimingEnd = bGetTicker();
         HackTime += timeStep;
@@ -340,6 +428,10 @@ void Main_DisplayFrame() {
 void CheckTweakerTriggers() {}
 
 void MainLoopCheckForFatalDiscError() {}
+
+bool Tweak_FullSpeedMode = false;                      // Decl: 2585
+bool twkDumpProfileMarks = false;                      // Decl: 2586
+static const float DumpProfileOnMicropauseTime = 0.0f; // Decl: 2587
 
 void MiniMainLoop() {
     static int recursion_checker = 0;
@@ -358,6 +450,7 @@ void MiniMainLoop() {
     PrepareRealTimestep(dt * 0.001f);
     ServiceResourceLoading();
 #ifndef EA_BUILD_A124
+    void ServiceFileStats(); // Decl: 2621
     ServiceFileStats();
     MainLoopCheckForFatalDiscError();
 #endif
@@ -366,16 +459,17 @@ void MiniMainLoop() {
     TheTrackStreamer.ServiceGameState();
     TheTrackStreamer.ServiceNonGameState();
 #ifndef EA_BUILD_A124
-    if (g_pEAXSound) {
+    if (g_pEAXSound != nullptr) {
         g_pEAXSound->Update(RealTimeElapsed);
     }
 #endif
+    void eDisplayFrame(); // Decl: 2649
     eDisplayFrame();
     AdvanceRealTime();
     recursion_checker--;
 }
 
-extern bool Tweak_FullSpeedMode; // TODO
+extern bool LOCK_TO_30; // Decl: 2662
 
 void MainLoop(float hardware_ms) {
     int ticks;
@@ -411,7 +505,7 @@ void MainLoop(float hardware_ms) {
     ServicePreculler();
     FEManager::Get()->Update();
     EventManager::RunEvents();
-    if (g_pEAXSound) {
+    if (g_pEAXSound != nullptr) {
         profile_node_entire_mainloop.Begin("EAXSound::Update()", 0);
         g_pEAXSound->Update(RealTimeElapsed);
     }
@@ -448,6 +542,8 @@ void MainLoop(float hardware_ms) {
     }
 }
 
+static const float Tweak_MinimumRealTimeStep = 0.25f; // Decl: 3123
+
 #ifndef EA_PLATFORM_XENON
 int main(int argc, char **argv)
 #else
@@ -464,10 +560,11 @@ int MainThreadFunction(int argc, char **argv)
 
     WriteFreekerBaseAddressBeacon();
 
-    if (SkipFE)
+    if (SkipFE) {
         RaceStarter::StartSkipFERace();
-    else
+    } else {
         TheGameFlowManager.LoadFrontend();
+    }
 
     frames_elapsed = 1;
 
@@ -475,7 +572,7 @@ int MainThreadFunction(int argc, char **argv)
     Scheduler::Get().Synchronize(RealTimer);
 
     while (!ExitTheGameFlag) {
-        const float minumum_time_step = 0.25f;
+        const float minumum_time_step = Tweak_MinimumRealTimeStep;
 
         uint32 current_tick = bGetTicker();
         float milliseconds = bGetTickerDifference(loop_ticker, current_tick);
@@ -492,8 +589,9 @@ int MainThreadFunction(int argc, char **argv)
 
             MainLoop(milliseconds);
 
-            if (twkDumpProfileMarks)
+            if (twkDumpProfileMarks) {
                 twkDumpProfileMarks = false;
+            }
         }
     }
 

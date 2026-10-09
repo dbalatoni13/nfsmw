@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/GameCube/Src/G.hpp"
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/systask.h"
-#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/threads.h"
+#include "realcore/system.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"
@@ -17,8 +16,8 @@
 // Decl: 141
 struct ShapeMemoryAllocator : public EA::Allocator::IAllocator {
   public:
-    ShapeMemoryAllocator() {}           // Decl: 143
-    ~ShapeMemoryAllocator() override {} // Decl: 144
+    ShapeMemoryAllocator() : mRefcount(1) {} // Decl: 143
+    ~ShapeMemoryAllocator() override {}      // Decl: 144
 
     void *Alloc(size_t size, const EA::TagValuePair &flags) override;
     void *Alloc(size_t size);
@@ -146,6 +145,7 @@ void *ShapeMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
         }
         p = p->mNext;
     }
+#ifdef EA_PLATFORM_GAMECUBE
     void *maybe = GamecubeMaybeAllocateFromCarLoader(size, name, allocation_params);
     if (maybe == nullptr) {
         if (TheTrackStreamer.HasMemoryPool()) {
@@ -154,7 +154,22 @@ void *ShapeMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
             maybe = bMalloc(size, name, 0, allocation_params);
         }
     }
+#else
+    void *maybe;
+    if (!TheTrackStreamer.HasMemoryPool()) {
+        maybe = bMalloc(size, name, 0, allocation_params);
+    } else {
+        maybe = TheTrackStreamer.AllocateUserMemory(size, "shape_mem", offset);
+    }
+#endif
     return maybe;
+}
+
+void *ShapeMemoryAllocator::Alloc(size_t size) {
+    if (!TheTrackStreamer.HasMemoryPool()) {
+        return bMalloc(size, 0);
+    }
+    return TheTrackStreamer.AllocateUserMemory(size, "Unnamed shape mem", 0);
 }
 
 void ShapeMemoryAllocator::Free(void *pBlock, size_t size) {
@@ -171,11 +186,11 @@ int ShapeMemoryAllocator::AddRef() {
 
 int ShapeMemoryAllocator::Release() {
     mRefcount--;
-    if (mRefcount < 1) {
-        delete this;
-        return 0;
+    if (mRefcount > 0) {
+        return mRefcount;
     }
-    return mRefcount;
+    delete this;
+    return 0;
 }
 
 void *RCMP_PlayerAllocAlign(const char *name, int size, int alignment, int headersize, int type) {
@@ -273,8 +288,8 @@ void MoviePlayer::Init(Settings &newSettings) {
 
 void MoviePlayer::ResetTimer() {
     mTicker = 0;
-    mMoviePaused = false;
     mTickerFirstTime = true;
+    mMoviePaused = false;
     mili_seconds = 0;
     seconds = 0;
     minutes = 0;
@@ -324,6 +339,34 @@ void MoviePlayer::Stop() {
     ResetTimer();
 }
 
+void MoviePlayer::Pause() {
+    if (fPlayer != nullptr) {
+        eWaitUntilRenderingDone();
+        if (fPlayer != nullptr) {
+            fPlayer->Pause();
+        }
+    }
+}
+
+void MoviePlayer::UnPause() {
+    if (fPlayer != nullptr) {
+        eWaitUntilRenderingDone();
+        if (fPlayer != nullptr) {
+            fPlayer->UnPause();
+        }
+    }
+}
+
+const char *MoviePlayer::GetMovieFilename() {
+#ifdef EA_PLATFORM_WIN32
+    // TODO: make sense of this
+    if (this->mSettings.filename == "") {
+        return "";
+    }
+#endif
+    return this->mSettings.filename;
+}
+
 int MoviePlayer::GetMovieCategoryVolume() {
     int volume = 0x7F; // int8 max
     for (int i = 0; i < NUM_ELEMENTS(MovieVolumeArray); i++) {
@@ -361,11 +404,13 @@ void MoviePlayer::Update() {
         movie_done = joylog_movie_done;
     }
     Joylog::AddData(movie_done, 4, JOYLOG_CHANNEL_MOVIE_PLAYER_STATUS);
+    void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     if (movie_done != 0) {
         fStatus = fLiveStatus;
         eWaitUntilRenderingDone();
         cFEng::Get()->QueueGameMessage(0xc3960eb9, nullptr, 0xff);
         SoundPause(false, eSNDPAUSE_MOVIE);
+
         SetSoundControlState(false, SNDSTATE_PAUSE, "movie_done");
         if (fPlayer != nullptr) {
             delete fPlayer;
@@ -378,6 +423,13 @@ void MoviePlayer::Update() {
     HandleFatalError();
 }
 
+TextureInfo *MoviePlayer::GetTexture() {
+    if (this->fStatus == 5) {
+        return &MovieTextureInfo;
+    }
+    return GetTextureInfo(0, 1, 0);
+}
+
 void MoviePlayer::UpdateFunction() {
     static int recurse = 0;
     if (recurse != 0) {
@@ -385,9 +437,10 @@ void MoviePlayer::UpdateFunction() {
     }
     bool MovieFinished = false;
     recurse = 1;
-    bool ReDraw = false;
     SYNCTASK_run();
     THREAD_yield(0);
+
+    bool ReDraw = false;
     if (fPlayer->IsTimeForDecode() && CurFrame != nullptr) {
         fPlayer->GetDecoder()->ReleaseFrame(CurFrame);
         CurFrame = fPlayer->GetFrame(fPlayer->GetGoalFrame());

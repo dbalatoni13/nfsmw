@@ -13,8 +13,8 @@ struct tCubic1D {
     float Coeff[4];    // offset 0x10, size 0x10, Decl: 40
     float time;        // offset 0x20, size 0x4, Decl: 41
     float duration;    // offset 0x24, size 0x4, Decl: 42
-    short int state;   // offset 0x28, size 0x2, Decl: 44
-    short int flags;   // offset 0x2A, size 0x2, Decl: 45
+    short state;       // offset 0x28, size 0x2, Decl: 44
+    short flags;       // offset 0x2A, size 0x2, Decl: 45
 
     tCubic1D(short type, float dur)
         : Val(0.0f),         //
@@ -25,48 +25,48 @@ struct tCubic1D {
           duration(dur),     //
           state(type),       //
           flags(1) {
-        Coeff[0] = 0.0f;
-        Coeff[1] = 0.0f;
-        Coeff[2] = 0.0f;
-        Coeff[3] = 0.0f;
+        this->Coeff[0] = 0.0f;
+        this->Coeff[1] = 0.0f;
+        this->Coeff[2] = 0.0f;
+        this->Coeff[3] = 0.0f;
     }
 
     void Update(float fSeconds, float fDClamp, float fDDClamp); // Decl: 63
     void Snap() {                                               // Decl: 64
-        Val = ValDesired;
-        dVal = dValDesired;
-        state = 0;
+        this->Val = this->ValDesired;
+        this->dVal = this->dValDesired;
+        this->state = 0;
     }
     void SetVal(const float v) { // Decl: 66
-        Val = v;
-        if (v != ValDesired) {
-            state = 2;
+        this->Val = v;
+        if (v != this->ValDesired) {
+            this->state = 2;
         }
     }
     void SetdVal(float v) { // Decl: 67
-        dVal = v;
-        if (v != dValDesired) {
-            state = 2;
+        this->dVal = v;
+        if (v != this->dValDesired) {
+            this->state = 2;
         }
     }
     void SetValDesired(float v) { // Decl: 68
-        ValDesired = v;
-        if (v != Val) {
-            state = 2;
+        this->ValDesired = v;
+        if (v != this->Val) {
+            this->state = 2;
         }
     }
     void SetdValDesired(float v) { // Decl: 69
-        dValDesired = v;
+        this->dValDesired = v;
     }
 
     void SetDuration(const float t) { // Decl: 71
-        duration = t;
+        this->duration = t;
     }
     void SetState(short s) { // Decl: 72
-        state = s;
+        this->state = s;
     }
     void SetFlags(short f) { // Decl: 73
-        flags = f;
+        this->flags = f;
     }
 
     float GetVal(float t);   // Decl: 75
@@ -87,7 +87,7 @@ struct tCubic1D {
 
     void MakeCoeffs(); // Decl: 91
     int HasArrived() { // Decl: 92
-        return state == 0;
+        return static_cast<int>(state == 0);
     };
     void PathdValDesired(float v); // Decl: 93
 };
@@ -103,27 +103,27 @@ struct tCubic2D {
 
     void Update(float fSeconds, float fDClamp, float fDDClamp); // Decl: 112
     int HasArrived() {                                          // Decl: 113
-        return x.HasArrived() && y.HasArrived();
+        return static_cast<int>((this->x.HasArrived() != 0) && (this->y.HasArrived() != 0));
     };
     void Snap() { // Decl: 114
-        x.Snap();
-        y.Snap();
+        this->x.Snap();
+        this->y.Snap();
     }
     void SetVal(const float vx, const float vy) { // Decl: 121
-        x.SetVal(vx);
-        y.SetVal(vy);
+        this->x.SetVal(vx);
+        this->y.SetVal(vy);
     }
     void SetdVal(float vx, float vy) { // Decl: 117
-        x.SetdVal(vx);
-        y.SetdVal(vy);
+        this->x.SetdVal(vx);
+        this->y.SetdVal(vy);
     }
     void SetValDesired(float vx, float vy) { // Decl: 118
-        x.SetValDesired(vx);
-        y.SetValDesired(vy);
+        this->x.SetValDesired(vx);
+        this->y.SetValDesired(vy);
     }
     void SetdValDesired(float vx, float vy) { // Decl: 119
-        x.SetdValDesired(vx);
-        y.SetdValDesired(vy);
+        this->x.SetdValDesired(vx);
+        this->y.SetdValDesired(vy);
     }
 
     void SetVal(const bVector2 *pV);   // Decl: 121
@@ -143,17 +143,17 @@ struct tCubic2D {
 
     void SetDuration(const bVector2 *pV);
     void SetDuration(const float t) { // Decl: 138
-        x.SetDuration(t);
-        y.SetDuration(t);
+        this->x.SetDuration(t);
+        this->y.SetDuration(t);
     }
     void SetDuration(const float tx, const float ty);
     void SetState(short s) { // Decl: 140
-        x.SetState(s);
-        y.SetState(s);
+        this->x.SetState(s);
+        this->y.SetState(s);
     }
     void SetFlags(short s) { // Decl: 141
-        x.SetFlags(s);
-        y.SetFlags(s);
+        this->x.SetFlags(s);
+        this->y.SetFlags(s);
     }
     void PathdValDesired(float x2, float y2); // Decl: 143
     void PathdValDesired(bVector2 *v);        // Decl: 144
@@ -167,24 +167,29 @@ struct tCubic3D {
     tCubic1D y; // offset 0x2C, size 0x2C, Decl: 165
     tCubic1D z; // offset 0x58, size 0x2C, Decl: 166
 
+    tCubic3D(short type, float dur)
+        : x(0, 0.0f), //
+          y(0, 0.0f), //
+          z(0, 0.0f) {}
+
     void Update(float dt, float maxDeriv, float maxSecondDeriv);
     int HasArrived() {} // Decl: 169
     void Snap() {}      // Decl: 170
 
     void SetVal(const float vx, const float vy, const float vz) {
-        x.SetVal(vx);
-        y.SetVal(vy);
-        z.SetVal(vz);
+        this->x.SetVal(vx);
+        this->y.SetVal(vy);
+        this->z.SetVal(vz);
     }
     void SetdVal(const float vx, const float vy, const float vz) { // Decl: 173
-        x.SetdVal(vx);
-        y.SetdVal(vy);
-        z.SetdVal(vz);
+        this->x.SetdVal(vx);
+        this->y.SetdVal(vy);
+        this->z.SetdVal(vz);
     }
     void SetValDesired(const float vx, const float vy, const float vz) { // Decl: 174
-        x.SetValDesired(vx);
-        y.SetValDesired(vy);
-        z.SetValDesired(vz);
+        this->x.SetValDesired(vx);
+        this->y.SetValDesired(vy);
+        this->z.SetValDesired(vz);
     }
 
     void SetVal(const bVector3 *v);              // Decl: 177
@@ -216,16 +221,6 @@ struct tCubic3D {
 // Decl: 208
 class cPoint {
   public:
-    tCubic3D mPos;                        // offset 0x0, size 0x84
-    tCubic3D mRot;                        // offset 0x84, size 0x84
-    tCubic1D mScale;                      // offset 0x108, size 0x2C
-    tCubic1D mYScale;                     // offset 0x134, size 0x2C
-    float mZBias;                         // offset 0x160, size 0x4
-    void (*mCallBackFunc)(int, int);      // offset 0x164, size 0x4
-    void (*mUpdateFunc)(cPoint *, float); // offset 0x168, size 0x4
-    int32 mCBParam1;                      // offset 0x16C, size 0x4
-    int32 mCBParam2;                      // offset 0x170, size 0x4
-
     cPoint();
     virtual ~cPoint();
 
@@ -359,6 +354,17 @@ class cPoint {
     void Snap();
 
     void SetBiasZ(float ratio);
+
+    tCubic3D mPos;    // offset 0x0, size 0x84, Decl: 313
+    tCubic3D mRot;    // offset 0x84, size 0x84, Decl: 314
+    tCubic1D mScale;  // offset 0x108, size 0x2C, Decl: 315
+    tCubic1D mYScale; // offset 0x134, size 0x2C, Decl: 316
+    float mZBias;     // offset 0x160, size 0x4, Decl: 317
+
+    void (*mCallBackFunc)(int, int);      // offset 0x164, size 0x4, Decl: 321
+    void (*mUpdateFunc)(cPoint *, float); // offset 0x168, size 0x4, Decl: 322
+    int32 mCBParam1;                      // offset 0x16C, size 0x4, Decl: 323
+    int32 mCBParam2;                      // offset 0x170, size 0x4, Decl: 324
 };
 
 #endif

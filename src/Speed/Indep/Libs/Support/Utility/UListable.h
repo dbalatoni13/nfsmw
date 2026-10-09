@@ -145,12 +145,22 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
   public:
     static int Count(Enum idx);
-    static iterator First(Enum idx);
+    static iterator First(Enum idx); // TODO implement this on the bottom
     static iterator Last(Enum idx);
 
     template <typename Functor> static Functor ForEach(Enum idx, Functor f) {
         List &l = _mLists._buckets[idx];
         return std::for_each(l.begin(), l.end(), f);
+    }
+
+    // Decl: 223 TODO fix order
+    template <typename Functor> static iterator FindIf(Enum idx, Functor f) {
+        List &l = _mLists._buckets[idx];
+        typename List::iterator iter = std::find_if(l.begin(), l.end(), f);
+        if (iter != l.end()) {
+            return *iter;
+        }
+        return nullptr;
     }
 
     static const List &GetList(Enum idx) {

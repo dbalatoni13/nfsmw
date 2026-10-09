@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // Decl: 15
 enum eGameTips {
@@ -100,21 +101,21 @@ struct GameTipInfo {
 
 class LoadingTips : public MenuScreen {
   public:
-    static inline void *operator new(size_t size) {
+    static void *operator new(size_t size) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void *operator new(size_t size, char *file, int line) {
+    static void *operator new(size_t size, char *file, int line) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void *operator new(size_t size, char *msg) {
+    static void *operator new(size_t size, char *msg) {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void operator delete(void *ptr) {} // Decl: 21
+    static void operator delete(void *ptr) {} // Decl: 21
 
-    static inline void operator delete(void *ptr, char *msg) {} // Decl: 22
+    static void operator delete(void *ptr, char *msg) {} // Decl: 22
 
     LoadingTips(ScreenConstructorData *sd);
     ~LoadingTips() override;
@@ -122,8 +123,11 @@ class LoadingTips : public MenuScreen {
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
     void FinishLoadingTexCallback(uint32 p);
-    static inline bool IsDoneShowingLoadingTips() {
+    static bool IsDoneShowingLoadingTips() {
         return mDoneShowingLoadingTips;
+    }
+    static void SetDoneLoading(bool done) {
+        mDoneLoading = done;
     }
     static void InitLoadingTipsScreen();
     static void CloseLoadingTipsScreen();
@@ -143,10 +147,13 @@ class LoadingTips : public MenuScreen {
     static bool mDoneShowingLoadingTips;
     static void *mLoadingTipsScreenPtr; // size: 0x4, address: 0x8041C188, Decl: 21
 
-    uint32 TipTextureHash;         // offset 0x2C
-    Timer DisplayTime;             // offset 0x30
-    GameTipInfo *CurrentTip;       // offset 0x34
-    bool mPressAcceptHasBeenShown; // offset 0x38
+    uint32 TipTextureHash;            // offset 0x2C
+    Timer DisplayTime;                // offset 0x30
+    GameTipInfo *CurrentTip;          // offset 0x34
+    bool mPressAcceptHasBeenShown;    // offset 0x38
+#ifdef EA_PLATFORM_WIN32              // TODO: might be v1.3
+    bool mSuppressingControllerError; // TODO: name
+#endif
 };
 
 extern GameTipInfo GameTipInfoTable[];

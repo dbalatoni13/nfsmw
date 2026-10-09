@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <Allocator/iallocator.h>
+#include "types.h"
 
 // TODO
 // #define CSIS_VERSION_MAJOR 2 // Decl: 57

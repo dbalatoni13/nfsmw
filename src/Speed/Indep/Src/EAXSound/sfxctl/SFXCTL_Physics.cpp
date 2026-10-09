@@ -141,7 +141,6 @@ void SFXCTL_Physics::InitSFX() {
 static const int Smoother_CameraStateChange = 60; // size: 0x4, Decl: 213
 static const int Smoother_PlayerPosion = 2000;    // size: 0x4, Decl: 214
 
-// UNSOLVED
 void SFXCTL_Physics::UpdateMixerOutputs() {
     int TargeVal;
 
@@ -249,8 +248,8 @@ SFXCTL_AIPhysics::SFXCTL_AIPhysics() {
     this->m_AngleDeltaRPM_LFO = 0;
     this->DownShiftSameGearCount = 0;
     this->UpShiftSameGearCount = 0;
-    this->IsDrifting = false;
     this->SteadyVelocityFactor = 0.0f;
+    this->IsDrifting = false;
     this->IsCornering = false;
 }
 

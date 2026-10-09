@@ -112,6 +112,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     WUID GetAnchorID();
 
+    Camera *GetCamera() {
+        return pCamera;
+    }
+
     bVector3 *GetPosition() {
         return pCamera->GetPosition();
     }
@@ -131,8 +135,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     void ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
     void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
-    void TerrainVelocityNoise(bMatrix4 *world_to_camera /* r26 */, CameraAnchor *p_car /* r30 */, float f_speed_scale /* f31 */,
-                              float f_terrain_scale /* f28 */);
+    void TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *p_car, float f_speed_scale, float f_terrain_scale);
 
     bool IsDriveCamera() {
         return this->Type == CM_DRIVE_CUBIC;

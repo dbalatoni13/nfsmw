@@ -2,7 +2,7 @@
 #include "Speed/Indep/Libs/snd/9/source/library/cmn/saemsi.h"
 #include <cstddef>
 
-void SNDAEMSI_timerupdate(void *pClientData) {
+void SNDAEMSI_timerupdate(void * const pClientData) {
     AemsDef::TIMERCLIENT *pclient;
     if (sndaems.instreamsynctask) {
         sndaems.timerUpdatesSkipped++;

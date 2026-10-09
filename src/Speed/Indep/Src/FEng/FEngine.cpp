@@ -81,8 +81,8 @@ void FEngine::SetNumJoyPads(u8 Count) {
 }
 
 void FEngine::SetExecution(bool bProcessEverything) {
-    FEPackage *pPackage = PackList.GetFirstPackage();
     bExecuting = bProcessEverything;
+    FEPackage *pPackage = PackList.GetFirstPackage();
     while (pPackage != nullptr) {
         pPackage->SetExecute(bExecuting);
         pPackage = pPackage->GetNext();

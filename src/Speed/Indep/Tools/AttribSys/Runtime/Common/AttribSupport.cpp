@@ -50,7 +50,7 @@ const Collection *GetCollectionParent(const Collection *c) {
     return nullptr;
 }
 
-unsigned int StringToLowerCaseKey(const char *str) {
+Key StringToLowerCaseKey(const char *str) {
     char temp[256];
     char *ptr = temp;
 

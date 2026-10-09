@@ -49,10 +49,10 @@ class WTrigger : public CARP::Trigger {
     void UpdateBox(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center);
 
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate, bool frombase) const {
-        m[0][0] = this->fMatRow0Width.x;
-        m[0][1] = this->fMatRow0Width.y;
-        m[0][2] = this->fMatRow0Width.z;
-        m[0][3] = 0.0f;
+        m.v0.x = this->fMatRow0Width.x;
+        m.v0.y = this->fMatRow0Width.y;
+        m.v0.z = this->fMatRow0Width.z;
+        m.v0.w = 0.0f;
         if ((this->fFlags & 0x1000) != 0) {
             m[1][0] = this->fMatRow2Length.y * this->fMatRow0Width.z - this->fMatRow2Length.z * this->fMatRow0Width.y;
             m[1][1] = this->fMatRow2Length.z * this->fMatRow0Width.x - this->fMatRow2Length.x * this->fMatRow0Width.z;
@@ -75,12 +75,13 @@ class WTrigger : public CARP::Trigger {
             } else {
                 m[3][1] = this->fPosRadius.y;
             }
+            m[3][3] = 1.0f;
         } else {
             m[3][0] = 0.0f;
             m[3][1] = 0.0f;
             m[3][2] = 0.0f;
+            m[3][3] = 1.0f;
         }
-        m[3][3] = 1.0f;
     }
 
     bool HasEvent(unsigned int eventID, const CARP::EventStaticData **foundEvent) const;

@@ -3,8 +3,10 @@
 
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 
-class MemcardCallbacks : public IGameInterface, public IJoyHelper {
+class MemcardCallbacks : public RealmcIface::IGameInterface, public IJoyHelper {
   public:
+    MemcardCallbacks() {}
+
     MemoryCard *GetMemcard();
     UIMemcardBase *GetScreen();
 

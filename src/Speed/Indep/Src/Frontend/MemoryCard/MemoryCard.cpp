@@ -16,7 +16,7 @@
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "realmemcard/3.04.01-layer2/include/common/realmemcard/memcard_interface.h"
+#include "realmemcard/memcard_interface.h"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardImp.hpp"
 
 // TODO d:/packages/realcore/6.24.00/source/std/cmn/locale.cpp
@@ -38,7 +38,7 @@ void Realmc::SystemInterface::Clear() {
     mGetStrCallback = nullptr;
 }
 
-extern IAllocator *gMemoryAllocator;
+extern EA::Allocator::IAllocator *gMemoryAllocator;
 extern MemcardCallbacks gMemcardCallbacks;
 
 MemoryCard *MemoryCard::s_pThis = nullptr;
@@ -120,6 +120,7 @@ MemoryCard::MemoryCard() {
     m_bAutoLoadDone = false;
     m_bMemcardScreenExiting = false;
     m_nPlayer = 0;
+#ifdef EA_PLATFORM_GAMECUBE
     char *pIcon = static_cast<char *>(bGetFile("memcard/icon1.raw", nullptr, 0));
     char *pBanner = static_cast<char *>(bGetFile("memcard/banner.raw", nullptr, 0));
     m_pRMIcon = new ("GCIconDataInfo", 0) GCIconDataInfo();
@@ -132,6 +133,12 @@ MemoryCard::MemoryCard() {
     m_pRMBanner->imageData = nullptr;
     m_pRMBanner->imageData = pBanner;
     m_pRMBanner->imageFormat = GC_IMAGE_FORMAT_CI8;
+#endif
+}
+
+MemoryCard::~MemoryCard() {
+    s_pThis = nullptr;
+    delete this->m_pGameInfo;
 }
 
 bool MemoryCard::IsCardAvailable() {
@@ -215,23 +222,23 @@ void MemoryCard::Init() {
                                                              "Most"
                                                              "\xA0"
                                                              "Wanted");
-    GameInfo *pGameInfo = new ("GameInfo", 0) GameInfo(reinterpret_cast<unsigned short *>(m_GameTitle), 0, false, false);
+    RealmcIface::GameInfo *pGameInfo = new ("GameInfo", 0) RealmcIface::GameInfo(reinterpret_cast<wchar_t *>(m_GameTitle), 0, false, false);
     m_pGameInfo = pGameInfo;
     m_pIMemcard = RealmcIface::MemcardInterface::CreateInstance(&iSystem, &gMemcardCallbacks, pGameInfo);
-    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, RealmcIface::ID_CHECKINGFORCARD);
     m_TimeOffsetSec = 0;
     m_pLocaleFileHandler = nullptr;
 }
 
 void MemoryCard::StartBootSequence() {
     m_bInBootSequence = true;
-    gMemcardSetup.mOp = 0x20;
-    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x4000);
+    gMemcardSetup.mOp = MCO_BootList;
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, RealmcIface::ID_LOAD_COMPLETE);
 }
 
 void MemoryCard::EndBootSequence() {
     m_bInBootSequence = false;
-    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 0x4000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, RealmcIface::ID_LOAD_COMPLETE);
 }
 
 void MemoryCard::LoadLocale(eLanguages eLang) {
@@ -374,7 +381,7 @@ void MemoryCard::StartAutoSave(bool bForce) {
     if (!FEDatabase->bProfileLoaded) {
         return;
     }
-    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) != 0xb0) {
+    if (gMemcardSetup.GetCommand() != MCO_AutoSave) {
         ShowAutoSaveIcon();
         gMemcardSetup.mOp = 0;
     }
@@ -391,9 +398,9 @@ void MemoryCard::StartAutoSave(bool bForce) {
 
 void MemoryCard::DoAutoSave() {
     m_bCheckingCardForAutoSave = false;
-    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0) {
+    if (gMemcardSetup.GetCommand() == MCO_AutoSave) {
         ShowMessages(true);
-        m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x100);
+        m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, RealmcIface::ID_SAVE_READY);
     } else {
         ShowOnlyAutoSaveMessages();
     }
@@ -440,16 +447,16 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     SetExtraParam(ST_PROFILE, entryname, nullptr, FEDatabase->GetUserProfileSaveSize(false));
     bStrCat(m_Filename, m_pImp->GetPrefix(), entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
-    if ((GetScreen() != nullptr) && gMemcardSetup.GetCommand() == 0xa0) {
+    if ((GetScreen() != nullptr) && gMemcardSetup.GetCommand() == MCO_EnableAutoSave) {
         GetScreen()->SetStringCheckingCard();
         ShowMessages(true);
     } else {
         ShowMessages(false);
     }
-    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, RealmcIface::ID_CHECKINGFORCARD);
     if (bEnabled) {
         gMemcardSetup.ClearCommand();
-        gMemcardSetup.SetCommand(0xa0);
+        gMemcardSetup.SetCommand(MCO_EnableAutoSave);
     } else {
         m_bDisablingAutoSaveForSave = true;
     }
@@ -482,7 +489,7 @@ void MemoryCard::ShowOnlyAutoSaveMessages() {
 
 void MemoryCard::ShowMessages(bool bShow) {
     m_bManualSave = bShow;
-    m_pIMemcard->SetMessage(bShow ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, 0xffffffff);
+    m_pIMemcard->SetMessage(bShow ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, RealmcIface::ID_ALLMESSAGES);
 }
 
 void MemoryCard::CheckCard(int iSlot) {
@@ -569,7 +576,7 @@ void MemoryCard::ReleasePendingMessage() {
 
 void MemoryCard::HandleAutoSaveError() {
     UIMemcardBase *pScreen = GetScreen();
-    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0 || pScreen != nullptr)
+    if (gMemcardSetup.GetCommand() == MCO_AutoSave || pScreen != nullptr)
         pScreen->HandleAutoSaveError();
     else
         MemcardEnter(nullptr, nullptr, 0x91, nullptr, nullptr, 0, 0);
@@ -577,7 +584,7 @@ void MemoryCard::HandleAutoSaveError() {
 
 void MemoryCard::HandleAutoSaveOverwriteMessage() {
     UIMemcardBase *pScreen = GetScreen();
-    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0 || pScreen != nullptr)
+    if (gMemcardSetup.GetCommand() == MCO_AutoSave || pScreen != nullptr)
         pScreen->HandleAutoSaveOverwriteMessage();
     else
         MemcardEnter(nullptr, nullptr, 0xd1, nullptr, nullptr, 0, 0);

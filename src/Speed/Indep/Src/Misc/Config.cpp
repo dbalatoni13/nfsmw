@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 // TODO do all of these
-const char *BuildVersionChangelistName = "191527 191537 191573 191602...";
+char *BuildVersionChangelistName = "191527 191537 191573 191602...";
 
 int EmergencySaveMemory = 0;
 int SkipFE = 0;

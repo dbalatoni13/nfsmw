@@ -2,15 +2,12 @@
 #define MAIN_EVENTSEQUENCER_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/UTL.h"
 
 // TODO move?
 // total size: 0x64
@@ -48,13 +45,7 @@ class IContext : public UTL::COM::IUnknown {
     virtual bool SetDynamicData(const System *system, EventDynamicData *data);
 };
 
-// TODO DECLAREHANDLE in new UTL.h
-struct HENGINE__ {
-    // total size: 0x4
-    int unused; // offset 0x0, size 0x4
-};
-
-typedef HENGINE__ *HENGINE;
+DECLAREHANDLE(HENGINE);
 
 enum QueueMode {
     QUEUE_DISABLE = 0,

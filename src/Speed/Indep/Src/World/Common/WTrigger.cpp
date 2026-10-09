@@ -166,11 +166,8 @@ void WTriggerManager::Init() {
     Restart();
 
     for (unsigned int i = 0; i < WCollisionAssets::Get().NumTriggers(); i++) {
-        WTrigger &trig = WCollisionAssets::Get().Trigger(i);
-
-        if ((trig.fFlags & 0x200) != 0) {
-            WTrigger &trig2 = WCollisionAssets::Get().Trigger(i);
-            trig2.fFlags &= ~0x400;
+        if ((WCollisionAssets::Get().Trigger(i).fFlags & 0x200) != 0) {
+            WCollisionAssets::Get().Trigger(i).fFlags &= ~0x400;
         }
     }
 }
@@ -184,8 +181,7 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE hSimable) {
     if ((trig.fFlags & 0x8000) != 0) {
         ISimable *iSimable = ISimable::FindInstance(hSimable);
         if (iSimable != nullptr) {
-            FireOnExitRec rec(trig, hSimable);
-            this->fgFireOnExitList->insert(rec);
+            this->fgFireOnExitList->insert(FireOnExitRec(trig, hSimable));
         } else {
             trig.FireEvents(hSimable);
         }
@@ -277,11 +273,11 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
 // UNSOLVED
 bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *trig, float dT) const {
     const float rbRadius = rBody->GetRadius();
-    // const float rbRadiusPlusVel;
+    const float rbRadiusPlusVel = rBody->GetSpeed() * dT + rbRadius;
     UMath::Vector3 rPos;
     UMath::Vector3 cp;
 
-    float radsSq = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
+    float radsSq = rbRadiusPlusVel + trig->fPosRadius.w;
     cp = UMath::Vector4To3(trig->fPosRadius);
     radsSq *= radsSq;
     UMath::Vector3 dP;
@@ -309,6 +305,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                     (rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f)) {
                     return true;
                 }
+                return false;
             } else if (trig->fShape == 1) {
                 UMath::Vector3 dim3;
                 UMath::Matrix4 bodyMat;
@@ -335,6 +332,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 }
             } else {
                 unsigned char shapeNum;
+                return false;
             }
         }
     }
@@ -398,19 +396,19 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
                 }
             }
 
-            if (rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f && rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
-                return true;
-            } else {
+            if (!(rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f && rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f)) {
                 unsigned char shapeNum;
+                return false;
             }
+            return true;
         }
     }
     return false;
 }
 
 inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b) {
-    float z = a.z - b.z;
     float x = a.x - b.x;
+    float z = a.z - b.z;
     return x * x + z * z;
 }
 
@@ -423,8 +421,9 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
     for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *gridNode = grid.fNodes[*iter];
         if (gridNode != nullptr) {
+            const unsigned int *indPtr;
             WGridNode::iterator eIter(gridNode, WGrid_kTrigger);
-            while (const unsigned int *indPtr = eIter.GetIndPtr()) {
+            while ((indPtr = eIter.GetIndPtr()) != nullptr) {
                 unsigned int ind = *indPtr;
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
                 if (trig.fIterStamp != this->fIterCount) {
@@ -463,7 +462,8 @@ void WTriggerManager::ClearAllFireOnExit() {
 void WTriggerManager::Update(float dT) {
     this->fProcessingStimulus = 1;
     IRigidBody::List::const_iterator enditer = IRigidBody::GetList().end();
-    for (IRigidBody::List::const_iterator iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
+    IRigidBody::List::const_iterator iter;
+    for (iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
         IRigidBody *rigidBody = *iter;
         if (rigidBody->IsSimple()) {
             this->ProcessSRB(rigidBody, dT);
@@ -472,9 +472,8 @@ void WTriggerManager::Update(float dT) {
         }
     }
     this->fProcessingStimulus = 2;
-    FireOnExitList::iterator iter = this->fgFireOnExitList->begin();
-    while (iter != this->fgFireOnExitList->end()) {
-        const FireOnExitRec &rec = *iter;
+    for (FireOnExitList::iterator iter = this->fgFireOnExitList->begin(); iter != this->fgFireOnExitList->end();) {
+        FireOnExitRec &rec = const_cast<FireOnExitRec &>(*iter);
         ISimable *iSimable = ISimable::FindInstance(rec.mhSimable);
         if (iSimable != nullptr) {
             IRigidBody *iRigidBody = iSimable->GetRigidBody();
@@ -503,9 +502,13 @@ void WTriggerManager::Update(float dT) {
 }
 
 int LoaderTrigger(bChunk *chunk) {
+    switch (chunk->GetID()) {
+    }
     return 0;
 }
 
 int UnloaderTrigger(bChunk *chunk) {
+    switch (chunk->GetID()) {
+    }
     return 0;
 }

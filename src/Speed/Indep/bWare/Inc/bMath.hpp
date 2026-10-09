@@ -29,7 +29,7 @@ struct bPolar {
     bAngle a;
 };
 
-extern unsigned int bDefaultSeed;
+extern unsigned int bDefaultSeed; // Decl: 179
 
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
@@ -159,7 +159,7 @@ inline int bMult(int a, int b) {
 
 inline float bAbs(float a) {
 #ifdef EA_PLATFORM_GAMECUBE
-    float f_abs;
+    float f_abs = 0.0f;
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
     return f_abs;
@@ -1201,14 +1201,17 @@ inline void bIdentity(bMatrix4 *a) {
     a->v0.y = 0.0f;
     a->v0.z = 0.0f;
     a->v0.w = 0.0f;
+
     a->v1.x = 0.0f;
     a->v1.y = 1.0f;
     a->v1.z = 0.0f;
     a->v1.w = 0.0f;
+
     a->v2.x = 0.0f;
     a->v2.y = 0.0f;
     a->v2.z = 1.0f;
     a->v2.w = 0.0f;
+
     a->v3.x = 0.0f;
     a->v3.y = 0.0f;
     a->v3.z = 0.0f;

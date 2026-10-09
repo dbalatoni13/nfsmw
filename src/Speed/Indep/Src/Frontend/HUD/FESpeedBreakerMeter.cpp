@@ -68,9 +68,8 @@ void SpeedBreakerMeter::Update(IPlayer *player) {
 }
 
 void SpeedBreakerMeter::SetPursuitLevel(float pursuitLevel) {
-    if (mPursuitLevel == pursuitLevel) {
-        return;
+    if (mPursuitLevel != pursuitLevel) {
+        mPursuitLevelChanged = true;
+        mPursuitLevel = pursuitLevel;
     }
-    mPursuitLevel = pursuitLevel;
-    mPursuitLevelChanged = true;
 }

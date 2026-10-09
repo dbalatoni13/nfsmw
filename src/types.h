@@ -35,6 +35,8 @@ typedef unsigned int type_operator_new;
 
 #define ONLINE_SUPPORT (0) // TODO get rid of this
 
+#define MAX_PATH 255
+
 #elif defined(EA_PLATFORM_XENON)
 
 #include <cstddef>
@@ -100,9 +102,11 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-    // typedef signed char i8;
+// typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define MAX_PATH 260
 
 #elif defined(EA_PLATFORM_WIN32)
 
@@ -133,7 +137,7 @@ typedef bool Bool;
 #define ATTRIBUTE_ALIGN(num) __declspec(align(num))
 #endif
 
-#define ALIGN_16
+#define ALIGN_16 ATTRIBUTE_ALIGN(16)
 
 #define EA_PACKED
 
@@ -169,9 +173,11 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-    // typedef signed char i8;
+// typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define MAX_PATH 260
 
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include <cstddef>
@@ -243,6 +249,8 @@ typedef unsigned char u8;
 typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define MAX_PATH 256
 
 #endif
 

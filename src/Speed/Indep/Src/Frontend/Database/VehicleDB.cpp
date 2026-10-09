@@ -64,7 +64,7 @@ POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
 }
 
 bool IsPlayerCameraSelectable(POVTypes pov_type) {
-    Attrib::Gen::ecar model_atrs(0xeec2271a, 0, nullptr);
+    Attrib::Gen::ecar model_atrs(Attrib::key_default, 0, nullptr);
     static uint32 prevModelNameHash = 0;
     static uint32 modelNameKey = 0;
     IPlayer *player = IPlayer::First(PLAYER_LOCAL);
@@ -89,7 +89,7 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
 
     model_atrs.ChangeWithDefault(modelNameKey);
 
-    Attrib::Gen::camerainfo camera_atrs(0xeec2271a, 0, nullptr);
+    Attrib::Gen::camerainfo camera_atrs(Attrib::key_default, 0, nullptr);
 
     int index;
 
@@ -116,7 +116,7 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
             camera_atrs.Change(model_atrs.CameraInfo_Pursuit());
             break;
         default:
-            camera_atrs.Change(0xeec2271a);
+            camera_atrs.Change(Attrib::key_default);
             break;
     }
 
@@ -151,6 +151,17 @@ void AdjustStableHeat_EvadePursuit(int playerNum) {
         FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
         if (fe_career != nullptr) {
             fe_career->AdjustHeatOnEvadePursuit();
+        }
+    }
+}
+
+void AdjustStableHeat_MilestoneComplete(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i < MAX_CARS_IN_STABLE; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career != nullptr) {
+            fe_career->AdjustHeatOnMilestoneComplete();
         }
     }
 }
@@ -487,10 +498,10 @@ int FEPlayerCarDB::GetNumCars(uint32 filter) {
 }
 
 FECarRecord *FEPlayerCarDB::CreateNewCustomCar(FECarHandle fromCar) {
-    if (GetNumQuickRaceCars() < MAX_QUICKRACE_CARS_IN_STABLE) {
-        return CreateCar(fromCar, FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_QUICK_RACE);
+    if (GetNumQuickRaceCars() >= MAX_QUICKRACE_CARS_IN_STABLE) {
+        return nullptr;
     }
-    return nullptr;
+    return CreateCar(fromCar, FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_QUICK_RACE);
 }
 
 FECarRecord *FEPlayerCarDB::AwardRivalCar(uint32 preset) {
@@ -1203,13 +1214,12 @@ uint32 FEInfractionsData::GetFineValue() const {
 }
 
 void FEImpoundData::Default() {
+    MaxBusted = 3;
     TimesBusted = 0;
     ImpoundedState = 0;
     DaysBeforeRelease = 0;
-    MaxBusted = 3;
     EvadeCount = 0;
-    Pad2 = 0;
-    Pad1 = 0;
+    Pad1 = Pad2 = 0;
 }
 
 void FEImpoundData::BecomeImpounded(eImpoundReasons reason) {
@@ -1229,9 +1239,14 @@ void FEImpoundData::NotifyPlayerUsedMarkerToRelease() {
 }
 
 bool FEImpoundData::NotifyWin() {
-    if (IsImpounded() && ((DaysBeforeRelease == 0 || --DaysBeforeRelease == 0) && ImpoundedState != IMPOUND_RELEASED)) {
-        ImpoundedState = IMPOUND_RELEASED;
-        return true;
+    if (IsImpounded()) {
+        if (DaysBeforeRelease > 0) {
+            DaysBeforeRelease--;
+        }
+        if (DaysBeforeRelease == 0 && ImpoundedState != IMPOUND_RELEASED) {
+            ImpoundedState = IMPOUND_RELEASED;
+            return true;
+        }
     }
     return false;
 }
@@ -1246,8 +1261,8 @@ bool FEImpoundData::NotifyEvade() {
     if (!IsImpounded()) {
         EvadeCount = EvadeCount + 1;
         if (EvadeCount > 2) {
-            EvadeCount = 0;
             TimesBusted--;
+            EvadeCount = 0;
         }
         if (TimesBusted < 0) {
             TimesBusted = 0;
@@ -1291,73 +1306,85 @@ float FECareerRecord::GetVehicleHeat() {
 }
 
 void FECareerRecord::AdjustHeatOnEventWin() {
-    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat = VehicleHeat * DefaultPursuitLevelAttrib.EventWinHeatAdjust();
 }
 
+void FECareerRecord::AdjustHeatOnMilestoneComplete() {
+    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(Attrib::key_default, 0, nullptr);
+
+    VehicleHeat = VehicleHeat * DefaultPursuitLevelAttrib.MilestoneCompleteHeatAdjust();
+}
+
 void FECareerRecord::AdjustHeatOnEvadePursuit() {
-    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::pursuitlevels DefaultPursuitLevelAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat = VehicleHeat * DefaultPursuitLevelAttrib.EvadeSuccessHeatAdjust();
 }
 
 void FECareerRecord::AdjustHeatOnDecalApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewDecal() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnPaintApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewPaint() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnVinylApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewVinyl() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnBodyKitApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewBodyKit() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnHoodApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewHood() * extraAdjust;
 }
 
+void FECareerRecord::AdjustHeatOnNumbersApplied(float extraAdjust) {
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
+
+    VehicleHeat *= FeCoolingAttrib.NewNumbers() * extraAdjust;
+}
+
 void FECareerRecord::AdjustHeatOnRimApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewRim() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRimPaintApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewRimPaint() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRoofScoopApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewRoofScoop() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnSpoilerApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewSpoiler() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnWindowTintApplied(float extraAdjust) {
-    Attrib::Gen::fecooling FeCoolingAttrib(0xEEC2271A, 0, nullptr);
+    Attrib::Gen::fecooling FeCoolingAttrib(Attrib::key_default, 0, nullptr);
 
     VehicleHeat *= FeCoolingAttrib.NewWindowTint() * extraAdjust;
 }

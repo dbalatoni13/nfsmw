@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMessageDone.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
@@ -25,7 +26,7 @@ void SixDaysLater::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 
         if (FEngIsScriptSet(mpDataMainString, FEHASH_ANIMATE)) {
             if (!FEngIsScriptRunning(mpDataMainString, FEHASH_ANIMATE)) {
                 cFEng::Get()->QueuePackagePop(0);
-                MNotifyMessageDone().Post(0x20d60dbf);
+                MNotifyMessageDone().Post(UCRC32_Gameplay);
             }
         }
     }

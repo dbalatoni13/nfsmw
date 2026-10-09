@@ -70,7 +70,7 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector4 *norm) const {
-        this->UNormal(&UMath::Vector4To3(*norm));
+        this->UNormal(UMath::Vector4To3(norm));
         norm->w = 0.0f;
     }
 
@@ -98,7 +98,7 @@ class WWorldPos {
     unsigned int fFaceValid : 1;   // offset 0x30, size 0x4
     unsigned int fMissCount : 15;  // offset 0x30, size 0x4
     unsigned int fUsageCount : 16; // offset 0x30, size 0x4
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     UCrc32 fSurfaceHash;
 #endif
     float fYOffset;                     // offset 0x34, size 0x4

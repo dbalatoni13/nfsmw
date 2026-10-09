@@ -50,8 +50,8 @@ void CARSFX_PreColWoosh::MsgBarrier(const MAudioReflection &message) {
 
     this->bBarrierDetected = true;
     if (!this->bGoingToCollide && !this->bBailOnAll && this->mResetTime == 0.0f) {
-        this->bGoingToCollide = true;
         this->mDurationActive = 0.0f;
+        this->bGoingToCollide = true;
         this->WooshFadeOut.Initialize(1.0f, 1.0f, 1, LINEAR);
     }
 }
@@ -111,6 +111,7 @@ void CARSFX_PreColWoosh::UpdateParams(float t) {
             sndparams.Az = 0;
             sndparams.Pitch = 0;
             sndparams.Vol = 0;
+
             this->m_pWoosh = new cStichWrapper(*stitchdata);
             this->m_pWoosh->Play(&sndparams);
         }
@@ -137,7 +138,6 @@ void CARSFX_PreColWoosh::ProcessUpdate() {
             this->m_pWoosh = nullptr;
         } else {
             SND_Params params;
-
             params.ID = 0;
             params.Az = 0;
             params.Mag = 0;

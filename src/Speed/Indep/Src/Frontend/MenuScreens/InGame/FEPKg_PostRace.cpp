@@ -40,8 +40,7 @@ RaceStat::RaceStat(FEString *title, FEString *data) : FEStatWidget(true) {
 
 StatsPanel::StatsPanel() : TheStats() {
     iWidgetToAdd = 1;
-    RacerName = "";
-    ParentPkg = "";
+    ParentPkg = RacerName = "";
 }
 
 void StatsPanel::Reset() {
@@ -274,7 +273,7 @@ void PostRaceResultsScreen::SetupStat_NosUsed() {
 void PostRaceResultsScreen::SetupStat_TopSpeed() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
     uint32 speedUnits = 0x8569AB44;
-    float speed = MPS2MPH(racerInfo.GetTopSpeed()); //*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x114) * 2.23699f;
+    float speed = MPS2MPH(racerInfo.GetTopSpeed());
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         speedUnits = 0x8569A25F;
@@ -817,7 +816,7 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
                 if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career && !ddayRace) {
                     if (playerDone) {
                         GRaceStatus::Get().RaceAbandoned();
-                        MNotifyRaceAbandoned().Post(0x20d60dbf);
+                        MNotifyRaceAbandoned().Post(UCRC32_Gameplay);
                     }
 
                     new EUnPause();
@@ -837,23 +836,20 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
     }
 }
 
+// UNSOLVED
 eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
-    if (msg != 0x7B6B89D7) {
-        if (msg < 0x7B6B89D8) {
-            if (msg != 0x4A805994) {
-                return maybe;
+    switch (msg) {
+        case 0x4A805994:
+        case 0x9AFA53A7:
+            if (mNumberOfRacers <= 1 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+                return UISND_NONE;
             }
-        } else if (msg != 0x9AFA53A7) {
-            return maybe;
-        }
-
-        if (mNumberOfRacers < 2 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
-            return UISND_NONE;
-        }
-    }
-
-    if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
-        return UISND_NONE;
+            // fall through
+        case 0x7B6B89D7:
+            if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
+                return UISND_NONE;
+            }
+            break;
     }
 
     return maybe;
@@ -1028,7 +1024,7 @@ PostRacePursuitScreen::PostRacePursuitScreen(ScreenConstructorData *sd)
 PostRacePursuitScreen::~PostRacePursuitScreen() {
     if (GetPursuitData().mExitToSafehouse != 0) {
         GetPursuitData().mExitToSafehouse = 0;
-        MEnterSafeHouse("safehouse").Post(0x20D60DBF);
+        MEnterSafeHouse("safehouse").Post(UCRC32_Gameplay);
     }
 }
 

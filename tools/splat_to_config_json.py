@@ -12,9 +12,10 @@ from pathlib import Path
 import json
 import splat
 import splat.scripts.split as split
+from splat.util import options
 
 
-def generate_config_json(config_yml: Path, build_folder: Path) -> str:
+def generate_config_json(config_yml: Path, build_folder: Path) -> tuple[str, list[Path]]:
     split.main(
         [config_yml],
         modes="all",
@@ -63,7 +64,12 @@ def generate_config_json(config_yml: Path, build_folder: Path) -> str:
             }
         )
 
-    return json.dumps(config_json)
+    dependencies = [
+        options.opts.target_path,
+        *(path for path in options.opts.symbol_addrs_paths if path.is_file()),
+        *(path for path in options.opts.reloc_addrs_paths if path.is_file()),
+    ]
+    return json.dumps(config_json), dependencies
 
 
 def main() -> None:
@@ -80,10 +86,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    output = generate_config_json(Path(args.yml_file), Path(args.build_folder))
+    build_folder = Path(args.build_folder)
+    config_path = build_folder / "config.json"
+    output, dependencies = generate_config_json(Path(args.yml_file), build_folder)
 
-    with open(Path(args.build_folder) / "config.json", "w", encoding="UTF-8") as f:
+    with config_path.open("w", encoding="UTF-8") as f:
         f.write(output)
+
+    def dep_path(path: Path) -> str:
+        return path.as_posix().replace(" ", "\\ ")
+
+    with (build_folder / "dep").open("w", encoding="UTF-8") as f:
+        f.write(f"{dep_path(config_path)}: {' '.join(map(dep_path, dependencies))}\n")
 
 
 if __name__ == "__main__":

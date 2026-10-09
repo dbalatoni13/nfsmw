@@ -7,55 +7,55 @@
 typedef void MemCardOpType(void *);
 
 enum MemcardFlowOperator {
-    MCF_Modal = 1,
-    MCF_Switch = 2,
-    MCF_ModalSwitch = 3,
-    MCF_None = 4,
-    MCO_LoadList = 16,
-    MCO_BootList = 32,
-    MCO_DeleteList = 48,
-    MCO_SaveCreate = 64,
-    MCO_Save = 80,
-    MCO_CreateNew = 96,
-    MCO_CarLotLoad = 112,
-    MCO_CheckCard = 128,
-    MCO_AutoSaveError = 144,
-    MCO_EnableAutoSave = 160,
-    MCO_AutoSave = 176,
-    MCO_Unused3 = 192,
-    MCO_AutoSaveOverwrite = 208,
-    MCO_ShowTRCMessage = 224,
-    MCO_AutoLoad = 240,
-    MCE_SendTermMessage = 256,
-    MCE_PromptForSave = 512,
-    MCE_SendCustomizedMessage = 1024,
-    MCE_ProfileOnly = 2048,
-    MCE_PostOnDestroy = 4096,
-    MCE_SkipAutoSave = 8192,
-    MCE_SendInitComplete = 16384,
-    MCE_Online = 32768,
-    MCE_ChallengeSeries = 65536,
-    MCE_Player2 = 131072,
-    MCE_PromptSaveOptions = 262144,
-    MCE_NewCareer = 524288,
-    MCE_PromptSaveStable = 2097152,
-    MCE_RivalFlow = 4194304,
-    MCE_Unused2 = 8388608,
-    MCP_Create = 16777216,
-    MCP_AutoSaveOverwrite = 33554432,
-    MCP_DismissMe = 50331648,
-    MCP_ConfirmSave = 67108864,
-    MCP_ConfirmDestoryCreate = 83886080,
-    MCP_ConfirmDestoryLoad = 100663296,
-    MCP_OK = 117440512,
-    MCP_AutoSaveWarning = 134217728,
-    MCP_AutoSaveWarning2 = 150994944,
-    MCP_ConfirmAutoSave = 167772160,
-    MCP_ConfirmAutoSaveEnableFailed = 184549376,
-    MCP_EnableAutoSave = 201326592,
-    MCP_CorruptProfile = 218103808,
-    MCP_CardRemoved = 234881024,
-    MCP_ConfirmSignIn = 251658240,
+    MCF_Modal = 0x1,
+    MCF_Switch = 0x2,
+    MCF_ModalSwitch = 0x3,
+    MCF_None = 0x4,
+    MCO_LoadList = 0x10,
+    MCO_BootList = 0x20,
+    MCO_DeleteList = 0x30,
+    MCO_SaveCreate = 0x40,
+    MCO_Save = 0x50,
+    MCO_CreateNew = 0x60,
+    MCO_CarLotLoad = 0x70,
+    MCO_CheckCard = 0x80,
+    MCO_AutoSaveError = 0x90,
+    MCO_EnableAutoSave = 0xA0,
+    MCO_AutoSave = 0xB0,
+    MCO_Unused3 = 0xC0,
+    MCO_AutoSaveOverwrite = 0xD0,
+    MCO_ShowTRCMessage = 0xE0,
+    MCO_AutoLoad = 0xF0,
+    MCE_SendTermMessage = 0x100,
+    MCE_PromptForSave = 0x200,
+    MCE_SendCustomizedMessage = 0x400,
+    MCE_ProfileOnly = 0x800,
+    MCE_PostOnDestroy = 0x1000,
+    MCE_SkipAutoSave = 0x2000,
+    MCE_SendInitComplete = 0x4000,
+    MCE_Online = 0x8000,
+    MCE_ChallengeSeries = 0x10000,
+    MCE_Player2 = 0x20000,
+    MCE_PromptSaveOptions = 0x40000,
+    MCE_NewCareer = 0x80000,
+    MCE_PromptSaveStable = 0x200000,
+    MCE_RivalFlow = 0x400000,
+    MCE_Unused2 = 0x800000,
+    MCP_Create = 0x1000000,
+    MCP_AutoSaveOverwrite = 0x2000000,
+    MCP_DismissMe = 0x3000000,
+    MCP_ConfirmSave = 0x4000000,
+    MCP_ConfirmDestoryCreate = 0x5000000,
+    MCP_ConfirmDestoryLoad = 0x6000000,
+    MCP_OK = 0x7000000,
+    MCP_AutoSaveWarning = 0x8000000,
+    MCP_AutoSaveWarning2 = 0x9000000,
+    MCP_ConfirmAutoSave = 0xA000000,
+    MCP_ConfirmAutoSaveEnableFailed = 0xB000000,
+    MCP_EnableAutoSave = 0xC000000,
+    MCP_CorruptProfile = 0xD000000,
+    MCP_CardRemoved = 0xE000000,
+    MCP_ConfirmSignIn = 0xF000000,
 };
 
 enum MemCardFileFlag {
@@ -147,7 +147,7 @@ struct MemoryCardSetup {
 
     bool IsSaving() {
         uint32 cmd = GetCommand();
-        return cmd == 3 || cmd == 4;
+        return cmd == MCF_ModalSwitch || cmd == MCF_None;
     }
 
     void Clear() {
@@ -166,10 +166,10 @@ struct MemoryCardSetup {
     };
 
     void SendTermMessage(uint32 msg) {
-        if (mOp & 0x100) {
+        if (mOp & MCE_SendTermMessage) {
             cFEng::Get()->QueuePackageMessage(msg, mToScreen, nullptr);
         }
-        if (mOp & 0x400) {
+        if (mOp & MCE_SendCustomizedMessage) {
             uint32 m = msg == 0x461a18ee ? mSuccessMsg : mFailedMsg;
             cFEng::Get()->QueueGameMessage(m, mToScreen, 0xff);
         }

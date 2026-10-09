@@ -83,11 +83,6 @@ class MapItem : public bTNode<MapItem> {
 
     void SetHidden(bool b) { // Decl: 78
         bHidden = b;
-        if (!b) {
-            Show();
-        } else {
-            Hide();
-        }
     }
 
     bool IsHidden() { // Decl: 79
