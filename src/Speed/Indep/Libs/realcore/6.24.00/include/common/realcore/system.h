@@ -4,9 +4,12 @@
 // TODO move away
 namespace RealSystem {
 
-// total size: 0x1C
 struct Mutex {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    char mBuf[16]; // PS2 native semaphore, owner, recursion and waiter state
+#else
     char mBuf[28]; // offset 0x0, size 0x1C
+#endif
 
     Mutex();
     void Create();
@@ -28,8 +31,12 @@ struct SIGNAL {
 };
 
 struct MUTEX {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    int reserved[4]; // size: 0x10
+#else
     // total size: 0x1C
     int reserved[7]; // offset 0x0, size 0x1C
+#endif
 };
 
 inline bool MUTEX_create(MUTEX *m) {
