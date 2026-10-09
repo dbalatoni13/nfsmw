@@ -15,6 +15,8 @@
 #include <windef.h>
 #include <winbase.h>
 #include <xbox.h>
+
+extern bSharedStringPool gSharedStringPool;
 #endif
 
 #ifdef EA_PLATFORM_GAMECUBE
@@ -45,8 +47,22 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     const char *GetDebugText() {
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
+#ifdef EA_PLATFORM_XENON
+        int index = *reinterpret_cast<int16 *>(allocation_info + 4);
+        if (index != -1) {
+            bSharedString *shared_string = gSharedStringPool.GetSharedString(index);
+            if (shared_string != nullptr) {
+                const char *debug_text = shared_string->String;
+                if (debug_text != nullptr) {
+                    return debug_text;
+                }
+            }
+        }
+        return allocation_info + 6;
+#else
         const char *debug_text = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
         return debug_text != nullptr ? debug_text : allocation_info + 6;
+#endif
 #else
         return "";
 #endif
