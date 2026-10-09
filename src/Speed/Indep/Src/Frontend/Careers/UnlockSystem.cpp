@@ -121,8 +121,11 @@ bool QuickRaceUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, Ca
     bool answer = false;
     answer |= UnlockAllThings;
     answer |= (part->GetUpgradeLevel() == 0);
-    // backroom is passed as the player argument, as in the original (also in the calls below)
+#ifdef FIX_BUGS // BUG: backroom is passed as the player argument (also below); harmless, both are unused
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), 0, backroom);
+#else
     answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapCarPartToUnlockable(carslot, part), part->GetUpgradeLevel(), backroom, 0);
+#endif
     return answer;
 }
 
@@ -130,7 +133,11 @@ bool QuickRaceUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Up
     bool answer = false;
     answer |= UnlockAllThings;
 
+#ifdef FIX_BUGS
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, 0, backroom);
+#else
     answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, MapPerfPkgToUnlockable(pkg_type), level, backroom, 0);
+#endif
 
     return answer;
 }
@@ -294,19 +301,31 @@ bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEn
 
 bool OnlineUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, bool backroom) {
     bool answer = false;
+#ifdef FIX_BUGS
+    answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, 0, backroom);
+#else
     answer |= QuickRaceUnlocker::IsUnlockableUnlocked(filter, ent, level, backroom, 0);
+#endif
     return answer;
 }
 
 bool OnlineUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
     bool answer = false;
+#ifdef FIX_BUGS
+    answer |= QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, 0, backroom);
+#else
     answer |= QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom, 0);
+#endif
     return answer;
 }
 
 bool OnlineUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
     bool answer = false;
+#ifdef FIX_BUGS
+    answer |= QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, 0, backroom);
+#else
     answer |= QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom, 0);
+#endif
     return answer;
 }
 
