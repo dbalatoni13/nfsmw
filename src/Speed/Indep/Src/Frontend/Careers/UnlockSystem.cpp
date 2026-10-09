@@ -54,7 +54,7 @@ void UnlockUnlockableThing(eUnlockableEntity entity, uint32 filter, int level, c
 
 void MarkUnlockableThingSeen(eUnlockableEntity entity, uint32 filter) {
     if (filter & UNLOCK_QUICK_RACE) {
-        if (++TheUnlockData[entity].QuickRaceTimesSeen < 4) {
+        if (++TheUnlockData[entity].QuickRaceTimesSeen <= 3) {
             return;
         }
         TheUnlockData[entity].QuickRaceTimesSeen = 0;
@@ -62,7 +62,7 @@ void MarkUnlockableThingSeen(eUnlockableEntity entity, uint32 filter) {
         return;
     }
     if (filter & UNLOCK_CAREER_MODE) {
-        if (++TheUnlockData[entity].CareerTimesSeen < 4) {
+        if (++TheUnlockData[entity].CareerTimesSeen <= 3) {
             return;
         }
         TheUnlockData[entity].CareerTimesSeen = 0;
@@ -172,72 +172,72 @@ bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, i
     } else if (fe_car->MatchesFilter(FE_CAR_FILTER_REGION_ALL | FE_CAR_FILTER_LIST_BONUS)) {
         switch (fe_car->Handle) {
             case STRINGHASH_BL2:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 2) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 1) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL3:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 3) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 2) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL4:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 4) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 3) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL5:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 5) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 4) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL6:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 6) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 5) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL7:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 7) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 6) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL8:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 8) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 7) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL9:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 9) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 8) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL10:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 10) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 9) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL11:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 11) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 10) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL12:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 12) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 11) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL13:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 13) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 12) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL14:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 14) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 13) {
                     return true;
                 }
                 break;
             case STRINGHASH_BL15:
-                if (FEDatabase->GetCareerSettings()->GetCurrentBin() < 15) {
+                if (FEDatabase->GetCareerSettings()->GetCurrentBin() <= 14) {
                     return true;
                 }
                 break;
@@ -335,14 +335,12 @@ bool CareerUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEnti
 #endif
     answer |= (level <= TheUnlockData[ent].CareerUnlockLevel);
     answer |= FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce;
-    if (!backroom) {
-        return answer;
+    if (backroom) {
+        answer |= (level <= TheUnlockData[ent].CareerUnlockLevel + 1);
+        if (TheUnlockData[ent].CareerUnlockLevel == gMaxPartLevels[ent]) {
+            answer |= (level <= 7);
+        }
     }
-    answer |= (level <= TheUnlockData[ent].CareerUnlockLevel + 1);
-    if (TheUnlockData[ent].CareerUnlockLevel != gMaxPartLevels[ent]) {
-        return answer;
-    }
-    answer |= (level <= 7);
     return answer;
 }
 
@@ -770,7 +768,10 @@ bool UnlockSystem::IsEventAvailable(uint32 event_hash) {
 
 bool UnlockSystem::IsBonusCarAvailable(uint32 name_hash) {
     if (IsBonusCarCEOnly(name_hash)) {
-        return GetIsCollectorsEdition();
+        if (GetIsCollectorsEdition()) {
+            return true;
+        }
+        return false;
     }
     return true;
 }
@@ -799,7 +800,10 @@ bool UnlockSystem::IsUnlockableAvailable(uint32 part_name_hash) {
         case STRINGHASH_CE01:
         case STRINGHASH_CE02:
         case STRINGHASH_CE03:
-            return GetIsCollectorsEdition() != false;
+            if (GetIsCollectorsEdition()) {
+                return true;
+            }
+            return false;
     }
     return true;
 }
