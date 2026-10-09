@@ -86,12 +86,17 @@ bFix bInverse(bFix a) {
         return 0x7fffffff;
     }
 
+#ifdef EA_PLATFORM_WIN32
+    // PC uses a signed 32-bit divide followed by a wrapping left shift.
+    return static_cast<bFix>(static_cast<uint32>(0x7fffffff / a) << 1);
+#else
     // The original fixed-point helper computes the reciprocal in Q16.15
     // form, then doubles it to compensate for the half-range constant used
     // by bDiv.  Keep the intermediate wide so the signed edge cases retain
     // the target's two's-complement result when narrowed back to bFix.
     int64 quotient = static_cast<int64>(0x7fffffff) / a;
     return static_cast<bFix>(static_cast<int32>(quotient * 2));
+#endif
 }
 
 bFix bDiv(bFix a, bFix b) {

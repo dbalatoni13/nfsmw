@@ -477,6 +477,118 @@ void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
     eMulVector(dest, b, &u);
 }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+void bMulMatrix(bVector4 *dest, const bMatrix4 *m, const bVector4 *v);
+
+// Retail EE/VU0 paths. Load every input before storing, including when dest
+// aliases an input. The 3D path uses vf0.w == 1 and only updates xyz; its
+// quadword store deliberately retains vf12's unspecified padding lane.
+asm(
+    ".text\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".align 3\n\t"
+    ".globl bMulMatrix__FP8bMatrix4PC8bMatrix4T1\n\t"
+    ".ent bMulMatrix__FP8bMatrix4PC8bMatrix4T1\n\t"
+    "bMulMatrix__FP8bMatrix4PC8bMatrix4T1:\n\t"
+    "lqc2 vf4, 0($6)\n\t"
+    "lqc2 vf5, 16($6)\n\t"
+    "lqc2 vf6, 32($6)\n\t"
+    "lqc2 vf7, 48($6)\n\t"
+    "lqc2 vf8, 0($5)\n\t"
+    "lqc2 vf9, 16($5)\n\t"
+    "lqc2 vf10, 32($5)\n\t"
+    "lqc2 vf11, 48($5)\n\t"
+    "vmulax.xyzw ACC, vf8, vf4x\n\t"
+    "vmadday.xyzw ACC, vf9, vf4y\n\t"
+    "vmaddaz.xyzw ACC, vf10, vf4z\n\t"
+    "vmaddw.xyzw vf12, vf11, vf4w\n\t"
+    "vmulax.xyzw ACC, vf8, vf5x\n\t"
+    "vmadday.xyzw ACC, vf9, vf5y\n\t"
+    "vmaddaz.xyzw ACC, vf10, vf5z\n\t"
+    "vmaddw.xyzw vf13, vf11, vf5w\n\t"
+    "vmulax.xyzw ACC, vf8, vf6x\n\t"
+    "vmadday.xyzw ACC, vf9, vf6y\n\t"
+    "vmaddaz.xyzw ACC, vf10, vf6z\n\t"
+    "vmaddw.xyzw vf14, vf11, vf6w\n\t"
+    "vmulax.xyzw ACC, vf8, vf7x\n\t"
+    "vmadday.xyzw ACC, vf9, vf7y\n\t"
+    "vmaddaz.xyzw ACC, vf10, vf7z\n\t"
+    "vmaddw.xyzw vf15, vf11, vf7w\n\t"
+    "sqc2 vf12, 0($4)\n\t"
+    "sqc2 vf13, 16($4)\n\t"
+    "sqc2 vf14, 32($4)\n\t"
+    "sqc2 vf15, 48($4)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bMulMatrix__FP8bMatrix4PC8bMatrix4T1\n\t"
+    ".align 3\n\t"
+    ".globl bMulMatrix__FP8bVector4PC8bMatrix4PC8bVector4\n\t"
+    ".ent bMulMatrix__FP8bVector4PC8bMatrix4PC8bVector4\n\t"
+    "bMulMatrix__FP8bVector4PC8bMatrix4PC8bVector4:\n\t"
+    "lqc2 vf4, 0($6)\n\t"
+    "lqc2 vf8, 0($5)\n\t"
+    "lqc2 vf9, 16($5)\n\t"
+    "lqc2 vf10, 32($5)\n\t"
+    "lqc2 vf11, 48($5)\n\t"
+    "vmulax.xyzw ACC, vf8, vf4x\n\t"
+    "vmadday.xyzw ACC, vf9, vf4y\n\t"
+    "vmaddaz.xyzw ACC, vf10, vf4z\n\t"
+    "vmaddw.xyzw vf12, vf11, vf4w\n\t"
+    "vnop\n\t"
+    "vnop\n\t"
+    "vnop\n\t"
+    "sqc2 vf12, 0($4)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bMulMatrix__FP8bVector4PC8bMatrix4PC8bVector4\n\t"
+    ".align 3\n\t"
+    ".globl bMulMatrix__FP8bVector3PC8bMatrix4PC8bVector3\n\t"
+    ".ent bMulMatrix__FP8bVector3PC8bMatrix4PC8bVector3\n\t"
+    "bMulMatrix__FP8bVector3PC8bMatrix4PC8bVector3:\n\t"
+    "lqc2 vf4, 0($6)\n\t"
+    "lqc2 vf8, 0($5)\n\t"
+    "lqc2 vf9, 16($5)\n\t"
+    "lqc2 vf10, 32($5)\n\t"
+    "lqc2 vf11, 48($5)\n\t"
+    "vmulax.xyz ACC, vf8, vf4x\n\t"
+    "vmadday.xyz ACC, vf9, vf4y\n\t"
+    "vmaddaz.xyz ACC, vf10, vf4z\n\t"
+    "vmaddw.xyz vf12, vf11, vf0w\n\t"
+    "vnop\n\t"
+    "vnop\n\t"
+    "vnop\n\t"
+    "sqc2 vf12, 0($4)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bMulMatrix__FP8bVector3PC8bMatrix4PC8bVector3\n\t"
+    ".align 3\n\t"
+    ".globl bTransposeMatrix__FP8bMatrix4PC8bMatrix4\n\t"
+    ".ent bTransposeMatrix__FP8bMatrix4PC8bMatrix4\n\t"
+    "bTransposeMatrix__FP8bMatrix4PC8bMatrix4:\n\t"
+    "lq $7, 0($5)\n\t"
+    "lq $2, 16($5)\n\t"
+    "lq $9, 48($5)\n\t"
+    "lq $8, 32($5)\n\t"
+    "pextuw $6, $2, $7\n\t"
+    "pextlw $3, $9, $8\n\t"
+    "pextlw $2, $2, $7\n\t"
+    "pextuw $5, $9, $8\n\t"
+    "pcpyld $7, $3, $2\n\t"
+    "pcpyld $8, $5, $6\n\t"
+    "sq $7, 0($4)\n\t"
+    "pcpyud $2, $2, $3\n\t"
+    "sq $2, 16($4)\n\t"
+    "pcpyud $9, $6, $5\n\t"
+    "sq $8, 32($4)\n\t"
+    "daddu $2, $4, $0\n\t"
+    "sq $9, 48($4)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bTransposeMatrix__FP8bMatrix4PC8bMatrix4\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#else
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b) {
     eMulMatrix(dest, const_cast<bMatrix4 *>(b), const_cast<bMatrix4 *>(a));
 }
@@ -494,32 +606,6 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
 #elif defined(EA_PLATFORM_WIN32)
     D3DXMatrixTranspose(dest, m);
-#elif defined(EA_PLATFORM_PLAYSTATION2)
-    // EE packed-word interleaves transpose all four rows before writing any
-    // output, so the operation also supports dest == m.
-    u_long128 row0, row1, row2, row3, upper, lower;
-    bMatrix4 *result;
-    asm volatile("lq %0, 0(%7)\n"
-                 "lq %1, 16(%7)\n"
-                 "lq %3, 48(%7)\n"
-                 "lq %2, 32(%7)\n"
-                 "pextuw %4, %1, %0\n"
-                 "pextlw %5, %3, %2\n"
-                 "pextlw %1, %1, %0\n"
-                 "pextuw %3, %3, %2\n"
-                 "pcpyld %0, %5, %1\n"
-                 "pcpyld %2, %3, %4\n"
-                 "sq %0, 0(%8)\n"
-                 "pcpyud %1, %1, %5\n"
-                 "sq %1, 16(%8)\n"
-                 "pcpyud %3, %4, %3\n"
-                 "sq %2, 32(%8)\n"
-                 "daddu %6, %8, $0\n"
-                 "sq %3, 48(%8)\n"
-                 : "=&r"(row0), "=&r"(row1), "=&r"(row2), "=&r"(row3), "=&r"(upper), "=&r"(lower), "=&r"(result)
-                 : "r"(m), "r"(dest)
-                 : "memory");
-    return result;
 #else
     float transposed[4][4];
     for (int row = 0; row < 4; ++row) {
@@ -535,3 +621,4 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 #endif
     return dest;
 }
+#endif

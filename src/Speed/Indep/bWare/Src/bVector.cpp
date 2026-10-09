@@ -5,6 +5,87 @@ bVector3 bUnitVector3(1.0f, 0.0f, 0.0f);
 bVector4 bUnitVector4(1.0f, 0.0f, 0.0f, 0.0f);
 bVector3 bVector3FLT_MAX(FLT_MAX, FLT_MAX, FLT_MAX);
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+// Preserve the EE floating-point operations and the retail quadword writes,
+// including the padding lane of bVector3. These are separate ABI functions so
+// their fixed argument registers and VU clobbers cannot escape into C++ code.
+asm(
+    ".text\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".align 3\n\t"
+    ".globl bEqual__FPC8bVector2T0f\n\t"
+    ".ent bEqual__FPC8bVector2T0f\n\t"
+    "bEqual__FPC8bVector2T0f:\n\t"
+    "lwc1 $f0, 0($4)\n\t"
+    "lwc1 $f1, 0($5)\n\t"
+    "sub.s $f0, $f0, $f1\n\t"
+    "abs.s $f0, $f0\n\t"
+    "c.lt.s $f12, $f0\n\t"
+    "nop\n\t"
+    "bc1fl bEqualVector2_y\n\t"
+    "lwc1 $f0, 4($4)\n\t"
+    "jr $31\n\t"
+    "daddu $2, $0, $0\n\t"
+    "bEqualVector2_y:\n\t"
+    "lwc1 $f1, 4($5)\n\t"
+    "sub.s $f0, $f0, $f1\n\t"
+    "abs.s $f0, $f0\n\t"
+    "c.lt.s $f12, $f0\n\t"
+    "nop\n\t"
+    "bc1f bEqualVector2_return\n\t"
+    "addiu $2, $0, 1\n\t"
+    "daddu $2, $0, $0\n\t"
+    "bEqualVector2_return:\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bEqual__FPC8bVector2T0f\n\t"
+    ".align 3\n\t"
+    ".globl bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    ".ent bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    "bExpandBoundingBox__FP8bVector2T0PC8bVector2:\n\t"
+    "lwc1 $f5, 4($6)\n\t"
+    "lwc1 $f4, 0($6)\n\t"
+    "lwc1 $f3, 0($4)\n\t"
+    "lwc1 $f1, 4($4)\n\t"
+    "min.s $f3, $f3, $f4\n\t"
+    "lwc1 $f2, 0($5)\n\t"
+    "min.s $f1, $f1, $f5\n\t"
+    "lwc1 $f0, 4($5)\n\t"
+    "max.s $f2, $f2, $f4\n\t"
+    "swc1 $f1, 4($4)\n\t"
+    "max.s $f0, $f0, $f5\n\t"
+    "swc1 $f3, 0($4)\n\t"
+    "swc1 $f0, 4($5)\n\t"
+    "jr $31\n\t"
+    "swc1 $f2, 0($5)\n\t"
+    ".end bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    ".align 3\n\t"
+    ".globl bInitializeBoundingBox__FP8bVector3T0\n\t"
+    ".ent bInitializeBoundingBox__FP8bVector3T0\n\t"
+    "bInitializeBoundingBox__FP8bVector3T0:\n\t"
+    "lui $2, %hi(bVector3FLT_MAX)\n\t"
+    "lqc2 vf1, %lo(bVector3FLT_MAX)($2)\n\t"
+    "sqc2 vf1, 0($4)\n\t"
+    "vsub.xyzw vf1, vf0, vf1\n\t"
+    "sqc2 vf1, 0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bInitializeBoundingBox__FP8bVector3T0\n\t"
+    ".align 3\n\t"
+    ".globl bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    ".ent bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    "bInitializeBoundingBox__FP8bVector3T0PC8bVector3:\n\t"
+    "lqc2 vf1, 0($6)\n\t"
+    "sqc2 vf1, 0($4)\n\t"
+    "sqc2 vf1, 0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#endif
+
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     float x = v1->x - v2->x;
     float y = v1->y - v2->y;
@@ -139,6 +220,7 @@ bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, floa
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
 #ifdef EA_PLATFORM_XENON
     // The retail Xenon implementation uses a fixed tolerance.
@@ -152,6 +234,7 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
     }
     return 1;
 }
+#endif
 
 int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {
     if (bAbs(v1->x - v2->x) > epsilon) {
@@ -210,6 +293,7 @@ void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVecto
     bbox_max->y = y;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {
     float min_x = bMin(bbox_min->x, point->x);
     float min_y = bMin(bbox_min->y, point->y);
@@ -220,6 +304,7 @@ void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *
     bFill(bbox_min, min_x, min_y);
     bFill(bbox_max, max_x, max_y);
 }
+#endif
 
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {
     float min_x = bMin(bbox_min->x, point->x - extra_width);
@@ -287,6 +372,7 @@ float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max
     return distance;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
     bbox_min->x = FLT_MAX;
     bbox_min->y = FLT_MAX;
@@ -310,6 +396,7 @@ void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVecto
     bbox_max->y = y;
     bbox_max->z = z;
 }
+#endif
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {
     float x = point->x;
