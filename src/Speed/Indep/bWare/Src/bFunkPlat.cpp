@@ -37,12 +37,12 @@ static inline char bFunkHexDigit(unsigned int value) {
 
 void bSendPacketDTLT10000(bFunkPacketHeader *header, const void *data, long size) {
     static MUTEX mutex;
-    static int initialized;
+    static int created_mutex;
     static unsigned int packet_id;
     char text[200];
 
-    if (!initialized) {
-        initialized = 1;
+    if (!created_mutex) {
+        created_mutex = 1;
         MUTEX_create(&mutex);
     }
     int data_size = size;
@@ -50,8 +50,11 @@ void bSendPacketDTLT10000(bFunkPacketHeader *header, const void *data, long size
 
     int total_size = data_size + static_cast<int>(sizeof(bFunkPacketHeader));
     header->SourceServer = 0xA280A3C6;
-    header->Checksum = bFunkPacketHeader::CalculateChecksum(data, data_size);
-    header->PacketID = packet_id++;
+    uint16 checksum = bFunkPacketHeader::CalculateChecksum(data, data_size);
+    unsigned int current_packet_id = packet_id;
+    header->Checksum = checksum;
+    header->PacketID = current_packet_id;
+    packet_id = current_packet_id + 1;
 
     int pos = 0;
     int more = pos < total_size;
