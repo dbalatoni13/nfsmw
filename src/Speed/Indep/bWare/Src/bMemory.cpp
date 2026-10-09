@@ -99,8 +99,13 @@ class MemoryPool {
     void Close();
     void AddMemory(void *p, int size);
     void RemoveMemory(void *p, int size);
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    void FreeMemory(void *p, int size);
+    void AddFreeMemory(void *p, int size);
+#else
     void FreeMemory(void *p, int size, const char *debug_name);
     void AddFreeMemory(void *p, int size, const char *debug_name);
+#endif
     void *AllocateMemory(int size, int alignment, int alignment_offset, int start_from_top, int use_best_fit, int *new_size);
     int GetAmountFree();
     int GetLargestFreeBlock();
@@ -285,7 +290,11 @@ void MemoryPool::Close() {
 
 void MemoryPool::AddMemory(void *p, int size) {
     this->PoolSize += size;
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    this->AddFreeMemory(p, size);
+#else
     this->AddFreeMemory(p, size, this->GetName());
+#endif
 }
 
 // STRIPPED
@@ -308,16 +317,28 @@ void MemoryPool::RemoveMemory(void *p, int size) {
     this->Mutex.Unlock();
 }
 
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+void MemoryPool::FreeMemory(void *p, int size) {
+#else
 void MemoryPool::FreeMemory(void *p, int size, const char *debug_name) {
+#endif
     this->Mutex.Lock();
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    this->AddFreeMemory(p, size);
+#else
     this->AddFreeMemory(p, size, debug_name);
+#endif
     int amount_allocated = (this->AmountAllocated -= size);
     this->AmountFree = this->PoolSize - amount_allocated;
     this->NumAllocations--;
     this->Mutex.Unlock();
 }
 
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+void MemoryPool::AddFreeMemory(void *p, int size) {
+#else
 void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
+#endif
     if (size != 0) {
         this->Mutex.Lock();
 
@@ -967,9 +988,48 @@ unsigned int GetVirtualMemoryAllocParams() {
 }
 
 #ifdef EA_PLATFORM_PLAYSTATION2
-int GetPS2HeapSize();
+extern "C" int PS2MemorySize;
 extern "C" int _HeapBasePS2;
 extern "C" int _HeapSizePS2;
+
+// These are retail linker-address operands, not dereferenced heap globals.
+asm(".text\n\t"
+    ".align 3\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".globl GetPS2HeapSize__Fv\n\t"
+    ".ent GetPS2HeapSize__Fv\n\t"
+    "GetPS2HeapSize__Fv:\n\t"
+    "lui $3, 1\n\t"
+#ifdef EA_BUILD_A124
+    "lui $2, %hi(0x0068c4dc)\n\t"
+#else
+    "lui $2, %hi(0x005d6ed0)\n\t"
+#endif
+    "addiu $6, $3, -32768\n\t"
+    "addiu $5, $0, -1\n\t"
+#ifdef EA_BUILD_A124
+    "addiu $7, $2, %lo(0x0068c4dc)\n\t"
+#else
+    "addiu $7, $2, %lo(0x005d6ed0)\n\t"
+#endif
+    "addiu $4, $0, 16384\n\t"
+    "xor $2, $6, $5\n\t"
+    "lui $3, 0x0200\n\t"
+    "movz $6, $4, $2\n\t"
+    "addiu $2, $3, -32768\n\t"
+    "bne $2, $5, .LGetPS2HeapSize_return\n\t"
+    "nop\n\t"
+    "lui $2, %hi(PS2MemorySize)\n\t"
+    "lw $3, %lo(PS2MemorySize)($2)\n\t"
+    "subu $2, $3, $6\n\t"
+    ".LGetPS2HeapSize_return:\n\t"
+    "jr $31\n\t"
+    "subu $2, $2, $7\n\t"
+    ".end GetPS2HeapSize__Fv\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+int GetPS2HeapSize();
 #endif
 
 void bMemoryInit() {
@@ -1184,6 +1244,190 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
     return nullptr;
 }
 
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+// A124 retail free path, including override detection and observer lifetime.
+asm(
+    ".text\n\t"
+    ".align 3\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".globl bFree__FPv\n\t"
+    ".ent bFree__FPv\n\t"
+    "bFree__FPv:\n\t"
+    "addiu $29, $29, -0x60\n\t"
+    "sd $17, 0x10($29)\n\t"
+    "sd $31, 0x50($29)\n\t"
+    "daddu $17, $4, $0\n\t"
+    "sd $20, 0x40($29)\n\t"
+    "sd $19, 0x30($29)\n\t"
+    "sd $18, 0x20($29)\n\t"
+    "beqz $17, .LA124_bFree_2718\n\t"
+    "sd $16, 0x0($29)\n\t"
+    "lui $2, %hi(MemoryPoolInfoTable)\n\t"
+    "lui $3, %hi(MemoryPools)\n\t"
+    "addiu $2, $2, %lo(MemoryPoolInfoTable)\n\t"
+    "addiu $3, $3, %lo(MemoryPools)\n\t"
+    "addiu $12, $2, 0xC\n\t"
+    "daddu $11, $0, $0\n\t"
+    "addiu $13, $0, 0x10\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2558:\n\t"
+    "lw $9, 0x0($12)\n\t"
+    "beql $9, $0, .LA124_bFree_25EC\n\t"
+    "addiu $11, $11, 0x1\n\t"
+    "lw $4, 0x4($9)\n\t"
+    "slt $2, $17, $4\n\t"
+    "bnel $2, $0, .LA124_bFree_25EC\n\t"
+    "addiu $11, $11, 0x1\n\t"
+    "lw $2, 0x8($9)\n\t"
+    "addu $2, $4, $2\n\t"
+    "slt $2, $17, $2\n\t"
+    "beqz $2, .LA124_bFree_25E8\n\t"
+    "addiu $8, $0, 0x1\n\t"
+    "addiu $10, $0, 0x1\n\t"
+    "b .LA124_bFree_259C\n\t"
+    "addiu $7, $3, 0x4\n\t"
+    "nop\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2598:\n\t"
+    "addiu $8, $8, 0x1\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_259C:\n\t"
+    "slti $2, $8, 0x10\n\t"
+    "beqz $2, .LA124_bFree_25E0\n\t"
+    "nop\n\t"
+    "lw $4, 0x0($7)\n\t"
+    "beql $4, $0, .LA124_bFree_2598\n\t"
+    "addiu $7, $7, 0x4\n\t"
+    "lw $5, 0x14($4)\n\t"
+    "slt $2, $17, $5\n\t"
+    "bnez $2, .LA124_bFree_25D8\n\t"
+    "daddu $6, $0, $0\n\t"
+    "lw $2, 0x18($4)\n\t"
+    "daddu $6, $10, $0\n\t"
+    "addu $2, $5, $2\n\t"
+    "slt $2, $17, $2\n\t"
+    "movz $6, $0, $2\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_25D8:\n\t"
+    "beql $6, $0, .LA124_bFree_2598\n\t"
+    "addiu $7, $7, 0x4\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_25E0:\n\t"
+    "beql $8, $13, .LA124_bFree_26D0\n\t"
+    "lw $4, 0x0($9)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_25E8:\n\t"
+    "addiu $11, $11, 0x1\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_25EC:\n\t"
+    "slti $2, $11, 0x10\n\t"
+    "bnez $2, .LA124_bFree_2558\n\t"
+    "addiu $12, $12, 0x10\n\t"
+    "addiu $16, $17, -0x14\n\t"
+    "lui $2, %hi(bMemoryFreeCallback)\n\t"
+    "lhu $4, 0xA($16)\n\t"
+    "addiu $20, $2, %lo(bMemoryFreeCallback)\n\t"
+    "lw $3, %lo(bMemoryFreeCallback)($2)\n\t"
+    "beqz $3, .LA124_bFree_2648\n\t"
+    "subu $19, $16, $4\n\t"
+    "lh $4, 0x4($19)\n\t"
+    "jal bGetSharedString__Fi\n\t"
+    "lbu $18, 0x8($16)\n\t"
+    "bnez $2, .LA124_bFree_2634\n\t"
+    "daddu $7, $2, $0\n\t"
+    "lhu $2, 0xA($16)\n\t"
+    "subu $2, $16, $2\n\t"
+    "addiu $7, $2, 0x6\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2634:\n\t"
+    "lw $2, 0x0($20)\n\t"
+    "daddu $4, $18, $0\n\t"
+    "lw $6, 0x10($16)\n\t"
+    "jalr $2\n\t"
+    "daddu $5, $17, $0\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2648:\n\t"
+    "lh $4, 0x4($19)\n\t"
+    "addiu $2, $0, -0x1\n\t"
+    "beq $4, $2, .LA124_bFree_266C\n\t"
+    "lui $2, %hi(bMemoryAutomaticVerifyPoolIntegrity)\n\t"
+    "jal bGetSharedString__Fi\n\t"
+    "nop\n\t"
+    "jal bFreeSharedString__FPCc\n\t"
+    "daddu $4, $2, $0\n\t"
+    "lui $2, %hi(bMemoryAutomaticVerifyPoolIntegrity)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_266C:\n\t"
+    "lw $3, %lo(bMemoryAutomaticVerifyPoolIntegrity)($2)\n\t"
+    "beqz $3, .LA124_bFree_26A0\n\t"
+    "lbu $17, 0x8($16)\n\t"
+    "beql $3, $0, .LA124_bFree_2680\n\t"
+    "break 0, 7\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2680:\n\t"
+    "lui $4, %hi(bMemoryAllocationNumber)\n\t"
+    "lw $2, %lo(bMemoryAllocationNumber)($4)\n\t"
+    "div $0, $2, $3\n\t"
+    "mfhi $3\n\t"
+    "bnel $3, $0, .LA124_bFree_26A4\n\t"
+    "lbu $3, 0x9($16)\n\t"
+    "jal bVerifyPoolIntegrity__Fi\n\t"
+    "daddu $4, $17, $0\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_26A0:\n\t"
+    "lbu $3, 0x9($16)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_26A4:\n\t"
+    "addiu $2, $0, 0x22\n\t"
+    "beq $3, $2, .LA124_bFree_26E4\n\t"
+    "lui $2, %hi(MemoryPools)\n\t"
+    "ld $31, 0x50($29)\n\t"
+    "ld $20, 0x40($29)\n\t"
+    "ld $19, 0x30($29)\n\t"
+    "ld $18, 0x20($29)\n\t"
+    "ld $17, 0x10($29)\n\t"
+    "ld $16, 0x0($29)\n\t"
+    "j bBreak__Fv\n\t"
+    "addiu $29, $29, 0x60\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_26D0:\n\t"
+    "lw $2, 0x10($9)\n\t"
+    "jalr $2\n\t"
+    "daddu $5, $17, $0\n\t"
+    "b .LA124_bFree_271C\n\t"
+    "ld $31, 0x50($29)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_26E4:\n\t"
+    "sll $3, $17, 2\n\t"
+    "addiu $2, $2, %lo(MemoryPools)\n\t"
+    "sb $0, 0x9($16)\n\t"
+    "addu $3, $3, $2\n\t"
+    "lw $7, 0x0($16)\n\t"
+    "lw $2, 0x4($16)\n\t"
+    "lhu $5, 0xA($16)\n\t"
+    "sw $7, 0x0($2)\n\t"
+    "lw $4, 0x0($3)\n\t"
+    "subu $5, $16, $5\n\t"
+    "lw $6, 0xC($16)\n\t"
+    "jal FreeMemory__10MemoryPoolPvi\n\t"
+    "sw $2, 0x4($7)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_2718:\n\t"
+    "ld $31, 0x50($29)\n\t"
+    ".align 2\n\t"
+    ".LA124_bFree_271C:\n\t"
+    "ld $20, 0x40($29)\n\t"
+    "ld $19, 0x30($29)\n\t"
+    "ld $18, 0x20($29)\n\t"
+    "ld $17, 0x10($29)\n\t"
+    "ld $16, 0x0($29)\n\t"
+    "jr $31\n\t"
+    "addiu $29, $29, 0x60\n\t"
+    ".end bFree__FPv\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#else
 void bFree(void *ptr) {
     if (ptr == nullptr) {
         return;
@@ -1249,7 +1493,11 @@ void bFree(void *ptr) {
 #endif
         header->MagicNumber = 0;
         pool->RemoveAllocationHeader(header);
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+        pool->FreeMemory(allocated_pointer, header->Size);
+#else
         pool->FreeMemory(allocated_pointer, header->Size, debug_name);
+#endif
 
 #ifdef EA_PLATFORM_WIN32
         if (MemoryInitialized && (MemoryPools[0]->GetNumAllocations() == 0)) {
@@ -1260,6 +1508,8 @@ void bFree(void *ptr) {
 #endif
     }
 }
+
+#endif
 
 size_t bGetMallocSize(const void *ptr) {
     if (ptr != nullptr) {
