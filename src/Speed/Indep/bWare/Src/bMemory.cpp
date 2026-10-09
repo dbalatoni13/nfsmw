@@ -7,6 +7,16 @@
 #include <cstring>
 #include <types.h>
 
+#ifdef EA_PLATFORM_XENON
+// Architecture setup normally supplied by the SDK's umbrella xtl.h.
+#ifndef _PPC_
+#define _PPC_
+#endif
+#include <windef.h>
+#include <winbase.h>
+#include <xbox.h>
+#endif
+
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/os/OSArena.h"
 #include <dolphin.h>
@@ -29,6 +39,9 @@ class AllocationHeader : public bTNode<AllocationHeader> {
         return &this[1];
     }
 
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     const char *GetDebugText() {
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
@@ -1075,6 +1088,16 @@ void bMemoryInit() {
         bInitMemoryPool(pool_num_VM, reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize, GetVirtualMemoryPoolName());
         MemoryInitialized = TRUE;
     }
+#elif defined(EA_PLATFORM_XENON)
+    if (!MemoryInitialized) {
+        MEMORYSTATUS memory_before;
+        MEMORYSTATUS memory_after;
+        GlobalMemoryStatus(&memory_before);
+        void *memory = XPhysicalAlloc(0x15900000, MAXULONG_PTR, 0, MEM_LARGE_PAGES | PAGE_READWRITE);
+        GlobalMemoryStatus(&memory_after);
+        bInitMemoryPool(0, memory, 0x15900000, "Main Pool");
+        MemoryInitialized = TRUE;
+    }
 #elif defined(EA_PLATFORM_WIN32)
     if (!MemoryInitialized) {
         bInitMemoryPool(0, nullptr, 0, "Main Pool");
@@ -1177,12 +1200,17 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     // The milestone allocators keep debug information before the header.
     int shared_string_index = -1;
+#ifdef EA_PLATFORM_XENON
+    const char *shared_debug_text = bAllocateSharedString(debug_text);
+    shared_string_index = bGetSharedStringIndex(shared_debug_text);
+#else
     if (bMemoryUseSharedStrings) {
         const char *shared_debug_text = bAllocateSharedString(debug_text);
         if (shared_debug_text != nullptr) {
             shared_string_index = bGetSharedStringIndex(shared_debug_text);
         }
     }
+#endif
     int debug_info_size = 8;
     if (shared_string_index == -1) {
         debug_info_size = (bStrLen(debug_text) + 10) & ~3;
@@ -1240,7 +1268,11 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         }
 #endif
 #endif
+#ifdef EA_PLATFORM_XENON
+        if (bMemoryAllocationNumber == -1) {
+#else
         if (bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber) {
+#endif
             bBreak();
         }
 
@@ -1250,7 +1282,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 
     bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(), debug_text,
                    size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
-#ifdef EA_PLATFORM_WIN32
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     bBreak();
 #endif
     bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
