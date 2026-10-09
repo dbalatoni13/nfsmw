@@ -94,9 +94,9 @@ inline float bSqrt(float x) {
         y0 = 0.0f;
     }
 #elif defined(EA_PLATFORM_XENON)
-// TODO
+    y0 = __fsqrts(x);
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+    asm __volatile__("sqrt.s %0, %1" : "=f"(y0) : "f"(x));
 #elif defined(EA_PLATFORM_WIN32)
     y0 = sqrtf(x);
 #else

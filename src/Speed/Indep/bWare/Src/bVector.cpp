@@ -140,6 +140,10 @@ bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, floa
 }
 
 int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
+#ifdef EA_PLATFORM_XENON
+    // The retail Xenon implementation uses a fixed tolerance.
+    epsilon = 0.001f;
+#endif
     if (bAbs(v1->x - v2->x) > epsilon) {
         return 0;
     }
@@ -392,11 +396,21 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
 }
 
 int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width) {
+#ifdef EA_PLATFORM_XENON
+    // The Xenon retail implementation keeps this argument in its ABI but does not use it.
+    (void)extra_width;
+    if ((point->x < bbox_min->x) || (point->x > bbox_max->x) || (point->y < bbox_min->y) ||
+        (point->y > bbox_max->y || (point->z < bbox_min->z) || (point->z > bbox_max->z))) {
+        return false;
+    }
+    return true;
+#else
     if ((point->x < bbox_min->x - extra_width) || (point->x > bbox_max->x + extra_width) || (point->y < bbox_min->y - extra_width) ||
         (point->y > bbox_max->y + extra_width || (point->z < bbox_min->z - extra_width) || (point->z > bbox_max->z + extra_width))) {
         return false;
     }
     return true;
+#endif
 }
 
 int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
@@ -457,7 +471,11 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
     float length = bLength(&tangent);
     bNormalize(&tangent, &tangent);
+#ifdef EA_PLATFORM_XENON
+    bVector2 normal(tangent.y, -tangent.x);
+#else
     bVector2 normal(-tangent.y, tangent.x);
+#endif
     float d = bDot(&p, &normal);
     float l = bDot(&p, &tangent);
     float distance;
@@ -502,6 +520,19 @@ bool bIsPointInPoly(const bVector2 *point, const bVector3 *points, int num_point
     float x = point->x;
     float y = point->y;
     bool inside = false;
+#ifdef EA_PLATFORM_XENON
+    // The Xenon overload tests a triangle regardless of the supplied count.
+    (void)num_points;
+    int j = 2;
+
+    for (int i = 0; i < 3; i++) {
+        if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
+            (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
+            inside = !inside;
+        }
+        j = i;
+    }
+#else
     int j = num_points - 1;
 
     for (int i = 0; i < num_points; i++) {
@@ -511,5 +542,6 @@ bool bIsPointInPoly(const bVector2 *point, const bVector3 *points, int num_point
         }
         j = i;
     }
+#endif
     return inside;
 }
