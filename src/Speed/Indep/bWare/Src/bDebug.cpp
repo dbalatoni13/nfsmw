@@ -216,7 +216,89 @@ int bIsValidPointer(void *p, int size) {
     if ((reinterpret_cast<uintptr_t>(p) & size - 1) != 0) {
         return 0;
     }
-#ifdef EA_PLATFORM_WIN32
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // EE address-map membership only; size is the retail alignment selector.
+    unsigned addr = reinterpret_cast<unsigned>(p);
+    if (addr - 0x00080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x80000000u < 0x08000000u) {
+        return 1;
+    }
+    if (addr - 0xA0080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x20080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x70000000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x11000000u < 0x1000u) {
+        return 1;
+    }
+    if (addr - 0x11004000u < 0x1000u) {
+        return 1;
+    }
+    if (addr - 0x11008000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x1100C000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x10003000u < 0xB0u) {
+        return 1;
+    }
+    if (addr - 0x10003800u < 0x180u) {
+        return 1;
+    }
+    if (addr - 0x10003C00u < 0x180u) {
+        return 1;
+    }
+    if (addr - 0x10008000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x10009000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x1000A000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x1000B000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000B400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000C000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000C400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000C800u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000D000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000D080u < 0x10u) {
+        return 1;
+    }
+    if (addr - 0x1000D400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000D480u < 0x10u) {
+        return 1;
+    }
+    if (addr - 0x1000E000u < 0x70u) {
+        return 1;
+    }
+    if (addr - 0x1000F520u < 0x10u) {
+        return 1;
+    }
+    return addr - 0x1000F590u < 0x10u;
+#elif defined(EA_PLATFORM_WIN32)
     return !IsBadReadPtr(p, 1);
 #else
     return 1;

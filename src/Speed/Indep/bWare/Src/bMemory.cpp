@@ -218,9 +218,11 @@ int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
 int bMemoryTracing = 0;                                                               // size: 0x4, address: 0x80416438
-#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124) && defined(MILESTONE_BUILD)
-// Reconstructed names for the A124 allocation-observer globals.
+#if defined(MILESTONE_BUILD) && (defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)))
+// Reconstructed names for the retail allocation-observer globals.
 void (*bMemoryAllocationCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
+#endif
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124) && defined(MILESTONE_BUILD)
 void (*bMemoryFreeCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
 #endif
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
@@ -1110,7 +1112,11 @@ void bMemoryUpdateTraceInformation() {
     }
 }
 
-#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
+#ifdef EA_PLATFORM_XENON
+void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
+    return bMalloc(size, debug_text, debug_line, allocation_params);
+}
+#elif defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
 }
@@ -1121,7 +1127,11 @@ void *bMalloc(int size, int allocation_params) {
 #endif
 
 // TODO variable names
+#ifdef EA_PLATFORM_XENON
+void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
+#else
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
+#endif
     int pool_num = bMemoryGetPoolNum(allocation_params);
     MemoryPoolInfo *info = &MemoryPoolInfoTable[pool_num];
 
@@ -1220,7 +1230,11 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
             bStrCpy(allocation_info + 6, debug_text);
         }
         bMemSet(allocation_info + debug_info_size, 0xdd, header->FrontPadding - debug_info_size);
-#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+#ifdef EA_PLATFORM_XENON
+        if (bMemoryAllocationCallback != nullptr) {
+            bMemoryAllocationCallback(header->PoolNum, &header[1], size, header->GetDebugText());
+        }
+#elif defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
         if (bMemoryAllocationCallback != nullptr) {
             bMemoryAllocationCallback(header->PoolNum, &header[1], size, allocation_info + 6);
         }
