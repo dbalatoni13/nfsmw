@@ -30,7 +30,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     const char *GetDebugText() {
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
         const char *debug_text = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
         return debug_text != nullptr ? debug_text : allocation_info + 6;
@@ -40,7 +40,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetAllocationNumber() {
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding);
 #else
         return 0;
@@ -48,7 +48,7 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
     int GetDebugLine() {
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding + 2);
 #else
         return 0;
@@ -213,6 +213,11 @@ int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
 int bMemoryTracing = 0;                                                               // size: 0x4, address: 0x80416438
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124) && defined(MILESTONE_BUILD)
+// Reconstructed names for the A124 allocation-observer globals.
+void (*bMemoryAllocationCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
+void (*bMemoryFreeCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
+#endif
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
 int bMemoryAllocationNumber = 0;                                                      // size: 0x4, address: 0x80416440
 bMemoryAllocator TheMemoryAllocator;                                                  // size: 0xC, address: 0x8045790C
@@ -510,10 +515,15 @@ RETRY:
         }
     }
 
-    // TODO milestone
+#ifdef EA_PLATFORM_PLAYSTATION2
+    if (bMemoryTracing && this->DebugTracingEnabled && bIsBFunkAvailable()) {
+        this->TraceAllocateMemory(mem_bottom, size);
+    }
+#else
     if (bIsBFunkAvailable()) {
         // TraceAllocateMemory()
     }
+#endif
 
     this->NumAllocations++;
     this->TotalNumAllocations++;
@@ -644,7 +654,11 @@ int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
 }
 
 int CheckFlipMemoryByAllocationNumber(AllocationHeader *a, AllocationHeader *b) {
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    return static_cast<int>(b->GetAllocationNumber() >= a->GetAllocationNumber());
+#else
     return 1;
+#endif
 }
 
 void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocation) {
@@ -825,6 +839,7 @@ void MemoryPool::UpdateTraceInformation() {
     int saved_allocation_number = bMemoryAllocationNumber;
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList();
          header = header->GetNext()) {
+#if !defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124)
         char *allocation_info = reinterpret_cast<char *>(header) - header->FrontPadding;
         pTraceDebugText = bGetSharedString(*reinterpret_cast<int16 *>(allocation_info + 4));
         if (pTraceDebugText == nullptr) {
@@ -832,6 +847,7 @@ void MemoryPool::UpdateTraceInformation() {
         }
         TraceDebugLine = 0;
         bMemoryAllocationNumber = header->GetAllocationNumber();
+#endif
         this->TraceAllocateMemory(header->GetBottomAddress(), header->Size);
     }
     bMemoryAllocationNumber = saved_allocation_number;
@@ -950,6 +966,12 @@ unsigned int GetVirtualMemoryAllocParams() {
     return (GetVirtualMemoryPoolNumber() & 0xf) | 0x400;
 }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+int GetPS2HeapSize();
+extern "C" int _HeapBasePS2;
+extern "C" int _HeapSizePS2;
+#endif
+
 void bMemoryInit() {
 #ifdef EA_PLATFORM_GAMECUBE
     void *arenaLo;
@@ -996,6 +1018,18 @@ void bMemoryInit() {
         bInitMemoryPool(0, nullptr, 0, "Main Pool");
         MemoryInitialized = TRUE;
     }
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    if (!MemoryInitialized) {
+        int size = GetPS2HeapSize() - 0x8000;
+        void *memory = std::malloc(size);
+        if (bMemoryTracing) {
+            bFunkCallASync("CODEINE", 24, nullptr, 0);
+        }
+        bInitMemoryPool(0, memory, size, "Main Pool");
+        _HeapBasePS2 = reinterpret_cast<int>(memory);
+        _HeapSizePS2 = size;
+        MemoryInitialized = TRUE;
+    }
 #endif
 }
 
@@ -1016,7 +1050,7 @@ void bMemoryUpdateTraceInformation() {
     }
 }
 
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
 }
@@ -1070,7 +1104,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         alignment = 16;
     }
 
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     // The milestone allocators keep debug information before the header.
     int shared_string_index = -1;
     if (bMemoryUseSharedStrings) {
@@ -1090,7 +1124,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
     int new_size;
     pool_num = bMemoryGetPoolNum(allocation_params);
     MemoryPool *pool = MemoryPools[pool_num];
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     void *memory = pool->AllocateMemory(size + debug_info_size + 0x14, alignment, allocation_header_offset, allocation_params & 0x40,
                                         allocation_params & 0x80, &new_size);
 #else
@@ -1103,7 +1137,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         if (allocation_params & 0x40) {
             padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
         }
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         padding += debug_info_size;
 #endif
 
@@ -1116,7 +1150,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 
         header->Size = new_size;
         header->RequestedSize = size;
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         char *allocation_info = static_cast<char *>(memory);
         *reinterpret_cast<uint16 *>(allocation_info) = bMemoryAllocationNumber;
         *reinterpret_cast<uint16 *>(allocation_info + 2) = debug_line;
@@ -1126,6 +1160,11 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
             bStrCpy(allocation_info + 6, debug_text);
         }
         bMemSet(allocation_info + debug_info_size, 0xdd, header->FrontPadding - debug_info_size);
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+        if (bMemoryAllocationCallback != nullptr) {
+            bMemoryAllocationCallback(header->PoolNum, &header[1], size, allocation_info + 6);
+        }
+#endif
 #endif
         if (bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber) {
             bBreak();
@@ -1171,13 +1210,18 @@ void bFree(void *ptr) {
         }
     }
     AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
-#ifndef MILESTONE_BUILD
+#if !defined(MILESTONE_BUILD) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
     int pool_num = header->PoolNum;
     MemoryPool *pool = MemoryPools[pool_num];
 #endif
     char debug_name[32] = {};
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     void *allocated_pointer = header->GetBottomAddress();
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    if (bMemoryFreeCallback != nullptr) {
+        bMemoryFreeCallback(header->PoolNum, ptr, header->RequestedSize, header->GetDebugText());
+    }
+#endif
     int16 shared_string_index = *reinterpret_cast<int16 *>(static_cast<char *>(allocated_pointer) + 4);
     if (shared_string_index != -1) {
         bFreeSharedString(bGetSharedString(shared_string_index));
@@ -1197,10 +1241,10 @@ void bFree(void *ptr) {
 #ifdef EA_PLATFORM_WIN32
         uint16 front_padding = header->FrontPadding;
         void *allocated_pointer = reinterpret_cast<char *>(header) - front_padding;
-#elif !defined(MILESTONE_BUILD)
+#elif !defined(MILESTONE_BUILD) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
         void *allocated_pointer = header->GetBottomAddress();
 #endif
-#ifdef MILESTONE_BUILD
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         MemoryPool *pool = MemoryPools[pool_num];
 #endif
         header->MagicNumber = 0;

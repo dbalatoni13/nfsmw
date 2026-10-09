@@ -109,7 +109,8 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 #endif
 
 void *bMalloc(int size, int allocation_params);
-#ifdef MILESTONE_BUILD
+// PS2 release uses the two-argument allocator despite the shared milestone build flag.
+#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
 inline void *bMalloc(int size, int allocation_params) {

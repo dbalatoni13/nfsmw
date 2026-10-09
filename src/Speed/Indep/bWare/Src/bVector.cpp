@@ -336,6 +336,47 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     }
 }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+// Preserve retail's four-lane VU operations, including its unspecified padding lane.
+asm(".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".globl bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    ".ent bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    "bExpandBoundingBox__FP8bVector3T0PC8bVector3f:\n\t"
+    "addiu $29, $29, -0x10\n\t"
+    "lqc2 vf5, 0x0($6)\n\t"
+    "swc1 $f12, 0x8($29)\n\t"
+    "lqc2 vf2, 0x0($4)\n\t"
+    "swc1 $f12, 0x0($29)\n\t"
+    "lqc2 vf1, 0x0($5)\n\t"
+    "swc1 $f12, 0x4($29)\n\t"
+    "lqc2 vf3, 0x0($29)\n\t"
+    "vsub vf4, vf5, vf3\n\t"
+    "vadd vf5, vf5, vf3\n\t"
+    "vmini vf2, vf2, vf4\n\t"
+    "vmax vf1, vf1, vf5\n\t"
+    "sqc2 vf2, 0x0($4)\n\t"
+    "sqc2 vf1, 0x0($5)\n\t"
+    "jr $31\n\t"
+    "addiu $29, $29, 0x10\n\t"
+    ".end bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    ".globl bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    ".ent bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    "bExpandBoundingBox__FP8bVector3T0PC8bVector3T2:\n\t"
+    "lqc2 vf1, 0x0($6)\n\t"
+    "lqc2 vf2, 0x0($4)\n\t"
+    "vmini vf2, vf2, vf1\n\t"
+    "lqc2 vf3, 0x0($7)\n\t"
+    "lqc2 vf1, 0x0($5)\n\t"
+    "vmax vf1, vf1, vf3\n\t"
+    "sqc2 vf2, 0x0($4)\n\t"
+    "sqc2 vf1, 0x0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#else
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width) {
     float x_min = point->x - extra_width;
     float y_min = point->y - extra_width;
@@ -403,6 +444,8 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
         bbox_max->z = z_max;
     }
 }
+
+#endif
 
 int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width) {
 #ifdef EA_PLATFORM_XENON
