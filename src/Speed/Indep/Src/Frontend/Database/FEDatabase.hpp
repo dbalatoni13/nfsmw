@@ -777,7 +777,7 @@ class cFrontendDatabase {
         return &mFEKeyboardSettings;
     }
     FEPlayerCarDB *GetPlayerCarStable(int player) {
-        if (player == 0 || player == 1)
+        if (player >= 0 && player < 2)
             return &CurrentUserProfiles[player]->PlayersCarStable;
         return nullptr;
     }

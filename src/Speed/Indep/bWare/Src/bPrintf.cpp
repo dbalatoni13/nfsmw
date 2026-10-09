@@ -49,9 +49,11 @@ void bBufferedPutChar(char c) {
 
 int bReleasePrintf(const char *fmt, ...) {
     va_list argList;
+#ifndef EA_PLATFORM_XENON
     if (!EnableReleasePrintf) {
         return 0;
     }
+#endif
     va_start(argList, fmt);
     int result = bVPrintf(fmt, argList);
     va_end(argList);

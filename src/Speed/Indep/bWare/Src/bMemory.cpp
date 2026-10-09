@@ -156,7 +156,13 @@ class MemoryPool {
     AllocationHeader *GetMemoryDumpStatistics(int &num_allocations, int &total_num_allocations, int &amount_allocated,
                                               int &most_amount_allocated, int &amount_free, const char *&debug_name);
 #endif
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     void SetFancyStompDetector(void *mem, int mem_size, const char *name);
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     bool CheckFancyStompDetector(const void *mem, int mem_size);
 #ifdef EA_PLATFORM_WIN32
     __declspec(noinline)
@@ -257,6 +263,10 @@ int EnableCleanupBorrowedMemoryBlock = 0;
 #endif
 int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
+#ifdef EA_PLATFORM_XENON
+// Reconstructed name for the retail stomp-diagnostic breakpoint control.
+int bMemoryBreakOnStomp = 0;
+#endif
 int bMemoryUseSharedStrings = 1;
 int bMemoryTracing = 0;                                                               // size: 0x4, address: 0x80416438
 #if defined(MILESTONE_BUILD) && (defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)))
@@ -419,7 +429,11 @@ void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
             if (bMemoryRandomFillPattern != 0) {
                 bMemSet(fill_bot, bGetTicker(), fill_top - fill_bot);
             } else {
+#ifdef EA_PLATFORM_XENON
+                this->SetFancyStompDetector(fill_bot, fill_top - fill_bot, debug_name);
+#else
                 bMemSet(fill_bot, 0xee, fill_top - fill_bot);
+#endif
             }
         }
 
@@ -801,10 +815,79 @@ int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     return num_allocations;
 }
 
-// STRIPPED
-void MemoryPool::SetFancyStompDetector(void *mem, int mem_size, const char *name) {}
+void MemoryPool::SetFancyStompDetector(void *mem, int mem_size, const char *name) {
+#ifdef EA_PLATFORM_XENON
+    if (name == nullptr) {
+        name = "NULL";
+    }
+    int name_pos = 0;
+    for (int n = 0; n < mem_size; n += 4) {
+        unsigned char *pmem = static_cast<unsigned char *>(mem) + n;
+        unsigned char c0 = name[name_pos++];
+        if (c0 == 0) {
+            name_pos = 0;
+        }
+        unsigned char c1 = name[name_pos++];
+        if (c1 == 0) {
+            name_pos = 0;
+        }
+        unsigned char c2 = name[name_pos++];
+        if (c2 == 0) {
+            name_pos = 0;
+        }
+        unsigned char checksum = c0 + c1 + c2;
+        pmem[0] = c0;
+        pmem[1] = c1;
+        pmem[2] = c2;
+        pmem[3] = checksum;
+    }
+#endif
+}
 
 bool MemoryPool::CheckFancyStompDetector(const void *mem, int mem_size) {
+#ifdef EA_PLATFORM_XENON
+    if (this->DebugFillEnabled && bMemoryRandomFillPattern == 0) {
+        const unsigned char *mem8 = static_cast<const unsigned char *>(mem);
+        for (int n = 0; n < mem_size; n += 4) {
+            const unsigned char *pmem = mem8 + n;
+            unsigned char c0 = pmem[0];
+            unsigned char c1 = pmem[1];
+            unsigned char c2 = pmem[2];
+            unsigned char checksum = c0 + c1 + c2;
+            if (checksum != pmem[3]) {
+                bMilestonePrintf("\nERROR:  FancyStompDetector detected stomp at 0x%08x in memory pool %s\n", pmem, this->pDebugName);
+                bMilestonePrintf("        Bytes 0,1,2 = previous owner (ASCII).  Byte 3 = checksum\n");
+                bMilestonePrintf("\n");
+                int start_pos = (n & ~15) - 32;
+                int end_pos = start_pos + 96;
+                for (int pos = start_pos; pos < end_pos; pos += 16) {
+                    bMilestonePrintf("        0x%08X : ", mem8 + pos);
+                    for (int i = 0; i < 16; i++) {
+                        bMilestonePrintf(" %02X", mem8[pos + i]);
+                    }
+                    bMilestonePrintf("  ");
+                    for (int i = 0; i < 16; i++) {
+                        if ((i & 3) != 3) {
+                            unsigned char c = mem8[pos + i];
+                            if (c < 32 || c >= 128) {
+                                c = '.';
+                            }
+                            bMilestonePrintf("%c", c);
+                        }
+                    }
+                    bMilestonePrintf("\n");
+                }
+                this->PrintAllocationsByAddress(0, 0x7fffffff);
+                static int seen_yellow_screen;
+                seen_yellow_screen++;
+                if (bMemoryBreakOnStomp) {
+                    bBreak();
+                }
+                return true;
+            }
+        }
+    }
+#endif
     return false;
 }
 
@@ -1530,7 +1613,11 @@ void bFree(void *ptr) {
     int pool_num = header->PoolNum;
     MemoryPool *pool = MemoryPools[pool_num];
 #endif
+#ifdef EA_PLATFORM_XENON
+    char debug_name[32] = "";
+#else
     char debug_name[32] = {};
+#endif
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     void *allocated_pointer = header->GetBottomAddress();
 #ifdef EA_PLATFORM_XENON
