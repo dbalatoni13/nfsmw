@@ -42,9 +42,14 @@ class AllocationHeader : public bTNode<AllocationHeader> {
     }
 
 #ifdef EA_PLATFORM_XENON
-    __declspec(noinline)
-#endif
+    __declspec(noinline) const char *GetDebugText() {
+        return GetDebugTextInline();
+    }
+
+    const char *GetDebugTextInline() {
+#else
     const char *GetDebugText() {
+#endif
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         char *allocation_info = reinterpret_cast<char *>(this) - FrontPadding;
 #ifdef EA_PLATFORM_XENON
@@ -132,6 +137,9 @@ class MemoryPool {
     void FreeMemory(void *p, int size);
     void AddFreeMemory(void *p, int size);
 #else
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     void FreeMemory(void *p, int size, const char *debug_name);
     void AddFreeMemory(void *p, int size, const char *debug_name);
 #endif
@@ -254,8 +262,6 @@ int bMemoryTracing = 0;                                                         
 #if defined(MILESTONE_BUILD) && (defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)))
 // Reconstructed names for the retail allocation-observer globals.
 void (*bMemoryAllocationCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
-#endif
-#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124) && defined(MILESTONE_BUILD)
 void (*bMemoryFreeCallback)(int pool_num, void *memory, int size, const char *debug_text) = nullptr;
 #endif
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
@@ -1520,23 +1526,37 @@ void bFree(void *ptr) {
         }
     }
     AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
-#if !defined(MILESTONE_BUILD) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
+#if !defined(MILESTONE_BUILD) || defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
     int pool_num = header->PoolNum;
     MemoryPool *pool = MemoryPools[pool_num];
 #endif
     char debug_name[32] = {};
 #if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
     void *allocated_pointer = header->GetBottomAddress();
-#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+#ifdef EA_PLATFORM_XENON
+    bSafeStrCpy(debug_name, header->GetDebugTextInline(), sizeof(debug_name));
+#endif
+#if defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124))
     if (bMemoryFreeCallback != nullptr) {
+#ifdef EA_PLATFORM_XENON
+        bMemoryFreeCallback(header->PoolNum, ptr, header->RequestedSize, header->GetDebugTextInline());
+#else
         bMemoryFreeCallback(header->PoolNum, ptr, header->RequestedSize, header->GetDebugText());
+#endif
     }
 #endif
     int16 shared_string_index = *reinterpret_cast<int16 *>(static_cast<char *>(allocated_pointer) + 4);
     if (shared_string_index != -1) {
+#ifdef EA_PLATFORM_XENON
+        bSharedString *shared_string = gSharedStringPool.GetSharedString(shared_string_index);
+        bFreeSharedString(shared_string != nullptr ? shared_string->String : nullptr);
+#else
         bFreeSharedString(bGetSharedString(shared_string_index));
+#endif
     }
+#ifndef EA_PLATFORM_XENON
     int pool_num = header->PoolNum;
+#endif
 #endif
     if (bMemoryAutomaticVerifyPoolIntegrity && (bMemoryAllocationNumber % bMemoryAutomaticVerifyPoolIntegrity == 0)) {
         bVerifyPoolIntegrity(pool_num);
@@ -1551,10 +1571,10 @@ void bFree(void *ptr) {
 #ifdef EA_PLATFORM_WIN32
         uint16 front_padding = header->FrontPadding;
         void *allocated_pointer = reinterpret_cast<char *>(header) - front_padding;
-#elif !defined(MILESTONE_BUILD) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
+#elif !defined(MILESTONE_BUILD) || defined(EA_PLATFORM_XENON) || (defined(EA_PLATFORM_PLAYSTATION2) && !defined(EA_BUILD_A124))
         void *allocated_pointer = header->GetBottomAddress();
 #endif
-#if defined(MILESTONE_BUILD) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
+#if defined(MILESTONE_BUILD) && !defined(EA_PLATFORM_XENON) && (!defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_BUILD_A124))
         MemoryPool *pool = MemoryPools[pool_num];
 #endif
         header->MagicNumber = 0;

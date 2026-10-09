@@ -6,6 +6,9 @@
 #define BFILE_HPP // Decl: 6
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#ifdef EA_PLATFORM_XENON
+#include "CachedRealFileHandle.hpp"
+#endif
 
 // Decl: 14
 enum bFileOpenMode {
@@ -64,7 +67,14 @@ void bAppendToFile(const char *filename, void *buf, int num_bytes);
 void *bGetFile(const char *filename, int *size, int allocation_params);
 int bFileExists(const char *f);
 int bFPrintf(bFile *file, const char *fmt, ...);
+#ifdef EA_PLATFORM_XENON
+inline void bFileFlushCachedFiles() {
+    while (CachedRealFileHandle::RemoveUnusedHandle()) {
+    }
+}
+#else
 void bFileFlushCachedFiles();
+#endif
 void bFileFlushCacheFile(const char *filename);
 unsigned int bFileGetFilenameHash(const char *filename);
 int GetRealFileOpenFlags(bFileOpenMode open_mode);
