@@ -16,6 +16,13 @@
 extern "C" int snIsDebuggerRunning();
 #elif defined(EA_PLATFORM_WIN32)
 extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
+#elif defined(EA_PLATFORM_XENON)
+#ifndef _PPC_
+#define _PPC_
+#endif
+#include <windef.h>
+#include <winbase.h>
+#include <ppcintrinsics.h>
 #endif
 
 void bFigureOutPSX2Platform();
@@ -66,6 +73,10 @@ __declspec(dllimport) unsigned int __stdcall GetLastError();
 
 static float _ticker_msperfreq = 0.0f;
 static int _ticker_cycpertick = 0;
+#endif
+
+#ifdef EA_PLATFORM_XENON
+static float _ticker_msperfreq = 0.0f;
 #endif
 
 #ifdef EA_PLATFORM_PLAYSTATION2
@@ -343,7 +354,11 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 }
 
 void bInitTicker(float min_wraparound_time) {
-#ifdef EA_PLATFORM_WIN32
+#ifdef EA_PLATFORM_XENON
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    _ticker_msperfreq = 4000.0f / static_cast<float>(frequency.QuadPart);
+#elif defined(EA_PLATFORM_WIN32)
     __int64 frequency;
     QueryPerformanceFrequency(&frequency);
 
@@ -369,19 +384,25 @@ unsigned int bGetTicker() {
     unsigned int ticks;
     asm volatile("mfc0 %0, $9" : "=r"(ticks));
     return ticks;
+#elif defined(EA_PLATFORM_XENON)
+    return static_cast<unsigned int>(__mftb() >> 2);
 #else
     return 0;
 #endif
 }
 
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-#ifdef EA_PLATFORM_GAMECUBE
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_XENON)
     if (start_ticks < end_ticks) {
         start_ticks = end_ticks - start_ticks;
     } else {
         start_ticks = end_ticks - start_ticks;
     }
+#ifdef EA_PLATFORM_XENON
+    return static_cast<float>(start_ticks) * _ticker_msperfreq;
+#else
     return OSTicksToMicroseconds(start_ticks) * 0.001f;
+#endif
 #elif defined(EA_PLATFORM_WIN32)
     if (_ticker_msperfreq == 0.0f) {
         bInitTicker(60000.0f);

@@ -28,6 +28,9 @@ int bVPrintf(const char *fmt, va_list argList);
 int bVPrintf(char terminal_channel, char *fmt, char *argList);
 int bSPrintf(char *destString, const char *fmt, ...);
 int bSNPrintf(char *buf, int max_len, const char *format, ...);
+#ifdef EA_PLATFORM_XENON
+__declspec(noinline)
+#endif
 int bVSPrintf(char *destString, const char *fmt, va_list argList);
 int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList);
 

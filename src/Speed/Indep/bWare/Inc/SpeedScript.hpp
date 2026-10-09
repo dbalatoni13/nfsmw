@@ -43,7 +43,13 @@ class SpeedScript {
     __declspec(noinline)
 #endif
     void InitFromFile(const char *filename);
+#ifdef EA_PLATFORM_XENON
+  private:
+#endif
     void Error(const char *format, ...);
+#ifdef EA_PLATFORM_XENON
+  public:
+#endif
     char *GetPositionName();
     void ResizeEntryTable(int new_size);
 #ifdef EA_PLATFORM_XENON

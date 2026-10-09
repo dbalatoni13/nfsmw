@@ -788,7 +788,12 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zAI.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zAnim.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zAttribSys.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zBWare.cpp"),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zBWare.cpp",
+                # Retail Xenon script cleanup has no C++ exception-unwind path.
+                cflags=[flag for flag in cflags_game if flag != "/EHsc"] if config.platform == Platform.X360 else None,
+            ),
             Object(NonMatching, "Speed/Indep/SourceLists/zCamera.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zComms.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zDebug.cpp"),
