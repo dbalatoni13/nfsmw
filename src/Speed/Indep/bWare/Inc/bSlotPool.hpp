@@ -36,6 +36,9 @@ class SlotPool : public bTNode<SlotPool> {
     SlotPoolEntry Slots[1];    // offset 0x30, size 0x4
 
   public:
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     static SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
     static void DeleteSlotPool(SlotPool *slot_pool);
 
@@ -46,6 +49,9 @@ class SlotPool : public bTNode<SlotPool> {
     void *GetAllocatedSlot(int n);
     void CleanupExpandedSlotPools();
     void VerifyPoolIntegrity();
+#ifdef EA_PLATFORM_XENON
+    __forceinline
+#endif
     void *Malloc();
     void *FastMalloc();
     void Free(void *p);
@@ -107,6 +113,9 @@ class SlotPoolManager {
   public:
     SlotPoolManager();
     ~SlotPoolManager();
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
     void DeleteSlotPool(SlotPool *slot_pool);
     void PrintAllSlotPools();

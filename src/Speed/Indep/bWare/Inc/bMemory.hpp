@@ -121,6 +121,10 @@ void bVerifyPoolIntegrity(int pool);
 void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_allocation);
 int bCountFreeMemory(int pool);
 int bMemoryGetAllocationNumber();
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+void *bMemoryGetStatistics(int pool_num, int &num_allocations, int &total_num_allocations, int &amount_allocated,
+                           int &most_amount_allocated, int &amount_free, int &largest_malloc, const char *&debug_name);
+#endif
 void bCloseMemoryPool(int pool_num);
 void bMemorySetOverflowPoolNumber(int pool_num, int overflow_pool_number);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);

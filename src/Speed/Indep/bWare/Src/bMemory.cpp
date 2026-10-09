@@ -144,6 +144,10 @@ class MemoryPool {
     void PrintAllocations(int from_allocation, int to_allocation);
     AllocationHeader *FindAllocation(int allocation_num);
     int GetAllocations(void **allocations, int max_allocations);
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+    AllocationHeader *GetMemoryDumpStatistics(int &num_allocations, int &total_num_allocations, int &amount_allocated,
+                                              int &most_amount_allocated, int &amount_free, const char *&debug_name);
+#endif
     void SetFancyStompDetector(void *mem, int mem_size, const char *name);
     bool CheckFancyStompDetector(const void *mem, int mem_size);
 #ifdef EA_PLATFORM_WIN32
@@ -1673,6 +1677,31 @@ int bLargestMalloc(int allocation_params) {
     }
     return largest_malloc;
 }
+
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+AllocationHeader *MemoryPool::GetMemoryDumpStatistics(int &num_allocations, int &total_num_allocations, int &amount_allocated,
+                                                      int &most_amount_allocated, int &amount_free, const char *&debug_name) {
+    num_allocations = this->NumAllocations;
+    debug_name = this->pDebugName;
+    total_num_allocations = this->TotalNumAllocations;
+    amount_allocated = this->AmountAllocated;
+    most_amount_allocated = this->MostAmountAllocated;
+    amount_free = this->AmountFree;
+    return this->AllocationHeaderList.GetHead();
+}
+
+void *bMemoryGetStatistics(int pool_num, int &num_allocations, int &total_num_allocations, int &amount_allocated,
+                           int &most_amount_allocated, int &amount_free, int &largest_malloc, const char *&debug_name) {
+    MemoryPool *memory_pool = MemoryPools[pool_num];
+    if (memory_pool != nullptr) {
+        AllocationHeader *first_allocation = memory_pool->GetMemoryDumpStatistics(num_allocations, total_num_allocations, amount_allocated,
+                                                                                most_amount_allocated, amount_free, debug_name);
+        largest_malloc = bLargestMalloc(pool_num);
+        return first_allocation;
+    }
+    return nullptr;
+}
+#endif
 
 void bVerifyPoolIntegrity(int pool) {
     if (MemoryPools[pool] != nullptr) {

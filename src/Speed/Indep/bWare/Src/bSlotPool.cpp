@@ -79,15 +79,25 @@ SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_
         slot_pool->MemoryPool = memory_pool;
         slot_pool->DebugName = debug_name;
 #else
+#ifdef EA_PLATFORM_XENON
+        slot_pool->NumSlots = num_slots;
+#endif
         slot_pool->SlotSize = slot_size;
         slot_pool->MemoryPool = memory_pool;
         slot_pool->DebugName = debug_name;
+#ifndef EA_PLATFORM_XENON
         slot_pool->NumSlots = num_slots;
+#endif
 #endif
         slot_pool->TotalNumSlots = num_slots;
 #ifndef EA_PLATFORM_WIN32
+#ifdef EA_PLATFORM_XENON
+        slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY |
+                                                      SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+#else
         slot_pool->Flags = static_cast<SlotPoolFlags>(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE | SLOTPOOL_FLAG_WARN_IF_OVERFLOW |
                                                       SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY | SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+#endif
         slot_pool->FreeSlots = nullptr;
         slot_pool->NextSlotPool = nullptr;
 #endif
@@ -428,9 +438,15 @@ SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char 
     if (!new_slot_pool) {
         return nullptr;
     }
+#ifdef EA_PLATFORM_XENON
+    if (TheSlotPoolManager.Initialized == 1) {
+        TheSlotPoolManager.SlotPoolList.AddTail(new_slot_pool);
+    }
+#else
     if (Initialized == 1) {
         SlotPoolList.AddTail(new_slot_pool);
     }
+#endif
     return new_slot_pool;
 }
 
