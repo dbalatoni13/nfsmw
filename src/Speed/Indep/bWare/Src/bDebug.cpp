@@ -324,7 +324,13 @@ int bLaunchWindows(const char *command_line) {
 }
 
 float bGetTickerDifference(unsigned int start_ticks) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    unsigned int end_ticks;
+    asm volatile("mfc0 %0, $9" : "=r"(end_ticks));
+    return bGetTickerDifference(start_ticks, end_ticks);
+#else
     return bGetTickerDifference(start_ticks, bGetTicker());
+#endif
 }
 
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {

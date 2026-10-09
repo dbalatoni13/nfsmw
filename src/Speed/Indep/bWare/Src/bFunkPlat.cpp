@@ -5,6 +5,7 @@
 
 #ifdef EA_PLATFORM_PLAYSTATION2
 #include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
+#include <stdio.h>
 #elif defined(EA_PLATFORM_GAMECUBE)
 #include <dolphin.h>
 #endif
@@ -23,10 +24,71 @@ void bSetupMonitorFunctionHooks(void (*f2)(struct bFunkPacketHeader *, const voi
 #endif
 }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+static inline char bFunkHexDigit(unsigned int value) {
+    if (value < 10) {
+        return value | '0';
+    }
+    if (value < 16) {
+        return value + 'A' - 10;
+    }
+    return '0';
+}
+
+void bSendPacketDTLT10000(bFunkPacketHeader *header, const void *data, long size) {
+    static bMutex mutex;
+    static int initialized;
+    static unsigned int packet_id;
+    char text[200];
+
+    if (!initialized) {
+        initialized = 1;
+        mutex.Create();
+    }
+    mutex.Lock();
+
+    int data_size = size;
+    int total_size = data_size + static_cast<int>(sizeof(bFunkPacketHeader));
+    header->SourceServer = 0xA280A3C6;
+    header->Checksum = bFunkPacketHeader::CalculateChecksum(data, data_size);
+    header->PacketID = packet_id++;
+
+    int pos = 0;
+    int more = pos < total_size;
+    while (more) {
+        bStrCpy(text, "BFUNK:");
+        int length = bStrLen(text);
+        text[length++] = bFunkHexDigit((pos >> 12) & 15);
+        text[length++] = bFunkHexDigit((pos >> 8) & 15);
+        text[length++] = bFunkHexDigit((pos >> 4) & 15);
+        text[length++] = bFunkHexDigit(pos & 15);
+        while (more && length < 196) {
+            unsigned char value;
+            if (pos < static_cast<int>(sizeof(bFunkPacketHeader))) {
+                value = reinterpret_cast<const unsigned char *>(header)[pos];
+            } else {
+                value = static_cast<const unsigned char *>(data)[pos - sizeof(bFunkPacketHeader)];
+            }
+            text[length++] = bFunkHexDigit(value >> 4);
+            text[length++] = bFunkHexDigit(value & 15);
+            ++pos;
+            more = pos < total_size;
+        }
+        text[length] = 0;
+        puts(text);
+    }
+    mutex.Unlock();
+}
+#endif
+
 void bSendPacket(struct bFunkPacketHeader *header, const void *data, int size) {
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
     if (SendPacketFunction != nullptr) {
         SendPacketFunction(header, data, size);
+#ifdef EA_PLATFORM_PLAYSTATION2
+    } else if (bSonyToolConnected) {
+        bSendPacketDTLT10000(header, data, size);
+#endif
     }
 #endif
 }
