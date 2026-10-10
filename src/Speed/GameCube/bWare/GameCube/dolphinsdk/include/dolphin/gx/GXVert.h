@@ -26,7 +26,7 @@ typedef union {
 #ifdef __MWERKS__
 volatile PPCWGPipe GXWGFifo AT_ADDRESS(GXFIFO_ADDR);
 #else
-#define GXWGFifo (*(volatile PPCWGPipe *)GXFIFO_ADDR)
+extern volatile PPCWGPipe GXWGFifo;
 #endif
 
 #if DEBUG
