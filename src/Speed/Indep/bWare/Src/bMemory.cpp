@@ -652,6 +652,13 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
                 break;
             }
 
+#ifdef EA_PLATFORM_XENON
+            if (this->DebugFillEnabled && (bMemoryRandomFillPattern == 0)) {
+                char *bot = reinterpret_cast<char *>(f + 1);
+                char *top = reinterpret_cast<char *>(f->GetTop());
+                this->CheckFancyStompDetector(bot, top - bot);
+            }
+#else
             if (verify_free_pattern && this->DebugFillEnabled && (bMemoryRandomFillPattern == 0)) {
                 int *bot = reinterpret_cast<int *>(f + 1);
                 int *top = reinterpret_cast<int *>(f->GetTop());
@@ -665,6 +672,7 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
                     bot++;
                 }
             }
+#endif
         }
 
         if (errors != 0) {
