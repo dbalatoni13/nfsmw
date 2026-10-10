@@ -1075,11 +1075,19 @@ inline bVector4 &bConvertToBond(bVector4 &dest, const bVector4 &v) {
 
 inline bVector4 &bConvertFromBond(bVector4 &dest, const bVector4 &v) {
     float x = v.z;
+#ifdef EA_PLATFORM_WIN32
+    float y = -v.x;
+#else
     float y = v.x;
+#endif
     float z = v.y;
     float w = v.w;
     dest.x = x;
+#ifdef EA_PLATFORM_WIN32
+    dest.y = y;
+#else
     dest.y = -y;
+#endif
     dest.z = z;
     dest.w = w;
     return dest;

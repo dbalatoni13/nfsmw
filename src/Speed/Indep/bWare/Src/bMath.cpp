@@ -627,33 +627,55 @@ bPolar *bToPolar(bPolar *dest, bVector2 *cartesian) {
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
     float v1x = m.v1.y;
+#ifdef EA_PLATFORM_WIN32
+    float v1y = -m.v1.z;
+    float v1z = -m.v1.x;
+#else
     float v1y = m.v1.z;
     float v1z = m.v1.x;
+#endif
     float v1w = m.v1.w;
 
     bConvertToBond(dest.v1, m.v2);
     bConvertToBond(dest.v2, m.v0);
 
     dest.v0.x = v1x;
+#ifdef EA_PLATFORM_WIN32
+    dest.v0.y = v1y;
+    dest.v0.z = v1z;
+#else
     dest.v0.y = -v1y;
     dest.v0.z = -v1z;
+#endif
     dest.v0.w = v1w;
 
     bConvertToBond(dest.v3, m.v3);
 }
 
 void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m) {
+#ifdef EA_PLATFORM_WIN32
+    float v0x = -m.v0.z;
+    float v0y = m.v0.x;
+    float v0z = -m.v0.y;
+#else
     float v0x = m.v0.z;
     float v0y = m.v0.x;
     float v0z = m.v0.y;
+#endif
     float v0w = m.v0.w;
 
     bConvertFromBond(dest.v0, m.v2);
     bConvertFromBond(dest.v2, m.v1);
 
+#ifdef EA_PLATFORM_WIN32
+    dest.v1.x = v0x;
+    dest.v1.y = v0y;
+    dest.v1.z = v0z;
+#else
     dest.v1.x = -v0x;
     dest.v1.y = v0y;
     dest.v1.z = -v0z;
+#endif
     dest.v1.w = v0w;
 
     bConvertFromBond(dest.v3, m.v3);
