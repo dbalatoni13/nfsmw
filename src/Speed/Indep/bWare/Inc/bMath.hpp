@@ -174,7 +174,16 @@ inline float bAbs(float a) {
 }
 
 inline float bTruncate(float a) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // EE keeps the integer-valued intermediate in an FP register.
+    float integer;
+    float t;
+    asm("cvt.w.s %0, %1" : "=f"(integer) : "f"(a));
+    asm("cvt.s.w %0, %1" : "=f"(t) : "f"(integer));
+    return t;
+#else
     return static_cast<int>(a);
+#endif
 }
 
 inline float bFloor(float a) {

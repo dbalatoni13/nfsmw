@@ -52,7 +52,7 @@ char *bStrCpy(char *to, const char *from) {
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
-#ifdef EA_PLATFORM_WIN32
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (m == 0) {
         return to;
     }
@@ -74,11 +74,12 @@ char *bStrNCpy(char *to, const char *from, int m) {
         while (to[n] != '\0') {
             n++;
             if (m-- == 0) {
-                return to;
+                goto copied;
             }
             to[n] = from[n];
         }
     }
+copied:
     return to;
 #endif
 }
@@ -490,11 +491,12 @@ uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
         while (to[n] != '\0') {
             n++;
             if (m-- == 0) {
-                return to;
+                goto copied;
             }
             to[n] = from[n];
         }
     }
+copied:
     return to;
 #endif
 }

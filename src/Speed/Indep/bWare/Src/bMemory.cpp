@@ -992,7 +992,7 @@ void MemoryPool::TraceRemoveMemory(void *p, int size) {
 void TrapMissingMemoryTraces(int size) {}
 
 void MemoryPool::TraceAllocateMemory(void *p, int size) {
-#ifdef EA_PLATFORM_PLAYSTATION2
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_XENON)
     bMemoryTraceAllocatePacket packet = {reinterpret_cast<uintptr_t>(this), reinterpret_cast<uintptr_t>(p), size,
                                          TraceDebugLine, bMemoryAllocationNumber};
 #else
@@ -1003,7 +1003,11 @@ void MemoryPool::TraceAllocateMemory(void *p, int size) {
     packet.DebugLine = TraceDebugLine;
     packet.AllocationNumber = bMemoryAllocationNumber;
 #endif
+#ifdef EA_PLATFORM_XENON
+    memset(packet.DebugText, 0, sizeof(packet.DebugText));
+#else
     bMemSet(packet.DebugText, 0, sizeof(packet.DebugText));
+#endif
     if (pTraceDebugText != nullptr) {
         bStrNCpy(packet.DebugText, pTraceDebugText, sizeof(packet.DebugText) - 1);
     }
