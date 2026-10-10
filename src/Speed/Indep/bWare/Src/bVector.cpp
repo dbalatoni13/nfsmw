@@ -495,9 +495,7 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
 }
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
-#ifndef EA_PLATFORM_WIN32
     float x_min = bbox2_min->x;
-#endif
     float y_min = bbox2_min->y;
     float z_min = bbox2_min->z;
 
@@ -505,15 +503,9 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     float y_max = bbox2_max->y;
     float z_max = bbox2_max->z;
 
-#ifdef EA_PLATFORM_WIN32
-    if (bbox2_min->x < bbox_min->x) {
-        bbox_min->x = bbox2_min->x;
-    }
-#else
     if (x_min < bbox_min->x) {
         bbox_min->x = x_min;
     }
-#endif
     if (y_min < bbox_min->y) {
         bbox_min->y = y_min;
     }

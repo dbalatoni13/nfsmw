@@ -361,13 +361,21 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     }
     if (CountFreeSlots() < num_slots) {
         if ((Flags & SLOTPOOL_FLAG_OVERFLOW_IF_FULL) == 0) {
+#ifdef EA_PLATFORM_GAMECUBE
             return nullptr;
+#else
+            goto no_slots;
+#endif
         }
+#ifdef EA_PLATFORM_GAMECUBE
         n = NumSlots;
         if (n < 0) {
             n += 3;
         }
         int num_extra_slots = (n >> 2) + 1;
+#else
+        int num_extra_slots = (NumSlots / 4) + 1;
+#endif
         if (num_extra_slots < num_slots) {
             num_extra_slots = num_slots;
         }
@@ -376,6 +384,7 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     first_slot = FreeSlots;
     n = 0;
     slot = first_slot;
+#ifdef EA_PLATFORM_GAMECUBE
     if (!first_slot) {
         return nullptr;
     }
@@ -386,7 +395,16 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
             return nullptr;
         }
     }
+#else
+    while (slot && n < num_slots - 1) {
+        slot = slot->Next;
+        n++;
+    }
+#endif
     if (!slot) {
+#ifndef EA_PLATFORM_GAMECUBE
+    no_slots:
+#endif
         return nullptr;
     }
     FreeSlots = slot->Next;
@@ -394,17 +412,24 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     if (last_slot) {
         *last_slot = slot;
     }
-    int num_extra_slots = NumAllocatedSlots + num_slots;
-    NumAllocatedSlots = num_extra_slots;
-    if (num_extra_slots > MostNumAllocatedSlots) {
-        MostNumAllocatedSlots = num_extra_slots;
+    NumAllocatedSlots += num_slots;
+    if (NumAllocatedSlots > MostNumAllocatedSlots) {
+        MostNumAllocatedSlots = NumAllocatedSlots;
     }
     if (Flags & SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY) {
-        for (SlotPoolEntry *slot = first_slot; slot; slot = slot->Next) {
+        for (SlotPoolEntry *slot = first_slot; slot;) {
+#if !defined(EA_PLATFORM_GAMECUBE) && !defined(EA_PLATFORM_WIN32)
+            SlotPoolEntry *next_slot = slot->Next;
+#endif
             int num_words = SlotSize >> 2;
             for (int n = 1; n < num_words; n++) {
                 slot[n].Next = nullptr;
             }
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_WIN32)
+            slot = slot->Next;
+#else
+            slot = next_slot;
+#endif
         }
     }
     return first_slot;
