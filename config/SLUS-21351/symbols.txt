@@ -1699,9 +1699,11 @@ _$_t8_Rb_tree5ZQ26Attrib8TypeDescZQ26Attrib8TypeDescZt9_Identity1ZQ26Attrib8Type
 // Speed/Indep/SourceLists/zBWare.cpp
 ///////////////////////////////////////////////////////////////////
 bMemSet = 0x15e070; // type:func
+bCrcTable = 0x4c98a8; // size:0x400
 bStringHash__FPCc = 0x162b68; // type:func
 bStrCpy__FPcPCc = 0x162c20; // type:func
-bRandom__Fi = 0x15c908; // type:func
+bRandom__Fi = 0x15c8e8; // type:func
+bRandom__Ff = 0x15c908; // type:func
 bScaleAdd__FP8bVector2PC8bVector2T1f = 0x1608b8; // type:func
 bGetTickerDifference__FUi = 0x15b650; // type:func
 bOMalloc__FP8SlotPool = 0x15fe68; // type:func

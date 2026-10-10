@@ -29,11 +29,8 @@ unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32
 
     for (int i = 0; i < size; i++) {
 #ifdef EA_PLATFORM_WIN32
-        unsigned int table_index = (crc >> 0x18 ^ *cp) & 0xff;
-        unsigned int table_value = bCrcTable[table_index];
-        crc <<= 8;
-        cp++;
-        crc ^= table_value;
+        int c = *cp++;
+        crc = crc << 8 ^ bCrcTable[(crc >> 0x18 ^ c) & 0xff];
 #else
         int c = *cp;
         crc = crc << 8 ^ bCrcTable[crc >> 0x18 ^ c];

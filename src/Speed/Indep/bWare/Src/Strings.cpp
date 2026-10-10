@@ -217,6 +217,25 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         return 0;
     }
 
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
+    if (s2 != nullptr) {
+        while ((n-- != 0) && (*s1 != '\0') && (*s2 != '\0') && (bToUpper(*s1++) == bToUpper(*s2++))) {
+        }
+
+        if (n >= 0) {
+            if (*s1 != '\0') {
+                return 1;
+            }
+            if (*s2 != '\0') {
+                return -1;
+            }
+            return bToUpper(s1[-1]) - bToUpper(s2[-1]);
+        } else {
+            return 0;
+        }
+    }
+    return 1;
+#else
     if (s2 == nullptr) {
         return 1;
     }
@@ -225,15 +244,12 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         if (n-- == 0) {
             break;
         }
-
         if (*s1 == '\0') {
             break;
         }
-
         if (*s2 == '\0') {
             break;
         }
-
         if (bToUpper(*s1++) != bToUpper(*s2++)) {
             break;
         }
@@ -252,6 +268,7 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
     } else {
         return 0;
     }
+#endif
 }
 
 char *bStrCat(char *to, const char *s1, const char *s2) {

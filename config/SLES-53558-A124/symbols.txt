@@ -2314,6 +2314,7 @@ _Q26Attrib12StringKeyPtr$gDefault = 0x5dbb20; // size:0x10
 // d:\p4_apex1666_d1001856\mw\speed\psx2\obj\mweuropemilestone\sourcelists\zbware.cpp.obj
 ///////////////////////////////////////////////////////////////////
 bMemSet = 0x15de38; // type:func
+bCrcTable = 0x5401b0; // size:0x400
 bStringHash__FPCc = 0x162ce0; // type:func
 bRandom__Ff = 0x15c6d0; // type:func
 bStrCpy__FPcPCc = 0x162d98; // type:func
