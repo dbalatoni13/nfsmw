@@ -114,124 +114,124 @@ struct shiftpattern : Instance {
     bool BankName(TAttrib<Attrib::StringKey> &result) const;
     bool BankName(Attrib::StringKey &result) const;
     const Attrib::StringKey &BankName() const;
-    bool SET_BankName(const Attrib::StringKey &input);
+    bool Set_BankName(const Attrib::StringKey &input);
 
     bool Down_Disengage_Fall_RPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Disengage_Fall_RPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Disengage_Fall_RPM() const;
-    bool SET_Down_Disengage_Fall_RPM(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Disengage_Fall_RPM(const EA::Reflection::UInt32 &input);
 
     bool Down_Disengage_Fall_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Disengage_Fall_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Disengage_Fall_T() const;
-    bool SET_Down_Disengage_Fall_T(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Disengage_Fall_T(const EA::Reflection::UInt32 &input);
 
     bool Down_Engaging_Fall_RPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Engaging_Fall_RPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Engaging_Fall_RPM() const;
-    bool SET_Down_Engaging_Fall_RPM(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Engaging_Fall_RPM(const EA::Reflection::UInt32 &input);
 
     bool Down_Engaging_Fall_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Engaging_Fall_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Engaging_Fall_T() const;
-    bool SET_Down_Engaging_Fall_T(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Engaging_Fall_T(const EA::Reflection::UInt32 &input);
 
     bool Down_Engaging_Rise_RPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Engaging_Rise_RPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Engaging_Rise_RPM() const;
-    bool SET_Down_Engaging_Rise_RPM(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Engaging_Rise_RPM(const EA::Reflection::UInt32 &input);
 
     bool Down_Engaging_Rise_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Engaging_Rise_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Engaging_Rise_T() const;
-    bool SET_Down_Engaging_Rise_T(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Engaging_Rise_T(const EA::Reflection::UInt32 &input);
 
     bool Down_Reattach_Scale(TAttrib<EA::Reflection::Float> &result) const;
     bool Down_Reattach_Scale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Down_Reattach_Scale() const;
-    bool SET_Down_Reattach_Scale(const EA::Reflection::Float &input);
+    bool Set_Down_Reattach_Scale(const EA::Reflection::Float &input);
 
     bool Down_Shift_Sound_Delay(TAttrib<EA::Reflection::Float> &result) const;
     bool Down_Shift_Sound_Delay(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Down_Shift_Sound_Delay() const;
-    bool SET_Down_Shift_Sound_Delay(const EA::Reflection::Float &input);
+    bool Set_Down_Shift_Sound_Delay(const EA::Reflection::Float &input);
 
     bool Down_Vol_Shift(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Down_Vol_Shift(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Down_Vol_Shift() const;
-    bool SET_Down_Vol_Shift(const EA::Reflection::UInt32 &input);
+    bool Set_Down_Vol_Shift(const EA::Reflection::UInt32 &input);
 
     bool LFO_RPM_Amp(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_RPM_Amp(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_RPM_Amp() const;
-    bool SET_LFO_RPM_Amp(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_RPM_Amp(const EA::Reflection::UInt32 &input);
 
     bool LFO_RPM_Decay_Time(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_RPM_Decay_Time(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_RPM_Decay_Time() const;
-    bool SET_LFO_RPM_Decay_Time(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_RPM_Decay_Time(const EA::Reflection::UInt32 &input);
 
     bool LFO_RPM_Freq(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_RPM_Freq(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_RPM_Freq() const;
-    bool SET_LFO_RPM_Freq(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_RPM_Freq(const EA::Reflection::UInt32 &input);
 
     bool LFO_Vol_Amp(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_Vol_Amp(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_Vol_Amp() const;
-    bool SET_LFO_Vol_Amp(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_Vol_Amp(const EA::Reflection::UInt32 &input);
 
     bool LFO_Vol_Decay_Time(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_Vol_Decay_Time(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_Vol_Decay_Time() const;
-    bool SET_LFO_Vol_Decay_Time(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_Vol_Decay_Time(const EA::Reflection::UInt32 &input);
 
     bool LFO_Vol_Freq(TAttrib<EA::Reflection::UInt32> &result) const;
     bool LFO_Vol_Freq(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &LFO_Vol_Freq() const;
-    bool SET_LFO_Vol_Freq(const EA::Reflection::UInt32 &input);
+    bool Set_LFO_Vol_Freq(const EA::Reflection::UInt32 &input);
 
     bool Up_DisengageFall(TAttrib<stShiftPair> &result) const;
     bool Up_DisengageFall(stShiftPair &result, unsigned int index) const;
     const stShiftPair &Up_DisengageFall(unsigned int index) const;
     unsigned int Num_Up_DisengageFall() const;
-    bool SET_Up_DisengageFall(const stShiftPair &input, unsigned int index);
+    bool Set_Up_DisengageFall(const stShiftPair &input, unsigned int index);
 
     bool Up_DisengageFall_Curve(TAttrib<UMath::Matrix4> &result) const;
     bool Up_DisengageFall_Curve(UMath::Matrix4 &result, unsigned int index) const;
     const UMath::Matrix4 &Up_DisengageFall_Curve(unsigned int index) const;
     unsigned int Num_Up_DisengageFall_Curve() const;
-    bool SET_Up_DisengageFall_Curve(const UMath::Matrix4 &input, unsigned int index);
+    bool Set_Up_DisengageFall_Curve(const UMath::Matrix4 &input, unsigned int index);
 
     bool Up_Engage(TAttrib<stShiftPair> &result) const;
     bool Up_Engage(stShiftPair &result) const;
     const stShiftPair &Up_Engage() const;
-    bool SET_Up_Engage(const stShiftPair &input);
+    bool Set_Up_Engage(const stShiftPair &input);
 
     bool Up_Engage_Curve(TAttrib<UMath::Matrix4> &result) const;
     bool Up_Engage_Curve(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &Up_Engage_Curve() const;
-    bool SET_Up_Engage_Curve(const UMath::Matrix4 &input);
+    bool Set_Up_Engage_Curve(const UMath::Matrix4 &input);
 
     bool Up_Engaging_Attack_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Up_Engaging_Attack_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Up_Engaging_Attack_T() const;
-    bool SET_Up_Engaging_Attack_T(const EA::Reflection::UInt32 &input);
+    bool Set_Up_Engaging_Attack_T(const EA::Reflection::UInt32 &input);
 
     bool Up_Engaging_Attack_Vol(TAttrib<EA::Reflection::Float> &result) const;
     bool Up_Engaging_Attack_Vol(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Up_Engaging_Attack_Vol() const;
-    bool SET_Up_Engaging_Attack_Vol(const EA::Reflection::Float &input);
+    bool Set_Up_Engaging_Attack_Vol(const EA::Reflection::Float &input);
 
     bool Up_Shift_Sound_Delay(TAttrib<EA::Reflection::Float> &result) const;
     bool Up_Shift_Sound_Delay(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Up_Shift_Sound_Delay() const;
-    bool SET_Up_Shift_Sound_Delay(const EA::Reflection::Float &input);
+    bool Set_Up_Shift_Sound_Delay(const EA::Reflection::Float &input);
 
     bool Up_Vol_Shift(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Up_Vol_Shift(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Up_Vol_Shift() const;
-    bool SET_Up_Vol_Shift(const EA::Reflection::UInt32 &input);
+    bool Set_Up_Vol_Shift(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -293,7 +293,7 @@ inline bool Gen::shiftpattern::BankName(Attrib::StringKey &result) const {
     result = BankName();
     return true;
 }
-inline bool Gen::shiftpattern::SET_BankName(const Attrib::StringKey &input) {
+inline bool Gen::shiftpattern::Set_BankName(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BankName, input);
 }
 
@@ -307,7 +307,7 @@ inline bool Gen::shiftpattern::Down_Disengage_Fall_RPM(EA::Reflection::UInt32 &r
     result = Down_Disengage_Fall_RPM();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Disengage_Fall_RPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Disengage_Fall_RPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Disengage_Fall_RPM, input);
 }
 
@@ -321,7 +321,7 @@ inline bool Gen::shiftpattern::Down_Disengage_Fall_T(EA::Reflection::UInt32 &res
     result = Down_Disengage_Fall_T();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Disengage_Fall_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Disengage_Fall_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Disengage_Fall_T, input);
 }
 
@@ -334,7 +334,7 @@ inline const EA::Reflection::UInt32 &Gen::shiftpattern::Down_Engaging_Fall_RPM()
 inline bool Gen::shiftpattern::Down_Engaging_Fall_RPM(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x3e1a0db6, result);
 }
-inline bool Gen::shiftpattern::SET_Down_Engaging_Fall_RPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Engaging_Fall_RPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x3e1a0db6, input);
 }
 
@@ -348,7 +348,7 @@ inline bool Gen::shiftpattern::Down_Engaging_Fall_T(EA::Reflection::UInt32 &resu
     result = Down_Engaging_Fall_T();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Engaging_Fall_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Engaging_Fall_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Engaging_Fall_T, input);
 }
 
@@ -362,7 +362,7 @@ inline bool Gen::shiftpattern::Down_Engaging_Rise_RPM(EA::Reflection::UInt32 &re
     result = Down_Engaging_Rise_RPM();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Engaging_Rise_RPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Engaging_Rise_RPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Engaging_Rise_RPM, input);
 }
 
@@ -376,7 +376,7 @@ inline bool Gen::shiftpattern::Down_Engaging_Rise_T(EA::Reflection::UInt32 &resu
     result = Down_Engaging_Rise_T();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Engaging_Rise_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Engaging_Rise_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Engaging_Rise_T, input);
 }
 
@@ -390,7 +390,7 @@ inline bool Gen::shiftpattern::Down_Reattach_Scale(EA::Reflection::Float &result
     result = Down_Reattach_Scale();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Reattach_Scale(const EA::Reflection::Float &input) {
+inline bool Gen::shiftpattern::Set_Down_Reattach_Scale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Reattach_Scale, input);
 }
 
@@ -404,7 +404,7 @@ inline bool Gen::shiftpattern::Down_Shift_Sound_Delay(EA::Reflection::Float &res
     result = Down_Shift_Sound_Delay();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Shift_Sound_Delay(const EA::Reflection::Float &input) {
+inline bool Gen::shiftpattern::Set_Down_Shift_Sound_Delay(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Shift_Sound_Delay, input);
 }
 
@@ -418,7 +418,7 @@ inline bool Gen::shiftpattern::Down_Vol_Shift(EA::Reflection::UInt32 &result) co
     result = Down_Vol_Shift();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Down_Vol_Shift(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Down_Vol_Shift(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Down_Vol_Shift, input);
 }
 
@@ -432,7 +432,7 @@ inline bool Gen::shiftpattern::LFO_RPM_Amp(EA::Reflection::UInt32 &result) const
     result = LFO_RPM_Amp();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_RPM_Amp(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_RPM_Amp(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_RPM_Amp, input);
 }
 
@@ -446,7 +446,7 @@ inline bool Gen::shiftpattern::LFO_RPM_Decay_Time(EA::Reflection::UInt32 &result
     result = LFO_RPM_Decay_Time();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_RPM_Decay_Time(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_RPM_Decay_Time(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_RPM_Decay_Time, input);
 }
 
@@ -460,7 +460,7 @@ inline bool Gen::shiftpattern::LFO_RPM_Freq(EA::Reflection::UInt32 &result) cons
     result = LFO_RPM_Freq();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_RPM_Freq(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_RPM_Freq(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_RPM_Freq, input);
 }
 
@@ -474,7 +474,7 @@ inline bool Gen::shiftpattern::LFO_Vol_Amp(EA::Reflection::UInt32 &result) const
     result = LFO_Vol_Amp();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_Vol_Amp(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_Vol_Amp(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_Vol_Amp, input);
 }
 
@@ -488,7 +488,7 @@ inline bool Gen::shiftpattern::LFO_Vol_Decay_Time(EA::Reflection::UInt32 &result
     result = LFO_Vol_Decay_Time();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_Vol_Decay_Time(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_Vol_Decay_Time(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_Vol_Decay_Time, input);
 }
 
@@ -502,7 +502,7 @@ inline bool Gen::shiftpattern::LFO_Vol_Freq(EA::Reflection::UInt32 &result) cons
     result = LFO_Vol_Freq();
     return true;
 }
-inline bool Gen::shiftpattern::SET_LFO_Vol_Freq(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_LFO_Vol_Freq(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LFO_Vol_Freq, input);
 }
 
@@ -518,7 +518,7 @@ inline bool Gen::shiftpattern::Up_DisengageFall(stShiftPair &result, unsigned in
 inline unsigned int Gen::shiftpattern::Num_Up_DisengageFall() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf2d90101);
 }
-inline bool Gen::shiftpattern::SET_Up_DisengageFall(const stShiftPair &input, unsigned int index) {
+inline bool Gen::shiftpattern::Set_Up_DisengageFall(const stShiftPair &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(stShiftPair, 0xf2d90101, input, index);
 }
 
@@ -534,7 +534,7 @@ inline bool Gen::shiftpattern::Up_DisengageFall_Curve(UMath::Matrix4 &result, un
 inline unsigned int Gen::shiftpattern::Num_Up_DisengageFall_Curve() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf040e6b0);
 }
-inline bool Gen::shiftpattern::SET_Up_DisengageFall_Curve(const UMath::Matrix4 &input, unsigned int index) {
+inline bool Gen::shiftpattern::Set_Up_DisengageFall_Curve(const UMath::Matrix4 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(UMath::Matrix4, 0xf040e6b0, input, index);
 }
 
@@ -547,7 +547,7 @@ inline const stShiftPair &Gen::shiftpattern::Up_Engage() const {
 inline bool Gen::shiftpattern::Up_Engage(stShiftPair &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(stShiftPair, 0xcb89b8c8, result);
 }
-inline bool Gen::shiftpattern::SET_Up_Engage(const stShiftPair &input) {
+inline bool Gen::shiftpattern::Set_Up_Engage(const stShiftPair &input) {
     ATTRIB_CODEGEN_SETVALUE(stShiftPair, 0xcb89b8c8, input);
 }
 
@@ -560,7 +560,7 @@ inline const UMath::Matrix4 &Gen::shiftpattern::Up_Engage_Curve() const {
 inline bool Gen::shiftpattern::Up_Engage_Curve(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x68da6275, result);
 }
-inline bool Gen::shiftpattern::SET_Up_Engage_Curve(const UMath::Matrix4 &input) {
+inline bool Gen::shiftpattern::Set_Up_Engage_Curve(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x68da6275, input);
 }
 
@@ -574,7 +574,7 @@ inline bool Gen::shiftpattern::Up_Engaging_Attack_T(EA::Reflection::UInt32 &resu
     result = Up_Engaging_Attack_T();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Up_Engaging_Attack_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Up_Engaging_Attack_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Up_Engaging_Attack_T, input);
 }
 
@@ -588,7 +588,7 @@ inline bool Gen::shiftpattern::Up_Engaging_Attack_Vol(EA::Reflection::Float &res
     result = Up_Engaging_Attack_Vol();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Up_Engaging_Attack_Vol(const EA::Reflection::Float &input) {
+inline bool Gen::shiftpattern::Set_Up_Engaging_Attack_Vol(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Up_Engaging_Attack_Vol, input);
 }
 
@@ -602,7 +602,7 @@ inline bool Gen::shiftpattern::Up_Shift_Sound_Delay(EA::Reflection::Float &resul
     result = Up_Shift_Sound_Delay();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Up_Shift_Sound_Delay(const EA::Reflection::Float &input) {
+inline bool Gen::shiftpattern::Set_Up_Shift_Sound_Delay(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Up_Shift_Sound_Delay, input);
 }
 
@@ -616,7 +616,7 @@ inline bool Gen::shiftpattern::Up_Vol_Shift(EA::Reflection::UInt32 &result) cons
     result = Up_Vol_Shift();
     return true;
 }
-inline bool Gen::shiftpattern::SET_Up_Vol_Shift(const EA::Reflection::UInt32 &input) {
+inline bool Gen::shiftpattern::Set_Up_Vol_Shift(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Up_Vol_Shift, input);
 }
 

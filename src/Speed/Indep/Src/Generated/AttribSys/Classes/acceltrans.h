@@ -80,27 +80,27 @@ struct acceltrans : Instance {
     bool AccelFromIdle_INTERUPT_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool AccelFromIdle_INTERUPT_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &AccelFromIdle_INTERUPT_T() const;
-    bool SET_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input);
+    bool Set_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input);
 
     bool AccelFromIdle_PEAK_RPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool AccelFromIdle_PEAK_RPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &AccelFromIdle_PEAK_RPM() const;
-    bool SET_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input);
+    bool Set_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input);
 
     bool AccelFromIdle_PEAK_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool AccelFromIdle_PEAK_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &AccelFromIdle_PEAK_T() const;
-    bool SET_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input);
+    bool Set_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input);
 
     bool AccelFromIdle_PEAK_VOL(TAttrib<EA::Reflection::Float> &result) const;
     bool AccelFromIdle_PEAK_VOL(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AccelFromIdle_PEAK_VOL() const;
-    bool SET_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input);
+    bool Set_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input);
 
     bool AccelFromIdle_RESUME_T(TAttrib<EA::Reflection::UInt32> &result) const;
     bool AccelFromIdle_RESUME_T(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &AccelFromIdle_RESUME_T() const;
-    bool SET_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input);
+    bool Set_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -142,7 +142,7 @@ inline const EA::Reflection::UInt32 &Gen::acceltrans::AccelFromIdle_INTERUPT_T()
 inline bool Gen::acceltrans::AccelFromIdle_INTERUPT_T(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, result);
 }
-inline bool Gen::acceltrans::SET_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::acceltrans::Set_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, input);
 }
 
@@ -156,7 +156,7 @@ inline bool Gen::acceltrans::AccelFromIdle_PEAK_RPM(EA::Reflection::UInt32 &resu
     result = AccelFromIdle_PEAK_RPM();
     return true;
 }
-inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::acceltrans::Set_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_RPM, input);
 }
 
@@ -170,7 +170,7 @@ inline bool Gen::acceltrans::AccelFromIdle_PEAK_T(EA::Reflection::UInt32 &result
     result = AccelFromIdle_PEAK_T();
     return true;
 }
-inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::acceltrans::Set_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_T, input);
 }
 
@@ -184,7 +184,7 @@ inline bool Gen::acceltrans::AccelFromIdle_PEAK_VOL(EA::Reflection::Float &resul
     result = AccelFromIdle_PEAK_VOL();
     return true;
 }
-inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input) {
+inline bool Gen::acceltrans::Set_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_VOL, input);
 }
 
@@ -198,7 +198,7 @@ inline bool Gen::acceltrans::AccelFromIdle_RESUME_T(EA::Reflection::UInt32 &resu
     result = AccelFromIdle_RESUME_T();
     return true;
 }
-inline bool Gen::acceltrans::SET_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input) {
+inline bool Gen::acceltrans::Set_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_RESUME_T, input);
 }
 

@@ -94,67 +94,67 @@ struct timeofdaylighting : Instance {
     bool AmbientColour(TAttrib<UMath::Vector4> &result) const;
     bool AmbientColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &AmbientColour() const;
-    bool SET_AmbientColour(const UMath::Vector4 &input);
+    bool Set_AmbientColour(const UMath::Vector4 &input);
 
     bool CarSpecScale(TAttrib<EA::Reflection::Float> &result) const;
     bool CarSpecScale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CarSpecScale() const;
-    bool SET_CarSpecScale(const EA::Reflection::Float &input);
+    bool Set_CarSpecScale(const EA::Reflection::Float &input);
 
     bool DiffuseColour(TAttrib<UMath::Vector4> &result) const;
     bool DiffuseColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &DiffuseColour() const;
-    bool SET_DiffuseColour(const UMath::Vector4 &input);
+    bool Set_DiffuseColour(const UMath::Vector4 &input);
 
     bool EnvSkyBrightness(TAttrib<EA::Reflection::Float> &result) const;
     bool EnvSkyBrightness(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EnvSkyBrightness() const;
-    bool SET_EnvSkyBrightness(const EA::Reflection::Float &input);
+    bool Set_EnvSkyBrightness(const EA::Reflection::Float &input);
 
     bool FixedFunctionSkyColor(TAttrib<UMath::Vector4> &result) const;
     bool FixedFunctionSkyColor(UMath::Vector4 &result) const;
     const UMath::Vector4 &FixedFunctionSkyColor() const;
-    bool SET_FixedFunctionSkyColor(const UMath::Vector4 &input);
+    bool Set_FixedFunctionSkyColor(const UMath::Vector4 &input);
 
     bool FogDistanceScale(TAttrib<EA::Reflection::Float> &result) const;
     bool FogDistanceScale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogDistanceScale() const;
-    bool SET_FogDistanceScale(const EA::Reflection::Float &input);
+    bool Set_FogDistanceScale(const EA::Reflection::Float &input);
 
     bool FogHazeColour(TAttrib<UMath::Vector4> &result) const;
     bool FogHazeColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &FogHazeColour() const;
-    bool SET_FogHazeColour(const UMath::Vector4 &input);
+    bool Set_FogHazeColour(const UMath::Vector4 &input);
 
     bool FogHazeColourScale(TAttrib<EA::Reflection::Float> &result) const;
     bool FogHazeColourScale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogHazeColourScale() const;
-    bool SET_FogHazeColourScale(const EA::Reflection::Float &input);
+    bool Set_FogHazeColourScale(const EA::Reflection::Float &input);
 
     bool FogInLightScatter(TAttrib<EA::Reflection::Float> &result) const;
     bool FogInLightScatter(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogInLightScatter() const;
-    bool SET_FogInLightScatter(const EA::Reflection::Float &input);
+    bool Set_FogInLightScatter(const EA::Reflection::Float &input);
 
     bool FogSkyColour(TAttrib<UMath::Vector4> &result) const;
     bool FogSkyColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &FogSkyColour() const;
-    bool SET_FogSkyColour(const UMath::Vector4 &input);
+    bool Set_FogSkyColour(const UMath::Vector4 &input);
 
     bool FogSkyColourScale(TAttrib<EA::Reflection::Float> &result) const;
     bool FogSkyColourScale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogSkyColourScale() const;
-    bool SET_FogSkyColourScale(const EA::Reflection::Float &input);
+    bool Set_FogSkyColourScale(const EA::Reflection::Float &input);
 
     bool FogSunFalloff(TAttrib<EA::Reflection::Float> &result) const;
     bool FogSunFalloff(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogSunFalloff() const;
-    bool SET_FogSunFalloff(const EA::Reflection::Float &input);
+    bool Set_FogSunFalloff(const EA::Reflection::Float &input);
 
     bool SpecularColour(TAttrib<UMath::Vector4> &result) const;
     bool SpecularColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &SpecularColour() const;
-    bool SET_SpecularColour(const UMath::Vector4 &input);
+    bool Set_SpecularColour(const UMath::Vector4 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -205,7 +205,7 @@ inline bool Gen::timeofdaylighting::AmbientColour(UMath::Vector4 &result) const 
     result = AmbientColour();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_AmbientColour(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_AmbientColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AmbientColour, input);
 }
 
@@ -219,7 +219,7 @@ inline bool Gen::timeofdaylighting::CarSpecScale(EA::Reflection::Float &result) 
     result = CarSpecScale();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_CarSpecScale(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_CarSpecScale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CarSpecScale, input);
 }
 
@@ -233,7 +233,7 @@ inline bool Gen::timeofdaylighting::DiffuseColour(UMath::Vector4 &result) const 
     result = DiffuseColour();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_DiffuseColour(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_DiffuseColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DiffuseColour, input);
 }
 
@@ -247,7 +247,7 @@ inline bool Gen::timeofdaylighting::EnvSkyBrightness(EA::Reflection::Float &resu
     result = EnvSkyBrightness();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_EnvSkyBrightness(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_EnvSkyBrightness(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EnvSkyBrightness, input);
 }
 
@@ -261,7 +261,7 @@ inline bool Gen::timeofdaylighting::FixedFunctionSkyColor(UMath::Vector4 &result
     result = FixedFunctionSkyColor();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_FixedFunctionSkyColor(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_FixedFunctionSkyColor(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FixedFunctionSkyColor, input);
 }
 
@@ -275,7 +275,7 @@ inline bool Gen::timeofdaylighting::FogDistanceScale(EA::Reflection::Float &resu
     result = FogDistanceScale();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_FogDistanceScale(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_FogDistanceScale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FogDistanceScale, input);
 }
 
@@ -289,7 +289,7 @@ inline bool Gen::timeofdaylighting::FogHazeColour(UMath::Vector4 &result) const 
     result = FogHazeColour();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_FogHazeColour(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_FogHazeColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FogHazeColour, input);
 }
 
@@ -303,7 +303,7 @@ inline bool Gen::timeofdaylighting::FogHazeColourScale(EA::Reflection::Float &re
     result = FogHazeColourScale();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_FogHazeColourScale(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_FogHazeColourScale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FogHazeColourScale, input);
 }
 
@@ -316,7 +316,7 @@ inline const EA::Reflection::Float &Gen::timeofdaylighting::FogInLightScatter() 
 inline bool Gen::timeofdaylighting::FogInLightScatter(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x00756239, result);
 }
-inline bool Gen::timeofdaylighting::SET_FogInLightScatter(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_FogInLightScatter(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x00756239, input);
 }
 
@@ -329,7 +329,7 @@ inline const UMath::Vector4 &Gen::timeofdaylighting::FogSkyColour() const {
 inline bool Gen::timeofdaylighting::FogSkyColour(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x1d76ea96, result);
 }
-inline bool Gen::timeofdaylighting::SET_FogSkyColour(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_FogSkyColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x1d76ea96, input);
 }
 
@@ -343,7 +343,7 @@ inline bool Gen::timeofdaylighting::FogSkyColourScale(EA::Reflection::Float &res
     result = FogSkyColourScale();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_FogSkyColourScale(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_FogSkyColourScale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FogSkyColourScale, input);
 }
 
@@ -356,7 +356,7 @@ inline const EA::Reflection::Float &Gen::timeofdaylighting::FogSunFalloff() cons
 inline bool Gen::timeofdaylighting::FogSunFalloff(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x2ef8a8bf, result);
 }
-inline bool Gen::timeofdaylighting::SET_FogSunFalloff(const EA::Reflection::Float &input) {
+inline bool Gen::timeofdaylighting::Set_FogSunFalloff(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x2ef8a8bf, input);
 }
 
@@ -370,7 +370,7 @@ inline bool Gen::timeofdaylighting::SpecularColour(UMath::Vector4 &result) const
     result = SpecularColour();
     return true;
 }
-inline bool Gen::timeofdaylighting::SET_SpecularColour(const UMath::Vector4 &input) {
+inline bool Gen::timeofdaylighting::Set_SpecularColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SpecularColour, input);
 }
 

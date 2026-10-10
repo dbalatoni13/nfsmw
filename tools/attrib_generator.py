@@ -103,10 +103,10 @@ def get_field_func_declarations(field, key):
     # Setters
     if is_array:
         # TODO
-        out += f"""bool SET_{field_name}(const {type_name} &input, unsigned int index);\n"""
+        out += f"""bool Set_{field_name}(const {type_name} &input, unsigned int index);\n"""
     else:
         pass
-        out += f"""bool SET_{field_name}(const {type_name} &input);\n"""
+        out += f"""bool Set_{field_name}(const {type_name} &input);\n"""
     out += "\n"
 
     return out
@@ -180,12 +180,12 @@ def get_field_func_definitions(clazz, field, key):
     # Setters
     if is_array:
         # TODO
-        out += f"""inline bool Gen::{clazz}::SET_{field_name}(const {type_name} &input, unsigned int index) {{
+        out += f"""inline bool Gen::{clazz}::Set_{field_name}(const {type_name} &input, unsigned int index) {{
     {f"ATTRIB_CODEGEN_SETLAYOUTINDEXED({field_name}, input, index)" if is_layout else f"ATTRIB_CODEGEN_SETVALUEINDEXED({type_name}, {key}, input, index)"};
 }}
 """
     else:
-        out += f"""inline bool Gen::{clazz}::SET_{field_name}(const {type_name} &input) {{
+        out += f"""inline bool Gen::{clazz}::Set_{field_name}(const {type_name} &input) {{
     {f"ATTRIB_CODEGEN_SETLAYOUT({field_name}, input)" if is_layout else f"ATTRIB_CODEGEN_SETVALUE({type_name}, {key}, input)"};
 }}
 """

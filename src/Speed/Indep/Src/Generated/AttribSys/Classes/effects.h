@@ -93,102 +93,102 @@ struct effects : Instance {
     bool AudioCullDist(TAttrib<EA::Reflection::Float> &result) const;
     bool AudioCullDist(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AudioCullDist() const;
-    bool SET_AudioCullDist(const EA::Reflection::Float &input);
+    bool Set_AudioCullDist(const EA::Reflection::Float &input);
 
     bool AudioFX_BOTTOM(TAttrib<RefSpec> &result) const;
     bool AudioFX_BOTTOM(RefSpec &result) const;
     const RefSpec &AudioFX_BOTTOM() const;
-    bool SET_AudioFX_BOTTOM(const RefSpec &input);
+    bool Set_AudioFX_BOTTOM(const RefSpec &input);
 
     bool AudioFX_DEFAULT(TAttrib<RefSpec> &result) const;
     bool AudioFX_DEFAULT(RefSpec &result) const;
     const RefSpec &AudioFX_DEFAULT() const;
-    bool SET_AudioFX_DEFAULT(const RefSpec &input);
+    bool Set_AudioFX_DEFAULT(const RefSpec &input);
 
     bool AudioFX_FRONT(TAttrib<RefSpec> &result) const;
     bool AudioFX_FRONT(RefSpec &result) const;
     const RefSpec &AudioFX_FRONT() const;
-    bool SET_AudioFX_FRONT(const RefSpec &input);
+    bool Set_AudioFX_FRONT(const RefSpec &input);
 
     bool AudioFX_REAR(TAttrib<RefSpec> &result) const;
     bool AudioFX_REAR(RefSpec &result) const;
     const RefSpec &AudioFX_REAR() const;
-    bool SET_AudioFX_REAR(const RefSpec &input);
+    bool Set_AudioFX_REAR(const RefSpec &input);
 
     bool AudioFX_SIDE(TAttrib<RefSpec> &result) const;
     bool AudioFX_SIDE(RefSpec &result) const;
     const RefSpec &AudioFX_SIDE() const;
-    bool SET_AudioFX_SIDE(const RefSpec &input);
+    bool Set_AudioFX_SIDE(const RefSpec &input);
 
     bool AudioFX_TOP(TAttrib<RefSpec> &result) const;
     bool AudioFX_TOP(RefSpec &result) const;
     const RefSpec &AudioFX_TOP() const;
-    bool SET_AudioFX_TOP(const RefSpec &input);
+    bool Set_AudioFX_TOP(const RefSpec &input);
 
     bool AudioQuadratic(TAttrib<UMath::Vector4> &result) const;
     bool AudioQuadratic(UMath::Vector4 &result) const;
     const UMath::Vector4 &AudioQuadratic() const;
-    bool SET_AudioQuadratic(const UMath::Vector4 &input);
+    bool Set_AudioQuadratic(const UMath::Vector4 &input);
 
     bool BmMultiply(TAttrib<EA::Reflection::Float> &result) const;
     bool BmMultiply(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BmMultiply() const;
-    bool SET_BmMultiply(const EA::Reflection::Float &input);
+    bool Set_BmMultiply(const EA::Reflection::Float &input);
 
     bool BrMultiply(TAttrib<EA::Reflection::Float> &result) const;
     bool BrMultiply(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BrMultiply() const;
-    bool SET_BrMultiply(const EA::Reflection::Float &input);
+    bool Set_BrMultiply(const EA::Reflection::Float &input);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool ConstantBm(TAttrib<UMath::Vector4> &result) const;
     bool ConstantBm(UMath::Vector4 &result) const;
     const UMath::Vector4 &ConstantBm() const;
-    bool SET_ConstantBm(const UMath::Vector4 &input);
+    bool Set_ConstantBm(const UMath::Vector4 &input);
 
     bool ConstantBr(TAttrib<UMath::Vector4> &result) const;
     bool ConstantBr(UMath::Vector4 &result) const;
     const UMath::Vector4 &ConstantBr() const;
-    bool SET_ConstantBr(const UMath::Vector4 &input);
+    bool Set_ConstantBr(const UMath::Vector4 &input);
 
     bool EmitterQuadratic(TAttrib<UMath::Vector4> &result) const;
     bool EmitterQuadratic(UMath::Vector4 &result) const;
     const UMath::Vector4 &EmitterQuadratic() const;
-    bool SET_EmitterQuadratic(const UMath::Vector4 &input);
+    bool Set_EmitterQuadratic(const UMath::Vector4 &input);
 
     bool FogEnable(TAttrib<EA::Reflection::Bool> &result) const;
     bool FogEnable(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &FogEnable() const;
-    bool SET_FogEnable(const EA::Reflection::Bool &input);
+    bool Set_FogEnable(const EA::Reflection::Bool &input);
 
     bool FogG(TAttrib<EA::Reflection::Float> &result) const;
     bool FogG(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FogG() const;
-    bool SET_FogG(const EA::Reflection::Float &input);
+    bool Set_FogG(const EA::Reflection::Float &input);
 
     bool InScatterMulitply(TAttrib<EA::Reflection::Float> &result) const;
     bool InScatterMulitply(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &InScatterMulitply() const;
-    bool SET_InScatterMulitply(const EA::Reflection::Float &input);
+    bool Set_InScatterMulitply(const EA::Reflection::Float &input);
 
     bool InheritVelocity(TAttrib<EA::Reflection::Float> &result) const;
     bool InheritVelocity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &InheritVelocity() const;
-    bool SET_InheritVelocity(const EA::Reflection::Float &input);
+    bool Set_InheritVelocity(const EA::Reflection::Float &input);
 
     bool VisualCullDist(TAttrib<EA::Reflection::Float> &result) const;
     bool VisualCullDist(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &VisualCullDist() const;
-    bool SET_VisualCullDist(const EA::Reflection::Float &input);
+    bool Set_VisualCullDist(const EA::Reflection::Float &input);
 
     bool emittergroup(TAttrib<RefSpec> &result) const;
     bool emittergroup(RefSpec &result) const;
     const RefSpec &emittergroup() const;
-    bool SET_emittergroup(const RefSpec &input);
+    bool Set_emittergroup(const RefSpec &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -245,7 +245,7 @@ inline const EA::Reflection::Float &Gen::effects::AudioCullDist() const {
 inline bool Gen::effects::AudioCullDist(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x98dba438, result);
 }
-inline bool Gen::effects::SET_AudioCullDist(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_AudioCullDist(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x98dba438, input);
 }
 
@@ -258,7 +258,7 @@ inline const RefSpec &Gen::effects::AudioFX_BOTTOM() const {
 inline bool Gen::effects::AudioFX_BOTTOM(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xe82f96cf, result);
 }
-inline bool Gen::effects::SET_AudioFX_BOTTOM(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_BOTTOM(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xe82f96cf, input);
 }
 
@@ -272,7 +272,7 @@ inline bool Gen::effects::AudioFX_DEFAULT(RefSpec &result) const {
     result = AudioFX_DEFAULT();
     return true;
 }
-inline bool Gen::effects::SET_AudioFX_DEFAULT(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_DEFAULT(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AudioFX_DEFAULT, input);
 }
 
@@ -285,7 +285,7 @@ inline const RefSpec &Gen::effects::AudioFX_FRONT() const {
 inline bool Gen::effects::AudioFX_FRONT(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x53de9f00, result);
 }
-inline bool Gen::effects::SET_AudioFX_FRONT(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_FRONT(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x53de9f00, input);
 }
 
@@ -298,7 +298,7 @@ inline const RefSpec &Gen::effects::AudioFX_REAR() const {
 inline bool Gen::effects::AudioFX_REAR(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x7bc5f444, result);
 }
-inline bool Gen::effects::SET_AudioFX_REAR(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_REAR(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x7bc5f444, input);
 }
 
@@ -311,7 +311,7 @@ inline const RefSpec &Gen::effects::AudioFX_SIDE() const {
 inline bool Gen::effects::AudioFX_SIDE(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x4c64ed7b, result);
 }
-inline bool Gen::effects::SET_AudioFX_SIDE(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_SIDE(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x4c64ed7b, input);
 }
 
@@ -324,7 +324,7 @@ inline const RefSpec &Gen::effects::AudioFX_TOP() const {
 inline bool Gen::effects::AudioFX_TOP(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x74ef4fc8, result);
 }
-inline bool Gen::effects::SET_AudioFX_TOP(const RefSpec &input) {
+inline bool Gen::effects::Set_AudioFX_TOP(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x74ef4fc8, input);
 }
 
@@ -337,7 +337,7 @@ inline const UMath::Vector4 &Gen::effects::AudioQuadratic() const {
 inline bool Gen::effects::AudioQuadratic(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x15e6552f, result);
 }
-inline bool Gen::effects::SET_AudioQuadratic(const UMath::Vector4 &input) {
+inline bool Gen::effects::Set_AudioQuadratic(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x15e6552f, input);
 }
 
@@ -350,7 +350,7 @@ inline const EA::Reflection::Float &Gen::effects::BmMultiply() const {
 inline bool Gen::effects::BmMultiply(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc8baf5d6, result);
 }
-inline bool Gen::effects::SET_BmMultiply(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_BmMultiply(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc8baf5d6, input);
 }
 
@@ -363,7 +363,7 @@ inline const EA::Reflection::Float &Gen::effects::BrMultiply() const {
 inline bool Gen::effects::BrMultiply(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x555fd699, result);
 }
-inline bool Gen::effects::SET_BrMultiply(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_BrMultiply(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x555fd699, input);
 }
 
@@ -377,7 +377,7 @@ inline bool Gen::effects::CollectionName(EA::Reflection::Text &result) const {
     result = CollectionName();
     return true;
 }
-inline bool Gen::effects::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::effects::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -390,7 +390,7 @@ inline const UMath::Vector4 &Gen::effects::ConstantBm() const {
 inline bool Gen::effects::ConstantBm(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x2cf0b378, result);
 }
-inline bool Gen::effects::SET_ConstantBm(const UMath::Vector4 &input) {
+inline bool Gen::effects::Set_ConstantBm(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x2cf0b378, input);
 }
 
@@ -403,7 +403,7 @@ inline const UMath::Vector4 &Gen::effects::ConstantBr() const {
 inline bool Gen::effects::ConstantBr(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0xa450f56c, result);
 }
-inline bool Gen::effects::SET_ConstantBr(const UMath::Vector4 &input) {
+inline bool Gen::effects::Set_ConstantBr(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0xa450f56c, input);
 }
 
@@ -416,7 +416,7 @@ inline const UMath::Vector4 &Gen::effects::EmitterQuadratic() const {
 inline bool Gen::effects::EmitterQuadratic(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0xa9402c33, result);
 }
-inline bool Gen::effects::SET_EmitterQuadratic(const UMath::Vector4 &input) {
+inline bool Gen::effects::Set_EmitterQuadratic(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0xa9402c33, input);
 }
 
@@ -429,7 +429,7 @@ inline const EA::Reflection::Bool &Gen::effects::FogEnable() const {
 inline bool Gen::effects::FogEnable(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x110882d5, result);
 }
-inline bool Gen::effects::SET_FogEnable(const EA::Reflection::Bool &input) {
+inline bool Gen::effects::Set_FogEnable(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x110882d5, input);
 }
 
@@ -442,7 +442,7 @@ inline const EA::Reflection::Float &Gen::effects::FogG() const {
 inline bool Gen::effects::FogG(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xdba22a95, result);
 }
-inline bool Gen::effects::SET_FogG(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_FogG(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xdba22a95, input);
 }
 
@@ -455,7 +455,7 @@ inline const EA::Reflection::Float &Gen::effects::InScatterMulitply() const {
 inline bool Gen::effects::InScatterMulitply(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x2f70d78a, result);
 }
-inline bool Gen::effects::SET_InScatterMulitply(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_InScatterMulitply(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x2f70d78a, input);
 }
 
@@ -468,7 +468,7 @@ inline const EA::Reflection::Float &Gen::effects::InheritVelocity() const {
 inline bool Gen::effects::InheritVelocity(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0099cb26, result);
 }
-inline bool Gen::effects::SET_InheritVelocity(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_InheritVelocity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0099cb26, input);
 }
 
@@ -481,7 +481,7 @@ inline const EA::Reflection::Float &Gen::effects::VisualCullDist() const {
 inline bool Gen::effects::VisualCullDist(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x1a2f2b1b, result);
 }
-inline bool Gen::effects::SET_VisualCullDist(const EA::Reflection::Float &input) {
+inline bool Gen::effects::Set_VisualCullDist(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x1a2f2b1b, input);
 }
 
@@ -494,7 +494,7 @@ inline const RefSpec &Gen::effects::emittergroup() const {
 inline bool Gen::effects::emittergroup(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xaba86e60, result);
 }
-inline bool Gen::effects::SET_emittergroup(const RefSpec &input) {
+inline bool Gen::effects::Set_emittergroup(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xaba86e60, input);
 }
 

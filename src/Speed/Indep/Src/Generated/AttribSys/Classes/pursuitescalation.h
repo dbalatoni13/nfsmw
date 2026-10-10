@@ -63,25 +63,25 @@ struct pursuitescalation : Instance {
     bool heattable(RefSpec &result, unsigned int index) const;
     const RefSpec &heattable(unsigned int index) const;
     unsigned int Num_heattable() const;
-    bool SET_heattable(const RefSpec &input, unsigned int index);
+    bool Set_heattable(const RefSpec &input, unsigned int index);
 
     bool racetable(TAttrib<RefSpec> &result) const;
     bool racetable(RefSpec &result, unsigned int index) const;
     const RefSpec &racetable(unsigned int index) const;
     unsigned int Num_racetable() const;
-    bool SET_racetable(const RefSpec &input, unsigned int index);
+    bool Set_racetable(const RefSpec &input, unsigned int index);
 
     bool supportracetable(TAttrib<RefSpec> &result) const;
     bool supportracetable(RefSpec &result, unsigned int index) const;
     const RefSpec &supportracetable(unsigned int index) const;
     unsigned int Num_supportracetable() const;
-    bool SET_supportracetable(const RefSpec &input, unsigned int index);
+    bool Set_supportracetable(const RefSpec &input, unsigned int index);
 
     bool supporttable(TAttrib<RefSpec> &result) const;
     bool supporttable(RefSpec &result, unsigned int index) const;
     const RefSpec &supporttable(unsigned int index) const;
     unsigned int Num_supporttable() const;
-    bool SET_supporttable(const RefSpec &input, unsigned int index);
+    bool Set_supporttable(const RefSpec &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -125,7 +125,7 @@ inline bool Gen::pursuitescalation::heattable(RefSpec &result, unsigned int inde
 inline unsigned int Gen::pursuitescalation::Num_heattable() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd4b0cc11);
 }
-inline bool Gen::pursuitescalation::SET_heattable(const RefSpec &input, unsigned int index) {
+inline bool Gen::pursuitescalation::Set_heattable(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xd4b0cc11, input, index);
 }
 
@@ -141,7 +141,7 @@ inline bool Gen::pursuitescalation::racetable(RefSpec &result, unsigned int inde
 inline unsigned int Gen::pursuitescalation::Num_racetable() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2283ecaf);
 }
-inline bool Gen::pursuitescalation::SET_racetable(const RefSpec &input, unsigned int index) {
+inline bool Gen::pursuitescalation::Set_racetable(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x2283ecaf, input, index);
 }
 
@@ -157,7 +157,7 @@ inline bool Gen::pursuitescalation::supportracetable(RefSpec &result, unsigned i
 inline unsigned int Gen::pursuitescalation::Num_supportracetable() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe5332008);
 }
-inline bool Gen::pursuitescalation::SET_supportracetable(const RefSpec &input, unsigned int index) {
+inline bool Gen::pursuitescalation::Set_supportracetable(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xe5332008, input, index);
 }
 
@@ -173,7 +173,7 @@ inline bool Gen::pursuitescalation::supporttable(RefSpec &result, unsigned int i
 inline unsigned int Gen::pursuitescalation::Num_supporttable() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf3918f68);
 }
-inline bool Gen::pursuitescalation::SET_supporttable(const RefSpec &input, unsigned int index) {
+inline bool Gen::pursuitescalation::Set_supporttable(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf3918f68, input, index);
 }
 

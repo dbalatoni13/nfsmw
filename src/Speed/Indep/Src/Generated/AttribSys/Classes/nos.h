@@ -86,42 +86,42 @@ struct nos : Instance {
     bool FLOW_RATE(TAttrib<EA::Reflection::Float> &result) const;
     bool FLOW_RATE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FLOW_RATE() const;
-    bool SET_FLOW_RATE(const EA::Reflection::Float &input);
+    bool Set_FLOW_RATE(const EA::Reflection::Float &input);
 
     bool NOS_CAPACITY(TAttrib<EA::Reflection::Float> &result) const;
     bool NOS_CAPACITY(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NOS_CAPACITY() const;
-    bool SET_NOS_CAPACITY(const EA::Reflection::Float &input);
+    bool Set_NOS_CAPACITY(const EA::Reflection::Float &input);
 
     bool NOS_DISENGAGE(TAttrib<EA::Reflection::Float> &result) const;
     bool NOS_DISENGAGE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NOS_DISENGAGE() const;
-    bool SET_NOS_DISENGAGE(const EA::Reflection::Float &input);
+    bool Set_NOS_DISENGAGE(const EA::Reflection::Float &input);
 
     bool RECHARGE_MAX(TAttrib<EA::Reflection::Float> &result) const;
     bool RECHARGE_MAX(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RECHARGE_MAX() const;
-    bool SET_RECHARGE_MAX(const EA::Reflection::Float &input);
+    bool Set_RECHARGE_MAX(const EA::Reflection::Float &input);
 
     bool RECHARGE_MAX_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool RECHARGE_MAX_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RECHARGE_MAX_SPEED() const;
-    bool SET_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input);
+    bool Set_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input);
 
     bool RECHARGE_MIN(TAttrib<EA::Reflection::Float> &result) const;
     bool RECHARGE_MIN(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RECHARGE_MIN() const;
-    bool SET_RECHARGE_MIN(const EA::Reflection::Float &input);
+    bool Set_RECHARGE_MIN(const EA::Reflection::Float &input);
 
     bool RECHARGE_MIN_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool RECHARGE_MIN_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RECHARGE_MIN_SPEED() const;
-    bool SET_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input);
+    bool Set_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input);
 
     bool TORQUE_BOOST(TAttrib<EA::Reflection::Float> &result) const;
     bool TORQUE_BOOST(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TORQUE_BOOST() const;
-    bool SET_TORQUE_BOOST(const EA::Reflection::Float &input);
+    bool Set_TORQUE_BOOST(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -167,7 +167,7 @@ inline bool Gen::nos::FLOW_RATE(EA::Reflection::Float &result) const {
     result = FLOW_RATE();
     return true;
 }
-inline bool Gen::nos::SET_FLOW_RATE(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_FLOW_RATE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FLOW_RATE, input);
 }
 
@@ -181,7 +181,7 @@ inline bool Gen::nos::NOS_CAPACITY(EA::Reflection::Float &result) const {
     result = NOS_CAPACITY();
     return true;
 }
-inline bool Gen::nos::SET_NOS_CAPACITY(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_NOS_CAPACITY(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NOS_CAPACITY, input);
 }
 
@@ -195,7 +195,7 @@ inline bool Gen::nos::NOS_DISENGAGE(EA::Reflection::Float &result) const {
     result = NOS_DISENGAGE();
     return true;
 }
-inline bool Gen::nos::SET_NOS_DISENGAGE(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_NOS_DISENGAGE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NOS_DISENGAGE, input);
 }
 
@@ -209,7 +209,7 @@ inline bool Gen::nos::RECHARGE_MAX(EA::Reflection::Float &result) const {
     result = RECHARGE_MAX();
     return true;
 }
-inline bool Gen::nos::SET_RECHARGE_MAX(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_RECHARGE_MAX(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX, input);
 }
 
@@ -223,7 +223,7 @@ inline bool Gen::nos::RECHARGE_MAX_SPEED(EA::Reflection::Float &result) const {
     result = RECHARGE_MAX_SPEED();
     return true;
 }
-inline bool Gen::nos::SET_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX_SPEED, input);
 }
 
@@ -237,7 +237,7 @@ inline bool Gen::nos::RECHARGE_MIN(EA::Reflection::Float &result) const {
     result = RECHARGE_MIN();
     return true;
 }
-inline bool Gen::nos::SET_RECHARGE_MIN(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_RECHARGE_MIN(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN, input);
 }
 
@@ -251,7 +251,7 @@ inline bool Gen::nos::RECHARGE_MIN_SPEED(EA::Reflection::Float &result) const {
     result = RECHARGE_MIN_SPEED();
     return true;
 }
-inline bool Gen::nos::SET_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN_SPEED, input);
 }
 
@@ -265,7 +265,7 @@ inline bool Gen::nos::TORQUE_BOOST(EA::Reflection::Float &result) const {
     result = TORQUE_BOOST();
     return true;
 }
-inline bool Gen::nos::SET_TORQUE_BOOST(const EA::Reflection::Float &input) {
+inline bool Gen::nos::Set_TORQUE_BOOST(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TORQUE_BOOST, input);
 }
 

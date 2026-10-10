@@ -131,187 +131,187 @@ struct lightmaterials : Instance {
     bool Ambient(TAttrib<EA::Reflection::Float> &result) const;
     bool Ambient(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Ambient() const;
-    bool SET_Ambient(const EA::Reflection::Float &input);
+    bool Set_Ambient(const EA::Reflection::Float &input);
 
     bool Brightness(TAttrib<EA::Reflection::Float> &result) const;
     bool Brightness(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Brightness() const;
-    bool SET_Brightness(const EA::Reflection::Float &input);
+    bool Set_Brightness(const EA::Reflection::Float &input);
 
     bool DiffuseMipMapBias(TAttrib<EA::Reflection::Float> &result) const;
     bool DiffuseMipMapBias(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DiffuseMipMapBias() const;
-    bool SET_DiffuseMipMapBias(const EA::Reflection::Float &input);
+    bool Set_DiffuseMipMapBias(const EA::Reflection::Float &input);
 
     bool DiffuseSpace(TAttrib<EA::Reflection::Float> &result) const;
     bool DiffuseSpace(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DiffuseSpace() const;
-    bool SET_DiffuseSpace(const EA::Reflection::Float &input);
+    bool Set_DiffuseSpace(const EA::Reflection::Float &input);
 
     bool GrassColour(TAttrib<UMath::Vector4> &result) const;
     bool GrassColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &GrassColour() const;
-    bool SET_GrassColour(const UMath::Vector4 &input);
+    bool Set_GrassColour(const UMath::Vector4 &input);
 
     bool GrassGamma(TAttrib<EA::Reflection::Float> &result) const;
     bool GrassGamma(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GrassGamma() const;
-    bool SET_GrassGamma(const EA::Reflection::Float &input);
+    bool Set_GrassGamma(const EA::Reflection::Float &input);
 
     bool GrassHeight(TAttrib<EA::Reflection::Float> &result) const;
     bool GrassHeight(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GrassHeight() const;
-    bool SET_GrassHeight(const EA::Reflection::Float &input);
+    bool Set_GrassHeight(const EA::Reflection::Float &input);
 
     bool LODRamp(TAttrib<EA::Reflection::Float> &result) const;
     bool LODRamp(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LODRamp() const;
-    bool SET_LODRamp(const EA::Reflection::Float &input);
+    bool Set_LODRamp(const EA::Reflection::Float &input);
 
     bool LODStart(TAttrib<EA::Reflection::Float> &result) const;
     bool LODStart(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LODStart() const;
-    bool SET_LODStart(const EA::Reflection::Float &input);
+    bool Set_LODStart(const EA::Reflection::Float &input);
 
     bool LightingCone(TAttrib<EA::Reflection::Float> &result) const;
     bool LightingCone(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LightingCone() const;
-    bool SET_LightingCone(const EA::Reflection::Float &input);
+    bool Set_LightingCone(const EA::Reflection::Float &input);
 
     bool LowNoiseIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool LowNoiseIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LowNoiseIntensity() const;
-    bool SET_LowNoiseIntensity(const EA::Reflection::Float &input);
+    bool Set_LowNoiseIntensity(const EA::Reflection::Float &input);
 
     bool LowNoiseSpace(TAttrib<EA::Reflection::Float> &result) const;
     bool LowNoiseSpace(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LowNoiseSpace() const;
-    bool SET_LowNoiseSpace(const EA::Reflection::Float &input);
+    bool Set_LowNoiseSpace(const EA::Reflection::Float &input);
 
     bool MaxShells(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxShells(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxShells() const;
-    bool SET_MaxShells(const EA::Reflection::Float &input);
+    bool Set_MaxShells(const EA::Reflection::Float &input);
 
     bool NoiseMipMapBias(TAttrib<EA::Reflection::Float> &result) const;
     bool NoiseMipMapBias(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NoiseMipMapBias() const;
-    bool SET_NoiseMipMapBias(const EA::Reflection::Float &input);
+    bool Set_NoiseMipMapBias(const EA::Reflection::Float &input);
 
     bool NoiseSpace(TAttrib<EA::Reflection::Float> &result) const;
     bool NoiseSpace(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NoiseSpace() const;
-    bool SET_NoiseSpace(const EA::Reflection::Float &input);
+    bool Set_NoiseSpace(const EA::Reflection::Float &input);
 
     bool PunchThroughAlphaRef(TAttrib<EA::Reflection::UInt8> &result) const;
     bool PunchThroughAlphaRef(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &PunchThroughAlphaRef() const;
-    bool SET_PunchThroughAlphaRef(const EA::Reflection::UInt8 &input);
+    bool Set_PunchThroughAlphaRef(const EA::Reflection::UInt8 &input);
 
     bool Scruff(TAttrib<EA::Reflection::Float> &result) const;
     bool Scruff(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Scruff() const;
-    bool SET_Scruff(const EA::Reflection::Float &input);
+    bool Set_Scruff(const EA::Reflection::Float &input);
 
     bool Smoothness(TAttrib<EA::Reflection::Float> &result) const;
     bool Smoothness(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Smoothness() const;
-    bool SET_Smoothness(const EA::Reflection::Float &input);
+    bool Set_Smoothness(const EA::Reflection::Float &input);
 
     bool diffuseColour(TAttrib<UMath::Vector4> &result) const;
     bool diffuseColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &diffuseColour() const;
-    bool SET_diffuseColour(const UMath::Vector4 &input);
+    bool Set_diffuseColour(const UMath::Vector4 &input);
 
     bool diffuseFacing(TAttrib<EA::Reflection::Float> &result) const;
     bool diffuseFacing(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &diffuseFacing() const;
-    bool SET_diffuseFacing(const EA::Reflection::Float &input);
+    bool Set_diffuseFacing(const EA::Reflection::Float &input);
 
     bool diffuseGrazing(TAttrib<EA::Reflection::Float> &result) const;
     bool diffuseGrazing(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &diffuseGrazing() const;
-    bool SET_diffuseGrazing(const EA::Reflection::Float &input);
+    bool Set_diffuseGrazing(const EA::Reflection::Float &input);
 
     bool diffusePower(TAttrib<EA::Reflection::Float> &result) const;
     bool diffusePower(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &diffusePower() const;
-    bool SET_diffusePower(const EA::Reflection::Float &input);
+    bool Set_diffusePower(const EA::Reflection::Float &input);
 
     bool filterColourMap(TAttrib<Attrib::StringKey> &result) const;
     bool filterColourMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &filterColourMap() const;
-    bool SET_filterColourMap(const Attrib::StringKey &input);
+    bool Set_filterColourMap(const Attrib::StringKey &input);
 
     bool glossMap(TAttrib<Attrib::StringKey> &result) const;
     bool glossMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &glossMap() const;
-    bool SET_glossMap(const Attrib::StringKey &input);
+    bool Set_glossMap(const Attrib::StringKey &input);
 
     bool illuminationMap(TAttrib<Attrib::StringKey> &result) const;
     bool illuminationMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &illuminationMap() const;
-    bool SET_illuminationMap(const Attrib::StringKey &input);
+    bool Set_illuminationMap(const Attrib::StringKey &input);
 
     bool opacityMap(TAttrib<Attrib::StringKey> &result) const;
     bool opacityMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &opacityMap() const;
-    bool SET_opacityMap(const Attrib::StringKey &input);
+    bool Set_opacityMap(const Attrib::StringKey &input);
 
     bool parallaxHeight(TAttrib<EA::Reflection::Float> &result) const;
     bool parallaxHeight(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &parallaxHeight() const;
-    bool SET_parallaxHeight(const EA::Reflection::Float &input);
+    bool Set_parallaxHeight(const EA::Reflection::Float &input);
 
     bool reflectionMap(TAttrib<Attrib::StringKey> &result) const;
     bool reflectionMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &reflectionMap() const;
-    bool SET_reflectionMap(const Attrib::StringKey &input);
+    bool Set_reflectionMap(const Attrib::StringKey &input);
 
     bool refractionMap(TAttrib<Attrib::StringKey> &result) const;
     bool refractionMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &refractionMap() const;
-    bool SET_refractionMap(const Attrib::StringKey &input);
+    bool Set_refractionMap(const Attrib::StringKey &input);
 
     bool shader(TAttrib<Attrib::StringKey> &result) const;
     bool shader(Attrib::StringKey &result) const;
     const Attrib::StringKey &shader() const;
-    bool SET_shader(const Attrib::StringKey &input);
+    bool Set_shader(const Attrib::StringKey &input);
 
     bool shaderspec(TAttrib<RefSpec> &result) const;
     bool shaderspec(RefSpec &result) const;
     const RefSpec &shaderspec() const;
-    bool SET_shaderspec(const RefSpec &input);
+    bool Set_shaderspec(const RefSpec &input);
 
     bool specularColour(TAttrib<UMath::Vector4> &result) const;
     bool specularColour(UMath::Vector4 &result) const;
     const UMath::Vector4 &specularColour() const;
-    bool SET_specularColour(const UMath::Vector4 &input);
+    bool Set_specularColour(const UMath::Vector4 &input);
 
     bool specularColourMap(TAttrib<Attrib::StringKey> &result) const;
     bool specularColourMap(Attrib::StringKey &result) const;
     const Attrib::StringKey &specularColourMap() const;
-    bool SET_specularColourMap(const Attrib::StringKey &input);
+    bool Set_specularColourMap(const Attrib::StringKey &input);
 
     bool specularFacing(TAttrib<EA::Reflection::Float> &result) const;
     bool specularFacing(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &specularFacing() const;
-    bool SET_specularFacing(const EA::Reflection::Float &input);
+    bool Set_specularFacing(const EA::Reflection::Float &input);
 
     bool specularGrazing(TAttrib<EA::Reflection::Float> &result) const;
     bool specularGrazing(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &specularGrazing() const;
-    bool SET_specularGrazing(const EA::Reflection::Float &input);
+    bool Set_specularGrazing(const EA::Reflection::Float &input);
 
     bool specularPower(TAttrib<EA::Reflection::Float> &result) const;
     bool specularPower(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &specularPower() const;
-    bool SET_specularPower(const EA::Reflection::Float &input);
+    bool Set_specularPower(const EA::Reflection::Float &input);
 
     bool useVertexColour(TAttrib<EA::Reflection::Bool> &result) const;
     bool useVertexColour(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &useVertexColour() const;
-    bool SET_useVertexColour(const EA::Reflection::Bool &input);
+    bool Set_useVertexColour(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -385,7 +385,7 @@ inline const EA::Reflection::Float &Gen::lightmaterials::Ambient() const {
 inline bool Gen::lightmaterials::Ambient(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x483b6e25, result);
 }
-inline bool Gen::lightmaterials::SET_Ambient(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_Ambient(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x483b6e25, input);
 }
 
@@ -398,7 +398,7 @@ inline const EA::Reflection::Float &Gen::lightmaterials::Brightness() const {
 inline bool Gen::lightmaterials::Brightness(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x42ff3188, result);
 }
-inline bool Gen::lightmaterials::SET_Brightness(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_Brightness(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x42ff3188, input);
 }
 
@@ -412,7 +412,7 @@ inline bool Gen::lightmaterials::DiffuseMipMapBias(EA::Reflection::Float &result
     result = DiffuseMipMapBias();
     return true;
 }
-inline bool Gen::lightmaterials::SET_DiffuseMipMapBias(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_DiffuseMipMapBias(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DiffuseMipMapBias, input);
 }
 
@@ -426,7 +426,7 @@ inline bool Gen::lightmaterials::DiffuseSpace(EA::Reflection::Float &result) con
     result = DiffuseSpace();
     return true;
 }
-inline bool Gen::lightmaterials::SET_DiffuseSpace(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_DiffuseSpace(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DiffuseSpace, input);
 }
 
@@ -440,7 +440,7 @@ inline bool Gen::lightmaterials::GrassColour(UMath::Vector4 &result) const {
     result = GrassColour();
     return true;
 }
-inline bool Gen::lightmaterials::SET_GrassColour(const UMath::Vector4 &input) {
+inline bool Gen::lightmaterials::Set_GrassColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GrassColour, input);
 }
 
@@ -454,7 +454,7 @@ inline bool Gen::lightmaterials::GrassGamma(EA::Reflection::Float &result) const
     result = GrassGamma();
     return true;
 }
-inline bool Gen::lightmaterials::SET_GrassGamma(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_GrassGamma(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GrassGamma, input);
 }
 
@@ -468,7 +468,7 @@ inline bool Gen::lightmaterials::GrassHeight(EA::Reflection::Float &result) cons
     result = GrassHeight();
     return true;
 }
-inline bool Gen::lightmaterials::SET_GrassHeight(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_GrassHeight(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GrassHeight, input);
 }
 
@@ -482,7 +482,7 @@ inline bool Gen::lightmaterials::LODRamp(EA::Reflection::Float &result) const {
     result = LODRamp();
     return true;
 }
-inline bool Gen::lightmaterials::SET_LODRamp(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_LODRamp(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LODRamp, input);
 }
 
@@ -496,7 +496,7 @@ inline bool Gen::lightmaterials::LODStart(EA::Reflection::Float &result) const {
     result = LODStart();
     return true;
 }
-inline bool Gen::lightmaterials::SET_LODStart(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_LODStart(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LODStart, input);
 }
 
@@ -509,7 +509,7 @@ inline const EA::Reflection::Float &Gen::lightmaterials::LightingCone() const {
 inline bool Gen::lightmaterials::LightingCone(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe0985f58, result);
 }
-inline bool Gen::lightmaterials::SET_LightingCone(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_LightingCone(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe0985f58, input);
 }
 
@@ -523,7 +523,7 @@ inline bool Gen::lightmaterials::LowNoiseIntensity(EA::Reflection::Float &result
     result = LowNoiseIntensity();
     return true;
 }
-inline bool Gen::lightmaterials::SET_LowNoiseIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_LowNoiseIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LowNoiseIntensity, input);
 }
 
@@ -537,7 +537,7 @@ inline bool Gen::lightmaterials::LowNoiseSpace(EA::Reflection::Float &result) co
     result = LowNoiseSpace();
     return true;
 }
-inline bool Gen::lightmaterials::SET_LowNoiseSpace(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_LowNoiseSpace(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LowNoiseSpace, input);
 }
 
@@ -551,7 +551,7 @@ inline bool Gen::lightmaterials::MaxShells(EA::Reflection::Float &result) const 
     result = MaxShells();
     return true;
 }
-inline bool Gen::lightmaterials::SET_MaxShells(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_MaxShells(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxShells, input);
 }
 
@@ -565,7 +565,7 @@ inline bool Gen::lightmaterials::NoiseMipMapBias(EA::Reflection::Float &result) 
     result = NoiseMipMapBias();
     return true;
 }
-inline bool Gen::lightmaterials::SET_NoiseMipMapBias(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_NoiseMipMapBias(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NoiseMipMapBias, input);
 }
 
@@ -578,7 +578,7 @@ inline const EA::Reflection::Float &Gen::lightmaterials::NoiseSpace() const {
 inline bool Gen::lightmaterials::NoiseSpace(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3a417eae, result);
 }
-inline bool Gen::lightmaterials::SET_NoiseSpace(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_NoiseSpace(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3a417eae, input);
 }
 
@@ -592,7 +592,7 @@ inline bool Gen::lightmaterials::PunchThroughAlphaRef(EA::Reflection::UInt8 &res
     result = PunchThroughAlphaRef();
     return true;
 }
-inline bool Gen::lightmaterials::SET_PunchThroughAlphaRef(const EA::Reflection::UInt8 &input) {
+inline bool Gen::lightmaterials::Set_PunchThroughAlphaRef(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PunchThroughAlphaRef, input);
 }
 
@@ -606,7 +606,7 @@ inline bool Gen::lightmaterials::Scruff(EA::Reflection::Float &result) const {
     result = Scruff();
     return true;
 }
-inline bool Gen::lightmaterials::SET_Scruff(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_Scruff(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Scruff, input);
 }
 
@@ -619,7 +619,7 @@ inline const EA::Reflection::Float &Gen::lightmaterials::Smoothness() const {
 inline bool Gen::lightmaterials::Smoothness(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb94011a2, result);
 }
-inline bool Gen::lightmaterials::SET_Smoothness(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_Smoothness(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb94011a2, input);
 }
 
@@ -633,7 +633,7 @@ inline bool Gen::lightmaterials::diffuseColour(UMath::Vector4 &result) const {
     result = diffuseColour();
     return true;
 }
-inline bool Gen::lightmaterials::SET_diffuseColour(const UMath::Vector4 &input) {
+inline bool Gen::lightmaterials::Set_diffuseColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(diffuseColour, input);
 }
 
@@ -647,7 +647,7 @@ inline bool Gen::lightmaterials::diffuseFacing(EA::Reflection::Float &result) co
     result = diffuseFacing();
     return true;
 }
-inline bool Gen::lightmaterials::SET_diffuseFacing(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_diffuseFacing(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(diffuseFacing, input);
 }
 
@@ -661,7 +661,7 @@ inline bool Gen::lightmaterials::diffuseGrazing(EA::Reflection::Float &result) c
     result = diffuseGrazing();
     return true;
 }
-inline bool Gen::lightmaterials::SET_diffuseGrazing(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_diffuseGrazing(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(diffuseGrazing, input);
 }
 
@@ -675,7 +675,7 @@ inline bool Gen::lightmaterials::diffusePower(EA::Reflection::Float &result) con
     result = diffusePower();
     return true;
 }
-inline bool Gen::lightmaterials::SET_diffusePower(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_diffusePower(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(diffusePower, input);
 }
 
@@ -688,7 +688,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::filterColourMap() const {
 inline bool Gen::lightmaterials::filterColourMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xfd165dc3, result);
 }
-inline bool Gen::lightmaterials::SET_filterColourMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_filterColourMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xfd165dc3, input);
 }
 
@@ -701,7 +701,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::glossMap() const {
 inline bool Gen::lightmaterials::glossMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x5439f9c7, result);
 }
-inline bool Gen::lightmaterials::SET_glossMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_glossMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x5439f9c7, input);
 }
 
@@ -714,7 +714,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::illuminationMap() const {
 inline bool Gen::lightmaterials::illuminationMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xf3d46f50, result);
 }
-inline bool Gen::lightmaterials::SET_illuminationMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_illuminationMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xf3d46f50, input);
 }
 
@@ -727,7 +727,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::opacityMap() const {
 inline bool Gen::lightmaterials::opacityMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x15fa3308, result);
 }
-inline bool Gen::lightmaterials::SET_opacityMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_opacityMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x15fa3308, input);
 }
 
@@ -741,7 +741,7 @@ inline bool Gen::lightmaterials::parallaxHeight(EA::Reflection::Float &result) c
     result = parallaxHeight();
     return true;
 }
-inline bool Gen::lightmaterials::SET_parallaxHeight(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_parallaxHeight(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(parallaxHeight, input);
 }
 
@@ -754,7 +754,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::reflectionMap() const {
 inline bool Gen::lightmaterials::reflectionMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x95c10731, result);
 }
-inline bool Gen::lightmaterials::SET_reflectionMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_reflectionMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x95c10731, input);
 }
 
@@ -767,7 +767,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::refractionMap() const {
 inline bool Gen::lightmaterials::refractionMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x1dafcfc0, result);
 }
-inline bool Gen::lightmaterials::SET_refractionMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_refractionMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x1dafcfc0, input);
 }
 
@@ -781,7 +781,7 @@ inline bool Gen::lightmaterials::shader(Attrib::StringKey &result) const {
     result = shader();
     return true;
 }
-inline bool Gen::lightmaterials::SET_shader(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_shader(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(shader, input);
 }
 
@@ -794,7 +794,7 @@ inline const RefSpec &Gen::lightmaterials::shaderspec() const {
 inline bool Gen::lightmaterials::shaderspec(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xcb31c94d, result);
 }
-inline bool Gen::lightmaterials::SET_shaderspec(const RefSpec &input) {
+inline bool Gen::lightmaterials::Set_shaderspec(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xcb31c94d, input);
 }
 
@@ -808,7 +808,7 @@ inline bool Gen::lightmaterials::specularColour(UMath::Vector4 &result) const {
     result = specularColour();
     return true;
 }
-inline bool Gen::lightmaterials::SET_specularColour(const UMath::Vector4 &input) {
+inline bool Gen::lightmaterials::Set_specularColour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(specularColour, input);
 }
 
@@ -821,7 +821,7 @@ inline const Attrib::StringKey &Gen::lightmaterials::specularColourMap() const {
 inline bool Gen::lightmaterials::specularColourMap(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x2569fd5b, result);
 }
-inline bool Gen::lightmaterials::SET_specularColourMap(const Attrib::StringKey &input) {
+inline bool Gen::lightmaterials::Set_specularColourMap(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x2569fd5b, input);
 }
 
@@ -835,7 +835,7 @@ inline bool Gen::lightmaterials::specularFacing(EA::Reflection::Float &result) c
     result = specularFacing();
     return true;
 }
-inline bool Gen::lightmaterials::SET_specularFacing(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_specularFacing(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(specularFacing, input);
 }
 
@@ -849,7 +849,7 @@ inline bool Gen::lightmaterials::specularGrazing(EA::Reflection::Float &result) 
     result = specularGrazing();
     return true;
 }
-inline bool Gen::lightmaterials::SET_specularGrazing(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_specularGrazing(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(specularGrazing, input);
 }
 
@@ -863,7 +863,7 @@ inline bool Gen::lightmaterials::specularPower(EA::Reflection::Float &result) co
     result = specularPower();
     return true;
 }
-inline bool Gen::lightmaterials::SET_specularPower(const EA::Reflection::Float &input) {
+inline bool Gen::lightmaterials::Set_specularPower(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(specularPower, input);
 }
 
@@ -876,7 +876,7 @@ inline const EA::Reflection::Bool &Gen::lightmaterials::useVertexColour() const 
 inline bool Gen::lightmaterials::useVertexColour(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2de05384, result);
 }
-inline bool Gen::lightmaterials::SET_useVertexColour(const EA::Reflection::Bool &input) {
+inline bool Gen::lightmaterials::Set_useVertexColour(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2de05384, input);
 }
 

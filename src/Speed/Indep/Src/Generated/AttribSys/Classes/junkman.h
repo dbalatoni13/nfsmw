@@ -66,43 +66,43 @@ struct junkman : Instance {
     bool brakes_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &brakes_package(unsigned int index) const;
     unsigned int Num_brakes_package() const;
-    bool SET_brakes_package(const JunkmanMod &input, unsigned int index);
+    bool Set_brakes_package(const JunkmanMod &input, unsigned int index);
 
     bool chassis_package(TAttrib<JunkmanMod> &result) const;
     bool chassis_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &chassis_package(unsigned int index) const;
     unsigned int Num_chassis_package() const;
-    bool SET_chassis_package(const JunkmanMod &input, unsigned int index);
+    bool Set_chassis_package(const JunkmanMod &input, unsigned int index);
 
     bool engine_package(TAttrib<JunkmanMod> &result) const;
     bool engine_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &engine_package(unsigned int index) const;
     unsigned int Num_engine_package() const;
-    bool SET_engine_package(const JunkmanMod &input, unsigned int index);
+    bool Set_engine_package(const JunkmanMod &input, unsigned int index);
 
     bool induction_package(TAttrib<JunkmanMod> &result) const;
     bool induction_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &induction_package(unsigned int index) const;
     unsigned int Num_induction_package() const;
-    bool SET_induction_package(const JunkmanMod &input, unsigned int index);
+    bool Set_induction_package(const JunkmanMod &input, unsigned int index);
 
     bool nos_package(TAttrib<JunkmanMod> &result) const;
     bool nos_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &nos_package(unsigned int index) const;
     unsigned int Num_nos_package() const;
-    bool SET_nos_package(const JunkmanMod &input, unsigned int index);
+    bool Set_nos_package(const JunkmanMod &input, unsigned int index);
 
     bool tires_package(TAttrib<JunkmanMod> &result) const;
     bool tires_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &tires_package(unsigned int index) const;
     unsigned int Num_tires_package() const;
-    bool SET_tires_package(const JunkmanMod &input, unsigned int index);
+    bool Set_tires_package(const JunkmanMod &input, unsigned int index);
 
     bool transmission_package(TAttrib<JunkmanMod> &result) const;
     bool transmission_package(JunkmanMod &result, unsigned int index) const;
     const JunkmanMod &transmission_package(unsigned int index) const;
     unsigned int Num_transmission_package() const;
-    bool SET_transmission_package(const JunkmanMod &input, unsigned int index);
+    bool Set_transmission_package(const JunkmanMod &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -149,7 +149,7 @@ inline bool Gen::junkman::brakes_package(JunkmanMod &result, unsigned int index)
 inline unsigned int Gen::junkman::Num_brakes_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0x56c63b6f);
 }
-inline bool Gen::junkman::SET_brakes_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_brakes_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x56c63b6f, input, index);
 }
 
@@ -165,7 +165,7 @@ inline bool Gen::junkman::chassis_package(JunkmanMod &result, unsigned int index
 inline unsigned int Gen::junkman::Num_chassis_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb6495c9e);
 }
-inline bool Gen::junkman::SET_chassis_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_chassis_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xb6495c9e, input, index);
 }
 
@@ -181,7 +181,7 @@ inline bool Gen::junkman::engine_package(JunkmanMod &result, unsigned int index)
 inline unsigned int Gen::junkman::Num_engine_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0x9206efd2);
 }
-inline bool Gen::junkman::SET_engine_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_engine_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x9206efd2, input, index);
 }
 
@@ -197,7 +197,7 @@ inline bool Gen::junkman::induction_package(JunkmanMod &result, unsigned int ind
 inline unsigned int Gen::junkman::Num_induction_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7546359e);
 }
-inline bool Gen::junkman::SET_induction_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_induction_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x7546359e, input, index);
 }
 
@@ -213,7 +213,7 @@ inline bool Gen::junkman::nos_package(JunkmanMod &result, unsigned int index) co
 inline unsigned int Gen::junkman::Num_nos_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0x452d2634);
 }
-inline bool Gen::junkman::SET_nos_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_nos_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x452d2634, input, index);
 }
 
@@ -229,7 +229,7 @@ inline bool Gen::junkman::tires_package(JunkmanMod &result, unsigned int index) 
 inline unsigned int Gen::junkman::Num_tires_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc5860f58);
 }
-inline bool Gen::junkman::SET_tires_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_tires_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xc5860f58, input, index);
 }
 
@@ -245,7 +245,7 @@ inline bool Gen::junkman::transmission_package(JunkmanMod &result, unsigned int 
 inline unsigned int Gen::junkman::Num_transmission_package() const {
     ATTRIB_CODEGEN_GETLENGTH(0x25ae629a);
 }
-inline bool Gen::junkman::SET_transmission_package(const JunkmanMod &input, unsigned int index) {
+inline bool Gen::junkman::Set_transmission_package(const JunkmanMod &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x25ae629a, input, index);
 }
 

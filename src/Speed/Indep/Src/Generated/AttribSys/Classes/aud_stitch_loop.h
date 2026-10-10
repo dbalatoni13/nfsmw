@@ -60,12 +60,12 @@ struct aud_stitch_loop : Instance {
     bool overlap(TAttrib<EA::Reflection::Int32> &result) const;
     bool overlap(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &overlap() const;
-    bool SET_overlap(const EA::Reflection::Int32 &input);
+    bool Set_overlap(const EA::Reflection::Int32 &input);
 
     bool stitch(TAttrib<STICH_COLLISION_TYPE> &result) const;
     bool stitch(STICH_COLLISION_TYPE &result) const;
     const STICH_COLLISION_TYPE &stitch() const;
-    bool SET_stitch(const STICH_COLLISION_TYPE &input);
+    bool Set_stitch(const STICH_COLLISION_TYPE &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -104,7 +104,7 @@ inline const EA::Reflection::Int32 &Gen::aud_stitch_loop::overlap() const {
 inline bool Gen::aud_stitch_loop::overlap(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xad8c27f5, result);
 }
-inline bool Gen::aud_stitch_loop::SET_overlap(const EA::Reflection::Int32 &input) {
+inline bool Gen::aud_stitch_loop::Set_overlap(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xad8c27f5, input);
 }
 
@@ -117,7 +117,7 @@ inline const STICH_COLLISION_TYPE &Gen::aud_stitch_loop::stitch() const {
 inline bool Gen::aud_stitch_loop::stitch(STICH_COLLISION_TYPE &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, result);
 }
-inline bool Gen::aud_stitch_loop::SET_stitch(const STICH_COLLISION_TYPE &input) {
+inline bool Gen::aud_stitch_loop::Set_stitch(const STICH_COLLISION_TYPE &input) {
     ATTRIB_CODEGEN_SETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, input);
 }
 

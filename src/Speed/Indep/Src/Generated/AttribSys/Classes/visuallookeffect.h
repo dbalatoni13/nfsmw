@@ -83,37 +83,37 @@ struct visuallookeffect : Instance {
     bool _testvalue(TAttrib<EA::Reflection::Float> &result) const;
     bool _testvalue(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &_testvalue() const;
-    bool SET__testvalue(const EA::Reflection::Float &input);
+    bool Set__testvalue(const EA::Reflection::Float &input);
 
     bool graph(TAttrib<UMath::Matrix4> &result) const;
     bool graph(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &graph() const;
-    bool SET_graph(const UMath::Matrix4 &input);
+    bool Set_graph(const UMath::Matrix4 &input);
 
     bool heattrigger(TAttrib<EA::Reflection::Float> &result) const;
     bool heattrigger(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &heattrigger() const;
-    bool SET_heattrigger(const EA::Reflection::Float &input);
+    bool Set_heattrigger(const EA::Reflection::Float &input);
 
     bool length(TAttrib<EA::Reflection::Float> &result) const;
     bool length(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &length() const;
-    bool SET_length(const EA::Reflection::Float &input);
+    bool Set_length(const EA::Reflection::Float &input);
 
     bool magnitude(TAttrib<EA::Reflection::Float> &result) const;
     bool magnitude(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &magnitude() const;
-    bool SET_magnitude(const EA::Reflection::Float &input);
+    bool Set_magnitude(const EA::Reflection::Float &input);
 
     bool radialblur_scale(TAttrib<EA::Reflection::Float> &result) const;
     bool radialblur_scale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &radialblur_scale() const;
-    bool SET_radialblur_scale(const EA::Reflection::Float &input);
+    bool Set_radialblur_scale(const EA::Reflection::Float &input);
 
     bool radialblur_uvoffset(TAttrib<EA::Reflection::Float> &result) const;
     bool radialblur_uvoffset(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &radialblur_uvoffset() const;
-    bool SET_radialblur_uvoffset(const EA::Reflection::Float &input);
+    bool Set_radialblur_uvoffset(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -158,7 +158,7 @@ inline bool Gen::visuallookeffect::_testvalue(EA::Reflection::Float &result) con
     result = _testvalue();
     return true;
 }
-inline bool Gen::visuallookeffect::SET__testvalue(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set__testvalue(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(_testvalue, input);
 }
 
@@ -172,7 +172,7 @@ inline bool Gen::visuallookeffect::graph(UMath::Matrix4 &result) const {
     result = graph();
     return true;
 }
-inline bool Gen::visuallookeffect::SET_graph(const UMath::Matrix4 &input) {
+inline bool Gen::visuallookeffect::Set_graph(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(graph, input);
 }
 
@@ -186,7 +186,7 @@ inline bool Gen::visuallookeffect::heattrigger(EA::Reflection::Float &result) co
     result = heattrigger();
     return true;
 }
-inline bool Gen::visuallookeffect::SET_heattrigger(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set_heattrigger(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(heattrigger, input);
 }
 
@@ -200,7 +200,7 @@ inline bool Gen::visuallookeffect::length(EA::Reflection::Float &result) const {
     result = length();
     return true;
 }
-inline bool Gen::visuallookeffect::SET_length(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set_length(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(length, input);
 }
 
@@ -214,7 +214,7 @@ inline bool Gen::visuallookeffect::magnitude(EA::Reflection::Float &result) cons
     result = magnitude();
     return true;
 }
-inline bool Gen::visuallookeffect::SET_magnitude(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set_magnitude(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(magnitude, input);
 }
 
@@ -227,7 +227,7 @@ inline const EA::Reflection::Float &Gen::visuallookeffect::radialblur_scale() co
 inline bool Gen::visuallookeffect::radialblur_scale(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd0b003f4, result);
 }
-inline bool Gen::visuallookeffect::SET_radialblur_scale(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set_radialblur_scale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd0b003f4, input);
 }
 
@@ -240,7 +240,7 @@ inline const EA::Reflection::Float &Gen::visuallookeffect::radialblur_uvoffset()
 inline bool Gen::visuallookeffect::radialblur_uvoffset(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8bc39288, result);
 }
-inline bool Gen::visuallookeffect::SET_radialblur_uvoffset(const EA::Reflection::Float &input) {
+inline bool Gen::visuallookeffect::Set_radialblur_uvoffset(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8bc39288, input);
 }
 

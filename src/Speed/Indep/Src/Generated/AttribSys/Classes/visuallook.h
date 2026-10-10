@@ -87,42 +87,42 @@ struct visuallook : Instance {
     bool BlackBloomCurve(TAttrib<UMath::Matrix4> &result) const;
     bool BlackBloomCurve(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &BlackBloomCurve() const;
-    bool SET_BlackBloomCurve(const UMath::Matrix4 &input);
+    bool Set_BlackBloomCurve(const UMath::Matrix4 &input);
 
     bool BlackBloomIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool BlackBloomIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BlackBloomIntensity() const;
-    bool SET_BlackBloomIntensity(const EA::Reflection::Float &input);
+    bool Set_BlackBloomIntensity(const EA::Reflection::Float &input);
 
     bool ColourBloomCurve(TAttrib<UMath::Matrix4> &result) const;
     bool ColourBloomCurve(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &ColourBloomCurve() const;
-    bool SET_ColourBloomCurve(const UMath::Matrix4 &input);
+    bool Set_ColourBloomCurve(const UMath::Matrix4 &input);
 
     bool ColourBloomIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool ColourBloomIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ColourBloomIntensity() const;
-    bool SET_ColourBloomIntensity(const EA::Reflection::Float &input);
+    bool Set_ColourBloomIntensity(const EA::Reflection::Float &input);
 
     bool ColourBloomTint(TAttrib<UMath::Vector4> &result) const;
     bool ColourBloomTint(UMath::Vector4 &result) const;
     const UMath::Vector4 &ColourBloomTint() const;
-    bool SET_ColourBloomTint(const UMath::Vector4 &input);
+    bool Set_ColourBloomTint(const UMath::Vector4 &input);
 
     bool Desaturation(TAttrib<EA::Reflection::Float> &result) const;
     bool Desaturation(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Desaturation() const;
-    bool SET_Desaturation(const EA::Reflection::Float &input);
+    bool Set_Desaturation(const EA::Reflection::Float &input);
 
     bool DetailMapCurve(TAttrib<UMath::Matrix4> &result) const;
     bool DetailMapCurve(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &DetailMapCurve() const;
-    bool SET_DetailMapCurve(const UMath::Matrix4 &input);
+    bool Set_DetailMapCurve(const UMath::Matrix4 &input);
 
     bool DetailMapIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool DetailMapIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DetailMapIntensity() const;
-    bool SET_DetailMapIntensity(const EA::Reflection::Float &input);
+    bool Set_DetailMapIntensity(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -168,7 +168,7 @@ inline bool Gen::visuallook::BlackBloomCurve(UMath::Matrix4 &result) const {
     result = BlackBloomCurve();
     return true;
 }
-inline bool Gen::visuallook::SET_BlackBloomCurve(const UMath::Matrix4 &input) {
+inline bool Gen::visuallook::Set_BlackBloomCurve(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BlackBloomCurve, input);
 }
 
@@ -182,7 +182,7 @@ inline bool Gen::visuallook::BlackBloomIntensity(EA::Reflection::Float &result) 
     result = BlackBloomIntensity();
     return true;
 }
-inline bool Gen::visuallook::SET_BlackBloomIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::visuallook::Set_BlackBloomIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BlackBloomIntensity, input);
 }
 
@@ -196,7 +196,7 @@ inline bool Gen::visuallook::ColourBloomCurve(UMath::Matrix4 &result) const {
     result = ColourBloomCurve();
     return true;
 }
-inline bool Gen::visuallook::SET_ColourBloomCurve(const UMath::Matrix4 &input) {
+inline bool Gen::visuallook::Set_ColourBloomCurve(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ColourBloomCurve, input);
 }
 
@@ -210,7 +210,7 @@ inline bool Gen::visuallook::ColourBloomIntensity(EA::Reflection::Float &result)
     result = ColourBloomIntensity();
     return true;
 }
-inline bool Gen::visuallook::SET_ColourBloomIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::visuallook::Set_ColourBloomIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ColourBloomIntensity, input);
 }
 
@@ -224,7 +224,7 @@ inline bool Gen::visuallook::ColourBloomTint(UMath::Vector4 &result) const {
     result = ColourBloomTint();
     return true;
 }
-inline bool Gen::visuallook::SET_ColourBloomTint(const UMath::Vector4 &input) {
+inline bool Gen::visuallook::Set_ColourBloomTint(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ColourBloomTint, input);
 }
 
@@ -238,7 +238,7 @@ inline bool Gen::visuallook::Desaturation(EA::Reflection::Float &result) const {
     result = Desaturation();
     return true;
 }
-inline bool Gen::visuallook::SET_Desaturation(const EA::Reflection::Float &input) {
+inline bool Gen::visuallook::Set_Desaturation(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Desaturation, input);
 }
 
@@ -252,7 +252,7 @@ inline bool Gen::visuallook::DetailMapCurve(UMath::Matrix4 &result) const {
     result = DetailMapCurve();
     return true;
 }
-inline bool Gen::visuallook::SET_DetailMapCurve(const UMath::Matrix4 &input) {
+inline bool Gen::visuallook::Set_DetailMapCurve(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DetailMapCurve, input);
 }
 
@@ -266,7 +266,7 @@ inline bool Gen::visuallook::DetailMapIntensity(EA::Reflection::Float &result) c
     result = DetailMapIntensity();
     return true;
 }
-inline bool Gen::visuallook::SET_DetailMapIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::visuallook::Set_DetailMapIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DetailMapIntensity, input);
 }
 

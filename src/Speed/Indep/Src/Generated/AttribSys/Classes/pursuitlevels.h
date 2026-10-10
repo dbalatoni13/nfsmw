@@ -159,291 +159,291 @@ struct pursuitlevels : Instance {
     bool BackupCallTimer(TAttrib<EA::Reflection::Float> &result) const;
     bool BackupCallTimer(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BackupCallTimer() const;
-    bool SET_BackupCallTimer(const EA::Reflection::Float &input);
+    bool Set_BackupCallTimer(const EA::Reflection::Float &input);
 
     bool BoxinDuration(TAttrib<EA::Reflection::Float> &result) const;
     bool BoxinDuration(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BoxinDuration() const;
-    bool SET_BoxinDuration(const EA::Reflection::Float &input);
+    bool Set_BoxinDuration(const EA::Reflection::Float &input);
 
     bool BoxinTightness(TAttrib<EA::Reflection::Float> &result) const;
     bool BoxinTightness(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BoxinTightness() const;
-    bool SET_BoxinTightness(const EA::Reflection::Float &input);
+    bool Set_BoxinTightness(const EA::Reflection::Float &input);
 
     bool BustSpeed(TAttrib<EA::Reflection::Float> &result) const;
     bool BustSpeed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BustSpeed() const;
-    bool SET_BustSpeed(const EA::Reflection::Float &input);
+    bool Set_BustSpeed(const EA::Reflection::Float &input);
 
     bool CTSFor911(TAttrib<EA::Reflection::Int32> &result) const;
     bool CTSFor911(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &CTSFor911() const;
-    bool SET_CTSFor911(const EA::Reflection::Int32 &input);
+    bool Set_CTSFor911(const EA::Reflection::Int32 &input);
 
     bool CollapseAggression(TAttrib<EA::Reflection::Float> &result) const;
     bool CollapseAggression(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CollapseAggression() const;
-    bool SET_CollapseAggression(const EA::Reflection::Float &input);
+    bool Set_CollapseAggression(const EA::Reflection::Float &input);
 
     bool CollapseInnerRadius(TAttrib<EA::Reflection::Int32> &result) const;
     bool CollapseInnerRadius(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &CollapseInnerRadius() const;
-    bool SET_CollapseInnerRadius(const EA::Reflection::Int32 &input);
+    bool Set_CollapseInnerRadius(const EA::Reflection::Int32 &input);
 
     bool CollapseOuterRadius(TAttrib<EA::Reflection::Float> &result) const;
     bool CollapseOuterRadius(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CollapseOuterRadius() const;
-    bool SET_CollapseOuterRadius(const EA::Reflection::Float &input);
+    bool Set_CollapseOuterRadius(const EA::Reflection::Float &input);
 
     bool CollapseSpeed(TAttrib<EA::Reflection::Float> &result) const;
     bool CollapseSpeed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CollapseSpeed() const;
-    bool SET_CollapseSpeed(const EA::Reflection::Float &input);
+    bool Set_CollapseSpeed(const EA::Reflection::Float &input);
 
     bool CopFormations(TAttrib<CopFormationRecord> &result) const;
     bool CopFormations(CopFormationRecord &result, unsigned int index) const;
     const CopFormationRecord &CopFormations(unsigned int index) const;
     unsigned int Num_CopFormations() const;
-    bool SET_CopFormations(const CopFormationRecord &input, unsigned int index);
+    bool Set_CopFormations(const CopFormationRecord &input, unsigned int index);
 
     bool DestroyCopBonusTime(TAttrib<EA::Reflection::Float> &result) const;
     bool DestroyCopBonusTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DestroyCopBonusTime() const;
-    bool SET_DestroyCopBonusTime(const EA::Reflection::Float &input);
+    bool Set_DestroyCopBonusTime(const EA::Reflection::Float &input);
 
     bool EvadeSuccessHeatAdjust(TAttrib<EA::Reflection::Float> &result) const;
     bool EvadeSuccessHeatAdjust(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EvadeSuccessHeatAdjust() const;
-    bool SET_EvadeSuccessHeatAdjust(const EA::Reflection::Float &input);
+    bool Set_EvadeSuccessHeatAdjust(const EA::Reflection::Float &input);
 
     bool EventWinHeatAdjust(TAttrib<EA::Reflection::Float> &result) const;
     bool EventWinHeatAdjust(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EventWinHeatAdjust() const;
-    bool SET_EventWinHeatAdjust(const EA::Reflection::Float &input);
+    bool Set_EventWinHeatAdjust(const EA::Reflection::Float &input);
 
     bool FullEngagementCopCount(TAttrib<EA::Reflection::Int32> &result) const;
     bool FullEngagementCopCount(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &FullEngagementCopCount() const;
-    bool SET_FullEngagementCopCount(const EA::Reflection::Int32 &input);
+    bool Set_FullEngagementCopCount(const EA::Reflection::Int32 &input);
 
     bool FullEngagementRadius(TAttrib<EA::Reflection::Float> &result) const;
     bool FullEngagementRadius(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FullEngagementRadius() const;
-    bool SET_FullEngagementRadius(const EA::Reflection::Float &input);
+    bool Set_FullEngagementRadius(const EA::Reflection::Float &input);
 
     bool HeliFuelTime(TAttrib<EA::Reflection::Float> &result) const;
     bool HeliFuelTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HeliFuelTime() const;
-    bool SET_HeliFuelTime(const EA::Reflection::Float &input);
+    bool Set_HeliFuelTime(const EA::Reflection::Float &input);
 
     bool HiddenZoneTimeMultiplier(TAttrib<EA::Reflection::Float> &result) const;
     bool HiddenZoneTimeMultiplier(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HiddenZoneTimeMultiplier() const;
-    bool SET_HiddenZoneTimeMultiplier(const EA::Reflection::Float &input);
+    bool Set_HiddenZoneTimeMultiplier(const EA::Reflection::Float &input);
 
     bool Lifetime911(TAttrib<EA::Reflection::Float> &result) const;
     bool Lifetime911(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Lifetime911() const;
-    bool SET_Lifetime911(const EA::Reflection::Float &input);
+    bool Set_Lifetime911(const EA::Reflection::Float &input);
 
     bool MaxCopsCollapsing(TAttrib<EA::Reflection::Int32> &result) const;
     bool MaxCopsCollapsing(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &MaxCopsCollapsing() const;
-    bool SET_MaxCopsCollapsing(const EA::Reflection::Int32 &input);
+    bool Set_MaxCopsCollapsing(const EA::Reflection::Int32 &input);
 
     bool MeterDeadZoneBustedDistance(TAttrib<EA::Reflection::Float> &result) const;
     bool MeterDeadZoneBustedDistance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MeterDeadZoneBustedDistance() const;
-    bool SET_MeterDeadZoneBustedDistance(const EA::Reflection::Float &input);
+    bool Set_MeterDeadZoneBustedDistance(const EA::Reflection::Float &input);
 
     bool MeterDeadZoneEvadeDist(TAttrib<EA::Reflection::Float> &result) const;
     bool MeterDeadZoneEvadeDist(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MeterDeadZoneEvadeDist() const;
-    bool SET_MeterDeadZoneEvadeDist(const EA::Reflection::Float &input);
+    bool Set_MeterDeadZoneEvadeDist(const EA::Reflection::Float &input);
 
     bool MilestoneCompleteHeatAdjust(TAttrib<EA::Reflection::Float> &result) const;
     bool MilestoneCompleteHeatAdjust(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MilestoneCompleteHeatAdjust() const;
-    bool SET_MilestoneCompleteHeatAdjust(const EA::Reflection::Float &input);
+    bool Set_MilestoneCompleteHeatAdjust(const EA::Reflection::Float &input);
 
     bool NumCiviHitsFor911(TAttrib<EA::Reflection::Int8> &result) const;
     bool NumCiviHitsFor911(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &NumCiviHitsFor911() const;
-    bool SET_NumCiviHitsFor911(const EA::Reflection::Int8 &input);
+    bool Set_NumCiviHitsFor911(const EA::Reflection::Int8 &input);
 
     bool NumCopsToTriggerBackup(TAttrib<EA::Reflection::Int32> &result) const;
     bool NumCopsToTriggerBackup(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NumCopsToTriggerBackup() const;
-    bool SET_NumCopsToTriggerBackup(const EA::Reflection::Int32 &input);
+    bool Set_NumCopsToTriggerBackup(const EA::Reflection::Int32 &input);
 
     bool NumPatrolCars(TAttrib<EA::Reflection::Int32> &result) const;
     bool NumPatrolCars(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NumPatrolCars() const;
-    bool SET_NumPatrolCars(const EA::Reflection::Int32 &input);
+    bool Set_NumPatrolCars(const EA::Reflection::Int32 &input);
 
     bool RepPointsPerMinute(TAttrib<EA::Reflection::Int32> &result) const;
     bool RepPointsPerMinute(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &RepPointsPerMinute() const;
-    bool SET_RepPointsPerMinute(const EA::Reflection::Int32 &input);
+    bool Set_RepPointsPerMinute(const EA::Reflection::Int32 &input);
 
     bool RollingBlockDuration(TAttrib<EA::Reflection::Float> &result) const;
     bool RollingBlockDuration(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RollingBlockDuration() const;
-    bool SET_RollingBlockDuration(const EA::Reflection::Float &input);
+    bool Set_RollingBlockDuration(const EA::Reflection::Float &input);
 
     bool RollingBlockTightness(TAttrib<EA::Reflection::Float> &result) const;
     bool RollingBlockTightness(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RollingBlockTightness() const;
-    bool SET_RollingBlockTightness(const EA::Reflection::Float &input);
+    bool Set_RollingBlockTightness(const EA::Reflection::Float &input);
 
     bool ScaleEscalationPerBucket(TAttrib<EA::Reflection::Float> &result) const;
     bool ScaleEscalationPerBucket(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &ScaleEscalationPerBucket(unsigned int index) const;
     unsigned int Num_ScaleEscalationPerBucket() const;
-    bool SET_ScaleEscalationPerBucket(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_ScaleEscalationPerBucket(const EA::Reflection::Float &input, unsigned int index);
 
     bool SearchModeCityMPH(TAttrib<EA::Reflection::Float> &result) const;
     bool SearchModeCityMPH(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SearchModeCityMPH() const;
-    bool SET_SearchModeCityMPH(const EA::Reflection::Float &input);
+    bool Set_SearchModeCityMPH(const EA::Reflection::Float &input);
 
     bool SearchModeHeliSpawnChance(TAttrib<EA::Reflection::Float> &result) const;
     bool SearchModeHeliSpawnChance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SearchModeHeliSpawnChance() const;
-    bool SET_SearchModeHeliSpawnChance(const EA::Reflection::Float &input);
+    bool Set_SearchModeHeliSpawnChance(const EA::Reflection::Float &input);
 
     bool SearchModeHwyMPH(TAttrib<EA::Reflection::Float> &result) const;
     bool SearchModeHwyMPH(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SearchModeHwyMPH() const;
-    bool SET_SearchModeHwyMPH(const EA::Reflection::Float &input);
+    bool Set_SearchModeHwyMPH(const EA::Reflection::Float &input);
 
     bool SearchModeRoadblockChance(TAttrib<EA::Reflection::Float> &result) const;
     bool SearchModeRoadblockChance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SearchModeRoadblockChance() const;
-    bool SET_SearchModeRoadblockChance(const EA::Reflection::Float &input);
+    bool Set_SearchModeRoadblockChance(const EA::Reflection::Float &input);
 
     bool SearchModeRoadblockRadius(TAttrib<EA::Reflection::Float> &result) const;
     bool SearchModeRoadblockRadius(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SearchModeRoadblockRadius() const;
-    bool SET_SearchModeRoadblockRadius(const EA::Reflection::Float &input);
+    bool Set_SearchModeRoadblockRadius(const EA::Reflection::Float &input);
 
     bool SirenInitMinPeriod(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenInitMinPeriod(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenInitMinPeriod() const;
-    bool SET_SirenInitMinPeriod(const EA::Reflection::Float &input);
+    bool Set_SirenInitMinPeriod(const EA::Reflection::Float &input);
 
     bool SirenInitVariation(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenInitVariation(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenInitVariation() const;
-    bool SET_SirenInitVariation(const EA::Reflection::Float &input);
+    bool Set_SirenInitVariation(const EA::Reflection::Float &input);
 
     bool SirenMaxScreamTime(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenMaxScreamTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenMaxScreamTime() const;
-    bool SET_SirenMaxScreamTime(const EA::Reflection::Float &input);
+    bool Set_SirenMaxScreamTime(const EA::Reflection::Float &input);
 
     bool SirenMaxYelpTime(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenMaxYelpTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenMaxYelpTime() const;
-    bool SET_SirenMaxYelpTime(const EA::Reflection::Float &input);
+    bool Set_SirenMaxYelpTime(const EA::Reflection::Float &input);
 
     bool SirenScreamPeriod(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenScreamPeriod(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenScreamPeriod() const;
-    bool SET_SirenScreamPeriod(const EA::Reflection::Float &input);
+    bool Set_SirenScreamPeriod(const EA::Reflection::Float &input);
 
     bool SirenWailPeriod(TAttrib<EA::Reflection::Float> &result) const;
     bool SirenWailPeriod(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SirenWailPeriod() const;
-    bool SET_SirenWailPeriod(const EA::Reflection::Float &input);
+    bool Set_SirenWailPeriod(const EA::Reflection::Float &input);
 
     bool SpeedReactionTime(TAttrib<EA::Reflection::Float> &result) const;
     bool SpeedReactionTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SpeedReactionTime() const;
-    bool SET_SpeedReactionTime(const EA::Reflection::Float &input);
+    bool Set_SpeedReactionTime(const EA::Reflection::Float &input);
 
     bool StaggerFormationTime(TAttrib<EA::Reflection::Float> &result) const;
     bool StaggerFormationTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &StaggerFormationTime() const;
-    bool SET_StaggerFormationTime(const EA::Reflection::Float &input);
+    bool Set_StaggerFormationTime(const EA::Reflection::Float &input);
 
     bool TimeBetweenCopSpawn(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeBetweenCopSpawn(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeBetweenCopSpawn() const;
-    bool SET_TimeBetweenCopSpawn(const EA::Reflection::Float &input);
+    bool Set_TimeBetweenCopSpawn(const EA::Reflection::Float &input);
 
     bool TimeBetweenFirstFourSpawn(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeBetweenFirstFourSpawn(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeBetweenFirstFourSpawn() const;
-    bool SET_TimeBetweenFirstFourSpawn(const EA::Reflection::Float &input);
+    bool Set_TimeBetweenFirstFourSpawn(const EA::Reflection::Float &input);
 
     bool TimeBetweenHeliActive(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeBetweenHeliActive(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeBetweenHeliActive() const;
-    bool SET_TimeBetweenHeliActive(const EA::Reflection::Float &input);
+    bool Set_TimeBetweenHeliActive(const EA::Reflection::Float &input);
 
     bool TimeInactiveFor911(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeInactiveFor911(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeInactiveFor911() const;
-    bool SET_TimeInactiveFor911(const EA::Reflection::Float &input);
+    bool Set_TimeInactiveFor911(const EA::Reflection::Float &input);
 
     bool TimePerHeatLevel(TAttrib<EA::Reflection::Float> &result) const;
     bool TimePerHeatLevel(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimePerHeatLevel() const;
-    bool SET_TimePerHeatLevel(const EA::Reflection::Float &input);
+    bool Set_TimePerHeatLevel(const EA::Reflection::Float &input);
 
     bool TimeToHideInZone(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeToHideInZone(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeToHideInZone() const;
-    bool SET_TimeToHideInZone(const EA::Reflection::Float &input);
+    bool Set_TimeToHideInZone(const EA::Reflection::Float &input);
 
     bool cops(TAttrib<CopCountRecord> &result) const;
     bool cops(CopCountRecord &result, unsigned int index) const;
     const CopCountRecord &cops(unsigned int index) const;
     unsigned int Num_cops() const;
-    bool SET_cops(const CopCountRecord &input, unsigned int index);
+    bool Set_cops(const CopCountRecord &input, unsigned int index);
 
     bool evadetimeout(TAttrib<EA::Reflection::Float> &result) const;
     bool evadetimeout(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &evadetimeout() const;
-    bool SET_evadetimeout(const EA::Reflection::Float &input);
+    bool Set_evadetimeout(const EA::Reflection::Float &input);
 
     bool formations(TAttrib<EA::Reflection::UInt32> &result) const;
     bool formations(EA::Reflection::UInt32 &result, unsigned int index) const;
     const EA::Reflection::UInt32 &formations(unsigned int index) const;
     unsigned int Num_formations() const;
-    bool SET_formations(const EA::Reflection::UInt32 &input, unsigned int index);
+    bool Set_formations(const EA::Reflection::UInt32 &input, unsigned int index);
 
     bool frontLOSdistance(TAttrib<EA::Reflection::Float> &result) const;
     bool frontLOSdistance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &frontLOSdistance() const;
-    bool SET_frontLOSdistance(const EA::Reflection::Float &input);
+    bool Set_frontLOSdistance(const EA::Reflection::Float &input);
 
     bool heliLOSdistance(TAttrib<EA::Reflection::Float> &result) const;
     bool heliLOSdistance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &heliLOSdistance() const;
-    bool SET_heliLOSdistance(const EA::Reflection::Float &input);
+    bool Set_heliLOSdistance(const EA::Reflection::Float &input);
 
     bool rearLOSdistance(TAttrib<EA::Reflection::Float> &result) const;
     bool rearLOSdistance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &rearLOSdistance() const;
-    bool SET_rearLOSdistance(const EA::Reflection::Float &input);
+    bool Set_rearLOSdistance(const EA::Reflection::Float &input);
 
     bool roadblockhelichance(TAttrib<EA::Reflection::Float> &result) const;
     bool roadblockhelichance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &roadblockhelichance() const;
-    bool SET_roadblockhelichance(const EA::Reflection::Float &input);
+    bool Set_roadblockhelichance(const EA::Reflection::Float &input);
 
     bool roadblockprobability(TAttrib<EA::Reflection::Float> &result) const;
     bool roadblockprobability(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &roadblockprobability() const;
-    bool SET_roadblockprobability(const EA::Reflection::Float &input);
+    bool Set_roadblockprobability(const EA::Reflection::Float &input);
 
     bool roadblockspikechance(TAttrib<EA::Reflection::Float> &result) const;
     bool roadblockspikechance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &roadblockspikechance() const;
-    bool SET_roadblockspikechance(const EA::Reflection::Float &input);
+    bool Set_roadblockspikechance(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -538,7 +538,7 @@ inline bool Gen::pursuitlevels::BackupCallTimer(EA::Reflection::Float &result) c
     result = BackupCallTimer();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_BackupCallTimer(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_BackupCallTimer(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BackupCallTimer, input);
 }
 
@@ -551,7 +551,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::BoxinDuration() const {
 inline bool Gen::pursuitlevels::BoxinDuration(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x858b1097, result);
 }
-inline bool Gen::pursuitlevels::SET_BoxinDuration(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_BoxinDuration(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x858b1097, input);
 }
 
@@ -564,7 +564,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::BoxinTightness() const {
 inline bool Gen::pursuitlevels::BoxinTightness(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x67a15750, result);
 }
-inline bool Gen::pursuitlevels::SET_BoxinTightness(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_BoxinTightness(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x67a15750, input);
 }
 
@@ -577,7 +577,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::BustSpeed() const {
 inline bool Gen::pursuitlevels::BustSpeed(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x769e8d9e, result);
 }
-inline bool Gen::pursuitlevels::SET_BustSpeed(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_BustSpeed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x769e8d9e, input);
 }
 
@@ -590,7 +590,7 @@ inline const EA::Reflection::Int32 &Gen::pursuitlevels::CTSFor911() const {
 inline bool Gen::pursuitlevels::CTSFor911(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xa00de933, result);
 }
-inline bool Gen::pursuitlevels::SET_CTSFor911(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_CTSFor911(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xa00de933, input);
 }
 
@@ -603,7 +603,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::CollapseAggression() con
 inline bool Gen::pursuitlevels::CollapseAggression(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x594e1492, result);
 }
-inline bool Gen::pursuitlevels::SET_CollapseAggression(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_CollapseAggression(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x594e1492, input);
 }
 
@@ -616,7 +616,7 @@ inline const EA::Reflection::Int32 &Gen::pursuitlevels::CollapseInnerRadius() co
 inline bool Gen::pursuitlevels::CollapseInnerRadius(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x1e0af662, result);
 }
-inline bool Gen::pursuitlevels::SET_CollapseInnerRadius(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_CollapseInnerRadius(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x1e0af662, input);
 }
 
@@ -629,7 +629,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::CollapseOuterRadius() co
 inline bool Gen::pursuitlevels::CollapseOuterRadius(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x947542f2, result);
 }
-inline bool Gen::pursuitlevels::SET_CollapseOuterRadius(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_CollapseOuterRadius(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x947542f2, input);
 }
 
@@ -642,7 +642,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::CollapseSpeed() const {
 inline bool Gen::pursuitlevels::CollapseSpeed(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xdb66950c, result);
 }
-inline bool Gen::pursuitlevels::SET_CollapseSpeed(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_CollapseSpeed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xdb66950c, input);
 }
 
@@ -658,7 +658,7 @@ inline bool Gen::pursuitlevels::CopFormations(CopFormationRecord &result, unsign
 inline unsigned int Gen::pursuitlevels::Num_CopFormations() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5c2a7972);
 }
-inline bool Gen::pursuitlevels::SET_CopFormations(const CopFormationRecord &input, unsigned int index) {
+inline bool Gen::pursuitlevels::Set_CopFormations(const CopFormationRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(CopFormationRecord, 0x5c2a7972, input, index);
 }
 
@@ -671,7 +671,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::DestroyCopBonusTime() co
 inline bool Gen::pursuitlevels::DestroyCopBonusTime(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xbef78612, result);
 }
-inline bool Gen::pursuitlevels::SET_DestroyCopBonusTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_DestroyCopBonusTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xbef78612, input);
 }
 
@@ -685,7 +685,7 @@ inline bool Gen::pursuitlevels::EvadeSuccessHeatAdjust(EA::Reflection::Float &re
     result = EvadeSuccessHeatAdjust();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_EvadeSuccessHeatAdjust(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_EvadeSuccessHeatAdjust(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EvadeSuccessHeatAdjust, input);
 }
 
@@ -699,7 +699,7 @@ inline bool Gen::pursuitlevels::EventWinHeatAdjust(EA::Reflection::Float &result
     result = EventWinHeatAdjust();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_EventWinHeatAdjust(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_EventWinHeatAdjust(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EventWinHeatAdjust, input);
 }
 
@@ -713,7 +713,7 @@ inline bool Gen::pursuitlevels::FullEngagementCopCount(EA::Reflection::Int32 &re
     result = FullEngagementCopCount();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_FullEngagementCopCount(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_FullEngagementCopCount(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FullEngagementCopCount, input);
 }
 
@@ -727,7 +727,7 @@ inline bool Gen::pursuitlevels::FullEngagementRadius(EA::Reflection::Float &resu
     result = FullEngagementRadius();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_FullEngagementRadius(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_FullEngagementRadius(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FullEngagementRadius, input);
 }
 
@@ -741,7 +741,7 @@ inline bool Gen::pursuitlevels::HeliFuelTime(EA::Reflection::Float &result) cons
     result = HeliFuelTime();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_HeliFuelTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_HeliFuelTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HeliFuelTime, input);
 }
 
@@ -754,7 +754,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::HiddenZoneTimeMultiplier
 inline bool Gen::pursuitlevels::HiddenZoneTimeMultiplier(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7fcee250, result);
 }
-inline bool Gen::pursuitlevels::SET_HiddenZoneTimeMultiplier(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_HiddenZoneTimeMultiplier(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7fcee250, input);
 }
 
@@ -767,7 +767,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::Lifetime911() const {
 inline bool Gen::pursuitlevels::Lifetime911(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0e823327, result);
 }
-inline bool Gen::pursuitlevels::SET_Lifetime911(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_Lifetime911(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0e823327, input);
 }
 
@@ -780,7 +780,7 @@ inline const EA::Reflection::Int32 &Gen::pursuitlevels::MaxCopsCollapsing() cons
 inline bool Gen::pursuitlevels::MaxCopsCollapsing(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x0c77d463, result);
 }
-inline bool Gen::pursuitlevels::SET_MaxCopsCollapsing(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_MaxCopsCollapsing(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x0c77d463, input);
 }
 
@@ -793,7 +793,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::MeterDeadZoneBustedDista
 inline bool Gen::pursuitlevels::MeterDeadZoneBustedDistance(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8ce3219f, result);
 }
-inline bool Gen::pursuitlevels::SET_MeterDeadZoneBustedDistance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_MeterDeadZoneBustedDistance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8ce3219f, input);
 }
 
@@ -806,7 +806,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::MeterDeadZoneEvadeDist()
 inline bool Gen::pursuitlevels::MeterDeadZoneEvadeDist(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xeda0e29c, result);
 }
-inline bool Gen::pursuitlevels::SET_MeterDeadZoneEvadeDist(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_MeterDeadZoneEvadeDist(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xeda0e29c, input);
 }
 
@@ -820,7 +820,7 @@ inline bool Gen::pursuitlevels::MilestoneCompleteHeatAdjust(EA::Reflection::Floa
     result = MilestoneCompleteHeatAdjust();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_MilestoneCompleteHeatAdjust(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_MilestoneCompleteHeatAdjust(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MilestoneCompleteHeatAdjust, input);
 }
 
@@ -833,7 +833,7 @@ inline const EA::Reflection::Int8 &Gen::pursuitlevels::NumCiviHitsFor911() const
 inline bool Gen::pursuitlevels::NumCiviHitsFor911(EA::Reflection::Int8 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x6e590f57, result);
 }
-inline bool Gen::pursuitlevels::SET_NumCiviHitsFor911(const EA::Reflection::Int8 &input) {
+inline bool Gen::pursuitlevels::Set_NumCiviHitsFor911(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x6e590f57, input);
 }
 
@@ -847,7 +847,7 @@ inline bool Gen::pursuitlevels::NumCopsToTriggerBackup(EA::Reflection::Int32 &re
     result = NumCopsToTriggerBackup();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_NumCopsToTriggerBackup(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_NumCopsToTriggerBackup(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NumCopsToTriggerBackup, input);
 }
 
@@ -860,7 +860,7 @@ inline const EA::Reflection::Int32 &Gen::pursuitlevels::NumPatrolCars() const {
 inline bool Gen::pursuitlevels::NumPatrolCars(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x24f7a1bc, result);
 }
-inline bool Gen::pursuitlevels::SET_NumPatrolCars(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_NumPatrolCars(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x24f7a1bc, input);
 }
 
@@ -874,7 +874,7 @@ inline bool Gen::pursuitlevels::RepPointsPerMinute(EA::Reflection::Int32 &result
     result = RepPointsPerMinute();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_RepPointsPerMinute(const EA::Reflection::Int32 &input) {
+inline bool Gen::pursuitlevels::Set_RepPointsPerMinute(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RepPointsPerMinute, input);
 }
 
@@ -887,7 +887,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::RollingBlockDuration() c
 inline bool Gen::pursuitlevels::RollingBlockDuration(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5c9f5f55, result);
 }
-inline bool Gen::pursuitlevels::SET_RollingBlockDuration(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_RollingBlockDuration(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5c9f5f55, input);
 }
 
@@ -900,7 +900,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::RollingBlockTightness() 
 inline bool Gen::pursuitlevels::RollingBlockTightness(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc146fc03, result);
 }
-inline bool Gen::pursuitlevels::SET_RollingBlockTightness(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_RollingBlockTightness(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc146fc03, input);
 }
 
@@ -916,7 +916,7 @@ inline bool Gen::pursuitlevels::ScaleEscalationPerBucket(EA::Reflection::Float &
 inline unsigned int Gen::pursuitlevels::Num_ScaleEscalationPerBucket() const {
     ATTRIB_CODEGEN_GETLENGTH(0x80deb840);
 }
-inline bool Gen::pursuitlevels::SET_ScaleEscalationPerBucket(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::pursuitlevels::Set_ScaleEscalationPerBucket(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0x80deb840, input, index);
 }
 
@@ -930,7 +930,7 @@ inline bool Gen::pursuitlevels::SearchModeCityMPH(EA::Reflection::Float &result)
     result = SearchModeCityMPH();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SearchModeCityMPH(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SearchModeCityMPH(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SearchModeCityMPH, input);
 }
 
@@ -943,7 +943,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::SearchModeHeliSpawnChanc
 inline bool Gen::pursuitlevels::SearchModeHeliSpawnChance(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3f11fbfc, result);
 }
-inline bool Gen::pursuitlevels::SET_SearchModeHeliSpawnChance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SearchModeHeliSpawnChance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3f11fbfc, input);
 }
 
@@ -957,7 +957,7 @@ inline bool Gen::pursuitlevels::SearchModeHwyMPH(EA::Reflection::Float &result) 
     result = SearchModeHwyMPH();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SearchModeHwyMPH(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SearchModeHwyMPH(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SearchModeHwyMPH, input);
 }
 
@@ -971,7 +971,7 @@ inline bool Gen::pursuitlevels::SearchModeRoadblockChance(EA::Reflection::Float 
     result = SearchModeRoadblockChance();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SearchModeRoadblockChance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SearchModeRoadblockChance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SearchModeRoadblockChance, input);
 }
 
@@ -985,7 +985,7 @@ inline bool Gen::pursuitlevels::SearchModeRoadblockRadius(EA::Reflection::Float 
     result = SearchModeRoadblockRadius();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SearchModeRoadblockRadius(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SearchModeRoadblockRadius(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SearchModeRoadblockRadius, input);
 }
 
@@ -999,7 +999,7 @@ inline bool Gen::pursuitlevels::SirenInitMinPeriod(EA::Reflection::Float &result
     result = SirenInitMinPeriod();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenInitMinPeriod(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenInitMinPeriod(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenInitMinPeriod, input);
 }
 
@@ -1013,7 +1013,7 @@ inline bool Gen::pursuitlevels::SirenInitVariation(EA::Reflection::Float &result
     result = SirenInitVariation();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenInitVariation(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenInitVariation(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenInitVariation, input);
 }
 
@@ -1027,7 +1027,7 @@ inline bool Gen::pursuitlevels::SirenMaxScreamTime(EA::Reflection::Float &result
     result = SirenMaxScreamTime();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenMaxScreamTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenMaxScreamTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenMaxScreamTime, input);
 }
 
@@ -1041,7 +1041,7 @@ inline bool Gen::pursuitlevels::SirenMaxYelpTime(EA::Reflection::Float &result) 
     result = SirenMaxYelpTime();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenMaxYelpTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenMaxYelpTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenMaxYelpTime, input);
 }
 
@@ -1055,7 +1055,7 @@ inline bool Gen::pursuitlevels::SirenScreamPeriod(EA::Reflection::Float &result)
     result = SirenScreamPeriod();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenScreamPeriod(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenScreamPeriod(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenScreamPeriod, input);
 }
 
@@ -1069,7 +1069,7 @@ inline bool Gen::pursuitlevels::SirenWailPeriod(EA::Reflection::Float &result) c
     result = SirenWailPeriod();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_SirenWailPeriod(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SirenWailPeriod(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SirenWailPeriod, input);
 }
 
@@ -1082,7 +1082,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::SpeedReactionTime() cons
 inline bool Gen::pursuitlevels::SpeedReactionTime(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0f575b64, result);
 }
-inline bool Gen::pursuitlevels::SET_SpeedReactionTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_SpeedReactionTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0f575b64, input);
 }
 
@@ -1095,7 +1095,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::StaggerFormationTime() c
 inline bool Gen::pursuitlevels::StaggerFormationTime(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7648c884, result);
 }
-inline bool Gen::pursuitlevels::SET_StaggerFormationTime(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_StaggerFormationTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7648c884, input);
 }
 
@@ -1109,7 +1109,7 @@ inline bool Gen::pursuitlevels::TimeBetweenCopSpawn(EA::Reflection::Float &resul
     result = TimeBetweenCopSpawn();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_TimeBetweenCopSpawn(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimeBetweenCopSpawn(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimeBetweenCopSpawn, input);
 }
 
@@ -1122,7 +1122,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::TimeBetweenFirstFourSpaw
 inline bool Gen::pursuitlevels::TimeBetweenFirstFourSpawn(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9bf0f433, result);
 }
-inline bool Gen::pursuitlevels::SET_TimeBetweenFirstFourSpawn(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimeBetweenFirstFourSpawn(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9bf0f433, input);
 }
 
@@ -1136,7 +1136,7 @@ inline bool Gen::pursuitlevels::TimeBetweenHeliActive(EA::Reflection::Float &res
     result = TimeBetweenHeliActive();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_TimeBetweenHeliActive(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimeBetweenHeliActive(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimeBetweenHeliActive, input);
 }
 
@@ -1149,7 +1149,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::TimeInactiveFor911() con
 inline bool Gen::pursuitlevels::TimeInactiveFor911(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x06cb70d5, result);
 }
-inline bool Gen::pursuitlevels::SET_TimeInactiveFor911(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimeInactiveFor911(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x06cb70d5, input);
 }
 
@@ -1163,7 +1163,7 @@ inline bool Gen::pursuitlevels::TimePerHeatLevel(EA::Reflection::Float &result) 
     result = TimePerHeatLevel();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_TimePerHeatLevel(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimePerHeatLevel(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimePerHeatLevel, input);
 }
 
@@ -1177,7 +1177,7 @@ inline bool Gen::pursuitlevels::TimeToHideInZone(EA::Reflection::Float &result) 
     result = TimeToHideInZone();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_TimeToHideInZone(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_TimeToHideInZone(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimeToHideInZone, input);
 }
 
@@ -1193,7 +1193,7 @@ inline bool Gen::pursuitlevels::cops(CopCountRecord &result, unsigned int index)
 inline unsigned int Gen::pursuitlevels::Num_cops() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(cops);
 }
-inline bool Gen::pursuitlevels::SET_cops(const CopCountRecord &input, unsigned int index) {
+inline bool Gen::pursuitlevels::Set_cops(const CopCountRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(cops, input, index);
 }
 
@@ -1207,7 +1207,7 @@ inline bool Gen::pursuitlevels::evadetimeout(EA::Reflection::Float &result) cons
     result = evadetimeout();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_evadetimeout(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_evadetimeout(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(evadetimeout, input);
 }
 
@@ -1223,7 +1223,7 @@ inline bool Gen::pursuitlevels::formations(EA::Reflection::UInt32 &result, unsig
 inline unsigned int Gen::pursuitlevels::Num_formations() const {
     ATTRIB_CODEGEN_GETLENGTH(0x92f3d64e);
 }
-inline bool Gen::pursuitlevels::SET_formations(const EA::Reflection::UInt32 &input, unsigned int index) {
+inline bool Gen::pursuitlevels::Set_formations(const EA::Reflection::UInt32 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::UInt32, 0x92f3d64e, input, index);
 }
 
@@ -1237,7 +1237,7 @@ inline bool Gen::pursuitlevels::frontLOSdistance(EA::Reflection::Float &result) 
     result = frontLOSdistance();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_frontLOSdistance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_frontLOSdistance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(frontLOSdistance, input);
 }
 
@@ -1251,7 +1251,7 @@ inline bool Gen::pursuitlevels::heliLOSdistance(EA::Reflection::Float &result) c
     result = heliLOSdistance();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_heliLOSdistance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_heliLOSdistance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(heliLOSdistance, input);
 }
 
@@ -1265,7 +1265,7 @@ inline bool Gen::pursuitlevels::rearLOSdistance(EA::Reflection::Float &result) c
     result = rearLOSdistance();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_rearLOSdistance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_rearLOSdistance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(rearLOSdistance, input);
 }
 
@@ -1279,7 +1279,7 @@ inline bool Gen::pursuitlevels::roadblockhelichance(EA::Reflection::Float &resul
     result = roadblockhelichance();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_roadblockhelichance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_roadblockhelichance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(roadblockhelichance, input);
 }
 
@@ -1293,7 +1293,7 @@ inline bool Gen::pursuitlevels::roadblockprobability(EA::Reflection::Float &resu
     result = roadblockprobability();
     return true;
 }
-inline bool Gen::pursuitlevels::SET_roadblockprobability(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_roadblockprobability(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(roadblockprobability, input);
 }
 
@@ -1306,7 +1306,7 @@ inline const EA::Reflection::Float &Gen::pursuitlevels::roadblockspikechance() c
 inline bool Gen::pursuitlevels::roadblockspikechance(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5a318af6, result);
 }
-inline bool Gen::pursuitlevels::SET_roadblockspikechance(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitlevels::Set_roadblockspikechance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5a318af6, input);
 }
 

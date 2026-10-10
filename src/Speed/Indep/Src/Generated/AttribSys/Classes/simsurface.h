@@ -111,129 +111,129 @@ struct simsurface : Instance {
     bool Aud_RoadNoise_TransOFF(TAttrib<FXROADNOISE_TRANSITION> &result) const;
     bool Aud_RoadNoise_TransOFF(FXROADNOISE_TRANSITION &result) const;
     const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransOFF() const;
-    bool SET_Aud_RoadNoise_TransOFF(const FXROADNOISE_TRANSITION &input);
+    bool Set_Aud_RoadNoise_TransOFF(const FXROADNOISE_TRANSITION &input);
 
     bool Aud_RoadNoise_TransON(TAttrib<FXROADNOISE_TRANSITION> &result) const;
     bool Aud_RoadNoise_TransON(FXROADNOISE_TRANSITION &result) const;
     const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransON() const;
-    bool SET_Aud_RoadNoise_TransON(const FXROADNOISE_TRANSITION &input);
+    bool Set_Aud_RoadNoise_TransON(const FXROADNOISE_TRANSITION &input);
 
     bool Aud_Roadnoise_LOOP(TAttrib<FXROADNOISE_LOOP> &result) const;
     bool Aud_Roadnoise_LOOP(FXROADNOISE_LOOP &result) const;
     const FXROADNOISE_LOOP &Aud_Roadnoise_LOOP() const;
-    bool SET_Aud_Roadnoise_LOOP(const FXROADNOISE_LOOP &input);
+    bool Set_Aud_Roadnoise_LOOP(const FXROADNOISE_LOOP &input);
 
     bool Aud_Skid_Type(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Aud_Skid_Type(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Aud_Skid_Type() const;
-    bool SET_Aud_Skid_Type(const EA::Reflection::UInt32 &input);
+    bool Set_Aud_Skid_Type(const EA::Reflection::UInt32 &input);
 
     bool CAMERA_NOISE(TAttrib<EA::Reflection::Float> &result) const;
     bool CAMERA_NOISE(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &CAMERA_NOISE(unsigned int index) const;
     unsigned int Num_CAMERA_NOISE() const;
-    bool SET_CAMERA_NOISE(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_CAMERA_NOISE(const EA::Reflection::Float &input, unsigned int index);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool DEBUG_COLOUR(TAttrib<UMath::Vector4> &result) const;
     bool DEBUG_COLOUR(UMath::Vector4 &result) const;
     const UMath::Vector4 &DEBUG_COLOUR() const;
-    bool SET_DEBUG_COLOUR(const UMath::Vector4 &input);
+    bool Set_DEBUG_COLOUR(const UMath::Vector4 &input);
 
     bool DRIVE_GRIP(TAttrib<EA::Reflection::Float> &result) const;
     bool DRIVE_GRIP(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DRIVE_GRIP() const;
-    bool SET_DRIVE_GRIP(const EA::Reflection::Float &input);
+    bool Set_DRIVE_GRIP(const EA::Reflection::Float &input);
 
     bool FFB_ROLL(TAttrib<FFBWaveRecord> &result) const;
     bool FFB_ROLL(FFBWaveRecord &result, unsigned int index) const;
     const FFBWaveRecord &FFB_ROLL(unsigned int index) const;
     unsigned int Num_FFB_ROLL() const;
-    bool SET_FFB_ROLL(const FFBWaveRecord &input, unsigned int index);
+    bool Set_FFB_ROLL(const FFBWaveRecord &input, unsigned int index);
 
     bool FFB_SKID(TAttrib<FFBWaveRecord> &result) const;
     bool FFB_SKID(FFBWaveRecord &result, unsigned int index) const;
     const FFBWaveRecord &FFB_SKID(unsigned int index) const;
     unsigned int Num_FFB_SKID() const;
-    bool SET_FFB_SKID(const FFBWaveRecord &input, unsigned int index);
+    bool Set_FFB_SKID(const FFBWaveRecord &input, unsigned int index);
 
     bool FFB_SLIP(TAttrib<FFBWaveRecord> &result) const;
     bool FFB_SLIP(FFBWaveRecord &result, unsigned int index) const;
     const FFBWaveRecord &FFB_SLIP(unsigned int index) const;
     unsigned int Num_FFB_SLIP() const;
-    bool SET_FFB_SLIP(const FFBWaveRecord &input, unsigned int index);
+    bool Set_FFB_SLIP(const FFBWaveRecord &input, unsigned int index);
 
     bool GROUND_FRICTION(TAttrib<EA::Reflection::Float> &result) const;
     bool GROUND_FRICTION(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GROUND_FRICTION() const;
-    bool SET_GROUND_FRICTION(const EA::Reflection::Float &input);
+    bool Set_GROUND_FRICTION(const EA::Reflection::Float &input);
 
     bool LATERAL_GRIP(TAttrib<EA::Reflection::Float> &result) const;
     bool LATERAL_GRIP(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LATERAL_GRIP() const;
-    bool SET_LATERAL_GRIP(const EA::Reflection::Float &input);
+    bool Set_LATERAL_GRIP(const EA::Reflection::Float &input);
 
     bool MATERIAL_STRENGTH(TAttrib<EA::Reflection::Float> &result) const;
     bool MATERIAL_STRENGTH(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MATERIAL_STRENGTH() const;
-    bool SET_MATERIAL_STRENGTH(const EA::Reflection::Float &input);
+    bool Set_MATERIAL_STRENGTH(const EA::Reflection::Float &input);
 
     bool ROLLING_RESISTANCE(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLLING_RESISTANCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLLING_RESISTANCE() const;
-    bool SET_ROLLING_RESISTANCE(const EA::Reflection::Float &input);
+    bool Set_ROLLING_RESISTANCE(const EA::Reflection::Float &input);
 
     bool RenderNoise(TAttrib<RoadNoiseRecord> &result) const;
     bool RenderNoise(RoadNoiseRecord &result) const;
     const RoadNoiseRecord &RenderNoise() const;
-    bool SET_RenderNoise(const RoadNoiseRecord &input);
+    bool Set_RenderNoise(const RoadNoiseRecord &input);
 
     bool STICK(TAttrib<EA::Reflection::Float> &result) const;
     bool STICK(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &STICK() const;
-    bool SET_STICK(const EA::Reflection::Float &input);
+    bool Set_STICK(const EA::Reflection::Float &input);
 
     bool TireDriveEffects(TAttrib<TireEffectRecord> &result) const;
     bool TireDriveEffects(TireEffectRecord &result, unsigned int index) const;
     const TireEffectRecord &TireDriveEffects(unsigned int index) const;
     unsigned int Num_TireDriveEffects() const;
-    bool SET_TireDriveEffects(const TireEffectRecord &input, unsigned int index);
+    bool Set_TireDriveEffects(const TireEffectRecord &input, unsigned int index);
 
     bool TireSlideEffects(TAttrib<TireEffectRecord> &result) const;
     bool TireSlideEffects(TireEffectRecord &result, unsigned int index) const;
     const TireEffectRecord &TireSlideEffects(unsigned int index) const;
     unsigned int Num_TireSlideEffects() const;
-    bool SET_TireSlideEffects(const TireEffectRecord &input, unsigned int index);
+    bool Set_TireSlideEffects(const TireEffectRecord &input, unsigned int index);
 
     bool TireSlipEffects(TAttrib<TireEffectRecord> &result) const;
     bool TireSlipEffects(TireEffectRecord &result, unsigned int index) const;
     const TireEffectRecord &TireSlipEffects(unsigned int index) const;
     unsigned int Num_TireSlipEffects() const;
-    bool SET_TireSlipEffects(const TireEffectRecord &input, unsigned int index);
+    bool Set_TireSlipEffects(const TireEffectRecord &input, unsigned int index);
 
     bool WORLD_FRICTION(TAttrib<EA::Reflection::Float> &result) const;
     bool WORLD_FRICTION(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &WORLD_FRICTION() const;
-    bool SET_WORLD_FRICTION(const EA::Reflection::Float &input);
+    bool Set_WORLD_FRICTION(const EA::Reflection::Float &input);
 
     bool WheelEffectFrequency(TAttrib<EA::Reflection::UInt16> &result) const;
     bool WheelEffectFrequency(EA::Reflection::UInt16 &result) const;
     const EA::Reflection::UInt16 &WheelEffectFrequency() const;
-    bool SET_WheelEffectFrequency(const EA::Reflection::UInt16 &input);
+    bool Set_WheelEffectFrequency(const EA::Reflection::UInt16 &input);
 
     bool WheelEffectIntensity(TAttrib<EA::Reflection::UInt8> &result) const;
     bool WheelEffectIntensity(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &WheelEffectIntensity() const;
-    bool SET_WheelEffectIntensity(const EA::Reflection::UInt8 &input);
+    bool Set_WheelEffectIntensity(const EA::Reflection::UInt8 &input);
 
     bool WheelSurfaceEffect(TAttrib<SurfaceEffectType> &result) const;
     bool WheelSurfaceEffect(SurfaceEffectType &result) const;
     const SurfaceEffectType &WheelSurfaceEffect() const;
-    bool SET_WheelSurfaceEffect(const SurfaceEffectType &input);
+    bool Set_WheelSurfaceEffect(const SurfaceEffectType &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -294,7 +294,7 @@ inline const FXROADNOISE_TRANSITION &Gen::simsurface::Aud_RoadNoise_TransOFF() c
 inline bool Gen::simsurface::Aud_RoadNoise_TransOFF(FXROADNOISE_TRANSITION &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(FXROADNOISE_TRANSITION, 0xcdf83544, result);
 }
-inline bool Gen::simsurface::SET_Aud_RoadNoise_TransOFF(const FXROADNOISE_TRANSITION &input) {
+inline bool Gen::simsurface::Set_Aud_RoadNoise_TransOFF(const FXROADNOISE_TRANSITION &input) {
     ATTRIB_CODEGEN_SETVALUE(FXROADNOISE_TRANSITION, 0xcdf83544, input);
 }
 
@@ -307,7 +307,7 @@ inline const FXROADNOISE_TRANSITION &Gen::simsurface::Aud_RoadNoise_TransON() co
 inline bool Gen::simsurface::Aud_RoadNoise_TransON(FXROADNOISE_TRANSITION &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(FXROADNOISE_TRANSITION, 0xb4c1b2cf, result);
 }
-inline bool Gen::simsurface::SET_Aud_RoadNoise_TransON(const FXROADNOISE_TRANSITION &input) {
+inline bool Gen::simsurface::Set_Aud_RoadNoise_TransON(const FXROADNOISE_TRANSITION &input) {
     ATTRIB_CODEGEN_SETVALUE(FXROADNOISE_TRANSITION, 0xb4c1b2cf, input);
 }
 
@@ -320,7 +320,7 @@ inline const FXROADNOISE_LOOP &Gen::simsurface::Aud_Roadnoise_LOOP() const {
 inline bool Gen::simsurface::Aud_Roadnoise_LOOP(FXROADNOISE_LOOP &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(FXROADNOISE_LOOP, 0x2907c135, result);
 }
-inline bool Gen::simsurface::SET_Aud_Roadnoise_LOOP(const FXROADNOISE_LOOP &input) {
+inline bool Gen::simsurface::Set_Aud_Roadnoise_LOOP(const FXROADNOISE_LOOP &input) {
     ATTRIB_CODEGEN_SETVALUE(FXROADNOISE_LOOP, 0x2907c135, input);
 }
 
@@ -333,7 +333,7 @@ inline const EA::Reflection::UInt32 &Gen::simsurface::Aud_Skid_Type() const {
 inline bool Gen::simsurface::Aud_Skid_Type(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0xd377b339, result);
 }
-inline bool Gen::simsurface::SET_Aud_Skid_Type(const EA::Reflection::UInt32 &input) {
+inline bool Gen::simsurface::Set_Aud_Skid_Type(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0xd377b339, input);
 }
 
@@ -349,7 +349,7 @@ inline bool Gen::simsurface::CAMERA_NOISE(EA::Reflection::Float &result, unsigne
 inline unsigned int Gen::simsurface::Num_CAMERA_NOISE() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf0c9e498);
 }
-inline bool Gen::simsurface::SET_CAMERA_NOISE(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::simsurface::Set_CAMERA_NOISE(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0xf0c9e498, input, index);
 }
 
@@ -363,7 +363,7 @@ inline bool Gen::simsurface::CollectionName(EA::Reflection::Text &result) const 
     result = CollectionName();
     return true;
 }
-inline bool Gen::simsurface::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::simsurface::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -376,7 +376,7 @@ inline const UMath::Vector4 &Gen::simsurface::DEBUG_COLOUR() const {
 inline bool Gen::simsurface::DEBUG_COLOUR(UMath::Vector4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x740d3125, result);
 }
-inline bool Gen::simsurface::SET_DEBUG_COLOUR(const UMath::Vector4 &input) {
+inline bool Gen::simsurface::Set_DEBUG_COLOUR(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x740d3125, input);
 }
 
@@ -390,7 +390,7 @@ inline bool Gen::simsurface::DRIVE_GRIP(EA::Reflection::Float &result) const {
     result = DRIVE_GRIP();
     return true;
 }
-inline bool Gen::simsurface::SET_DRIVE_GRIP(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_DRIVE_GRIP(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DRIVE_GRIP, input);
 }
 
@@ -406,7 +406,7 @@ inline bool Gen::simsurface::FFB_ROLL(FFBWaveRecord &result, unsigned int index)
 inline unsigned int Gen::simsurface::Num_FFB_ROLL() const {
     ATTRIB_CODEGEN_GETLENGTH(0xba1297da);
 }
-inline bool Gen::simsurface::SET_FFB_ROLL(const FFBWaveRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_FFB_ROLL(const FFBWaveRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(FFBWaveRecord, 0xba1297da, input, index);
 }
 
@@ -422,7 +422,7 @@ inline bool Gen::simsurface::FFB_SKID(FFBWaveRecord &result, unsigned int index)
 inline unsigned int Gen::simsurface::Num_FFB_SKID() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0c149044);
 }
-inline bool Gen::simsurface::SET_FFB_SKID(const FFBWaveRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_FFB_SKID(const FFBWaveRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(FFBWaveRecord, 0x0c149044, input, index);
 }
 
@@ -438,7 +438,7 @@ inline bool Gen::simsurface::FFB_SLIP(FFBWaveRecord &result, unsigned int index)
 inline unsigned int Gen::simsurface::Num_FFB_SLIP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8fd11d27);
 }
-inline bool Gen::simsurface::SET_FFB_SLIP(const FFBWaveRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_FFB_SLIP(const FFBWaveRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(FFBWaveRecord, 0x8fd11d27, input, index);
 }
 
@@ -452,7 +452,7 @@ inline bool Gen::simsurface::GROUND_FRICTION(EA::Reflection::Float &result) cons
     result = GROUND_FRICTION();
     return true;
 }
-inline bool Gen::simsurface::SET_GROUND_FRICTION(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_GROUND_FRICTION(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GROUND_FRICTION, input);
 }
 
@@ -466,7 +466,7 @@ inline bool Gen::simsurface::LATERAL_GRIP(EA::Reflection::Float &result) const {
     result = LATERAL_GRIP();
     return true;
 }
-inline bool Gen::simsurface::SET_LATERAL_GRIP(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_LATERAL_GRIP(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LATERAL_GRIP, input);
 }
 
@@ -479,7 +479,7 @@ inline const EA::Reflection::Float &Gen::simsurface::MATERIAL_STRENGTH() const {
 inline bool Gen::simsurface::MATERIAL_STRENGTH(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9fca0b40, result);
 }
-inline bool Gen::simsurface::SET_MATERIAL_STRENGTH(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_MATERIAL_STRENGTH(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9fca0b40, input);
 }
 
@@ -493,7 +493,7 @@ inline bool Gen::simsurface::ROLLING_RESISTANCE(EA::Reflection::Float &result) c
     result = ROLLING_RESISTANCE();
     return true;
 }
-inline bool Gen::simsurface::SET_ROLLING_RESISTANCE(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_ROLLING_RESISTANCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLLING_RESISTANCE, input);
 }
 
@@ -507,7 +507,7 @@ inline bool Gen::simsurface::RenderNoise(RoadNoiseRecord &result) const {
     result = RenderNoise();
     return true;
 }
-inline bool Gen::simsurface::SET_RenderNoise(const RoadNoiseRecord &input) {
+inline bool Gen::simsurface::Set_RenderNoise(const RoadNoiseRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RenderNoise, input);
 }
 
@@ -521,7 +521,7 @@ inline bool Gen::simsurface::STICK(EA::Reflection::Float &result) const {
     result = STICK();
     return true;
 }
-inline bool Gen::simsurface::SET_STICK(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_STICK(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(STICK, input);
 }
 
@@ -537,7 +537,7 @@ inline bool Gen::simsurface::TireDriveEffects(TireEffectRecord &result, unsigned
 inline unsigned int Gen::simsurface::Num_TireDriveEffects() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(TireDriveEffects);
 }
-inline bool Gen::simsurface::SET_TireDriveEffects(const TireEffectRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_TireDriveEffects(const TireEffectRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(TireDriveEffects, input, index);
 }
 
@@ -553,7 +553,7 @@ inline bool Gen::simsurface::TireSlideEffects(TireEffectRecord &result, unsigned
 inline unsigned int Gen::simsurface::Num_TireSlideEffects() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(TireSlideEffects);
 }
-inline bool Gen::simsurface::SET_TireSlideEffects(const TireEffectRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_TireSlideEffects(const TireEffectRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(TireSlideEffects, input, index);
 }
 
@@ -569,7 +569,7 @@ inline bool Gen::simsurface::TireSlipEffects(TireEffectRecord &result, unsigned 
 inline unsigned int Gen::simsurface::Num_TireSlipEffects() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(TireSlipEffects);
 }
-inline bool Gen::simsurface::SET_TireSlipEffects(const TireEffectRecord &input, unsigned int index) {
+inline bool Gen::simsurface::Set_TireSlipEffects(const TireEffectRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(TireSlipEffects, input, index);
 }
 
@@ -583,7 +583,7 @@ inline bool Gen::simsurface::WORLD_FRICTION(EA::Reflection::Float &result) const
     result = WORLD_FRICTION();
     return true;
 }
-inline bool Gen::simsurface::SET_WORLD_FRICTION(const EA::Reflection::Float &input) {
+inline bool Gen::simsurface::Set_WORLD_FRICTION(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(WORLD_FRICTION, input);
 }
 
@@ -597,7 +597,7 @@ inline bool Gen::simsurface::WheelEffectFrequency(EA::Reflection::UInt16 &result
     result = WheelEffectFrequency();
     return true;
 }
-inline bool Gen::simsurface::SET_WheelEffectFrequency(const EA::Reflection::UInt16 &input) {
+inline bool Gen::simsurface::Set_WheelEffectFrequency(const EA::Reflection::UInt16 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(WheelEffectFrequency, input);
 }
 
@@ -611,7 +611,7 @@ inline bool Gen::simsurface::WheelEffectIntensity(EA::Reflection::UInt8 &result)
     result = WheelEffectIntensity();
     return true;
 }
-inline bool Gen::simsurface::SET_WheelEffectIntensity(const EA::Reflection::UInt8 &input) {
+inline bool Gen::simsurface::Set_WheelEffectIntensity(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(WheelEffectIntensity, input);
 }
 
@@ -624,7 +624,7 @@ inline const SurfaceEffectType &Gen::simsurface::WheelSurfaceEffect() const {
 inline bool Gen::simsurface::WheelSurfaceEffect(SurfaceEffectType &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(SurfaceEffectType, 0x46226745, result);
 }
-inline bool Gen::simsurface::SET_WheelSurfaceEffect(const SurfaceEffectType &input) {
+inline bool Gen::simsurface::Set_WheelSurfaceEffect(const SurfaceEffectType &input) {
     ATTRIB_CODEGEN_SETVALUE(SurfaceEffectType, 0x46226745, input);
 }
 

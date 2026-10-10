@@ -89,48 +89,48 @@ struct tires : Instance {
     bool ASPECT_RATIO(TAttrib<AxlePair> &result) const;
     bool ASPECT_RATIO(AxlePair &result) const;
     const AxlePair &ASPECT_RATIO() const;
-    bool SET_ASPECT_RATIO(const AxlePair &input);
+    bool Set_ASPECT_RATIO(const AxlePair &input);
 
     bool DYNAMIC_GRIP(TAttrib<AxlePair> &result) const;
     bool DYNAMIC_GRIP(AxlePair &result) const;
     const AxlePair &DYNAMIC_GRIP() const;
-    bool SET_DYNAMIC_GRIP(const AxlePair &input);
+    bool Set_DYNAMIC_GRIP(const AxlePair &input);
 
     bool GRIP_SCALE(TAttrib<AxlePair> &result) const;
     bool GRIP_SCALE(AxlePair &result) const;
     const AxlePair &GRIP_SCALE() const;
-    bool SET_GRIP_SCALE(const AxlePair &input);
+    bool Set_GRIP_SCALE(const AxlePair &input);
 
     bool RIM_SIZE(TAttrib<AxlePair> &result) const;
     bool RIM_SIZE(AxlePair &result) const;
     const AxlePair &RIM_SIZE() const;
-    bool SET_RIM_SIZE(const AxlePair &input);
+    bool Set_RIM_SIZE(const AxlePair &input);
 
     bool SECTION_WIDTH(TAttrib<AxlePair> &result) const;
     bool SECTION_WIDTH(AxlePair &result) const;
     const AxlePair &SECTION_WIDTH() const;
-    bool SET_SECTION_WIDTH(const AxlePair &input);
+    bool Set_SECTION_WIDTH(const AxlePair &input);
 
     bool STATIC_GRIP(TAttrib<AxlePair> &result) const;
     bool STATIC_GRIP(AxlePair &result) const;
     const AxlePair &STATIC_GRIP() const;
-    bool SET_STATIC_GRIP(const AxlePair &input);
+    bool Set_STATIC_GRIP(const AxlePair &input);
 
     bool STEERING(TAttrib<EA::Reflection::Float> &result) const;
     bool STEERING(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &STEERING() const;
-    bool SET_STEERING(const EA::Reflection::Float &input);
+    bool Set_STEERING(const EA::Reflection::Float &input);
 
     bool YAW_CONTROL(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_CONTROL(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &YAW_CONTROL(unsigned int index) const;
     unsigned int Num_YAW_CONTROL() const;
-    bool SET_YAW_CONTROL(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_YAW_CONTROL(const EA::Reflection::Float &input, unsigned int index);
 
     bool YAW_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_SPEED() const;
-    bool SET_YAW_SPEED(const EA::Reflection::Float &input);
+    bool Set_YAW_SPEED(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -177,7 +177,7 @@ inline bool Gen::tires::ASPECT_RATIO(AxlePair &result) const {
     result = ASPECT_RATIO();
     return true;
 }
-inline bool Gen::tires::SET_ASPECT_RATIO(const AxlePair &input) {
+inline bool Gen::tires::Set_ASPECT_RATIO(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ASPECT_RATIO, input);
 }
 
@@ -191,7 +191,7 @@ inline bool Gen::tires::DYNAMIC_GRIP(AxlePair &result) const {
     result = DYNAMIC_GRIP();
     return true;
 }
-inline bool Gen::tires::SET_DYNAMIC_GRIP(const AxlePair &input) {
+inline bool Gen::tires::Set_DYNAMIC_GRIP(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DYNAMIC_GRIP, input);
 }
 
@@ -205,7 +205,7 @@ inline bool Gen::tires::GRIP_SCALE(AxlePair &result) const {
     result = GRIP_SCALE();
     return true;
 }
-inline bool Gen::tires::SET_GRIP_SCALE(const AxlePair &input) {
+inline bool Gen::tires::Set_GRIP_SCALE(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GRIP_SCALE, input);
 }
 
@@ -219,7 +219,7 @@ inline bool Gen::tires::RIM_SIZE(AxlePair &result) const {
     result = RIM_SIZE();
     return true;
 }
-inline bool Gen::tires::SET_RIM_SIZE(const AxlePair &input) {
+inline bool Gen::tires::Set_RIM_SIZE(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RIM_SIZE, input);
 }
 
@@ -233,7 +233,7 @@ inline bool Gen::tires::SECTION_WIDTH(AxlePair &result) const {
     result = SECTION_WIDTH();
     return true;
 }
-inline bool Gen::tires::SET_SECTION_WIDTH(const AxlePair &input) {
+inline bool Gen::tires::Set_SECTION_WIDTH(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SECTION_WIDTH, input);
 }
 
@@ -247,7 +247,7 @@ inline bool Gen::tires::STATIC_GRIP(AxlePair &result) const {
     result = STATIC_GRIP();
     return true;
 }
-inline bool Gen::tires::SET_STATIC_GRIP(const AxlePair &input) {
+inline bool Gen::tires::Set_STATIC_GRIP(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(STATIC_GRIP, input);
 }
 
@@ -261,7 +261,7 @@ inline bool Gen::tires::STEERING(EA::Reflection::Float &result) const {
     result = STEERING();
     return true;
 }
-inline bool Gen::tires::SET_STEERING(const EA::Reflection::Float &input) {
+inline bool Gen::tires::Set_STEERING(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(STEERING, input);
 }
 
@@ -277,7 +277,7 @@ inline bool Gen::tires::YAW_CONTROL(EA::Reflection::Float &result, unsigned int 
 inline unsigned int Gen::tires::Num_YAW_CONTROL() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(YAW_CONTROL);
 }
-inline bool Gen::tires::SET_YAW_CONTROL(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::tires::Set_YAW_CONTROL(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(YAW_CONTROL, input, index);
 }
 
@@ -291,7 +291,7 @@ inline bool Gen::tires::YAW_SPEED(EA::Reflection::Float &result) const {
     result = YAW_SPEED();
     return true;
 }
-inline bool Gen::tires::SET_YAW_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::tires::Set_YAW_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_SPEED, input);
 }
 

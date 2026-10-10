@@ -88,39 +88,39 @@ struct engine : Instance {
     bool ENGINE_BRAKING(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &ENGINE_BRAKING(unsigned int index) const;
     unsigned int Num_ENGINE_BRAKING() const;
-    bool SET_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index);
 
     bool FLYWHEEL_MASS(TAttrib<EA::Reflection::Float> &result) const;
     bool FLYWHEEL_MASS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FLYWHEEL_MASS() const;
-    bool SET_FLYWHEEL_MASS(const EA::Reflection::Float &input);
+    bool Set_FLYWHEEL_MASS(const EA::Reflection::Float &input);
 
     bool IDLE(TAttrib<EA::Reflection::Float> &result) const;
     bool IDLE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &IDLE() const;
-    bool SET_IDLE(const EA::Reflection::Float &input);
+    bool Set_IDLE(const EA::Reflection::Float &input);
 
     bool MAX_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool MAX_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MAX_RPM() const;
-    bool SET_MAX_RPM(const EA::Reflection::Float &input);
+    bool Set_MAX_RPM(const EA::Reflection::Float &input);
 
     bool RED_LINE(TAttrib<EA::Reflection::Float> &result) const;
     bool RED_LINE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RED_LINE() const;
-    bool SET_RED_LINE(const EA::Reflection::Float &input);
+    bool Set_RED_LINE(const EA::Reflection::Float &input);
 
     bool SPEED_LIMITER(TAttrib<EA::Reflection::Float> &result) const;
     bool SPEED_LIMITER(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &SPEED_LIMITER(unsigned int index) const;
     unsigned int Num_SPEED_LIMITER() const;
-    bool SET_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index);
 
     bool TORQUE(TAttrib<EA::Reflection::Float> &result) const;
     bool TORQUE(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &TORQUE(unsigned int index) const;
     unsigned int Num_TORQUE() const;
-    bool SET_TORQUE(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_TORQUE(const EA::Reflection::Float &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -167,7 +167,7 @@ inline bool Gen::engine::ENGINE_BRAKING(EA::Reflection::Float &result, unsigned 
 inline unsigned int Gen::engine::Num_ENGINE_BRAKING() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(ENGINE_BRAKING);
 }
-inline bool Gen::engine::SET_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::engine::Set_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(ENGINE_BRAKING, input, index);
 }
 
@@ -181,7 +181,7 @@ inline bool Gen::engine::FLYWHEEL_MASS(EA::Reflection::Float &result) const {
     result = FLYWHEEL_MASS();
     return true;
 }
-inline bool Gen::engine::SET_FLYWHEEL_MASS(const EA::Reflection::Float &input) {
+inline bool Gen::engine::Set_FLYWHEEL_MASS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FLYWHEEL_MASS, input);
 }
 
@@ -195,7 +195,7 @@ inline bool Gen::engine::IDLE(EA::Reflection::Float &result) const {
     result = IDLE();
     return true;
 }
-inline bool Gen::engine::SET_IDLE(const EA::Reflection::Float &input) {
+inline bool Gen::engine::Set_IDLE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(IDLE, input);
 }
 
@@ -209,7 +209,7 @@ inline bool Gen::engine::MAX_RPM(EA::Reflection::Float &result) const {
     result = MAX_RPM();
     return true;
 }
-inline bool Gen::engine::SET_MAX_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engine::Set_MAX_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MAX_RPM, input);
 }
 
@@ -223,7 +223,7 @@ inline bool Gen::engine::RED_LINE(EA::Reflection::Float &result) const {
     result = RED_LINE();
     return true;
 }
-inline bool Gen::engine::SET_RED_LINE(const EA::Reflection::Float &input) {
+inline bool Gen::engine::Set_RED_LINE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RED_LINE, input);
 }
 
@@ -239,7 +239,7 @@ inline bool Gen::engine::SPEED_LIMITER(EA::Reflection::Float &result, unsigned i
 inline unsigned int Gen::engine::Num_SPEED_LIMITER() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(SPEED_LIMITER);
 }
-inline bool Gen::engine::SET_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::engine::Set_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(SPEED_LIMITER, input, index);
 }
 
@@ -255,7 +255,7 @@ inline bool Gen::engine::TORQUE(EA::Reflection::Float &result, unsigned int inde
 inline unsigned int Gen::engine::Num_TORQUE() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(TORQUE);
 }
-inline bool Gen::engine::SET_TORQUE(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::engine::Set_TORQUE(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(TORQUE, input, index);
 }
 

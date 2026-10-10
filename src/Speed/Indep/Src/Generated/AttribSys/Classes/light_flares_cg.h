@@ -87,42 +87,42 @@ struct light_flares_cg : Instance {
     bool MaxSize(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxSize(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxSize() const;
-    bool SET_MaxSize(const EA::Reflection::Float &input);
+    bool Set_MaxSize(const EA::Reflection::Float &input);
 
     bool Maxscale(TAttrib<EA::Reflection::Float> &result) const;
     bool Maxscale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Maxscale() const;
-    bool SET_Maxscale(const EA::Reflection::Float &input);
+    bool Set_Maxscale(const EA::Reflection::Float &input);
 
     bool MinScale(TAttrib<EA::Reflection::Float> &result) const;
     bool MinScale(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinScale() const;
-    bool SET_MinScale(const EA::Reflection::Float &input);
+    bool Set_MinScale(const EA::Reflection::Float &input);
 
     bool MinSize(TAttrib<EA::Reflection::Float> &result) const;
     bool MinSize(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinSize() const;
-    bool SET_MinSize(const EA::Reflection::Float &input);
+    bool Set_MinSize(const EA::Reflection::Float &input);
 
     bool Power(TAttrib<EA::Reflection::Float> &result) const;
     bool Power(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Power() const;
-    bool SET_Power(const EA::Reflection::Float &input);
+    bool Set_Power(const EA::Reflection::Float &input);
 
     bool ZBias(TAttrib<EA::Reflection::Float> &result) const;
     bool ZBias(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ZBias() const;
-    bool SET_ZBias(const EA::Reflection::Float &input);
+    bool Set_ZBias(const EA::Reflection::Float &input);
 
     bool colour(TAttrib<UMath::Vector4> &result) const;
     bool colour(UMath::Vector4 &result) const;
     const UMath::Vector4 &colour() const;
-    bool SET_colour(const UMath::Vector4 &input);
+    bool Set_colour(const UMath::Vector4 &input);
 
     bool flare_texture(TAttrib<EA::Reflection::UInt32> &result) const;
     bool flare_texture(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &flare_texture() const;
-    bool SET_flare_texture(const EA::Reflection::UInt32 &input);
+    bool Set_flare_texture(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -168,7 +168,7 @@ inline bool Gen::light_flares_cg::MaxSize(EA::Reflection::Float &result) const {
     result = MaxSize();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_MaxSize(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_MaxSize(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxSize, input);
 }
 
@@ -182,7 +182,7 @@ inline bool Gen::light_flares_cg::Maxscale(EA::Reflection::Float &result) const 
     result = Maxscale();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_Maxscale(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_Maxscale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Maxscale, input);
 }
 
@@ -196,7 +196,7 @@ inline bool Gen::light_flares_cg::MinScale(EA::Reflection::Float &result) const 
     result = MinScale();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_MinScale(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_MinScale(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinScale, input);
 }
 
@@ -210,7 +210,7 @@ inline bool Gen::light_flares_cg::MinSize(EA::Reflection::Float &result) const {
     result = MinSize();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_MinSize(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_MinSize(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinSize, input);
 }
 
@@ -224,7 +224,7 @@ inline bool Gen::light_flares_cg::Power(EA::Reflection::Float &result) const {
     result = Power();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_Power(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_Power(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Power, input);
 }
 
@@ -238,7 +238,7 @@ inline bool Gen::light_flares_cg::ZBias(EA::Reflection::Float &result) const {
     result = ZBias();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_ZBias(const EA::Reflection::Float &input) {
+inline bool Gen::light_flares_cg::Set_ZBias(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ZBias, input);
 }
 
@@ -252,7 +252,7 @@ inline bool Gen::light_flares_cg::colour(UMath::Vector4 &result) const {
     result = colour();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_colour(const UMath::Vector4 &input) {
+inline bool Gen::light_flares_cg::Set_colour(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(colour, input);
 }
 
@@ -266,7 +266,7 @@ inline bool Gen::light_flares_cg::flare_texture(EA::Reflection::UInt32 &result) 
     result = flare_texture();
     return true;
 }
-inline bool Gen::light_flares_cg::SET_flare_texture(const EA::Reflection::UInt32 &input) {
+inline bool Gen::light_flares_cg::Set_flare_texture(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(flare_texture, input);
 }
 

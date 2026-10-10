@@ -85,37 +85,37 @@ struct induction : Instance {
     bool HIGH_BOOST(TAttrib<EA::Reflection::Float> &result) const;
     bool HIGH_BOOST(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HIGH_BOOST() const;
-    bool SET_HIGH_BOOST(const EA::Reflection::Float &input);
+    bool Set_HIGH_BOOST(const EA::Reflection::Float &input);
 
     bool LOW_BOOST(TAttrib<EA::Reflection::Float> &result) const;
     bool LOW_BOOST(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LOW_BOOST() const;
-    bool SET_LOW_BOOST(const EA::Reflection::Float &input);
+    bool Set_LOW_BOOST(const EA::Reflection::Float &input);
 
     bool PSI(TAttrib<EA::Reflection::Float> &result) const;
     bool PSI(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PSI() const;
-    bool SET_PSI(const EA::Reflection::Float &input);
+    bool Set_PSI(const EA::Reflection::Float &input);
 
     bool SPOOL(TAttrib<EA::Reflection::Float> &result) const;
     bool SPOOL(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SPOOL() const;
-    bool SET_SPOOL(const EA::Reflection::Float &input);
+    bool Set_SPOOL(const EA::Reflection::Float &input);
 
     bool SPOOL_TIME_DOWN(TAttrib<EA::Reflection::Float> &result) const;
     bool SPOOL_TIME_DOWN(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SPOOL_TIME_DOWN() const;
-    bool SET_SPOOL_TIME_DOWN(const EA::Reflection::Float &input);
+    bool Set_SPOOL_TIME_DOWN(const EA::Reflection::Float &input);
 
     bool SPOOL_TIME_UP(TAttrib<EA::Reflection::Float> &result) const;
     bool SPOOL_TIME_UP(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SPOOL_TIME_UP() const;
-    bool SET_SPOOL_TIME_UP(const EA::Reflection::Float &input);
+    bool Set_SPOOL_TIME_UP(const EA::Reflection::Float &input);
 
     bool VACUUM(TAttrib<EA::Reflection::Float> &result) const;
     bool VACUUM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &VACUUM() const;
-    bool SET_VACUUM(const EA::Reflection::Float &input);
+    bool Set_VACUUM(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -160,7 +160,7 @@ inline bool Gen::induction::HIGH_BOOST(EA::Reflection::Float &result) const {
     result = HIGH_BOOST();
     return true;
 }
-inline bool Gen::induction::SET_HIGH_BOOST(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_HIGH_BOOST(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HIGH_BOOST, input);
 }
 
@@ -174,7 +174,7 @@ inline bool Gen::induction::LOW_BOOST(EA::Reflection::Float &result) const {
     result = LOW_BOOST();
     return true;
 }
-inline bool Gen::induction::SET_LOW_BOOST(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_LOW_BOOST(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LOW_BOOST, input);
 }
 
@@ -188,7 +188,7 @@ inline bool Gen::induction::PSI(EA::Reflection::Float &result) const {
     result = PSI();
     return true;
 }
-inline bool Gen::induction::SET_PSI(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_PSI(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PSI, input);
 }
 
@@ -202,7 +202,7 @@ inline bool Gen::induction::SPOOL(EA::Reflection::Float &result) const {
     result = SPOOL();
     return true;
 }
-inline bool Gen::induction::SET_SPOOL(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_SPOOL(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SPOOL, input);
 }
 
@@ -216,7 +216,7 @@ inline bool Gen::induction::SPOOL_TIME_DOWN(EA::Reflection::Float &result) const
     result = SPOOL_TIME_DOWN();
     return true;
 }
-inline bool Gen::induction::SET_SPOOL_TIME_DOWN(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_SPOOL_TIME_DOWN(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_DOWN, input);
 }
 
@@ -230,7 +230,7 @@ inline bool Gen::induction::SPOOL_TIME_UP(EA::Reflection::Float &result) const {
     result = SPOOL_TIME_UP();
     return true;
 }
-inline bool Gen::induction::SET_SPOOL_TIME_UP(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_SPOOL_TIME_UP(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_UP, input);
 }
 
@@ -244,7 +244,7 @@ inline bool Gen::induction::VACUUM(EA::Reflection::Float &result) const {
     result = VACUUM();
     return true;
 }
-inline bool Gen::induction::SET_VACUUM(const EA::Reflection::Float &input) {
+inline bool Gen::induction::Set_VACUUM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VACUUM, input);
 }
 

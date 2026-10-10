@@ -83,49 +83,49 @@ struct aivehicle : Instance {
     bool AccelerationMultiplier(TAttrib<EA::Reflection::Float> &result) const;
     bool AccelerationMultiplier(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AccelerationMultiplier() const;
-    bool SET_AccelerationMultiplier(const EA::Reflection::Float &input);
+    bool Set_AccelerationMultiplier(const EA::Reflection::Float &input);
 
     bool CostToStateForDestroying(TAttrib<EA::Reflection::Int32> &result) const;
     bool CostToStateForDestroying(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &CostToStateForDestroying() const;
-    bool SET_CostToStateForDestroying(const EA::Reflection::Int32 &input);
+    bool Set_CostToStateForDestroying(const EA::Reflection::Int32 &input);
 
     bool DetachmentID(TAttrib<Csis::Type_subject_battalion> &result) const;
     bool DetachmentID(Csis::Type_subject_battalion &result) const;
     const Csis::Type_subject_battalion &DetachmentID() const;
-    bool SET_DetachmentID(const Csis::Type_subject_battalion &input);
+    bool Set_DetachmentID(const Csis::Type_subject_battalion &input);
 
     bool MAXIMUM_AI_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool MAXIMUM_AI_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MAXIMUM_AI_SPEED() const;
-    bool SET_MAXIMUM_AI_SPEED(const EA::Reflection::Float &input);
+    bool Set_MAXIMUM_AI_SPEED(const EA::Reflection::Float &input);
 
     bool PlayerCollisions(TAttrib<AICollisionReactionRecord> &result) const;
     bool PlayerCollisions(AICollisionReactionRecord &result, unsigned int index) const;
     const AICollisionReactionRecord &PlayerCollisions(unsigned int index) const;
     unsigned int Num_PlayerCollisions() const;
-    bool SET_PlayerCollisions(const AICollisionReactionRecord &input, unsigned int index);
+    bool Set_PlayerCollisions(const AICollisionReactionRecord &input, unsigned int index);
 
     bool PlayerCollisionsDefault(TAttrib<RefSpec> &result) const;
     bool PlayerCollisionsDefault(RefSpec &result) const;
     const RefSpec &PlayerCollisionsDefault() const;
-    bool SET_PlayerCollisionsDefault(const RefSpec &input);
+    bool Set_PlayerCollisionsDefault(const RefSpec &input);
 
     bool RepPointsForDestroying(TAttrib<EA::Reflection::Int32> &result) const;
     bool RepPointsForDestroying(EA::Reflection::Int32 &result, unsigned int index) const;
     const EA::Reflection::Int32 &RepPointsForDestroying(unsigned int index) const;
     unsigned int Num_RepPointsForDestroying() const;
-    bool SET_RepPointsForDestroying(const EA::Reflection::Int32 &input, unsigned int index);
+    bool Set_RepPointsForDestroying(const EA::Reflection::Int32 &input, unsigned int index);
 
     bool TETHER_WEIGHT(TAttrib<EA::Reflection::Float> &result) const;
     bool TETHER_WEIGHT(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TETHER_WEIGHT() const;
-    bool SET_TETHER_WEIGHT(const EA::Reflection::Float &input);
+    bool Set_TETHER_WEIGHT(const EA::Reflection::Float &input);
 
     bool TopSpeedMultiplier(TAttrib<EA::Reflection::Float> &result) const;
     bool TopSpeedMultiplier(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TopSpeedMultiplier() const;
-    bool SET_TopSpeedMultiplier(const EA::Reflection::Float &input);
+    bool Set_TopSpeedMultiplier(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -171,7 +171,7 @@ inline const EA::Reflection::Float &Gen::aivehicle::AccelerationMultiplier() con
 inline bool Gen::aivehicle::AccelerationMultiplier(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xcc320329, result);
 }
-inline bool Gen::aivehicle::SET_AccelerationMultiplier(const EA::Reflection::Float &input) {
+inline bool Gen::aivehicle::Set_AccelerationMultiplier(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xcc320329, input);
 }
 
@@ -184,7 +184,7 @@ inline const EA::Reflection::Int32 &Gen::aivehicle::CostToStateForDestroying() c
 inline bool Gen::aivehicle::CostToStateForDestroying(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xce1cedfe, result);
 }
-inline bool Gen::aivehicle::SET_CostToStateForDestroying(const EA::Reflection::Int32 &input) {
+inline bool Gen::aivehicle::Set_CostToStateForDestroying(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xce1cedfe, input);
 }
 
@@ -198,7 +198,7 @@ inline bool Gen::aivehicle::DetachmentID(Csis::Type_subject_battalion &result) c
     result = DetachmentID();
     return true;
 }
-inline bool Gen::aivehicle::SET_DetachmentID(const Csis::Type_subject_battalion &input) {
+inline bool Gen::aivehicle::Set_DetachmentID(const Csis::Type_subject_battalion &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DetachmentID, input);
 }
 
@@ -212,7 +212,7 @@ inline bool Gen::aivehicle::MAXIMUM_AI_SPEED(EA::Reflection::Float &result) cons
     result = MAXIMUM_AI_SPEED();
     return true;
 }
-inline bool Gen::aivehicle::SET_MAXIMUM_AI_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::aivehicle::Set_MAXIMUM_AI_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MAXIMUM_AI_SPEED, input);
 }
 
@@ -228,7 +228,7 @@ inline bool Gen::aivehicle::PlayerCollisions(AICollisionReactionRecord &result, 
 inline unsigned int Gen::aivehicle::Num_PlayerCollisions() const {
     ATTRIB_CODEGEN_GETLENGTH(0x489212da);
 }
-inline bool Gen::aivehicle::SET_PlayerCollisions(const AICollisionReactionRecord &input, unsigned int index) {
+inline bool Gen::aivehicle::Set_PlayerCollisions(const AICollisionReactionRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(AICollisionReactionRecord, 0x489212da, input, index);
 }
 
@@ -241,7 +241,7 @@ inline const RefSpec &Gen::aivehicle::PlayerCollisionsDefault() const {
 inline bool Gen::aivehicle::PlayerCollisionsDefault(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x75a2bcd7, result);
 }
-inline bool Gen::aivehicle::SET_PlayerCollisionsDefault(const RefSpec &input) {
+inline bool Gen::aivehicle::Set_PlayerCollisionsDefault(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x75a2bcd7, input);
 }
 
@@ -257,7 +257,7 @@ inline bool Gen::aivehicle::RepPointsForDestroying(EA::Reflection::Int32 &result
 inline unsigned int Gen::aivehicle::Num_RepPointsForDestroying() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc07c8040);
 }
-inline bool Gen::aivehicle::SET_RepPointsForDestroying(const EA::Reflection::Int32 &input, unsigned int index) {
+inline bool Gen::aivehicle::Set_RepPointsForDestroying(const EA::Reflection::Int32 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Int32, 0xc07c8040, input, index);
 }
 
@@ -271,7 +271,7 @@ inline bool Gen::aivehicle::TETHER_WEIGHT(EA::Reflection::Float &result) const {
     result = TETHER_WEIGHT();
     return true;
 }
-inline bool Gen::aivehicle::SET_TETHER_WEIGHT(const EA::Reflection::Float &input) {
+inline bool Gen::aivehicle::Set_TETHER_WEIGHT(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TETHER_WEIGHT, input);
 }
 
@@ -284,7 +284,7 @@ inline const EA::Reflection::Float &Gen::aivehicle::TopSpeedMultiplier() const {
 inline bool Gen::aivehicle::TopSpeedMultiplier(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xec57e16b, result);
 }
-inline bool Gen::aivehicle::SET_TopSpeedMultiplier(const EA::Reflection::Float &input) {
+inline bool Gen::aivehicle::Set_TopSpeedMultiplier(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xec57e16b, input);
 }
 

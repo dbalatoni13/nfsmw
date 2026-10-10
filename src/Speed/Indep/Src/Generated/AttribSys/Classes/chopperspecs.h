@@ -119,122 +119,122 @@ struct chopperspecs : Instance {
     bool AIR_RESISTANCE(TAttrib<EA::Reflection::Float> &result) const;
     bool AIR_RESISTANCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AIR_RESISTANCE() const;
-    bool SET_AIR_RESISTANCE(const EA::Reflection::Float &input);
+    bool Set_AIR_RESISTANCE(const EA::Reflection::Float &input);
 
     bool AIR_RESISTANCE_SCALE(TAttrib<UMath::Vector4> &result) const;
     bool AIR_RESISTANCE_SCALE(UMath::Vector4 &result) const;
     const UMath::Vector4 &AIR_RESISTANCE_SCALE() const;
-    bool SET_AIR_RESISTANCE_SCALE(const UMath::Vector4 &input);
+    bool Set_AIR_RESISTANCE_SCALE(const UMath::Vector4 &input);
 
     bool DRIVE_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool DRIVE_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DRIVE_SPEED() const;
-    bool SET_DRIVE_SPEED(const EA::Reflection::Float &input);
+    bool Set_DRIVE_SPEED(const EA::Reflection::Float &input);
 
     bool MAX_SPEED_MPS(TAttrib<EA::Reflection::Float> &result) const;
     bool MAX_SPEED_MPS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MAX_SPEED_MPS() const;
-    bool SET_MAX_SPEED_MPS(const EA::Reflection::Float &input);
+    bool Set_MAX_SPEED_MPS(const EA::Reflection::Float &input);
 
     bool PITCH_ALIGN_SCALE(TAttrib<EA::Reflection::Float> &result) const;
     bool PITCH_ALIGN_SCALE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PITCH_ALIGN_SCALE() const;
-    bool SET_PITCH_ALIGN_SCALE(const EA::Reflection::Float &input);
+    bool Set_PITCH_ALIGN_SCALE(const EA::Reflection::Float &input);
 
     bool PITCH_ANG(TAttrib<EA::Reflection::Float> &result) const;
     bool PITCH_ANG(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PITCH_ANG() const;
-    bool SET_PITCH_ANG(const EA::Reflection::Float &input);
+    bool Set_PITCH_ANG(const EA::Reflection::Float &input);
 
     bool PITCH_SLOW_DOWN_RATE(TAttrib<EA::Reflection::Float> &result) const;
     bool PITCH_SLOW_DOWN_RATE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PITCH_SLOW_DOWN_RATE() const;
-    bool SET_PITCH_SLOW_DOWN_RATE(const EA::Reflection::Float &input);
+    bool Set_PITCH_SLOW_DOWN_RATE(const EA::Reflection::Float &input);
 
     bool PITCH_STOP_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool PITCH_STOP_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PITCH_STOP_SPEED() const;
-    bool SET_PITCH_STOP_SPEED(const EA::Reflection::Float &input);
+    bool Set_PITCH_STOP_SPEED(const EA::Reflection::Float &input);
 
     bool ROLL_ALIGN_SCALE(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLL_ALIGN_SCALE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLL_ALIGN_SCALE() const;
-    bool SET_ROLL_ALIGN_SCALE(const EA::Reflection::Float &input);
+    bool Set_ROLL_ALIGN_SCALE(const EA::Reflection::Float &input);
 
     bool ROLL_ANG(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLL_ANG(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLL_ANG() const;
-    bool SET_ROLL_ANG(const EA::Reflection::Float &input);
+    bool Set_ROLL_ANG(const EA::Reflection::Float &input);
 
     bool ROLL_SLOW_DOWN_RATE(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLL_SLOW_DOWN_RATE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLL_SLOW_DOWN_RATE() const;
-    bool SET_ROLL_SLOW_DOWN_RATE(const EA::Reflection::Float &input);
+    bool Set_ROLL_SLOW_DOWN_RATE(const EA::Reflection::Float &input);
 
     bool ROLL_SPEED_MIN(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLL_SPEED_MIN(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLL_SPEED_MIN() const;
-    bool SET_ROLL_SPEED_MIN(const EA::Reflection::Float &input);
+    bool Set_ROLL_SPEED_MIN(const EA::Reflection::Float &input);
 
     bool ROLL_START_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool ROLL_START_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ROLL_START_SPEED() const;
-    bool SET_ROLL_START_SPEED(const EA::Reflection::Float &input);
+    bool Set_ROLL_START_SPEED(const EA::Reflection::Float &input);
 
     bool SAME_ALIGN_SCALE(TAttrib<EA::Reflection::Float> &result) const;
     bool SAME_ALIGN_SCALE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SAME_ALIGN_SCALE() const;
-    bool SET_SAME_ALIGN_SCALE(const EA::Reflection::Float &input);
+    bool Set_SAME_ALIGN_SCALE(const EA::Reflection::Float &input);
 
     bool SCALE_STEERING(TAttrib<EA::Reflection::Bool> &result) const;
     bool SCALE_STEERING(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &SCALE_STEERING() const;
-    bool SET_SCALE_STEERING(const EA::Reflection::Bool &input);
+    bool Set_SCALE_STEERING(const EA::Reflection::Bool &input);
 
     bool STRAFE_SCALEX(TAttrib<EA::Reflection::Float> &result) const;
     bool STRAFE_SCALEX(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &STRAFE_SCALEX() const;
-    bool SET_STRAFE_SCALEX(const EA::Reflection::Float &input);
+    bool Set_STRAFE_SCALEX(const EA::Reflection::Float &input);
 
     bool STRAFE_SCALEY(TAttrib<EA::Reflection::Float> &result) const;
     bool STRAFE_SCALEY(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &STRAFE_SCALEY() const;
-    bool SET_STRAFE_SCALEY(const EA::Reflection::Float &input);
+    bool Set_STRAFE_SCALEY(const EA::Reflection::Float &input);
 
     bool TURN_BOOST_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool TURN_BOOST_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TURN_BOOST_SPEED() const;
-    bool SET_TURN_BOOST_SPEED(const EA::Reflection::Float &input);
+    bool Set_TURN_BOOST_SPEED(const EA::Reflection::Float &input);
 
     bool YAW_BOOST_LIMIT(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_BOOST_LIMIT(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_BOOST_LIMIT() const;
-    bool SET_YAW_BOOST_LIMIT(const EA::Reflection::Float &input);
+    bool Set_YAW_BOOST_LIMIT(const EA::Reflection::Float &input);
 
     bool YAW_DAMP(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_DAMP(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_DAMP() const;
-    bool SET_YAW_DAMP(const EA::Reflection::Float &input);
+    bool Set_YAW_DAMP(const EA::Reflection::Float &input);
 
     bool YAW_LIMIT_FRONT(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_LIMIT_FRONT(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_LIMIT_FRONT() const;
-    bool SET_YAW_LIMIT_FRONT(const EA::Reflection::Float &input);
+    bool Set_YAW_LIMIT_FRONT(const EA::Reflection::Float &input);
 
     bool YAW_LIMIT_REAR(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_LIMIT_REAR(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_LIMIT_REAR() const;
-    bool SET_YAW_LIMIT_REAR(const EA::Reflection::Float &input);
+    bool Set_YAW_LIMIT_REAR(const EA::Reflection::Float &input);
 
     bool YAW_STRENGTH_FRONT(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_STRENGTH_FRONT(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_STRENGTH_FRONT() const;
-    bool SET_YAW_STRENGTH_FRONT(const EA::Reflection::Float &input);
+    bool Set_YAW_STRENGTH_FRONT(const EA::Reflection::Float &input);
 
     bool YAW_STRENGTH_REAR(TAttrib<EA::Reflection::Float> &result) const;
     bool YAW_STRENGTH_REAR(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &YAW_STRENGTH_REAR() const;
-    bool SET_YAW_STRENGTH_REAR(const EA::Reflection::Float &input);
+    bool Set_YAW_STRENGTH_REAR(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -296,7 +296,7 @@ inline bool Gen::chopperspecs::AIR_RESISTANCE(EA::Reflection::Float &result) con
     result = AIR_RESISTANCE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_AIR_RESISTANCE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_AIR_RESISTANCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AIR_RESISTANCE, input);
 }
 
@@ -310,7 +310,7 @@ inline bool Gen::chopperspecs::AIR_RESISTANCE_SCALE(UMath::Vector4 &result) cons
     result = AIR_RESISTANCE_SCALE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_AIR_RESISTANCE_SCALE(const UMath::Vector4 &input) {
+inline bool Gen::chopperspecs::Set_AIR_RESISTANCE_SCALE(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AIR_RESISTANCE_SCALE, input);
 }
 
@@ -324,7 +324,7 @@ inline bool Gen::chopperspecs::DRIVE_SPEED(EA::Reflection::Float &result) const 
     result = DRIVE_SPEED();
     return true;
 }
-inline bool Gen::chopperspecs::SET_DRIVE_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_DRIVE_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DRIVE_SPEED, input);
 }
 
@@ -338,7 +338,7 @@ inline bool Gen::chopperspecs::MAX_SPEED_MPS(EA::Reflection::Float &result) cons
     result = MAX_SPEED_MPS();
     return true;
 }
-inline bool Gen::chopperspecs::SET_MAX_SPEED_MPS(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_MAX_SPEED_MPS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MAX_SPEED_MPS, input);
 }
 
@@ -352,7 +352,7 @@ inline bool Gen::chopperspecs::PITCH_ALIGN_SCALE(EA::Reflection::Float &result) 
     result = PITCH_ALIGN_SCALE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_PITCH_ALIGN_SCALE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_PITCH_ALIGN_SCALE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PITCH_ALIGN_SCALE, input);
 }
 
@@ -366,7 +366,7 @@ inline bool Gen::chopperspecs::PITCH_ANG(EA::Reflection::Float &result) const {
     result = PITCH_ANG();
     return true;
 }
-inline bool Gen::chopperspecs::SET_PITCH_ANG(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_PITCH_ANG(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PITCH_ANG, input);
 }
 
@@ -380,7 +380,7 @@ inline bool Gen::chopperspecs::PITCH_SLOW_DOWN_RATE(EA::Reflection::Float &resul
     result = PITCH_SLOW_DOWN_RATE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_PITCH_SLOW_DOWN_RATE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_PITCH_SLOW_DOWN_RATE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PITCH_SLOW_DOWN_RATE, input);
 }
 
@@ -394,7 +394,7 @@ inline bool Gen::chopperspecs::PITCH_STOP_SPEED(EA::Reflection::Float &result) c
     result = PITCH_STOP_SPEED();
     return true;
 }
-inline bool Gen::chopperspecs::SET_PITCH_STOP_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_PITCH_STOP_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PITCH_STOP_SPEED, input);
 }
 
@@ -408,7 +408,7 @@ inline bool Gen::chopperspecs::ROLL_ALIGN_SCALE(EA::Reflection::Float &result) c
     result = ROLL_ALIGN_SCALE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_ROLL_ALIGN_SCALE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_ROLL_ALIGN_SCALE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLL_ALIGN_SCALE, input);
 }
 
@@ -422,7 +422,7 @@ inline bool Gen::chopperspecs::ROLL_ANG(EA::Reflection::Float &result) const {
     result = ROLL_ANG();
     return true;
 }
-inline bool Gen::chopperspecs::SET_ROLL_ANG(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_ROLL_ANG(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLL_ANG, input);
 }
 
@@ -436,7 +436,7 @@ inline bool Gen::chopperspecs::ROLL_SLOW_DOWN_RATE(EA::Reflection::Float &result
     result = ROLL_SLOW_DOWN_RATE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_ROLL_SLOW_DOWN_RATE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_ROLL_SLOW_DOWN_RATE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLL_SLOW_DOWN_RATE, input);
 }
 
@@ -450,7 +450,7 @@ inline bool Gen::chopperspecs::ROLL_SPEED_MIN(EA::Reflection::Float &result) con
     result = ROLL_SPEED_MIN();
     return true;
 }
-inline bool Gen::chopperspecs::SET_ROLL_SPEED_MIN(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_ROLL_SPEED_MIN(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLL_SPEED_MIN, input);
 }
 
@@ -464,7 +464,7 @@ inline bool Gen::chopperspecs::ROLL_START_SPEED(EA::Reflection::Float &result) c
     result = ROLL_START_SPEED();
     return true;
 }
-inline bool Gen::chopperspecs::SET_ROLL_START_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_ROLL_START_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ROLL_START_SPEED, input);
 }
 
@@ -478,7 +478,7 @@ inline bool Gen::chopperspecs::SAME_ALIGN_SCALE(EA::Reflection::Float &result) c
     result = SAME_ALIGN_SCALE();
     return true;
 }
-inline bool Gen::chopperspecs::SET_SAME_ALIGN_SCALE(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_SAME_ALIGN_SCALE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SAME_ALIGN_SCALE, input);
 }
 
@@ -492,7 +492,7 @@ inline bool Gen::chopperspecs::SCALE_STEERING(EA::Reflection::Bool &result) cons
     result = SCALE_STEERING();
     return true;
 }
-inline bool Gen::chopperspecs::SET_SCALE_STEERING(const EA::Reflection::Bool &input) {
+inline bool Gen::chopperspecs::Set_SCALE_STEERING(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SCALE_STEERING, input);
 }
 
@@ -506,7 +506,7 @@ inline bool Gen::chopperspecs::STRAFE_SCALEX(EA::Reflection::Float &result) cons
     result = STRAFE_SCALEX();
     return true;
 }
-inline bool Gen::chopperspecs::SET_STRAFE_SCALEX(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_STRAFE_SCALEX(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(STRAFE_SCALEX, input);
 }
 
@@ -520,7 +520,7 @@ inline bool Gen::chopperspecs::STRAFE_SCALEY(EA::Reflection::Float &result) cons
     result = STRAFE_SCALEY();
     return true;
 }
-inline bool Gen::chopperspecs::SET_STRAFE_SCALEY(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_STRAFE_SCALEY(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(STRAFE_SCALEY, input);
 }
 
@@ -534,7 +534,7 @@ inline bool Gen::chopperspecs::TURN_BOOST_SPEED(EA::Reflection::Float &result) c
     result = TURN_BOOST_SPEED();
     return true;
 }
-inline bool Gen::chopperspecs::SET_TURN_BOOST_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_TURN_BOOST_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TURN_BOOST_SPEED, input);
 }
 
@@ -548,7 +548,7 @@ inline bool Gen::chopperspecs::YAW_BOOST_LIMIT(EA::Reflection::Float &result) co
     result = YAW_BOOST_LIMIT();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_BOOST_LIMIT(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_BOOST_LIMIT(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_BOOST_LIMIT, input);
 }
 
@@ -562,7 +562,7 @@ inline bool Gen::chopperspecs::YAW_DAMP(EA::Reflection::Float &result) const {
     result = YAW_DAMP();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_DAMP(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_DAMP(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_DAMP, input);
 }
 
@@ -576,7 +576,7 @@ inline bool Gen::chopperspecs::YAW_LIMIT_FRONT(EA::Reflection::Float &result) co
     result = YAW_LIMIT_FRONT();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_LIMIT_FRONT(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_LIMIT_FRONT(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_LIMIT_FRONT, input);
 }
 
@@ -590,7 +590,7 @@ inline bool Gen::chopperspecs::YAW_LIMIT_REAR(EA::Reflection::Float &result) con
     result = YAW_LIMIT_REAR();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_LIMIT_REAR(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_LIMIT_REAR(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_LIMIT_REAR, input);
 }
 
@@ -604,7 +604,7 @@ inline bool Gen::chopperspecs::YAW_STRENGTH_FRONT(EA::Reflection::Float &result)
     result = YAW_STRENGTH_FRONT();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_STRENGTH_FRONT(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_STRENGTH_FRONT(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_STRENGTH_FRONT, input);
 }
 
@@ -618,7 +618,7 @@ inline bool Gen::chopperspecs::YAW_STRENGTH_REAR(EA::Reflection::Float &result) 
     result = YAW_STRENGTH_REAR();
     return true;
 }
-inline bool Gen::chopperspecs::SET_YAW_STRENGTH_REAR(const EA::Reflection::Float &input) {
+inline bool Gen::chopperspecs::Set_YAW_STRENGTH_REAR(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(YAW_STRENGTH_REAR, input);
 }
 

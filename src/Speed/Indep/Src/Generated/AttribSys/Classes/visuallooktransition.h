@@ -65,37 +65,37 @@ struct visuallooktransition : Instance {
     bool _testvalue(TAttrib<EA::Reflection::Float> &result) const;
     bool _testvalue(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &_testvalue() const;
-    bool SET__testvalue(const EA::Reflection::Float &input);
+    bool Set__testvalue(const EA::Reflection::Float &input);
 
     bool normal(TAttrib<UMath::Matrix4> &result) const;
     bool normal(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &normal() const;
-    bool SET_normal(const UMath::Matrix4 &input);
+    bool Set_normal(const UMath::Matrix4 &input);
 
     bool uves(TAttrib<UMath::Matrix4> &result) const;
     bool uves(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &uves() const;
-    bool SET_uves(const UMath::Matrix4 &input);
+    bool Set_uves(const UMath::Matrix4 &input);
 
     bool uves_extreme(TAttrib<UMath::Matrix4> &result) const;
     bool uves_extreme(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &uves_extreme() const;
-    bool SET_uves_extreme(const UMath::Matrix4 &input);
+    bool Set_uves_extreme(const UMath::Matrix4 &input);
 
     bool uves_pulse(TAttrib<UMath::Matrix4> &result) const;
     bool uves_pulse(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &uves_pulse() const;
-    bool SET_uves_pulse(const UMath::Matrix4 &input);
+    bool Set_uves_pulse(const UMath::Matrix4 &input);
 
     bool uves_pulse_length(TAttrib<EA::Reflection::Float> &result) const;
     bool uves_pulse_length(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &uves_pulse_length() const;
-    bool SET_uves_pulse_length(const EA::Reflection::Float &input);
+    bool Set_uves_pulse_length(const EA::Reflection::Float &input);
 
     bool uves_pulse_trigger(TAttrib<EA::Reflection::Float> &result) const;
     bool uves_pulse_trigger(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &uves_pulse_trigger() const;
-    bool SET_uves_pulse_trigger(const EA::Reflection::Float &input);
+    bool Set_uves_pulse_trigger(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -139,7 +139,7 @@ inline const EA::Reflection::Float &Gen::visuallooktransition::_testvalue() cons
 inline bool Gen::visuallooktransition::_testvalue(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4ef07d5d, result);
 }
-inline bool Gen::visuallooktransition::SET__testvalue(const EA::Reflection::Float &input) {
+inline bool Gen::visuallooktransition::Set__testvalue(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4ef07d5d, input);
 }
 
@@ -152,7 +152,7 @@ inline const UMath::Matrix4 &Gen::visuallooktransition::normal() const {
 inline bool Gen::visuallooktransition::normal(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0eb3d357, result);
 }
-inline bool Gen::visuallooktransition::SET_normal(const UMath::Matrix4 &input) {
+inline bool Gen::visuallooktransition::Set_normal(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0eb3d357, input);
 }
 
@@ -165,7 +165,7 @@ inline const UMath::Matrix4 &Gen::visuallooktransition::uves() const {
 inline bool Gen::visuallooktransition::uves(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x681bef75, result);
 }
-inline bool Gen::visuallooktransition::SET_uves(const UMath::Matrix4 &input) {
+inline bool Gen::visuallooktransition::Set_uves(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x681bef75, input);
 }
 
@@ -178,7 +178,7 @@ inline const UMath::Matrix4 &Gen::visuallooktransition::uves_extreme() const {
 inline bool Gen::visuallooktransition::uves_extreme(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0e629621, result);
 }
-inline bool Gen::visuallooktransition::SET_uves_extreme(const UMath::Matrix4 &input) {
+inline bool Gen::visuallooktransition::Set_uves_extreme(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0e629621, input);
 }
 
@@ -191,7 +191,7 @@ inline const UMath::Matrix4 &Gen::visuallooktransition::uves_pulse() const {
 inline bool Gen::visuallooktransition::uves_pulse(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x334f1e4d, result);
 }
-inline bool Gen::visuallooktransition::SET_uves_pulse(const UMath::Matrix4 &input) {
+inline bool Gen::visuallooktransition::Set_uves_pulse(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x334f1e4d, input);
 }
 
@@ -204,7 +204,7 @@ inline const EA::Reflection::Float &Gen::visuallooktransition::uves_pulse_length
 inline bool Gen::visuallooktransition::uves_pulse_length(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0b82d479, result);
 }
-inline bool Gen::visuallooktransition::SET_uves_pulse_length(const EA::Reflection::Float &input) {
+inline bool Gen::visuallooktransition::Set_uves_pulse_length(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0b82d479, input);
 }
 
@@ -217,7 +217,7 @@ inline const EA::Reflection::Float &Gen::visuallooktransition::uves_pulse_trigge
 inline bool Gen::visuallooktransition::uves_pulse_trigger(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x53769b6c, result);
 }
-inline bool Gen::visuallooktransition::SET_uves_pulse_trigger(const EA::Reflection::Float &input) {
+inline bool Gen::visuallooktransition::Set_uves_pulse_trigger(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x53769b6c, input);
 }
 

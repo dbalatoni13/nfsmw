@@ -63,24 +63,24 @@ struct pursuitsupport : Instance {
     bool AirSupportOptions(AirSupport &result, unsigned int index) const;
     const AirSupport &AirSupportOptions(unsigned int index) const;
     unsigned int Num_AirSupportOptions() const;
-    bool SET_AirSupportOptions(const AirSupport &input, unsigned int index);
+    bool Set_AirSupportOptions(const AirSupport &input, unsigned int index);
 
     bool HeavySupportOptions(TAttrib<HeavySupport> &result) const;
     bool HeavySupportOptions(HeavySupport &result, unsigned int index) const;
     const HeavySupport &HeavySupportOptions(unsigned int index) const;
     unsigned int Num_HeavySupportOptions() const;
-    bool SET_HeavySupportOptions(const HeavySupport &input, unsigned int index);
+    bool Set_HeavySupportOptions(const HeavySupport &input, unsigned int index);
 
     bool LeaderSupportOptions(TAttrib<LeaderSupport> &result) const;
     bool LeaderSupportOptions(LeaderSupport &result, unsigned int index) const;
     const LeaderSupport &LeaderSupportOptions(unsigned int index) const;
     unsigned int Num_LeaderSupportOptions() const;
-    bool SET_LeaderSupportOptions(const LeaderSupport &input, unsigned int index);
+    bool Set_LeaderSupportOptions(const LeaderSupport &input, unsigned int index);
 
     bool MinimumSupportDelay(TAttrib<EA::Reflection::Float> &result) const;
     bool MinimumSupportDelay(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinimumSupportDelay() const;
-    bool SET_MinimumSupportDelay(const EA::Reflection::Float &input);
+    bool Set_MinimumSupportDelay(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -124,7 +124,7 @@ inline bool Gen::pursuitsupport::AirSupportOptions(AirSupport &result, unsigned 
 inline unsigned int Gen::pursuitsupport::Num_AirSupportOptions() const {
     ATTRIB_CODEGEN_GETLENGTH(0x3c6dbcb3);
 }
-inline bool Gen::pursuitsupport::SET_AirSupportOptions(const AirSupport &input, unsigned int index) {
+inline bool Gen::pursuitsupport::Set_AirSupportOptions(const AirSupport &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(AirSupport, 0x3c6dbcb3, input, index);
 }
 
@@ -140,7 +140,7 @@ inline bool Gen::pursuitsupport::HeavySupportOptions(HeavySupport &result, unsig
 inline unsigned int Gen::pursuitsupport::Num_HeavySupportOptions() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa73c3512);
 }
-inline bool Gen::pursuitsupport::SET_HeavySupportOptions(const HeavySupport &input, unsigned int index) {
+inline bool Gen::pursuitsupport::Set_HeavySupportOptions(const HeavySupport &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(HeavySupport, 0xa73c3512, input, index);
 }
 
@@ -156,7 +156,7 @@ inline bool Gen::pursuitsupport::LeaderSupportOptions(LeaderSupport &result, uns
 inline unsigned int Gen::pursuitsupport::Num_LeaderSupportOptions() const {
     ATTRIB_CODEGEN_GETLENGTH(0xebd53935);
 }
-inline bool Gen::pursuitsupport::SET_LeaderSupportOptions(const LeaderSupport &input, unsigned int index) {
+inline bool Gen::pursuitsupport::Set_LeaderSupportOptions(const LeaderSupport &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(LeaderSupport, 0xebd53935, input, index);
 }
 
@@ -169,7 +169,7 @@ inline const EA::Reflection::Float &Gen::pursuitsupport::MinimumSupportDelay() c
 inline bool Gen::pursuitsupport::MinimumSupportDelay(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe4e4bc48, result);
 }
-inline bool Gen::pursuitsupport::SET_MinimumSupportDelay(const EA::Reflection::Float &input) {
+inline bool Gen::pursuitsupport::Set_MinimumSupportDelay(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe4e4bc48, input);
 }
 

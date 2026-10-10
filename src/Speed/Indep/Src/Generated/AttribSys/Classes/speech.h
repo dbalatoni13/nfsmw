@@ -106,144 +106,144 @@ struct speech : Instance {
     bool BackTime(TAttrib<EA::Reflection::Float> &result) const;
     bool BackTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BackTime() const;
-    bool SET_BackTime(const EA::Reflection::Float &input);
+    bool Set_BackTime(const EA::Reflection::Float &input);
 
     bool Clarity(TAttrib<EA::Reflection::UInt8> &result) const;
     bool Clarity(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &Clarity() const;
-    bool SET_Clarity(const EA::Reflection::UInt8 &input);
+    bool Set_Clarity(const EA::Reflection::UInt8 &input);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool CullingRange(TAttrib<EA::Reflection::Float> &result) const;
     bool CullingRange(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CullingRange() const;
-    bool SET_CullingRange(const EA::Reflection::Float &input);
+    bool Set_CullingRange(const EA::Reflection::Float &input);
 
     bool DeadAir(TAttrib<EA::Reflection::Float> &result) const;
     bool DeadAir(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DeadAir() const;
-    bool SET_DeadAir(const EA::Reflection::Float &input);
+    bool Set_DeadAir(const EA::Reflection::Float &input);
 
     bool DepFollow(TAttrib<RefSpec> &result) const;
     bool DepFollow(RefSpec &result, unsigned int index) const;
     const RefSpec &DepFollow(unsigned int index) const;
     unsigned int Num_DepFollow() const;
-    bool SET_DepFollow(const RefSpec &input, unsigned int index);
+    bool Set_DepFollow(const RefSpec &input, unsigned int index);
 
     bool DoNotDropout(TAttrib<EA::Reflection::Bool> &result) const;
     bool DoNotDropout(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &DoNotDropout() const;
-    bool SET_DoNotDropout(const EA::Reflection::Bool &input);
+    bool Set_DoNotDropout(const EA::Reflection::Bool &input);
 
     bool EnforceDeadAir(TAttrib<EA::Reflection::Float> &result) const;
     bool EnforceDeadAir(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EnforceDeadAir() const;
-    bool SET_EnforceDeadAir(const EA::Reflection::Float &input);
+    bool Set_EnforceDeadAir(const EA::Reflection::Float &input);
 
     bool InitDelay(TAttrib<EA::Reflection::Float> &result) const;
     bool InitDelay(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &InitDelay() const;
-    bool SET_InitDelay(const EA::Reflection::Float &input);
+    bool Set_InitDelay(const EA::Reflection::Float &input);
 
     bool Interruptable(TAttrib<EA::Reflection::Bool> &result) const;
     bool Interruptable(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &Interruptable() const;
-    bool SET_Interruptable(const EA::Reflection::Bool &input);
+    bool Set_Interruptable(const EA::Reflection::Bool &input);
 
     bool Interval(TAttrib<EA::Reflection::Float> &result) const;
     bool Interval(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Interval() const;
-    bool SET_Interval(const EA::Reflection::Float &input);
+    bool Set_Interval(const EA::Reflection::Float &input);
 
     bool MaxHeat(TAttrib<EA::Reflection::Int8> &result) const;
     bool MaxHeat(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &MaxHeat() const;
-    bool SET_MaxHeat(const EA::Reflection::Int8 &input);
+    bool Set_MaxHeat(const EA::Reflection::Int8 &input);
 
     bool MaxPlayback(TAttrib<EA::Reflection::Int32> &result) const;
     bool MaxPlayback(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &MaxPlayback() const;
-    bool SET_MaxPlayback(const EA::Reflection::Int32 &input);
+    bool Set_MaxPlayback(const EA::Reflection::Int32 &input);
 
     bool MaxPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxPlayerSpeed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxPlayerSpeed() const;
-    bool SET_MaxPlayerSpeed(const EA::Reflection::Float &input);
+    bool Set_MaxPlayerSpeed(const EA::Reflection::Float &input);
 
     bool MinHeat(TAttrib<EA::Reflection::Int8> &result) const;
     bool MinHeat(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &MinHeat() const;
-    bool SET_MinHeat(const EA::Reflection::Int8 &input);
+    bool Set_MinHeat(const EA::Reflection::Int8 &input);
 
     bool MinPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const;
     bool MinPlayerSpeed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinPlayerSpeed() const;
-    bool SET_MinPlayerSpeed(const EA::Reflection::Float &input);
+    bool Set_MinPlayerSpeed(const EA::Reflection::Float &input);
 
     bool OnScreenOnly(TAttrib<EA::Reflection::Bool> &result) const;
     bool OnScreenOnly(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &OnScreenOnly() const;
-    bool SET_OnScreenOnly(const EA::Reflection::Bool &input);
+    bool Set_OnScreenOnly(const EA::Reflection::Bool &input);
 
     bool Pan(TAttrib<EA::Reflection::Bool> &result) const;
     bool Pan(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &Pan() const;
-    bool SET_Pan(const EA::Reflection::Bool &input);
+    bool Set_Pan(const EA::Reflection::Bool &input);
 
     bool RadioChirp(TAttrib<EA::Reflection::Bool> &result) const;
     bool RadioChirp(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &RadioChirp() const;
-    bool SET_RadioChirp(const EA::Reflection::Bool &input);
+    bool Set_RadioChirp(const EA::Reflection::Bool &input);
 
     bool RecallList(TAttrib<RefSpec> &result) const;
     bool RecallList(RefSpec &result, unsigned int index) const;
     const RefSpec &RecallList(unsigned int index) const;
     unsigned int Num_RecallList() const;
-    bool SET_RecallList(const RefSpec &input, unsigned int index);
+    bool Set_RecallList(const RefSpec &input, unsigned int index);
 
     bool RedundancyCheckIsGlobal(TAttrib<EA::Reflection::Bool> &result) const;
     bool RedundancyCheckIsGlobal(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &RedundancyCheckIsGlobal() const;
-    bool SET_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input);
+    bool Set_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input);
 
     bool SpeechID(TAttrib<SPCHType_1_EventID> &result) const;
     bool SpeechID(SPCHType_1_EventID &result) const;
     const SPCHType_1_EventID &SpeechID() const;
-    bool SET_SpeechID(const SPCHType_1_EventID &input);
+    bool Set_SpeechID(const SPCHType_1_EventID &input);
 
     bool cache_OnCreate(TAttrib<EA::Reflection::Bool> &result) const;
     bool cache_OnCreate(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &cache_OnCreate() const;
-    bool SET_cache_OnCreate(const EA::Reflection::Bool &input);
+    bool Set_cache_OnCreate(const EA::Reflection::Bool &input);
 
     bool cache_SysInit(TAttrib<EA::Reflection::Bool> &result) const;
     bool cache_SysInit(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &cache_SysInit() const;
-    bool SET_cache_SysInit(const EA::Reflection::Bool &input);
+    bool Set_cache_SysInit(const EA::Reflection::Bool &input);
 
     bool expiry(TAttrib<EA::Reflection::Float> &result) const;
     bool expiry(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &expiry() const;
-    bool SET_expiry(const EA::Reflection::Float &input);
+    bool Set_expiry(const EA::Reflection::Float &input);
 
     bool interrupt(TAttrib<EA::Reflection::Bool> &result) const;
     bool interrupt(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &interrupt() const;
-    bool SET_interrupt(const EA::Reflection::Bool &input);
+    bool Set_interrupt(const EA::Reflection::Bool &input);
 
     bool priority(TAttrib<EA::Reflection::Int16> &result) const;
     bool priority(EA::Reflection::Int16 &result) const;
     const EA::Reflection::Int16 &priority() const;
-    bool SET_priority(const EA::Reflection::Int16 &input);
+    bool Set_priority(const EA::Reflection::Int16 &input);
 
     bool reqLOS(TAttrib<EA::Reflection::Bool> &result) const;
     bool reqLOS(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &reqLOS() const;
-    bool SET_reqLOS(const EA::Reflection::Bool &input);
+    bool Set_reqLOS(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -309,7 +309,7 @@ inline bool Gen::speech::BackTime(EA::Reflection::Float &result) const {
     result = BackTime();
     return true;
 }
-inline bool Gen::speech::SET_BackTime(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_BackTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BackTime, input);
 }
 
@@ -322,7 +322,7 @@ inline const EA::Reflection::UInt8 &Gen::speech::Clarity() const {
 inline bool Gen::speech::Clarity(EA::Reflection::UInt8 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt8, 0xfe3254ea, result);
 }
-inline bool Gen::speech::SET_Clarity(const EA::Reflection::UInt8 &input) {
+inline bool Gen::speech::Set_Clarity(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt8, 0xfe3254ea, input);
 }
 
@@ -336,7 +336,7 @@ inline bool Gen::speech::CollectionName(EA::Reflection::Text &result) const {
     result = CollectionName();
     return true;
 }
-inline bool Gen::speech::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::speech::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -350,7 +350,7 @@ inline bool Gen::speech::CullingRange(EA::Reflection::Float &result) const {
     result = CullingRange();
     return true;
 }
-inline bool Gen::speech::SET_CullingRange(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_CullingRange(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CullingRange, input);
 }
 
@@ -363,7 +363,7 @@ inline const EA::Reflection::Float &Gen::speech::DeadAir() const {
 inline bool Gen::speech::DeadAir(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x793293dd, result);
 }
-inline bool Gen::speech::SET_DeadAir(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_DeadAir(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x793293dd, input);
 }
 
@@ -379,7 +379,7 @@ inline bool Gen::speech::DepFollow(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::speech::Num_DepFollow() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc8c5d475);
 }
-inline bool Gen::speech::SET_DepFollow(const RefSpec &input, unsigned int index) {
+inline bool Gen::speech::Set_DepFollow(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc8c5d475, input, index);
 }
 
@@ -393,7 +393,7 @@ inline bool Gen::speech::DoNotDropout(EA::Reflection::Bool &result) const {
     result = DoNotDropout();
     return true;
 }
-inline bool Gen::speech::SET_DoNotDropout(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_DoNotDropout(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DoNotDropout, input);
 }
 
@@ -406,7 +406,7 @@ inline const EA::Reflection::Float &Gen::speech::EnforceDeadAir() const {
 inline bool Gen::speech::EnforceDeadAir(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xdb3bd2f3, result);
 }
-inline bool Gen::speech::SET_EnforceDeadAir(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_EnforceDeadAir(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xdb3bd2f3, input);
 }
 
@@ -419,7 +419,7 @@ inline const EA::Reflection::Float &Gen::speech::InitDelay() const {
 inline bool Gen::speech::InitDelay(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xffbdad32, result);
 }
-inline bool Gen::speech::SET_InitDelay(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_InitDelay(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xffbdad32, input);
 }
 
@@ -432,7 +432,7 @@ inline const EA::Reflection::Bool &Gen::speech::Interruptable() const {
 inline bool Gen::speech::Interruptable(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x87930ed2, result);
 }
-inline bool Gen::speech::SET_Interruptable(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_Interruptable(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x87930ed2, input);
 }
 
@@ -446,7 +446,7 @@ inline bool Gen::speech::Interval(EA::Reflection::Float &result) const {
     result = Interval();
     return true;
 }
-inline bool Gen::speech::SET_Interval(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_Interval(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Interval, input);
 }
 
@@ -459,7 +459,7 @@ inline const EA::Reflection::Int8 &Gen::speech::MaxHeat() const {
 inline bool Gen::speech::MaxHeat(EA::Reflection::Int8 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x77f20778, result);
 }
-inline bool Gen::speech::SET_MaxHeat(const EA::Reflection::Int8 &input) {
+inline bool Gen::speech::Set_MaxHeat(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x77f20778, input);
 }
 
@@ -472,7 +472,7 @@ inline const EA::Reflection::Int32 &Gen::speech::MaxPlayback() const {
 inline bool Gen::speech::MaxPlayback(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7e18c2f8, result);
 }
-inline bool Gen::speech::SET_MaxPlayback(const EA::Reflection::Int32 &input) {
+inline bool Gen::speech::Set_MaxPlayback(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7e18c2f8, input);
 }
 
@@ -485,7 +485,7 @@ inline const EA::Reflection::Float &Gen::speech::MaxPlayerSpeed() const {
 inline bool Gen::speech::MaxPlayerSpeed(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb9befde0, result);
 }
-inline bool Gen::speech::SET_MaxPlayerSpeed(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_MaxPlayerSpeed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb9befde0, input);
 }
 
@@ -498,7 +498,7 @@ inline const EA::Reflection::Int8 &Gen::speech::MinHeat() const {
 inline bool Gen::speech::MinHeat(EA::Reflection::Int8 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x69603485, result);
 }
-inline bool Gen::speech::SET_MinHeat(const EA::Reflection::Int8 &input) {
+inline bool Gen::speech::Set_MinHeat(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x69603485, input);
 }
 
@@ -511,7 +511,7 @@ inline const EA::Reflection::Float &Gen::speech::MinPlayerSpeed() const {
 inline bool Gen::speech::MinPlayerSpeed(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0994e624, result);
 }
-inline bool Gen::speech::SET_MinPlayerSpeed(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_MinPlayerSpeed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0994e624, input);
 }
 
@@ -524,7 +524,7 @@ inline const EA::Reflection::Bool &Gen::speech::OnScreenOnly() const {
 inline bool Gen::speech::OnScreenOnly(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4b331604, result);
 }
-inline bool Gen::speech::SET_OnScreenOnly(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_OnScreenOnly(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4b331604, input);
 }
 
@@ -537,7 +537,7 @@ inline const EA::Reflection::Bool &Gen::speech::Pan() const {
 inline bool Gen::speech::Pan(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4d663bfc, result);
 }
-inline bool Gen::speech::SET_Pan(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_Pan(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4d663bfc, input);
 }
 
@@ -550,7 +550,7 @@ inline const EA::Reflection::Bool &Gen::speech::RadioChirp() const {
 inline bool Gen::speech::RadioChirp(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2976b959, result);
 }
-inline bool Gen::speech::SET_RadioChirp(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_RadioChirp(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2976b959, input);
 }
 
@@ -566,7 +566,7 @@ inline bool Gen::speech::RecallList(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::speech::Num_RecallList() const {
     ATTRIB_CODEGEN_GETLENGTH(0x4710d6d5);
 }
-inline bool Gen::speech::SET_RecallList(const RefSpec &input, unsigned int index) {
+inline bool Gen::speech::Set_RecallList(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x4710d6d5, input, index);
 }
 
@@ -579,7 +579,7 @@ inline const EA::Reflection::Bool &Gen::speech::RedundancyCheckIsGlobal() const 
 inline bool Gen::speech::RedundancyCheckIsGlobal(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3db0e0e9, result);
 }
-inline bool Gen::speech::SET_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3db0e0e9, input);
 }
 
@@ -593,7 +593,7 @@ inline bool Gen::speech::SpeechID(SPCHType_1_EventID &result) const {
     result = SpeechID();
     return true;
 }
-inline bool Gen::speech::SET_SpeechID(const SPCHType_1_EventID &input) {
+inline bool Gen::speech::Set_SpeechID(const SPCHType_1_EventID &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SpeechID, input);
 }
 
@@ -606,7 +606,7 @@ inline const EA::Reflection::Bool &Gen::speech::cache_OnCreate() const {
 inline bool Gen::speech::cache_OnCreate(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb6f42d73, result);
 }
-inline bool Gen::speech::SET_cache_OnCreate(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_cache_OnCreate(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb6f42d73, input);
 }
 
@@ -619,7 +619,7 @@ inline const EA::Reflection::Bool &Gen::speech::cache_SysInit() const {
 inline bool Gen::speech::cache_SysInit(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, result);
 }
-inline bool Gen::speech::SET_cache_SysInit(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_cache_SysInit(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, input);
 }
 
@@ -633,7 +633,7 @@ inline bool Gen::speech::expiry(EA::Reflection::Float &result) const {
     result = expiry();
     return true;
 }
-inline bool Gen::speech::SET_expiry(const EA::Reflection::Float &input) {
+inline bool Gen::speech::Set_expiry(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(expiry, input);
 }
 
@@ -646,7 +646,7 @@ inline const EA::Reflection::Bool &Gen::speech::interrupt() const {
 inline bool Gen::speech::interrupt(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xaecbb4ad, result);
 }
-inline bool Gen::speech::SET_interrupt(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_interrupt(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xaecbb4ad, input);
 }
 
@@ -660,7 +660,7 @@ inline bool Gen::speech::priority(EA::Reflection::Int16 &result) const {
     result = priority();
     return true;
 }
-inline bool Gen::speech::SET_priority(const EA::Reflection::Int16 &input) {
+inline bool Gen::speech::Set_priority(const EA::Reflection::Int16 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(priority, input);
 }
 
@@ -673,7 +673,7 @@ inline const EA::Reflection::Bool &Gen::speech::reqLOS() const {
 inline bool Gen::speech::reqLOS(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe0241fc1, result);
 }
-inline bool Gen::speech::SET_reqLOS(const EA::Reflection::Bool &input) {
+inline bool Gen::speech::Set_reqLOS(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe0241fc1, input);
 }
 

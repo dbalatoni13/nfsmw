@@ -83,32 +83,32 @@ struct explosion : Instance {
     bool BaseMaterial(TAttrib<RefSpec> &result) const;
     bool BaseMaterial(RefSpec &result) const;
     const RefSpec &BaseMaterial() const;
-    bool SET_BaseMaterial(const RefSpec &input);
+    bool Set_BaseMaterial(const RefSpec &input);
 
     bool damageMultiplier(TAttrib<EA::Reflection::Float> &result) const;
     bool damageMultiplier(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &damageMultiplier() const;
-    bool SET_damageMultiplier(const EA::Reflection::Float &input);
+    bool Set_damageMultiplier(const EA::Reflection::Float &input);
 
     bool explosionForceLimit(TAttrib<EA::Reflection::Float> &result) const;
     bool explosionForceLimit(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &explosionForceLimit() const;
-    bool SET_explosionForceLimit(const EA::Reflection::Float &input);
+    bool Set_explosionForceLimit(const EA::Reflection::Float &input);
 
     bool fallOffUnit(TAttrib<EA::Reflection::Float> &result) const;
     bool fallOffUnit(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &fallOffUnit() const;
-    bool SET_fallOffUnit(const EA::Reflection::Float &input);
+    bool Set_fallOffUnit(const EA::Reflection::Float &input);
 
     bool forceMultiplier(TAttrib<EA::Reflection::Float> &result) const;
     bool forceMultiplier(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &forceMultiplier() const;
-    bool SET_forceMultiplier(const EA::Reflection::Float &input);
+    bool Set_forceMultiplier(const EA::Reflection::Float &input);
 
     bool triggerThreshold(TAttrib<EA::Reflection::Float> &result) const;
     bool triggerThreshold(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &triggerThreshold() const;
-    bool SET_triggerThreshold(const EA::Reflection::Float &input);
+    bool Set_triggerThreshold(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -152,7 +152,7 @@ inline bool Gen::explosion::BaseMaterial(RefSpec &result) const {
     result = BaseMaterial();
     return true;
 }
-inline bool Gen::explosion::SET_BaseMaterial(const RefSpec &input) {
+inline bool Gen::explosion::Set_BaseMaterial(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BaseMaterial, input);
 }
 
@@ -166,7 +166,7 @@ inline bool Gen::explosion::damageMultiplier(EA::Reflection::Float &result) cons
     result = damageMultiplier();
     return true;
 }
-inline bool Gen::explosion::SET_damageMultiplier(const EA::Reflection::Float &input) {
+inline bool Gen::explosion::Set_damageMultiplier(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(damageMultiplier, input);
 }
 
@@ -180,7 +180,7 @@ inline bool Gen::explosion::explosionForceLimit(EA::Reflection::Float &result) c
     result = explosionForceLimit();
     return true;
 }
-inline bool Gen::explosion::SET_explosionForceLimit(const EA::Reflection::Float &input) {
+inline bool Gen::explosion::Set_explosionForceLimit(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(explosionForceLimit, input);
 }
 
@@ -194,7 +194,7 @@ inline bool Gen::explosion::fallOffUnit(EA::Reflection::Float &result) const {
     result = fallOffUnit();
     return true;
 }
-inline bool Gen::explosion::SET_fallOffUnit(const EA::Reflection::Float &input) {
+inline bool Gen::explosion::Set_fallOffUnit(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(fallOffUnit, input);
 }
 
@@ -208,7 +208,7 @@ inline bool Gen::explosion::forceMultiplier(EA::Reflection::Float &result) const
     result = forceMultiplier();
     return true;
 }
-inline bool Gen::explosion::SET_forceMultiplier(const EA::Reflection::Float &input) {
+inline bool Gen::explosion::Set_forceMultiplier(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(forceMultiplier, input);
 }
 
@@ -222,7 +222,7 @@ inline bool Gen::explosion::triggerThreshold(EA::Reflection::Float &result) cons
     result = triggerThreshold();
     return true;
 }
-inline bool Gen::explosion::SET_triggerThreshold(const EA::Reflection::Float &input) {
+inline bool Gen::explosion::Set_triggerThreshold(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(triggerThreshold, input);
 }
 
