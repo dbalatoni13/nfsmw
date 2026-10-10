@@ -13,12 +13,14 @@
 bList bFunkServerList;
 #if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
 int bSonyToolConnected = false;
+#endif
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
 void (*SendPacketFunction)(bFunkPacketHeader *, const void *, int) = nullptr;
 void (*ServiceMonitorFunction)() = nullptr;
 #endif
 
 void bSetupMonitorFunctionHooks(void (*f2)(struct bFunkPacketHeader *, const void *, int), void (*f3)()) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     SendPacketFunction = f2;
     ServiceMonitorFunction = f3;
 #endif
@@ -85,7 +87,7 @@ void bSendPacketDTLT10000(bFunkPacketHeader *header, const void *data, long size
 #endif
 
 void bSendPacket(struct bFunkPacketHeader *header, const void *data, int size) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (SendPacketFunction != nullptr) {
         SendPacketFunction(header, data, size);
 #ifdef EA_PLATFORM_PLAYSTATION2
@@ -97,7 +99,7 @@ void bSendPacket(struct bFunkPacketHeader *header, const void *data, int size) {
 }
 
 void bMonitorService() {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (ServiceMonitorFunction != nullptr) {
         ServiceMonitorFunction();
     }
@@ -505,7 +507,7 @@ bool bFunkServerPlatform::DeliverPacket(bFunkPacket *packet) {
 }
 
 void bFunkService() {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     for (bFunkServer *server = static_cast<bFunkServer *>(bFunkServerList.GetHead());
          server != static_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
         server->Service();

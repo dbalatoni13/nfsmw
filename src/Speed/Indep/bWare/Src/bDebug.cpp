@@ -23,6 +23,7 @@ extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address,
 #include <windef.h>
 #include <winbase.h>
 #include <ppcintrinsics.h>
+#include <xbdm.h>
 #endif
 
 void bFigureOutPSX2Platform();
@@ -183,6 +184,8 @@ bool bIsDebuggerConnected() {
         return true;
     }
     return snIsDebuggerRunning() != 0;
+#elif defined(EA_PLATFORM_XENON)
+    return DmIsDebuggerPresent() != 0;
 #else
     return false;
 #endif
