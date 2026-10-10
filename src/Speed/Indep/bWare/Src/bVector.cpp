@@ -602,13 +602,17 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
     float length = bLength(&tangent);
     bNormalize(&tangent, &tangent);
-#ifdef EA_PLATFORM_XENON
     bVector2 normal(tangent.y, -tangent.x);
-#else
-    bVector2 normal(-tangent.y, tangent.x);
-#endif
+#ifdef EA_PLATFORM_WIN32
+    float l = bDot(&p, &tangent);
+    float d = bDot(&p, &normal);
+#elif defined(EA_PLATFORM_XENON)
     float d = bDot(&p, &normal);
     float l = bDot(&p, &tangent);
+#else
+    float l = bDot(&tangent, &p);
+    float d = bDot(&normal, &p);
+#endif
     float distance;
 
     if (l < 0.0f) {
