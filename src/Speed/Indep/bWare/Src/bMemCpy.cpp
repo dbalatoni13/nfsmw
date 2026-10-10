@@ -237,7 +237,7 @@ asm(".set noreorder\n\t"
     ".end bMemSet\n\t"
     ".set macro\n\t"
     ".set reorder\n\t");
-#else
+#elif !defined(EA_PLATFORM_XENON)
 void bMemSet(void *dest, unsigned char pattern, unsigned int size) {
     int original_size = size;
     char *pdest = reinterpret_cast<char *>(dest);

@@ -739,7 +739,11 @@ int MemoryPool::CountAllocations(const char *debug_text) {
     int count = 0;
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead();
          header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+#ifdef EA_PLATFORM_XENON
+        if (bMatchNameWithWildcard(debug_text, header->GetDebugTextInline())) {
+#else
         if (bMatchNameWithWildcard(debug_text, header->GetDebugText())) {
+#endif
             count += header->Size;
         }
     }
@@ -748,11 +752,23 @@ int MemoryPool::CountAllocations(const char *debug_text) {
 }
 
 int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
+#ifdef EA_PLATFORM_XENON
+    if (b->GetBottomAddress() < a->GetBottomAddress()) {
+        return 0;
+    }
+    return 1;
+#else
     return static_cast<int>(a->GetBottomAddress() <= b->GetBottomAddress());
+#endif
 }
 
 int CheckFlipMemoryByAllocationNumber(AllocationHeader *a, AllocationHeader *b) {
-#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+#ifdef EA_PLATFORM_XENON
+    if (b->GetAllocationNumber() < a->GetAllocationNumber()) {
+        return 0;
+    }
+    return 1;
+#elif defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
     return static_cast<int>(b->GetAllocationNumber() >= a->GetAllocationNumber());
 #else
     return 1;
@@ -783,7 +799,11 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
             }
 
             bReleasePrintf("    %5d        0x%08x %7d   %s", header->GetAllocationNumber(), header->GetBottomAddress(), header->Size,
+#ifdef EA_PLATFORM_XENON
+                           header->GetDebugTextInline());
+#else
                            header->GetDebugText());
+#endif
             if (header->GetDebugLine() != 0) {
                 bReleasePrintf(", %d", header->GetDebugLine());
             }
@@ -805,7 +825,11 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
          header = header->GetNext()) {
         if ((header->GetAllocationNumber() >= from_allocation) && (header->GetAllocationNumber() < to_allocation)) {
             bReleasePrintf("    %5d        0x%08x %7d   %s", header->GetAllocationNumber(), header->GetBottomAddress(), header->Size,
+#ifdef EA_PLATFORM_XENON
+                           header->GetDebugTextInline());
+#else
                            header->GetDebugText());
+#endif
             if (header->GetDebugLine() != 0) {
                 bReleasePrintf(", %d", header->GetDebugLine());
             }

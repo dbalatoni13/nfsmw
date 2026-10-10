@@ -55,7 +55,11 @@
 #else
 extern "C" {
 void bMemCpy(void *dest, const void *src, unsigned int numbytes);
+#ifdef EA_PLATFORM_XENON
+void bMemSet(void *dest, int pattern, unsigned int size);
+#else
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
+#endif
 int bMemCmp(const void *s1, const void *s2, unsigned int numbytes);
 }
 #endif

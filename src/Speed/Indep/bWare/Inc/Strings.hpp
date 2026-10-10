@@ -9,7 +9,12 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
 // TODO To avoid circular dependency
+#ifdef EA_PLATFORM_XENON
+// The external Xenon fill helper consumes a full-width pattern argument.
+extern "C" void bMemSet(void *dest, int pattern, unsigned int size);
+#else
 extern "C" void bMemSet(void *dest, unsigned char pattern, unsigned int size);
+#endif
 
 // total size: 0x8
 class bSharedString {
