@@ -14,3 +14,5 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.cpp"
 
 #include "Speed/Indep/Src/Camera/ICE/ICEReplay.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEData.cpp"
