@@ -28,14 +28,23 @@ unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32
     unsigned char *cp = reinterpret_cast<unsigned char *>(const_cast<void *>(data));
 
     for (int i = 0; i < size; i++) {
+#ifdef EA_PLATFORM_WIN32
+        int c = *cp++;
+        crc = crc << 8 ^ bCrcTable[(crc >> 0x18 ^ c) & 0xff];
+#else
         int c = *cp;
         crc = crc << 8 ^ bCrcTable[crc >> 0x18 ^ c];
         cp++;
+#endif
     }
 
     for (; size > 0; size >>= 8) {
+#ifdef EA_PLATFORM_WIN32
+        crc = crc << 8 ^ bCrcTable[(crc >> 0x18 ^ size) & 0xff];
+#else
         int c = size & 0xff;
         crc = crc << 8 ^ bCrcTable[crc >> 0x18 ^ c];
+#endif
     }
     return ~crc;
 }

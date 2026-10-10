@@ -36,12 +36,12 @@ struct MemoryPoolOverrideInfo {
     int (*GetLargestFreeBlock)(void *);                   // offset 0x1C, size 0x4
 };
 
-// total size: 0x10
+// total size: 0xC
 struct MemoryPoolInfo {
     bool NumberReserved;                  // offset 0x0, size 0x1
-    bool TopMeansLargerAddress;           // offset 0x4, size 0x1
-    int OverflowPoolNumber;               // offset 0x8, size 0x4
-    MemoryPoolOverrideInfo *OverrideInfo; // offset 0xC, size 0x4
+    bool TopMeansLargerAddress;           // offset 0x1, size 0x1
+    int OverflowPoolNumber;               // offset 0x4, size 0x4
+    MemoryPoolOverrideInfo *OverrideInfo; // offset 0x8, size 0x4
 };
 
 // total size: 0x24
@@ -121,6 +121,10 @@ void bVerifyPoolIntegrity(int pool);
 void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_allocation);
 int bCountFreeMemory(int pool);
 int bMemoryGetAllocationNumber();
+#if defined(EA_PLATFORM_PLAYSTATION2) && defined(EA_BUILD_A124)
+void *bMemoryGetStatistics(int pool_num, int &num_allocations, int &total_num_allocations, int &amount_allocated,
+                           int &most_amount_allocated, int &amount_free, int &largest_malloc, const char *&debug_name);
+#endif
 void bCloseMemoryPool(int pool_num);
 void bMemorySetOverflowPoolNumber(int pool_num, int overflow_pool_number);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);

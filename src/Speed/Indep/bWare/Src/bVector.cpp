@@ -5,6 +5,87 @@ bVector3 bUnitVector3(1.0f, 0.0f, 0.0f);
 bVector4 bUnitVector4(1.0f, 0.0f, 0.0f, 0.0f);
 bVector3 bVector3FLT_MAX(FLT_MAX, FLT_MAX, FLT_MAX);
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+// Preserve the EE floating-point operations and the retail quadword writes,
+// including the padding lane of bVector3. These are separate ABI functions so
+// their fixed argument registers and VU clobbers cannot escape into C++ code.
+asm(
+    ".text\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".align 3\n\t"
+    ".globl bEqual__FPC8bVector2T0f\n\t"
+    ".ent bEqual__FPC8bVector2T0f\n\t"
+    "bEqual__FPC8bVector2T0f:\n\t"
+    "lwc1 $f0, 0($4)\n\t"
+    "lwc1 $f1, 0($5)\n\t"
+    "sub.s $f0, $f0, $f1\n\t"
+    "abs.s $f0, $f0\n\t"
+    "c.lt.s $f12, $f0\n\t"
+    "nop\n\t"
+    "bc1fl bEqualVector2_y\n\t"
+    "lwc1 $f0, 4($4)\n\t"
+    "jr $31\n\t"
+    "daddu $2, $0, $0\n\t"
+    "bEqualVector2_y:\n\t"
+    "lwc1 $f1, 4($5)\n\t"
+    "sub.s $f0, $f0, $f1\n\t"
+    "abs.s $f0, $f0\n\t"
+    "c.lt.s $f12, $f0\n\t"
+    "nop\n\t"
+    "bc1f bEqualVector2_return\n\t"
+    "addiu $2, $0, 1\n\t"
+    "daddu $2, $0, $0\n\t"
+    "bEqualVector2_return:\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bEqual__FPC8bVector2T0f\n\t"
+    ".align 3\n\t"
+    ".globl bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    ".ent bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    "bExpandBoundingBox__FP8bVector2T0PC8bVector2:\n\t"
+    "lwc1 $f5, 4($6)\n\t"
+    "lwc1 $f4, 0($6)\n\t"
+    "lwc1 $f3, 0($4)\n\t"
+    "lwc1 $f1, 4($4)\n\t"
+    "min.s $f3, $f3, $f4\n\t"
+    "lwc1 $f2, 0($5)\n\t"
+    "min.s $f1, $f1, $f5\n\t"
+    "lwc1 $f0, 4($5)\n\t"
+    "max.s $f2, $f2, $f4\n\t"
+    "swc1 $f1, 4($4)\n\t"
+    "max.s $f0, $f0, $f5\n\t"
+    "swc1 $f3, 0($4)\n\t"
+    "swc1 $f0, 4($5)\n\t"
+    "jr $31\n\t"
+    "swc1 $f2, 0($5)\n\t"
+    ".end bExpandBoundingBox__FP8bVector2T0PC8bVector2\n\t"
+    ".align 3\n\t"
+    ".globl bInitializeBoundingBox__FP8bVector3T0\n\t"
+    ".ent bInitializeBoundingBox__FP8bVector3T0\n\t"
+    "bInitializeBoundingBox__FP8bVector3T0:\n\t"
+    "lui $2, %hi(bVector3FLT_MAX)\n\t"
+    "lqc2 vf1, %lo(bVector3FLT_MAX)($2)\n\t"
+    "sqc2 vf1, 0($4)\n\t"
+    "vsub.xyzw vf1, vf0, vf1\n\t"
+    "sqc2 vf1, 0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bInitializeBoundingBox__FP8bVector3T0\n\t"
+    ".align 3\n\t"
+    ".globl bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    ".ent bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    "bInitializeBoundingBox__FP8bVector3T0PC8bVector3:\n\t"
+    "lqc2 vf1, 0($6)\n\t"
+    "sqc2 vf1, 0($4)\n\t"
+    "sqc2 vf1, 0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bInitializeBoundingBox__FP8bVector3T0PC8bVector3\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#endif
+
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     float x = v1->x - v2->x;
     float y = v1->y - v2->y;
@@ -13,8 +94,14 @@ float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     return bSqrt(x * x + y * y + z * z);
 }
 
-// STRIPPED
-float bDistBetween(const bVector4 *v1, const bVector4 *v2) {}
+float bDistBetween(const bVector4 *v1, const bVector4 *v2) {
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    float z = v1->z - v2->z;
+    float w = v1->w - v2->w;
+
+    return bSqrt(x * x + y * y + z * z + w * w);
+}
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
     float len = bLength(v);
@@ -25,24 +112,23 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v) {
         dest->x = x / len;
         dest->y = y / len;
     } else {
-        dest->y = 0.0f;
         dest->x = 1.0f;
+        dest->y = 0.0f;
     }
     return dest;
 }
 
-// STRIPPED
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
-    float len = bLength(v) / length;
+    float len = bLength(v);
+    len /= length;
 
     if (len != 0.0f) {
-        float inv_len = 1.0f / len;
-        float x = v->x;
         float y = v->y;
-        dest->x = x * inv_len;
+        float inv_len = 1.0f / len;
+        dest->x = v->x * inv_len;
         dest->y = y * inv_len;
     } else {
-        dest->x = length;
+        dest->x = 1.0f;
         dest->y = 0.0f;
     }
     return dest;
@@ -134,18 +220,50 @@ bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, floa
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon) {
+#ifdef EA_PLATFORM_XENON
+    // The retail Xenon implementation uses a fixed tolerance.
+    epsilon = 0.001f;
+#endif
     if (bAbs(v1->x - v2->x) > epsilon) {
         return 0;
     }
-    return bAbs(v1->y - v2->y) <= epsilon;
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    return 1;
+}
+#endif
+
+int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {
+    if (bAbs(v1->x - v2->x) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->z - v2->z) > epsilon) {
+        return 0;
+    }
+    return 1;
 }
 
-// STRIPPED
-int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {}
-
-// STRIPPED
-int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {}
+int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {
+    if (bAbs(v1->x - v2->x) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->y - v2->y) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->z - v2->z) > epsilon) {
+        return 0;
+    }
+    if (bAbs(v1->w - v2->w) > epsilon) {
+        return 0;
+    }
+    return 1;
+}
 
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float x = v1->y * v2->z - v1->z * v2->y;
@@ -165,9 +283,17 @@ void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max) {
     bbox_max->y = -FLT_MAX;
 }
 
-// STRIPPED
-void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {}
+void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {
+    float x = point->x;
+    float y = point->y;
 
+    bbox_min->x = x;
+    bbox_min->y = y;
+    bbox_max->x = x;
+    bbox_max->y = y;
+}
+
+#ifndef EA_PLATFORM_PLAYSTATION2
 void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point) {
     float min_x = bMin(bbox_min->x, point->x);
     float min_y = bMin(bbox_min->y, point->y);
@@ -178,12 +304,27 @@ void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *
     bFill(bbox_min, min_x, min_y);
     bFill(bbox_max, max_x, max_y);
 }
+#endif
 
-// STRIPPED
-void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {}
+void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point, float extra_width) {
+    float min_x = bMin(bbox_min->x, point->x - extra_width);
+    float min_y = bMin(bbox_min->y, point->y - extra_width);
+    float max_x = bMax(bbox_max->x, point->x + extra_width);
+    float max_y = bMax(bbox_max->y, point->y + extra_width);
 
-// STRIPPED
-void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {}
+    bFill(bbox_min, min_x, min_y);
+    bFill(bbox_max, max_x, max_y);
+}
+
+void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
+    float min_x = bMin(bbox_min->x, bbox2_min->x);
+    float min_y = bMin(bbox_min->y, bbox2_min->y);
+    float max_x = bMax(bbox_max->x, bbox2_max->x);
+    float max_y = bMax(bbox_max->y, bbox2_max->y);
+
+    bFill(bbox_min, min_x, min_y);
+    bFill(bbox_max, max_x, max_y);
+}
 
 int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width) {
     if ((point->x < bbox_min->x - extra_width) || (point->x > bbox_max->x + extra_width) || (point->y < bbox_min->y - extra_width) ||
@@ -193,8 +334,12 @@ int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, con
     return true;
 }
 
-// STRIPPED
-int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {}
+int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
+    if ((bbox2_min->x >= bbox_min->x) && (bbox2_max->x <= bbox_max->x) && (bbox2_min->y >= bbox_min->y) && (bbox2_max->y <= bbox_max->y)) {
+        return true;
+    }
+    return false;
+}
 
 int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max) {
     if ((bbox2_min->x < bbox_max->x) && (bbox2_max->x > bbox_min->x) && (bbox2_min->y < bbox_max->y) && (bbox2_max->y > bbox_min->y)) {
@@ -203,9 +348,31 @@ int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, 
     return false;
 }
 
-// STRIPPED
-float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {}
+float bBoundingBoxDistOutside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point) {
+    float x = point->x;
+    float y = point->y;
+    float distance = bbox_min->x - x;
+    float axis_distance = bbox_min->y - y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
 
+    axis_distance = x - bbox_max->x;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = y - bbox_max->y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+    return distance;
+}
+
+#ifndef EA_PLATFORM_PLAYSTATION2
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
     bbox_min->x = FLT_MAX;
     bbox_min->y = FLT_MAX;
@@ -229,10 +396,74 @@ void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVecto
     bbox_max->y = y;
     bbox_max->z = z;
 }
+#endif
 
-// STRIPPED
-void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {}
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point) {
+    float x = point->x;
+    float y = point->y;
+    float z = point->z;
 
+    if (x < bbox_min->x) {
+        bbox_min->x = x;
+    }
+    if (y < bbox_min->y) {
+        bbox_min->y = y;
+    }
+    if (z < bbox_min->z) {
+        bbox_min->z = z;
+    }
+    if (x > bbox_max->x) {
+        bbox_max->x = x;
+    }
+    if (y > bbox_max->y) {
+        bbox_max->y = y;
+    }
+    if (z > bbox_max->z) {
+        bbox_max->z = z;
+    }
+}
+
+#ifdef EA_PLATFORM_PLAYSTATION2
+// Preserve retail's four-lane VU operations, including its unspecified padding lane.
+asm(".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".globl bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    ".ent bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    "bExpandBoundingBox__FP8bVector3T0PC8bVector3f:\n\t"
+    "addiu $29, $29, -0x10\n\t"
+    "lqc2 vf5, 0x0($6)\n\t"
+    "swc1 $f12, 0x8($29)\n\t"
+    "lqc2 vf2, 0x0($4)\n\t"
+    "swc1 $f12, 0x0($29)\n\t"
+    "lqc2 vf1, 0x0($5)\n\t"
+    "swc1 $f12, 0x4($29)\n\t"
+    "lqc2 vf3, 0x0($29)\n\t"
+    "vsub vf4, vf5, vf3\n\t"
+    "vadd vf5, vf5, vf3\n\t"
+    "vmini vf2, vf2, vf4\n\t"
+    "vmax vf1, vf1, vf5\n\t"
+    "sqc2 vf2, 0x0($4)\n\t"
+    "sqc2 vf1, 0x0($5)\n\t"
+    "jr $31\n\t"
+    "addiu $29, $29, 0x10\n\t"
+    ".end bExpandBoundingBox__FP8bVector3T0PC8bVector3f\n\t"
+    ".globl bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    ".ent bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    "bExpandBoundingBox__FP8bVector3T0PC8bVector3T2:\n\t"
+    "lqc2 vf1, 0x0($6)\n\t"
+    "lqc2 vf2, 0x0($4)\n\t"
+    "vmini vf2, vf2, vf1\n\t"
+    "lqc2 vf3, 0x0($7)\n\t"
+    "lqc2 vf1, 0x0($5)\n\t"
+    "vmax vf1, vf1, vf3\n\t"
+    "sqc2 vf2, 0x0($4)\n\t"
+    "sqc2 vf1, 0x0($5)\n\t"
+    "jr $31\n\t"
+    "nop\n\t"
+    ".end bExpandBoundingBox__FP8bVector3T0PC8bVector3T2\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#else
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width) {
     float x_min = point->x - extra_width;
     float y_min = point->y - extra_width;
@@ -273,7 +504,7 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     float z_max = bbox2_max->z;
 
     if (x_min < bbox_min->x) {
-        bbox_min->x = bbox2_min->x;
+        bbox_min->x = x_min;
     }
     if (y_min < bbox_min->y) {
         bbox_min->y = y_min;
@@ -293,32 +524,95 @@ void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *
     }
 }
 
+#endif
+
 int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width) {
+#ifdef EA_PLATFORM_XENON
+    // The Xenon retail implementation keeps this argument in its ABI but does not use it.
+    (void)extra_width;
+    if ((point->x < bbox_min->x) || (point->x > bbox_max->x) || (point->y < bbox_min->y) ||
+        (point->y > bbox_max->y || (point->z < bbox_min->z) || (point->z > bbox_max->z))) {
+        return false;
+    }
+    return true;
+#else
     if ((point->x < bbox_min->x - extra_width) || (point->x > bbox_max->x + extra_width) || (point->y < bbox_min->y - extra_width) ||
         (point->y > bbox_max->y + extra_width || (point->z < bbox_min->z - extra_width) || (point->z > bbox_max->z + extra_width))) {
         return false;
     }
     return true;
+#endif
 }
 
-// STRIPPED
-int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {}
+int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
+    if ((bbox2_min->x >= bbox_min->x) && (bbox2_max->x <= bbox_max->x) && (bbox2_min->y >= bbox_min->y) && (bbox2_max->y <= bbox_max->y) &&
+        (bbox2_min->z >= bbox_min->z) && (bbox2_max->z <= bbox_max->z)) {
+        return true;
+    }
+    return false;
+}
 
-// STRIPPED
-int bBoundingBoxOverlapping(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {}
+int bBoundingBoxOverlapping(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max) {
+    if ((bbox2_min->x < bbox_max->x) && (bbox2_max->x > bbox_min->x) && (bbox2_min->y < bbox_max->y) && (bbox2_max->y > bbox_min->y) &&
+        (bbox2_min->z < bbox_max->z) && (bbox2_max->z > bbox_min->z)) {
+        return true;
+    }
+    return false;
+}
 
-// STRIPPED
-float bBoundingBoxDistOutside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point) {}
+float bBoundingBoxDistOutside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point) {
+    float x = point->x;
+    float y = point->y;
+    float z = point->z;
+    float distance = bbox_min->x - x;
+    float axis_distance = bbox_min->y - y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
 
-// UNSOLVED, ProStreet scratch: https://decomp.me/scratch/VE8bd
+    axis_distance = bbox_min->z - z;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = x - bbox_max->x;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = y - bbox_max->y;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+
+    axis_distance = z - bbox_max->z;
+    if (distance > axis_distance) {
+    } else {
+        distance = axis_distance;
+    }
+    return distance;
+}
+
 float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2) {
     bVector2 p = *point - *line_p1;
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
     float length = bLength(&tangent);
     bNormalize(&tangent, &tangent);
-    bVector2 normal(-tangent.y, tangent.x);
+    bVector2 normal(tangent.y, -tangent.x);
+#ifdef EA_PLATFORM_WIN32
+    float l = bDot(&p, &tangent);
+    float d = bDot(&p, &normal);
+#elif defined(EA_PLATFORM_XENON)
     float d = bDot(&p, &normal);
     float l = bDot(&p, &tangent);
+#else
+    float l = bDot(&tangent, &p);
+    float d = bDot(&normal, &p);
+#endif
     float distance;
 
     if (l < 0.0f) {
@@ -332,8 +626,14 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     return distance;
 }
 
-// STRIPPED
-float bGetPolyArea(const bVector2 *points, int num_points) {}
+float bGetPolyArea(const bVector2 *points, int num_points) {
+    float area = 0.0f;
+    for (int i = 0; i < num_points; i++) {
+        int j = (i + 1) % num_points;
+        area += points[i].x * points[j].y - points[i].y * points[j].x;
+    }
+    return area * 0.5f;
+}
 
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
     float x = point->x;
@@ -343,7 +643,11 @@ bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_point
 
     for (int i = 0; i < num_points; i++) {
         if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
+#ifdef EA_PLATFORM_WIN32
+            (x < ((y - points[i].y) * (points[j].x - points[i].x)) / (points[j].y - points[i].y) + points[i].x)) {
+#else
             (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
+#endif
             inside = !inside;
         }
         j = i;
@@ -355,14 +659,32 @@ bool bIsPointInPoly(const bVector2 *point, const bVector3 *points, int num_point
     float x = point->x;
     float y = point->y;
     bool inside = false;
-    int j = num_points - 1;
+#ifdef EA_PLATFORM_XENON
+    // The Xenon overload tests a triangle regardless of the supplied count.
+    (void)num_points;
+    int j = 2;
 
-    for (int i = 0; i < num_points; i++) {
+    for (int i = 0; i < 3; i++) {
         if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
             (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
             inside = !inside;
         }
         j = i;
     }
+#else
+    int j = num_points - 1;
+
+    for (int i = 0; i < num_points; i++) {
+        if ((((points[i].y <= y) && (y < points[j].y)) || (points[j].y <= y && (y < points[i].y))) &&
+#ifdef EA_PLATFORM_WIN32
+            (x < ((y - points[i].y) * (points[j].x - points[i].x)) / (points[j].y - points[i].y) + points[i].x)) {
+#else
+            (x < ((points[j].x - points[i].x) * (y - points[i].y)) / (points[j].y - points[i].y) + points[i].x)) {
+#endif
+            inside = !inside;
+        }
+        j = i;
+    }
+#endif
     return inside;
 }

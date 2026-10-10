@@ -1699,9 +1699,11 @@ _$_t8_Rb_tree5ZQ26Attrib8TypeDescZQ26Attrib8TypeDescZt9_Identity1ZQ26Attrib8Type
 // Speed/Indep/SourceLists/zBWare.cpp
 ///////////////////////////////////////////////////////////////////
 bMemSet = 0x15e070; // type:func
+bCrcTable = 0x4c98a8; // size:0x400
 bStringHash__FPCc = 0x162b68; // type:func
 bStrCpy__FPcPCc = 0x162c20; // type:func
-bRandom__Fi = 0x15c908; // type:func
+bRandom__Fi = 0x15c8e8; // type:func
+bRandom__Ff = 0x15c908; // type:func
 bScaleAdd__FP8bVector2PC8bVector2T1f = 0x1608b8; // type:func
 bGetTickerDifference__FUi = 0x15b650; // type:func
 bOMalloc__FP8SlotPool = 0x15fe68; // type:func
@@ -1743,7 +1745,13 @@ bIsValidPointer__FPvi = 0x15b3b8; // type:func
 bGetTickerDifference__FUiUi = 0x15b678; // type:func
 bGetFixTickerDifference__FUiUi = 0x15b6d0; // type:func
 Create__6bMutex = 0x15b730; // type:func
+Destroy__6bMutex = 0x15b750; // type:func size:0x8
+Lock__6bMutex = 0x15b758; // type:func size:0x8
+Unlock__6bMutex = 0x15b760; // type:func size:0x8
 bSendPacketDTLT10000__FP17bFunkPacketHeaderPCvl = 0x15b768; // type:func
+MUTEX_unlock__FP5MUTEX = 0x164e20; // type:func size:0x8
+MUTEX_lock__FP5MUTEX = 0x164e28; // type:func size:0x8
+MUTEX_destroy__FP5MUTEX = 0x164e30; // type:func size:0x8
 CalculateChecksum__17bFunkPacketHeaderPCvi = 0x15ba78; // type:func
 bSendPacket__FP17bFunkPacketHeaderPCvi = 0x15ba08; // type:func
 bMonitorService__Fv = 0x15ba50; // type:func
@@ -1818,11 +1826,12 @@ _$_t6bTList1Z8SlotPool = 0x164da0; // type:func
 CleanupExpandedSlotPools__15SlotPoolManager = 0x160818; // type:func
 bEqual__FPC8bVector2T0f = 0x1608e8; // type:func
 bInitializeBoundingBox__FP8bVector2T0 = 0x160938; // type:func
-bExpandBoundingBox__FP8bVector2T0PC8bVector2 = 0x160960; // type:func
+bExpandBoundingBox__FP8bVector2T0PC8bVector2 = 0x160968; // type:func size:0x3c
 bBoundingBoxIsInside__FPC8bVector2T0T0f = 0x1609a8; // type:func
 bBoundingBoxOverlapping__FPC8bVector2T0T0T0 = 0x160a20; // type:func
 bInitializeBoundingBox__FP8bVector3T0 = 0x160a88; // type:func
 bInitializeBoundingBox__FP8bVector3T0PC8bVector3 = 0x160aa8; // type:func
+bVector3FLT_MAX = 0x539380; // size:0x10
 bExpandBoundingBox__FP8bVector3T0PC8bVector3f = 0x160ac8; // type:func
 bExpandBoundingBox__FP8bVector3T0PC8bVector3T2 = 0x160b08; // type:func
 bBoundingBoxIsInside__FPC8bVector3T0T0f = 0x160b30; // type:func
@@ -1836,8 +1845,8 @@ TraceNewPool__10MemoryPool = 0x161b78; // type:func
 AddMemory__10MemoryPoolPvi = 0x160fa0; // type:func
 Close__10MemoryPool = 0x160f50; // type:func
 TraceDeletePool__10MemoryPool = 0x161be8; // type:func
-AddFreeMemory__10MemoryPoolPvi = 0x161058; // type:func
-FreeMemory__10MemoryPoolPvi = 0x160fc0; // type:func
+AddFreeMemory__10MemoryPoolPviPCc = 0x161058; // type:func
+FreeMemory__10MemoryPoolPviPCc = 0x160fc0; // type:func
 TraceFreeMemory__10MemoryPoolPvi = 0x161c18; // type:func
 AllocateMemory__10MemoryPooliiiiiPi = 0x161210; // type:func
 TraceAllocateMemory__10MemoryPoolPvi = 0x161c98; // type:func
@@ -1857,9 +1866,15 @@ bSetMemoryPoolDebugTracing__Fib = 0x162018; // type:func
 bSetMemoryPoolTopDirection__Fib = 0x1620a0; // type:func
 bMemorySetOverflowPoolNumber__Fii = 0x1620b8; // type:func
 GetPS2HeapSize__Fv = 0x1620d0; // type:func
+MemoryInitialized = 0x5393d0; // size:0x4
+PS2MemorySize = 0x5393d4; // size:0x4
+_HeapBasePS2 = 0x5393d8; // size:0x4
+_HeapSizePS2 = 0x5393dc; // size:0x4
 bMemoryInit__Fv = 0x162118; // type:func
 bMemoryUpdateTraceInformation__Fv = 0x1621c0; // type:func
 bMalloc__Fii = 0x162230; // type:func
+bWareMalloc__FiPCcii = 0x162258; // type:func
+bFree__FPv = 0x162500; // type:func
 bLargestMalloc__Fi = 0x162770; // type:func
 bVerifyPoolIntegrity__Fi = 0x162820; // type:func
 bAllocateSharedString__FPCc = 0x163d28; // type:func
@@ -15772,6 +15787,8 @@ _wwrite = 0x4ad9e0; // type:func
 ///////////////////////////////////////////////////////////////////
 // Speed/PSX2/bware/sce/ee/gcc/ee/mallocr.c
 ///////////////////////////////////////////////////////////////////
+// Reconstructed semantic alias; original label unavailable.
+malloc = 0x4a84b0; // type:func
 __malloc_trim_threshold = 0x5ab0b8; // size:0x8
 ///////////////////////////////////////////////////////////////////
 // Speed/PSX2/bware/sce/ee/gcc/ee/freer.c

@@ -2,12 +2,120 @@
 
 bQuaternion bIdentityQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+asm(
+    ".text\n\t"
+    ".set noreorder\n\t"
+    ".set nomacro\n\t"
+    ".globl Slerp__C11bQuaternionR11bQuaternionRC11bQuaternionf\n\t"
+    ".ent Slerp__C11bQuaternionR11bQuaternionRC11bQuaternionf\n\t"
+    "Slerp__C11bQuaternionR11bQuaternionRC11bQuaternionf:\n\t"
+    "addiu $29, $29, -128\n\t"
+    "sd $19, 64($29)\n\t"
+    "sd $18, 48($29)\n\t"
+    "daddu $19, $6, $0\n\t"
+    "sd $17, 32($29)\n\t"
+    "daddu $18, $4, $0\n\t"
+    "swc1 $f23, 120($29)\n\t"
+    "daddu $17, $5, $0\n\t"
+    "swc1 $f22, 112($29)\n\t"
+    "sd $31, 80($29)\n\t"
+    "mov.s $f22, $f12\n\t"
+    "sd $16, 16($29)\n\t"
+    "swc1 $f21, 104($29)\n\t"
+    "swc1 $f20, 96($29)\n\t"
+    ".word 0xda440000\n\t"
+    ".word 0xda630000\n\t"
+    ".word 0x4be320aa\n\t"
+    ".word 0x4b021041\n\t"
+    ".word 0x4b020842\n\t"
+    ".word 0x4b020843\n\t"
+    ".word 0x48220800\n\t"
+    "mtc1 $2, $f23\n\t"
+    "abs.s $f0, $f23\n\t"
+    "lui $1, 0x3f80\n\t"
+    "mtc1 $1, $f21\n\t"
+    "lui $1, 0x3d4c\n\t"
+    "ori $1, $1, 0xcccd\n\t"
+    "mtc1 $1, $f1\n\t"
+    "sub.s $f0, $f21, $f0\n\t"
+    "c.olt.s $f1, $f0\n\t"
+    "nop\n\t"
+    "bc1fl Slerp_L61\n\t"
+    "sub.s $f21, $f21, $f22\n\t"
+    "abs.s $f12, $f23\n\t"
+    "jal bASin__Ff\n\t"
+    "addiu $16, $0, 16384\n\t"
+    "subu $16, $16, $2\n\t"
+    "andi $16, $16, 0xffff\n\t"
+    "jal bSin__FUs\n\t"
+    "daddu $4, $16, $0\n\t"
+    "mov.s $f20, $f0\n\t"
+    "mtc1 $16, $f2\n\t"
+    "cvt.s.w $f2, $f2\n\t"
+    "sub.s $f0, $f21, $f22\n\t"
+    "mul.s $f1, $f22, $f2\n\t"
+    "mul.s $f0, $f0, $f2\n\t"
+    "cvt.w.s $f1, $f1\n\t"
+    "cvt.w.s $f0, $f0\n\t"
+    "mfc1 $16, $f1\n\t"
+    "mfc1 $4, $f0\n\t"
+    "andi $16, $16, 0xffff\n\t"
+    "jal bSin__FUs\n\t"
+    "andi $4, $4, 0xffff\n\t"
+    "div.s $f21, $f0, $f20\n\t"
+    "jal bSin__FUs\n\t"
+    "daddu $4, $16, $0\n\t"
+    "div.s $f12, $f0, $f20\n\t"
+    ".word 0xda440000\n\t"
+    ".word 0xda630000\n\t"
+    "beq $0, $0, Slerp_L62\n\t"
+    "nop\n\t"
+    "Slerp_L61:\n\t"
+    "mov.s $f12, $f22\n\t"
+    "Slerp_L62:\n\t"
+    "mtc1 $0, $f0\n\t"
+    "c.olt.s $f23, $f0\n\t"
+    "nop\n\t"
+    "bc1tl Slerp_L67\n\t"
+    "neg.s $f21, $f21\n\t"
+    "Slerp_L67:\n\t"
+    "mfc1 $2, $f21\n\t"
+    "ld $31, 80($29)\n\t"
+    ".word 0x48a20800\n\t"
+    "ld $19, 64($29)\n\t"
+    "mfc1 $2, $f12\n\t"
+    ".word 0x4be12058\n\t"
+    ".word 0xfba10000\n\t"
+    ".word 0x48a21000\n\t"
+    ".word 0xdba10000\n\t"
+    ".word 0x4be21898\n\t"
+    ".word 0x4be110a8\n\t"
+    "daddu $2, $17, $0\n\t"
+    ".word 0xfba20000\n\t"
+    "ld $18, 48($29)\n\t"
+    "ld $3, 0($29)\n\t"
+    "ld $4, 8($29)\n\t"
+    "sd $3, 0($17)\n\t"
+    "sd $4, 8($17)\n\t"
+    "ld $17, 32($29)\n\t"
+    "ld $16, 16($29)\n\t"
+    "lwc1 $f23, 120($29)\n\t"
+    "lwc1 $f22, 112($29)\n\t"
+    "lwc1 $f21, 104($29)\n\t"
+    "lwc1 $f20, 96($29)\n\t"
+    "jr $31\n\t"
+    "addiu $29, $29, 128\n\t"
+    ".end Slerp__C11bQuaternionR11bQuaternionRC11bQuaternionf\n\t"
+    ".set macro\n\t"
+    ".set reorder\n\t");
+#else
 bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float t) const {
     float cos_theta = bDot(reinterpret_cast<const bVector4 *>(this), reinterpret_cast<const bVector4 *>(&target));
     float scale1;
     float scale2;
 
-    if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
+    if ((1.0f - bAbs(cos_theta)) > 0.05f) {
         unsigned short theta = bACos(bAbs(cos_theta));
         float sin_theta = bSin(theta);
         unsigned short a1 = static_cast<unsigned short>(static_cast<int>((1.0f - t) * static_cast<float>(theta)) & 0xffff);
@@ -30,6 +138,7 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     r = qtemp;
     return r;
 }
+#endif
 
 void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
     float tr = m[0][0] + m[1][1] + m[2][2];
@@ -67,14 +176,58 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
     }
 }
 
-// STRIPPED
-bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {
+    float x = q->x;
+    float y = q->y;
+    float z = q->z;
+    float w = q->w;
+    qdest->x = -x;
+    qdest->y = -y;
+    qdest->z = -z;
+    qdest->w = w;
+    return qdest;
+}
 
-// STRIPPED
-float bLength(bQuaternion *q) {}
+float bLength(bQuaternion *q) {
+    return bSqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+}
 
-// STRIPPED
-bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {}
+bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {
+    float len = bLength(const_cast<bQuaternion *>(q));
+    if (len != 0.0f) {
+        float inv_len = 1.0f / len;
+        qdest->x = q->x * inv_len;
+        qdest->y = q->y * inv_len;
+        qdest->z = q->z * inv_len;
+        qdest->w = q->w * inv_len;
+    } else {
+        qdest->x = 0.0f;
+        qdest->y = 0.0f;
+        qdest->z = 0.0f;
+        qdest->w = 1.0f;
+    }
+    return qdest;
+}
 
-// STRIPPED
-bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {}
+bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {
+    float w2;
+    float w1;
+    w1 = q1->w;
+    w2 = q2->w;
+    float w = w1 * w2 - (q1->x * q2->x + q1->y * q2->y + q1->z * q2->z);
+    bVector3 cross;
+    cross.x = q1->y * q2->z - q1->z * q2->y;
+    cross.y = q1->z * q2->x - q1->x * q2->z;
+    cross.z = q1->x * q2->y - q1->y * q2->x;
+    cross.x += w1 * q2->x;
+    cross.y += w1 * q2->y;
+    cross.z += w1 * q2->z;
+    cross.y += w2 * q1->y;
+    cross.z += w2 * q1->z;
+    cross.x += w2 * q1->x;
+    qdest->x = cross.x;
+    qdest->y = cross.y;
+    qdest->z = cross.z;
+    qdest->w = w;
+    return qdest;
+}

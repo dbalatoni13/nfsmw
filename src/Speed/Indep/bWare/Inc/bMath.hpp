@@ -94,12 +94,11 @@ inline float bSqrt(float x) {
         y0 = 0.0f;
     }
 #elif defined(EA_PLATFORM_XENON)
-// TODO
+    y0 = __fsqrts(x);
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+    asm __volatile__("sqrt.s %0, %1" : "=f"(y0) : "f"(x));
 #elif defined(EA_PLATFORM_WIN32)
-    // TODO
-    return sqrt(x);
+    y0 = sqrtf(x);
 #else
 #error Choose a platform
 #endif
@@ -175,7 +174,16 @@ inline float bAbs(float a) {
 }
 
 inline float bTruncate(float a) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // EE keeps the integer-valued intermediate in an FP register.
+    float integer;
+    float t;
+    asm("cvt.w.s %0, %1" : "=f"(integer) : "f"(a));
+    asm("cvt.s.w %0, %1" : "=f"(t) : "f"(integer));
+    return t;
+#else
     return static_cast<int>(a);
+#endif
 }
 
 inline float bFloor(float a) {
@@ -440,7 +448,13 @@ struct ALIGN_16 bVector3 {
 
     bVector3() {}
 
-    bVector3 operator+() {}
+    bVector3 operator+() {
+        bVector3 dest;
+        dest.x = this->x;
+        dest.y = this->y;
+        dest.z = this->z;
+        return dest;
+    }
 
     bVector3(float _x, float _y, float _z);
     bVector3(const bVector3 &v);
@@ -453,11 +467,21 @@ struct ALIGN_16 bVector3 {
     bVector3 operator*(float f) const;
     bVector3 &operator-=(const bVector3 &v);
 
-    int operator==(const bVector3 &v) {}
+    int operator==(const bVector3 &v) {
+        return (this->x == v.x) && (this->y == v.y) && (this->z == v.z);
+    }
 
-    float &operator[](int index) {}
+    float &operator[](int index) {
+        return reinterpret_cast<float *>(this)[index];
+    }
 
-    bVector3 operator-() {}
+    bVector3 operator-() {
+        bVector3 dest;
+        dest.x = -this->x;
+        dest.y = -this->y;
+        dest.z = -this->z;
+        return dest;
+    }
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
@@ -600,17 +624,24 @@ inline float bLength(const bVector3 *v) {
 }
 
 inline bVector3 *bScale(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
-    float x;
-    float y;
-    float z;
+    float x = v1->x * v2->x;
+    float y = v1->y * v2->y;
+    float z = v1->z * v2->z;
+    return bFill(dest, x, y, z);
 }
 
-inline bVector3 *bMin(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {}
+inline bVector3 *bMin(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
+    return bFill(dest, bMin(v1->x, v2->x), bMin(v1->y, v2->y), bMin(v1->z, v2->z));
+}
 
-inline bVector3 *bMax(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {}
+inline bVector3 *bMax(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
+    return bFill(dest, bMax(v1->x, v2->x), bMax(v1->y, v2->y), bMax(v1->z, v2->z));
+}
 
 inline bVector3 bNeg(const bVector3 &v) {
     bVector3 dest;
+    bNeg(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {
@@ -642,6 +673,8 @@ inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bScale(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
@@ -660,6 +693,8 @@ inline bVector3 bNormalize(const bVector3 &v) {
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
+    bNormalize(&dest, &v, length);
+    return dest;
 }
 
 inline bVector3::bVector3(const bVector3 &v) {
@@ -668,10 +703,14 @@ inline bVector3::bVector3(const bVector3 &v) {
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bMin(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector3 bMax(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bMax(&dest, &v1, &v2);
+    return dest;
 }
 
 // total size: 0x10
@@ -693,21 +732,40 @@ struct ALIGN_16 bVector4 {
 
     bVector4 operator*(const float f) {
         bVector4 t;
+        t.x = this->x * f;
+        t.y = this->y * f;
+        t.z = this->z * f;
+        t.w = this->w * f;
+        return t;
     }
 
     bVector4 &operator=(const bVector4 &v);
 
     bVector4 operator-(const bVector4 &v);
 
-    bVector4 &operator-=(const bVector4 &v) {}
+    bVector4 &operator-=(const bVector4 &v) {
+        this->x -= v.x;
+        this->y -= v.y;
+        this->z -= v.z;
+        this->w -= v.w;
+        return *this;
+    }
 
     inline bVector4 &operator+=(const bVector4 &v);
 
     bVector4 &operator*=(float scale);
 
-    bVector4 &operator/=(float inv_scale) {}
+    bVector4 &operator/=(float inv_scale) {
+        this->x /= inv_scale;
+        this->y /= inv_scale;
+        this->z /= inv_scale;
+        this->w /= inv_scale;
+        return *this;
+    }
 
-    int operator==(const bVector4 &v) {}
+    int operator==(const bVector4 &v) {
+        return (this->x == v.x) && (this->y == v.y) && (this->z == v.z) && (this->w == v.w);
+    }
 
     float &operator[](int index) {
         return reinterpret_cast<float *>(this)[index];
@@ -720,6 +778,7 @@ struct ALIGN_16 bVector4 {
 
 bVector4 *bNormalize(bVector4 *dest, const bVector4 *v);
 bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, float scale);
+int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon);
 
 inline bVector4 *bFill(bVector4 *dest, float x, float y, float z, float w) {
     dest->x = x;
@@ -749,9 +808,10 @@ inline bVector4 *bCopy(bVector4 *dest, const bVector4 *v) {
 }
 
 inline bVector4 *bCopy(bVector4 *dest, const bVector3 *v) {
-    float x;
-    float y;
-    float z;
+    float x = v->x;
+    float y = v->y;
+    float z = v->z;
+    return bFill(dest, x, y, z, 0.0f);
 }
 
 inline bVector4 *bCopy(bVector4 *dest, const bVector3 *v, float w) {
@@ -796,10 +856,11 @@ inline bVector4 *bSub(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
 }
 
 inline bVector4 *bNeg(bVector4 *dest, const bVector4 *v) {
-    float x;
-    float y;
-    float z;
-    float w;
+    float x = -v->x;
+    float y = -v->y;
+    float z = -v->z;
+    float w = -v->w;
+    return bFill(dest, x, y, z, w);
 }
 
 inline float bDot(const bVector4 *v1, const bVector4 *v2) {
@@ -837,31 +898,52 @@ inline bVector4 *bScale(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) 
     return dest;
 }
 
-inline bVector4 *bMin(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {}
+inline bVector4 *bMin(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
+    return bFill(dest, bMin(v1->x, v2->x), bMin(v1->y, v2->y), bMin(v1->z, v2->z), bMin(v1->w, v2->w));
+}
 
-inline bVector4 *bMax(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {}
+inline bVector4 *bMax(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
+    return bFill(dest, bMax(v1->x, v2->x), bMax(v1->y, v2->y), bMax(v1->z, v2->z), bMax(v1->w, v2->w));
+}
 
 inline bVector4 bAdd(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    bAdd(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector4 bSub(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    bSub(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector4 bNeg(const bVector4 &v) {
     bVector4 dest;
+    bNeg(&dest, &v);
+    return dest;
 }
 
 inline bVector4 bCross(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    dest.x = v1.y * v2.z - v1.z * v2.y;
+    dest.y = v1.z * v2.x - v1.x * v2.z;
+    dest.z = v1.x * v2.y - v1.y * v2.x;
+    dest.w = 0.0f;
+    return dest;
 }
 
-inline float bDot(const bVector4 &v1, const bVector4 &v2) {}
+inline float bDot(const bVector4 &v1, const bVector4 &v2) {
+    return bDot(&v1, &v2);
+}
 
-inline int bEqual(const bVector4 &v1, const bVector4 &v2, float epsilon) {}
+inline int bEqual(const bVector4 &v1, const bVector4 &v2, float epsilon) {
+    return bEqual(&v1, &v2, epsilon);
+}
 
-inline float bLength(const bVector4 &v) {}
+inline float bLength(const bVector4 &v) {
+    return bLength(&v);
+}
 
 float bDistBetween(const bVector4 *v1, const bVector4 *v2);
 inline float bDistBetween(const bVector4 &v1, const bVector4 &v2) {
@@ -870,26 +952,38 @@ inline float bDistBetween(const bVector4 &v1, const bVector4 &v2) {
 
 inline bVector4 bScale(const bVector4 &v, float scale) {
     bVector4 dest;
+    bScale(&dest, &v, scale);
+    return dest;
 }
 
 inline bVector4 bScale(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    bScale(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector4 bScaleAdd(const bVector4 &v1, const bVector4 &v2, float scale) {
     bVector4 dest;
+    bScaleAdd(&dest, &v1, &v2, scale);
+    return dest;
 }
 
 inline bVector4 bNormalize(const bVector4 &v) {
     bVector4 dest;
+    bNormalize(&dest, &v);
+    return dest;
 }
 
 inline bVector4 bMin(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    bMin(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector4 bMax(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
+    bMax(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector4::bVector4(const bVector4 &v) {
@@ -990,11 +1084,19 @@ inline bVector4 &bConvertToBond(bVector4 &dest, const bVector4 &v) {
 
 inline bVector4 &bConvertFromBond(bVector4 &dest, const bVector4 &v) {
     float x = v.z;
+#ifdef EA_PLATFORM_WIN32
+    float y = -v.x;
+#else
     float y = v.x;
+#endif
     float z = v.y;
     float w = v.w;
     dest.x = x;
+#ifdef EA_PLATFORM_WIN32
+    dest.y = y;
+#else
     dest.y = -y;
+#endif
     dest.z = z;
     dest.w = w;
     return dest;
@@ -1029,7 +1131,28 @@ struct bMatrix4 {
     bVector4 v2; // offset 0x20, size 0x10
     bVector4 v3; // offset 0x30, size 0x10
 
-    bMatrix4() {}
+    bMatrix4() {
+#ifdef EA_PLATFORM_WIN32
+        // The retail PC constructor is the matrix identity constructor
+        // (0x4450c0), rather than a zero-initialising default constructor.
+        v0.x = 1.0f;
+        v0.y = 0.0f;
+        v0.z = 0.0f;
+        v0.w = 0.0f;
+        v1.x = 0.0f;
+        v1.y = 1.0f;
+        v1.z = 0.0f;
+        v1.w = 0.0f;
+        v2.x = 0.0f;
+        v2.y = 0.0f;
+        v2.z = 1.0f;
+        v2.w = 0.0f;
+        v3.x = 0.0f;
+        v3.y = 0.0f;
+        v3.z = 0.0f;
+        v3.w = 1.0f;
+#endif
+    }
 
     bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);
@@ -1063,6 +1186,10 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
         : "o"(v->v0), "o"(v->v1), "o"(v->v2), "o"(v->v3)
         : "memory");
 #elif defined(EA_PLATFORM_WIN32)
+    bCopy(&dest->v0, &v->v0);
+    bCopy(&dest->v1, &v->v1);
+    bCopy(&dest->v2, &v->v2);
+    bCopy(&dest->v3, &v->v3);
 #else
 #error Choose a platform
 #endif
@@ -1173,7 +1300,41 @@ struct bQuaternion {
         return this->GetMatrix(*mat);
     }
 
-    void GetMatrix(bMatrix4 &mat) const {}
+    void GetMatrix(bMatrix4 &mat) const {
+        // This is the row-major quaternion-to-matrix form used by the
+        // retail FE quaternion helper (0x466af0).  Keep all intermediates
+        // local so the output is safe when it aliases another object.
+        float x2 = x + x;
+        float y2 = y + y;
+        float z2 = z + z;
+
+        float xx = x * x2;
+        float xy = x * y2;
+        float xz = x * z2;
+        float yy = y * y2;
+        float yz = y * z2;
+        float zz = z * z2;
+        float wx = w * x2;
+        float wy = w * y2;
+        float wz = w * z2;
+
+        mat.v0.x = 1.0f - (yy + zz);
+        mat.v0.y = xy + wz;
+        mat.v0.z = xz - wy;
+        mat.v0.w = 0.0f;
+        mat.v1.x = xy - wz;
+        mat.v1.y = 1.0f - (xx + zz);
+        mat.v1.z = yz + wx;
+        mat.v1.w = 0.0f;
+        mat.v2.x = xz + wy;
+        mat.v2.y = yz - wx;
+        mat.v2.z = 1.0f - (xx + yy);
+        mat.v2.w = 0.0f;
+        mat.v3.x = 0.0f;
+        mat.v3.y = 0.0f;
+        mat.v3.z = 0.0f;
+        mat.v3.w = 1.0f;
+    }
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 

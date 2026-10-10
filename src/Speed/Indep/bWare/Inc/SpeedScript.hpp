@@ -35,11 +35,26 @@ class SpeedScript {
     SpeedScript(const char *filename, void (*error_function)(const char *));
     SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *));
 
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     ~SpeedScript();
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     void InitFromFile(const char *filename);
+#ifdef EA_PLATFORM_XENON
+  private:
+#endif
     void Error(const char *format, ...);
+#ifdef EA_PLATFORM_XENON
+  public:
+#endif
     char *GetPositionName();
     void ResizeEntryTable(int new_size);
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     SpeedScriptEntry *AddEntry();
     bool ParseNextWord(char *word, const char *buffer, int buffer_size, int *pbuffer_pos, int *pline_number);
     void Init(const char *name, const char *buffer, int buffer_size);
@@ -60,35 +75,62 @@ class SpeedScript {
     bVector3 GetNextArgumentVector3();
     bVector4 GetNextArgumentVector4();
 
-    char *GetName() {}
+    char *GetName() {
+        SpeedScriptEntry *entry = this->GetCurrentEntry();
+        return entry ? this->GetName(entry) : nullptr;
+    }
 
     char *GetError() {
         return ErrorText;
     }
 
-    void Rewind() {}
+    void Rewind() {
+        this->NextEntryNum = 0;
+    }
 
-    int GetPosition() {}
+    int GetPosition() {
+        return this->NextEntryNum;
+    }
 
-    void SetPosition(int position) {}
+    void SetPosition(int position) {
+        this->NextEntryNum = position;
+    }
 
-    long GetNextArgumentLong() {}
+    long GetNextArgumentLong() {
+        return static_cast<long>(this->GetNextArgumentInt());
+    }
 
-    char *NextKeyWord() {}
+    char *NextKeyWord() {
+        return this->GetNextCommand();
+    }
 
-    int NextKeyWord(char *keyword) {}
+    int NextKeyWord(char *keyword) {
+        return this->GetNextCommand(keyword) != nullptr;
+    }
 
-    char *ArgumentKeyWord(char *keyword) {}
+    char *ArgumentKeyWord(char *keyword) {
+        return this->GetCommandArgument(keyword);
+    }
 
-    char *NextArgumentString() {}
+    char *NextArgumentString() {
+        return this->GetNextArgumentString();
+    }
 
-    unsigned long NextArgumentLong() {}
+    unsigned long NextArgumentLong() {
+        return static_cast<unsigned long>(this->GetNextArgumentLong());
+    }
 
-    unsigned short NextArgumentShort() {}
+    unsigned short NextArgumentShort() {
+        return static_cast<unsigned short>(this->GetNextArgumentShort());
+    }
 
-    unsigned char NextArgumentChar() {}
+    unsigned char NextArgumentChar() {
+        return static_cast<unsigned char>(this->GetNextArgumentChar());
+    }
 
-    float NextArgumentFloat() {}
+    float NextArgumentFloat() {
+        return this->GetNextArgumentFloat();
+    }
 
     char *GetName(SpeedScriptEntry *entry) {
         return &this->FileTable[entry->FileNumber].ArgBuf[entry->ArgBufPos];

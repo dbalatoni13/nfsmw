@@ -4,6 +4,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <types.h>
+#include <stdio.h>
 
 // for UMath constants static_init
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -12,6 +13,17 @@
 #include <dolphin.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
+extern "C" int snIsDebuggerRunning();
+#elif defined(EA_PLATFORM_WIN32)
+extern "C" __declspec(dllimport) int __stdcall IsBadReadPtr(const void *address, unsigned long size);
+#elif defined(EA_PLATFORM_XENON)
+#ifndef _PPC_
+#define _PPC_
+#endif
+#include <windef.h>
+#include <winbase.h>
+#include <ppcintrinsics.h>
+#include <xbdm.h>
 #endif
 
 void bFigureOutPSX2Platform();
@@ -19,6 +31,54 @@ void bFigureOutPSX2Platform();
 int EnableReleasePrintf = false;
 bool (*UserPutStringFunction)(int, const char *) = nullptr;
 bool InUserPutStringFunction = false;
+
+#ifdef EA_PLATFORM_WIN32
+struct bStartupInfo {
+    unsigned int Size;
+    char *Reserved;
+    char *Desktop;
+    char *Title;
+    unsigned int X;
+    unsigned int Y;
+    unsigned int XSize;
+    unsigned int YSize;
+    unsigned int XCountChars;
+    unsigned int YCountChars;
+    unsigned int FillAttribute;
+    unsigned int Flags;
+    unsigned short ShowWindow;
+    unsigned short Reserved2Size;
+    unsigned char *Reserved2;
+    void *StdInput;
+    void *StdOutput;
+    void *StdError;
+};
+
+struct bProcessInformation {
+    void *Process;
+    void *Thread;
+    unsigned int ProcessId;
+    unsigned int ThreadId;
+};
+
+extern "C" {
+__declspec(dllimport) int __stdcall QueryPerformanceCounter(__int64 *counter);
+__declspec(dllimport) int __stdcall QueryPerformanceFrequency(__int64 *frequency);
+__declspec(dllimport) void __stdcall OutputDebugStringA(const char *text);
+__declspec(dllimport) int __stdcall CreateProcessA(const char *application_name, char *command_line, void *process_attributes,
+                                                   void *thread_attributes, int inherit_handles, unsigned int creation_flags,
+                                                   void *environment, const char *current_directory, bStartupInfo *startup_info,
+                                                   bProcessInformation *process_info);
+__declspec(dllimport) unsigned int __stdcall GetLastError();
+}
+
+static float _ticker_msperfreq = 0.0f;
+static int _ticker_cycpertick = 0;
+#endif
+
+#ifdef EA_PLATFORM_XENON
+static float _ticker_msperfreq = 0.0f;
+#endif
 
 #ifdef EA_PLATFORM_PLAYSTATION2
 static int NextNewFileCheckerID = 1;
@@ -65,9 +125,10 @@ void bSendStringToCodeine(int terminal_channel, const char *s) {
     int num_sent = 0;
     if (len > 0) {
         char packet_buffer[128];
-        int num_to_send = len;
+        int num_to_send;
 
         while (num_sent < len) {
+            num_to_send = len - num_sent;
             if (num_to_send > 126) {
                 num_to_send = 126;
             }
@@ -76,7 +137,6 @@ void bSendStringToCodeine(int terminal_channel, const char *s) {
             num_sent += num_to_send;
             packet_buffer[num_to_send + 1] = '\0';
             bFunkCallASync("CODEINE", 6, packet_buffer, num_to_send + 2);
-            num_to_send = len - num_sent;
         }
     }
 }
@@ -93,6 +153,9 @@ void bReleasePutString(char terminal_channel, const char *s) {
             scePrintf("%s", s);
             bRestoreInterrupts(state);
         }
+#elif defined(EA_PLATFORM_WIN32)
+        printf("%s", s);
+        OutputDebugStringA(s);
 #endif
     }
 }
@@ -116,11 +179,19 @@ int bCheckForNewFiles(float seconds) {
 }
 
 bool bIsDebuggerConnected() {
+#ifdef EA_PLATFORM_PLAYSTATION2
     if (bIsCodeineConnected()) {
-        // TODO: from sn debug.c
-        // return snIsDebuggerRunning();
+        return true;
     }
-    return true;
+    return snIsDebuggerRunning() != 0;
+#elif defined(EA_PLATFORM_XENON)
+    if (DmIsDebuggerPresent()) {
+        return true;
+    }
+    return false;
+#else
+    return false;
+#endif
 }
 
 static int GetCodeineString(char *string, int max_chars, int bfunk_num) {
@@ -140,12 +211,12 @@ int bGetComputerName(char *computer_name, int max_chars) {
 
 // STRIPPED
 int bGetHostName(char *host_name, int max_chars) {
-    return 0;
+    return GetCodeineString(host_name, max_chars, 0x60);
 }
 
 // STRIPPED
 int bGetTimeString(char *time_string, int max_chars) {
-    return 0;
+    return GetCodeineString(time_string, max_chars, 0x61);
 }
 
 void bBreak() {
@@ -153,29 +224,134 @@ void bBreak() {
     OSPanic("", 0, "");
 #elif defined(EA_PLATFORM_PLAYSTATION2)
     asm("break 0, 1");
+#elif defined(EA_PLATFORM_WIN32)
+    __debugbreak();
 #endif
 }
 
 int bIsValidPointer(void *p, int size) {
-    return (reinterpret_cast<uintptr_t>(p) & size - 1) == 0;
+    if ((reinterpret_cast<uintptr_t>(p) & size - 1) != 0) {
+        return 0;
+    }
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // EE address-map membership only; size is the retail alignment selector.
+    unsigned addr = reinterpret_cast<unsigned>(p);
+    if (addr - 0x00080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x80000000u < 0x08000000u) {
+        return 1;
+    }
+    if (addr - 0xA0080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x20080000u < 0x07F80000u) {
+        return 1;
+    }
+    if (addr - 0x70000000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x11000000u < 0x1000u) {
+        return 1;
+    }
+    if (addr - 0x11004000u < 0x1000u) {
+        return 1;
+    }
+    if (addr - 0x11008000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x1100C000u < 0x4000u) {
+        return 1;
+    }
+    if (addr - 0x10003000u < 0xB0u) {
+        return 1;
+    }
+    if (addr - 0x10003800u < 0x180u) {
+        return 1;
+    }
+    if (addr - 0x10003C00u < 0x180u) {
+        return 1;
+    }
+    if (addr - 0x10008000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x10009000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x1000A000u < 0x60u) {
+        return 1;
+    }
+    if (addr - 0x1000B000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000B400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000C000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000C400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000C800u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000D000u < 0x30u) {
+        return 1;
+    }
+    if (addr - 0x1000D080u < 0x10u) {
+        return 1;
+    }
+    if (addr - 0x1000D400u < 0x40u) {
+        return 1;
+    }
+    if (addr - 0x1000D480u < 0x10u) {
+        return 1;
+    }
+    if (addr - 0x1000E000u < 0x70u) {
+        return 1;
+    }
+    if (addr - 0x1000F520u < 0x10u) {
+        return 1;
+    }
+    return addr - 0x1000F590u < 0x10u;
+#elif defined(EA_PLATFORM_WIN32)
+    return !IsBadReadPtr(p, 1);
+#else
+    return 1;
+#endif
 }
 
 // STRIPPED
 int bLaunch(const char *command_line, int dos_command) {
-    return 0;
+    return -1;
 }
 
-// STRIPPED
 int bLaunchWindows(const char *command_line) {
+#ifdef EA_PLATFORM_WIN32
+    bStartupInfo startup_info = {};
+    bProcessInformation process_info;
+    startup_info.Size = sizeof(startup_info);
+
+    if (!CreateProcessA(nullptr, const_cast<char *>(command_line), nullptr, nullptr, false, 0, nullptr, nullptr, &startup_info, &process_info)) {
+        return GetLastError();
+    }
+#endif
     return 0;
 }
 
 float bGetTickerDifference(unsigned int start_ticks) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    unsigned int end_ticks;
+    asm volatile("mfc0 %0, $9" : "=r"(end_ticks));
+    return bGetTickerDifference(start_ticks, end_ticks);
+#else
     return bGetTickerDifference(start_ticks, bGetTicker());
+#endif
 }
 
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-#ifdef EA_BUILD_A124
+#ifdef EA_PLATFORM_PLAYSTATION2
     unsigned int ticks = end_ticks - start_ticks;
     return ticks * 0x40 / 0x125;
 #else
@@ -183,39 +359,90 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 #endif
 }
 
-void bInitTicker(float min_wraparound_time) {}
+void bInitTicker(float min_wraparound_time) {
+#ifdef EA_PLATFORM_XENON
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    _ticker_msperfreq = 4000.0f / static_cast<float>(frequency.QuadPart);
+#elif defined(EA_PLATFORM_WIN32)
+    __int64 frequency;
+    QueryPerformanceFrequency(&frequency);
+
+    _ticker_cycpertick = 0;
+    _ticker_msperfreq = 1000.0f / static_cast<float>(frequency);
+    float wraparound_time = 4294967296.0f * _ticker_msperfreq;
+    while (wraparound_time < min_wraparound_time) {
+        _ticker_cycpertick++;
+        wraparound_time += wraparound_time;
+        _ticker_msperfreq += _ticker_msperfreq;
+    }
+#endif
+}
 
 unsigned int bGetTicker() {
 #ifdef EA_PLATFORM_GAMECUBE
     return OSGetTick();
+#elif defined(EA_PLATFORM_WIN32)
+    __int64 counter;
+    QueryPerformanceCounter(&counter);
+    return static_cast<unsigned int>(counter >> _ticker_cycpertick);
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    unsigned int ticks;
+    asm volatile("mfc0 %0, $9" : "=r"(ticks));
+    return ticks;
+#elif defined(EA_PLATFORM_XENON)
+    return static_cast<unsigned int>(__mftb() >> 2);
 #else
     return 0;
 #endif
 }
 
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_XENON)
     if (start_ticks < end_ticks) {
         start_ticks = end_ticks - start_ticks;
     } else {
         start_ticks = end_ticks - start_ticks;
     }
-#ifdef EA_PLATFORM_GAMECUBE
+#ifdef EA_PLATFORM_XENON
+    return static_cast<float>(start_ticks) * _ticker_msperfreq;
+#else
     return OSTicksToMicroseconds(start_ticks) * 0.001f;
+#endif
+#elif defined(EA_PLATFORM_WIN32)
+    if (_ticker_msperfreq == 0.0f) {
+        bInitTicker(60000.0f);
+        return 0.0f;
+    }
+    unsigned int ticks = end_ticks - start_ticks;
+    return static_cast<float>(ticks) * _ticker_msperfreq;
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    unsigned int ticks = end_ticks - start_ticks;
+    return static_cast<float>(ticks) * 3.3333333249174757e-6f * 1.016700029373169f;
 #else
     return 0;
 #endif
 }
 
-// STRIPPED
 bool bHasTickerExpired(unsigned int start_ticks, float ms) {
-    return false;
+    return bGetTickerDifference(start_ticks, bGetTicker()) > ms;
 }
 
 int bDisableInterrupts() {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    return DIntr() != 0;
+#else
     return 0;
+#endif
 }
 
-void bRestoreInterrupts(int previous_state) {}
+void bRestoreInterrupts(int previous_state) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    if (previous_state) {
+        EIntr();
+    }
+#endif
+}
 
 void bMutex::Create() {
     MUTEX_create(reinterpret_cast<MUTEX *>(this));

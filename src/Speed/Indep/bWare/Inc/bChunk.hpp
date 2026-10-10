@@ -160,10 +160,13 @@ struct bChunk {
     }
 
     int CountChildren() {
-        /* anonymous block */ {
-            int ret;
-            /* anonymous block */ { struct bChunk *c; }
+        int count = 0;
+        bChunk *child = this->GetFirstChunk();
+        while (child < this->GetLastChunk()) {
+            count++;
+            child = child->GetNext();
         }
+        return count;
     }
 
     char *GetData() {
@@ -179,7 +182,17 @@ struct bChunk {
     }
 
     void VerifyAlignment(int alignment_size) {
-        unsigned int *pdata;
+        unsigned int *pdata = reinterpret_cast<unsigned int *>(this->GetData());
+        unsigned int *aligned_data = reinterpret_cast<unsigned int *>(this->GetAlignedData(alignment_size));
+        while (pdata < aligned_data) {
+            if (*pdata != BCHUNK_ALIGNMENT_PADDING) {
+#ifdef EA_PLATFORM_WIN32
+                __debugbreak();
+#endif
+                break;
+            }
+            ++pdata;
+        }
     }
 
     bChunk *GetFirstChunk() {
