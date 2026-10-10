@@ -130,6 +130,20 @@ int bStrNCmp(const char *s1, const char *s2, int n) {
         return 1;
     }
 
+#ifdef EA_PLATFORM_WIN32
+    while ((n-- != 0) && (*s1 != '\0') && (*s2 != '\0') && (*s1++ == *s2++)) {
+    }
+    if (n >= 0) {
+        if (*s1 != '\0') {
+            return 1;
+        }
+        if (*s2 != '\0') {
+            return -1;
+        }
+        return s1[-1] - s2[-1];
+    }
+    return 0;
+#else
     while (n-- != 0) {
         if (*s1 == '\0') {
             break;
@@ -157,6 +171,7 @@ int bStrNCmp(const char *s1, const char *s2, int n) {
     } else {
         return 0;
     }
+#endif
 }
 
 int bStrICmp(const char *s1, const char *s2) {
@@ -498,6 +513,20 @@ int bStrCmp(uint16 *s1, uint16 *s2) {
 }
 
 int bStrNCmp(uint16 *s1, uint16 *s2, int n) {
+#ifdef EA_PLATFORM_WIN32
+    while ((n-- != 0) && (*s1 != 0) && (*s2 != 0) && (*s1++ == *s2++)) {
+    }
+    if (n >= 0) {
+        if (*s1 != 0) {
+            return 1;
+        }
+        if (*s2 != 0) {
+            return -1;
+        }
+        return static_cast<int>(s1[-1]) - static_cast<int>(s2[-1]);
+    }
+    return 0;
+#else
     while (n-- != 0) {
         if (*s1 == 0) {
             break;
@@ -523,6 +552,7 @@ int bStrNCmp(uint16 *s1, uint16 *s2, int n) {
         return 1;
     }
     return 0;
+#endif
 }
 
 char *bStrStr(const char *s1, const char *s2) {

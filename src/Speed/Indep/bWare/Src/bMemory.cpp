@@ -476,18 +476,24 @@ RETRY:
             int alignment_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(f), alignment, alignment_offset);
             int amount_leftover = f->Size - (size + alignment_adjust);
 
-#ifdef EA_PLATFORM_WIN32
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
             if (((amount_leftover == 0) || (amount_leftover >= 16)) && (amount_leftover < best_amount_leftover)) {
 #else
             if (((amount_leftover == 0) || (amount_leftover > 0xf)) && (amount_leftover < best_amount_leftover)) {
 #endif
+#ifdef EA_PLATFORM_XENON
+                best_free_block = f;
                 best_amount_leftover = amount_leftover;
-#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON) || defined(EA_BUILD_A124)
+                best_alignment_adjust = alignment_adjust;
+#else
+                best_amount_leftover = amount_leftover;
+#if defined(EA_PLATFORM_WIN32) || defined(EA_BUILD_A124)
                 best_free_block = f;
                 best_alignment_adjust = alignment_adjust;
 #else
                 best_alignment_adjust = alignment_adjust;
                 best_free_block = f;
+#endif
 #endif
                 if (use_best_fit == 0) {
                     break;
@@ -500,7 +506,7 @@ RETRY:
                 GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(reinterpret_cast<char *>(f) + f->Size) - size, alignment, alignment_offset);
             int amount_leftover = f->Size - (size + alignment_adjust);
 
-#ifdef EA_PLATFORM_WIN32
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
             if (((amount_leftover == 0) || (amount_leftover >= 16)) && (amount_leftover < best_amount_leftover)) {
 #else
             if (((amount_leftover == 0) || (amount_leftover > 15)) && (amount_leftover < best_amount_leftover)) {
@@ -561,16 +567,18 @@ RETRY:
         mem_bottom = best_free_block;
         CheckFancyStompDetector(best_free_block + 1, size - sizeof(FreeBlock));
 
-#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON) || defined(EA_BUILD_A124)
+#if defined(EA_PLATFORM_WIN32) || defined(EA_BUILD_A124)
         int amount_leftover = best_free_block->Size - size;
         if (amount_leftover != 0) {
+#elif defined(EA_PLATFORM_XENON)
+        if (best_free_block->Size - size != 0) {
 #else
         if (best_free_block->Size != size) {
 #endif
             FreeBlock *new_free_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(best_free_block) + size);
             CheckFancyStompDetector(new_free_block, sizeof(FreeBlock));
 
-#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON) || defined(EA_BUILD_A124)
+#if defined(EA_PLATFORM_WIN32) || defined(EA_BUILD_A124)
             new_free_block->Size = amount_leftover;
 #else
             new_free_block->Size = best_free_block->Size - size;
@@ -601,9 +609,15 @@ RETRY:
     }
 #endif
 
+#ifdef EA_PLATFORM_XENON
+    this->AmountAllocated += size;
+    this->NumAllocations++;
+    this->TotalNumAllocations++;
+#else
     this->NumAllocations++;
     this->TotalNumAllocations++;
     this->AmountAllocated += size;
+#endif
     if (this->AmountAllocated > this->MostAmountAllocated) {
         this->MostAmountAllocated = this->AmountAllocated;
     }
