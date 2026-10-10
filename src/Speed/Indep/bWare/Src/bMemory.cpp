@@ -954,18 +954,28 @@ void MemoryPool::TraceRemoveMemory(void *p, int size) {
 void TrapMissingMemoryTraces(int size) {}
 
 void MemoryPool::TraceAllocateMemory(void *p, int size) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    bMemoryTraceAllocatePacket packet = {reinterpret_cast<uintptr_t>(this), reinterpret_cast<uintptr_t>(p), size,
+                                         TraceDebugLine, bMemoryAllocationNumber};
+#else
     bMemoryTraceAllocatePacket packet = {0};
     packet.PoolID = reinterpret_cast<uintptr_t>(this);
     packet.MemoryAddress = reinterpret_cast<uintptr_t>(p);
     packet.Size = size;
     packet.DebugLine = TraceDebugLine;
     packet.AllocationNumber = bMemoryAllocationNumber;
+#endif
     bMemSet(packet.DebugText, 0, sizeof(packet.DebugText));
     if (pTraceDebugText != nullptr) {
         bStrNCpy(packet.DebugText, pTraceDebugText, sizeof(packet.DebugText) - 1);
     }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+    int extra_len = sizeof(packet.DebugText) - 1 - bStrLen(packet.DebugText);
+    int packet_size = sizeof(packet) - extra_len;
+#else
     int packet_size = sizeof(packet) - (sizeof(packet.DebugText) - 1 - bStrLen(packet.DebugText));
+#endif
 #ifdef EA_PLATFORM_GAMECUBE
     bFunkGameCube("CODEINE", 28, &packet, packet_size);
 #else
