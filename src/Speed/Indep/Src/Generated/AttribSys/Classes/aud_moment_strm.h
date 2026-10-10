@@ -81,32 +81,32 @@ struct aud_moment_strm : Instance {
     bool CanInterupt(TAttrib<EA::Reflection::Bool> &result) const;
     bool CanInterupt(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &CanInterupt() const;
-    bool SET_CanInterupt(const EA::Reflection::Bool &input);
+    bool Set_CanInterupt(const EA::Reflection::Bool &input);
 
     bool IsPositioned(TAttrib<EA::Reflection::Bool> &result) const;
     bool IsPositioned(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &IsPositioned() const;
-    bool SET_IsPositioned(const EA::Reflection::Bool &input);
+    bool Set_IsPositioned(const EA::Reflection::Bool &input);
 
     bool VolSlot(TAttrib<eVOL_MOMENT> &result) const;
     bool VolSlot(eVOL_MOMENT &result) const;
     const eVOL_MOMENT &VolSlot() const;
-    bool SET_VolSlot(const eVOL_MOMENT &input);
+    bool Set_VolSlot(const eVOL_MOMENT &input);
 
     bool param(TAttrib<Csis::Type_SoundFX_Param> &result) const;
     bool param(Csis::Type_SoundFX_Param &result) const;
     const Csis::Type_SoundFX_Param &param() const;
-    bool SET_param(const Csis::Type_SoundFX_Param &input);
+    bool Set_param(const Csis::Type_SoundFX_Param &input);
 
     bool stream(TAttrib<Csis::Type_SoundFX_Type> &result) const;
     bool stream(Csis::Type_SoundFX_Type &result) const;
     const Csis::Type_SoundFX_Type &stream() const;
-    bool SET_stream(const Csis::Type_SoundFX_Type &input);
+    bool Set_stream(const Csis::Type_SoundFX_Type &input);
 
     bool strmpriority(TAttrib<EA::Reflection::Int8> &result) const;
     bool strmpriority(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &strmpriority() const;
-    bool SET_strmpriority(const EA::Reflection::Int8 &input);
+    bool Set_strmpriority(const EA::Reflection::Int8 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -149,7 +149,7 @@ inline const EA::Reflection::Bool &Gen::aud_moment_strm::CanInterupt() const {
 inline bool Gen::aud_moment_strm::CanInterupt(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb34fc11d, result);
 }
-inline bool Gen::aud_moment_strm::SET_CanInterupt(const EA::Reflection::Bool &input) {
+inline bool Gen::aud_moment_strm::Set_CanInterupt(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb34fc11d, input);
 }
 
@@ -162,7 +162,7 @@ inline const EA::Reflection::Bool &Gen::aud_moment_strm::IsPositioned() const {
 inline bool Gen::aud_moment_strm::IsPositioned(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, result);
 }
-inline bool Gen::aud_moment_strm::SET_IsPositioned(const EA::Reflection::Bool &input) {
+inline bool Gen::aud_moment_strm::Set_IsPositioned(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, input);
 }
 
@@ -176,7 +176,7 @@ inline bool Gen::aud_moment_strm::VolSlot(eVOL_MOMENT &result) const {
     result = VolSlot();
     return true;
 }
-inline bool Gen::aud_moment_strm::SET_VolSlot(const eVOL_MOMENT &input) {
+inline bool Gen::aud_moment_strm::Set_VolSlot(const eVOL_MOMENT &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VolSlot, input);
 }
 
@@ -190,7 +190,7 @@ inline bool Gen::aud_moment_strm::param(Csis::Type_SoundFX_Param &result) const 
     result = param();
     return true;
 }
-inline bool Gen::aud_moment_strm::SET_param(const Csis::Type_SoundFX_Param &input) {
+inline bool Gen::aud_moment_strm::Set_param(const Csis::Type_SoundFX_Param &input) {
     ATTRIB_CODEGEN_SETLAYOUT(param, input);
 }
 
@@ -204,7 +204,7 @@ inline bool Gen::aud_moment_strm::stream(Csis::Type_SoundFX_Type &result) const 
     result = stream();
     return true;
 }
-inline bool Gen::aud_moment_strm::SET_stream(const Csis::Type_SoundFX_Type &input) {
+inline bool Gen::aud_moment_strm::Set_stream(const Csis::Type_SoundFX_Type &input) {
     ATTRIB_CODEGEN_SETLAYOUT(stream, input);
 }
 
@@ -218,7 +218,7 @@ inline bool Gen::aud_moment_strm::strmpriority(EA::Reflection::Int8 &result) con
     result = strmpriority();
     return true;
 }
-inline bool Gen::aud_moment_strm::SET_strmpriority(const EA::Reflection::Int8 &input) {
+inline bool Gen::aud_moment_strm::Set_strmpriority(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(strmpriority, input);
 }
 

@@ -147,293 +147,293 @@ struct frontend : Instance {
     bool CarPartName(TAttrib<eUnlockableEntity> &result) const;
     bool CarPartName(eUnlockableEntity &result) const;
     const eUnlockableEntity &CarPartName() const;
-    bool SET_CarPartName(const eUnlockableEntity &input);
+    bool Set_CarPartName(const eUnlockableEntity &input);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool Cost(TAttrib<EA::Reflection::Int32> &result) const;
     bool Cost(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &Cost() const;
-    bool SET_Cost(const EA::Reflection::Int32 &input);
+    bool Set_Cost(const EA::Reflection::Int32 &input);
 
     bool IsCustomizable(TAttrib<EA::Reflection::Bool> &result) const;
     bool IsCustomizable(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &IsCustomizable() const;
-    bool SET_IsCustomizable(const EA::Reflection::Bool &input);
+    bool Set_IsCustomizable(const EA::Reflection::Bool &input);
 
     bool NameId(TAttrib<EA::Reflection::Int8> &result) const;
     bool NameId(EA::Reflection::Int8 &result, unsigned int index) const;
     const EA::Reflection::Int8 &NameId(unsigned int index) const;
     unsigned int Num_NameId() const;
-    bool SET_NameId(const EA::Reflection::Int8 &input, unsigned int index);
+    bool Set_NameId(const EA::Reflection::Int8 &input, unsigned int index);
 
     bool RapSheetRanks(TAttrib<EA::Reflection::Float> &result) const;
     bool RapSheetRanks(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &RapSheetRanks(unsigned int index) const;
     unsigned int Num_RapSheetRanks() const;
-    bool SET_RapSheetRanks(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_RapSheetRanks(const EA::Reflection::Float &input, unsigned int index);
 
     bool UnlockedAt(TAttrib<EA::Reflection::UInt8> &result) const;
     bool UnlockedAt(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &UnlockedAt() const;
-    bool SET_UnlockedAt(const EA::Reflection::UInt8 &input);
+    bool Set_UnlockedAt(const EA::Reflection::UInt8 &input);
 
     bool WarningLevel(TAttrib<EA::Reflection::UInt32> &result) const;
     bool WarningLevel(EA::Reflection::UInt32 &result, unsigned int index) const;
     const EA::Reflection::UInt32 &WarningLevel(unsigned int index) const;
     unsigned int Num_WarningLevel() const;
-    bool SET_WarningLevel(const EA::Reflection::UInt32 &input, unsigned int index);
+    bool Set_WarningLevel(const EA::Reflection::UInt32 &input, unsigned int index);
 
     bool cam_angle(RefSpec &result) const;
     const RefSpec &cam_angle() const;
-    bool SET_cam_angle(const RefSpec &input);
+    bool Set_cam_angle(const RefSpec &input);
 
     bool cam_anim_speed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_anim_speed() const;
-    bool SET_cam_anim_speed(const EA::Reflection::Float &input);
+    bool Set_cam_anim_speed(const EA::Reflection::Float &input);
 
     bool cam_blur(TAttrib<EA::Reflection::Float> &result) const;
     bool cam_blur(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_blur() const;
-    bool SET_cam_blur(const EA::Reflection::Float &input);
+    bool Set_cam_blur(const EA::Reflection::Float &input);
 
     bool cam_damping(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_damping() const;
-    bool SET_cam_damping(const EA::Reflection::Float &input);
+    bool Set_cam_damping(const EA::Reflection::Float &input);
 
     bool cam_fov(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_fov() const;
-    bool SET_cam_fov(const EA::Reflection::Float &input);
+    bool Set_cam_fov(const EA::Reflection::Float &input);
 
     bool cam_lookat_x(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_lookat_x() const;
-    bool SET_cam_lookat_x(const EA::Reflection::Float &input);
+    bool Set_cam_lookat_x(const EA::Reflection::Float &input);
 
     bool cam_lookat_y(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_lookat_y() const;
-    bool SET_cam_lookat_y(const EA::Reflection::Float &input);
+    bool Set_cam_lookat_y(const EA::Reflection::Float &input);
 
     bool cam_lookat_z(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_lookat_z() const;
-    bool SET_cam_lookat_z(const EA::Reflection::Float &input);
+    bool Set_cam_lookat_z(const EA::Reflection::Float &input);
 
     bool cam_orbit_horizontal(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_orbit_horizontal() const;
-    bool SET_cam_orbit_horizontal(const EA::Reflection::Float &input);
+    bool Set_cam_orbit_horizontal(const EA::Reflection::Float &input);
 
     bool cam_orbit_radius(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_orbit_radius() const;
-    bool SET_cam_orbit_radius(const EA::Reflection::Float &input);
+    bool Set_cam_orbit_radius(const EA::Reflection::Float &input);
 
     bool cam_orbit_vertical(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_orbit_vertical() const;
-    bool SET_cam_orbit_vertical(const EA::Reflection::Float &input);
+    bool Set_cam_orbit_vertical(const EA::Reflection::Float &input);
 
     bool cam_periods(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &cam_periods() const;
-    bool SET_cam_periods(const EA::Reflection::Int32 &input);
+    bool Set_cam_periods(const EA::Reflection::Int32 &input);
 
     bool cam_roll_angle(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &cam_roll_angle() const;
-    bool SET_cam_roll_angle(const EA::Reflection::Float &input);
+    bool Set_cam_roll_angle(const EA::Reflection::Float &input);
 
     bool cam_user_rotate(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &cam_user_rotate() const;
-    bool SET_cam_user_rotate(const EA::Reflection::Bool &input);
+    bool Set_cam_user_rotate(const EA::Reflection::Bool &input);
 
     bool default_car(RefSpec &result) const;
     const RefSpec &default_car() const;
-    bool SET_default_car(const RefSpec &input);
+    bool Set_default_car(const RefSpec &input);
 
     bool feCarPartInfo(TAttrib<FECarPartInfo> &result) const;
     bool feCarPartInfo(FECarPartInfo &result, unsigned int index) const;
     const FECarPartInfo &feCarPartInfo(unsigned int index) const;
     unsigned int Num_feCarPartInfo() const;
-    bool SET_feCarPartInfo(const FECarPartInfo &input, unsigned int index);
+    bool Set_feCarPartInfo(const FECarPartInfo &input, unsigned int index);
 
     bool feCarPartName(TAttrib<eUnlockableEntity> &result) const;
     bool feCarPartName(eUnlockableEntity &result) const;
     const eUnlockableEntity &feCarPartName() const;
-    bool SET_feCarPartName(const eUnlockableEntity &input);
+    bool Set_feCarPartName(const eUnlockableEntity &input);
 
     bool manufacturer(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &manufacturer() const;
-    bool SET_manufacturer(const EA::Reflection::UInt32 &input);
+    bool Set_manufacturer(const EA::Reflection::UInt32 &input);
 
     bool p_brakes_1(TAttrib<type_bStringHash> &result) const;
     bool p_brakes_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_brakes_1(unsigned int index) const;
     unsigned int Num_p_brakes_1() const;
-    bool SET_p_brakes_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_brakes_1(const type_bStringHash &input, unsigned int index);
 
     bool p_brakes_2(TAttrib<type_bStringHash> &result) const;
     bool p_brakes_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_brakes_2(unsigned int index) const;
     unsigned int Num_p_brakes_2() const;
-    bool SET_p_brakes_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_brakes_2(const type_bStringHash &input, unsigned int index);
 
     bool p_brakes_3(TAttrib<type_bStringHash> &result) const;
     bool p_brakes_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_brakes_3(unsigned int index) const;
     unsigned int Num_p_brakes_3() const;
-    bool SET_p_brakes_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_brakes_3(const type_bStringHash &input, unsigned int index);
 
     bool p_brakes_4(TAttrib<type_bStringHash> &result) const;
     bool p_brakes_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_brakes_4(unsigned int index) const;
     unsigned int Num_p_brakes_4() const;
-    bool SET_p_brakes_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_brakes_4(const type_bStringHash &input, unsigned int index);
 
     bool p_engine_1(TAttrib<type_bStringHash> &result) const;
     bool p_engine_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_engine_1(unsigned int index) const;
     unsigned int Num_p_engine_1() const;
-    bool SET_p_engine_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_engine_1(const type_bStringHash &input, unsigned int index);
 
     bool p_engine_2(TAttrib<type_bStringHash> &result) const;
     bool p_engine_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_engine_2(unsigned int index) const;
     unsigned int Num_p_engine_2() const;
-    bool SET_p_engine_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_engine_2(const type_bStringHash &input, unsigned int index);
 
     bool p_engine_3(TAttrib<type_bStringHash> &result) const;
     bool p_engine_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_engine_3(unsigned int index) const;
     unsigned int Num_p_engine_3() const;
-    bool SET_p_engine_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_engine_3(const type_bStringHash &input, unsigned int index);
 
     bool p_engine_4(TAttrib<type_bStringHash> &result) const;
     bool p_engine_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_engine_4(unsigned int index) const;
     unsigned int Num_p_engine_4() const;
-    bool SET_p_engine_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_engine_4(const type_bStringHash &input, unsigned int index);
 
     bool p_induction_1(TAttrib<type_bStringHash> &result) const;
     bool p_induction_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_induction_1(unsigned int index) const;
     unsigned int Num_p_induction_1() const;
-    bool SET_p_induction_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_induction_1(const type_bStringHash &input, unsigned int index);
 
     bool p_induction_2(TAttrib<type_bStringHash> &result) const;
     bool p_induction_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_induction_2(unsigned int index) const;
     unsigned int Num_p_induction_2() const;
-    bool SET_p_induction_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_induction_2(const type_bStringHash &input, unsigned int index);
 
     bool p_induction_3(TAttrib<type_bStringHash> &result) const;
     bool p_induction_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_induction_3(unsigned int index) const;
     unsigned int Num_p_induction_3() const;
-    bool SET_p_induction_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_induction_3(const type_bStringHash &input, unsigned int index);
 
     bool p_induction_4(TAttrib<type_bStringHash> &result) const;
     bool p_induction_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_induction_4(unsigned int index) const;
     unsigned int Num_p_induction_4() const;
-    bool SET_p_induction_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_induction_4(const type_bStringHash &input, unsigned int index);
 
     bool p_nitrous_1(TAttrib<type_bStringHash> &result) const;
     bool p_nitrous_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_nitrous_1(unsigned int index) const;
     unsigned int Num_p_nitrous_1() const;
-    bool SET_p_nitrous_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_nitrous_1(const type_bStringHash &input, unsigned int index);
 
     bool p_nitrous_2(TAttrib<type_bStringHash> &result) const;
     bool p_nitrous_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_nitrous_2(unsigned int index) const;
     unsigned int Num_p_nitrous_2() const;
-    bool SET_p_nitrous_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_nitrous_2(const type_bStringHash &input, unsigned int index);
 
     bool p_nitrous_3(TAttrib<type_bStringHash> &result) const;
     bool p_nitrous_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_nitrous_3(unsigned int index) const;
     unsigned int Num_p_nitrous_3() const;
-    bool SET_p_nitrous_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_nitrous_3(const type_bStringHash &input, unsigned int index);
 
     bool p_nitrous_4(TAttrib<type_bStringHash> &result) const;
     bool p_nitrous_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_nitrous_4(unsigned int index) const;
     unsigned int Num_p_nitrous_4() const;
-    bool SET_p_nitrous_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_nitrous_4(const type_bStringHash &input, unsigned int index);
 
     bool p_suspension_1(TAttrib<type_bStringHash> &result) const;
     bool p_suspension_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_suspension_1(unsigned int index) const;
     unsigned int Num_p_suspension_1() const;
-    bool SET_p_suspension_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_suspension_1(const type_bStringHash &input, unsigned int index);
 
     bool p_suspension_2(TAttrib<type_bStringHash> &result) const;
     bool p_suspension_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_suspension_2(unsigned int index) const;
     unsigned int Num_p_suspension_2() const;
-    bool SET_p_suspension_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_suspension_2(const type_bStringHash &input, unsigned int index);
 
     bool p_suspension_3(TAttrib<type_bStringHash> &result) const;
     bool p_suspension_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_suspension_3(unsigned int index) const;
     unsigned int Num_p_suspension_3() const;
-    bool SET_p_suspension_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_suspension_3(const type_bStringHash &input, unsigned int index);
 
     bool p_suspension_4(TAttrib<type_bStringHash> &result) const;
     bool p_suspension_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_suspension_4(unsigned int index) const;
     unsigned int Num_p_suspension_4() const;
-    bool SET_p_suspension_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_suspension_4(const type_bStringHash &input, unsigned int index);
 
     bool p_tires_1(TAttrib<type_bStringHash> &result) const;
     bool p_tires_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_tires_1(unsigned int index) const;
     unsigned int Num_p_tires_1() const;
-    bool SET_p_tires_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_tires_1(const type_bStringHash &input, unsigned int index);
 
     bool p_tires_2(TAttrib<type_bStringHash> &result) const;
     bool p_tires_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_tires_2(unsigned int index) const;
     unsigned int Num_p_tires_2() const;
-    bool SET_p_tires_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_tires_2(const type_bStringHash &input, unsigned int index);
 
     bool p_tires_3(TAttrib<type_bStringHash> &result) const;
     bool p_tires_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_tires_3(unsigned int index) const;
     unsigned int Num_p_tires_3() const;
-    bool SET_p_tires_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_tires_3(const type_bStringHash &input, unsigned int index);
 
     bool p_tires_4(TAttrib<type_bStringHash> &result) const;
     bool p_tires_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_tires_4(unsigned int index) const;
     unsigned int Num_p_tires_4() const;
-    bool SET_p_tires_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_tires_4(const type_bStringHash &input, unsigned int index);
 
     bool p_transmission_1(TAttrib<type_bStringHash> &result) const;
     bool p_transmission_1(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_transmission_1(unsigned int index) const;
     unsigned int Num_p_transmission_1() const;
-    bool SET_p_transmission_1(const type_bStringHash &input, unsigned int index);
+    bool Set_p_transmission_1(const type_bStringHash &input, unsigned int index);
 
     bool p_transmission_2(TAttrib<type_bStringHash> &result) const;
     bool p_transmission_2(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_transmission_2(unsigned int index) const;
     unsigned int Num_p_transmission_2() const;
-    bool SET_p_transmission_2(const type_bStringHash &input, unsigned int index);
+    bool Set_p_transmission_2(const type_bStringHash &input, unsigned int index);
 
     bool p_transmission_3(TAttrib<type_bStringHash> &result) const;
     bool p_transmission_3(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_transmission_3(unsigned int index) const;
     unsigned int Num_p_transmission_3() const;
-    bool SET_p_transmission_3(const type_bStringHash &input, unsigned int index);
+    bool Set_p_transmission_3(const type_bStringHash &input, unsigned int index);
 
     bool p_transmission_4(TAttrib<type_bStringHash> &result) const;
     bool p_transmission_4(type_bStringHash &result, unsigned int index) const;
     const type_bStringHash &p_transmission_4(unsigned int index) const;
     unsigned int Num_p_transmission_4() const;
-    bool SET_p_transmission_4(const type_bStringHash &input, unsigned int index);
+    bool Set_p_transmission_4(const type_bStringHash &input, unsigned int index);
 
     bool region(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &region() const;
-    bool SET_region(const EA::Reflection::UInt32 &input);
+    bool Set_region(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -525,7 +525,7 @@ inline const eUnlockableEntity &Gen::frontend::CarPartName() const {
 inline bool Gen::frontend::CarPartName(eUnlockableEntity &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(eUnlockableEntity, 0xb668787d, result);
 }
-inline bool Gen::frontend::SET_CarPartName(const eUnlockableEntity &input) {
+inline bool Gen::frontend::Set_CarPartName(const eUnlockableEntity &input) {
     ATTRIB_CODEGEN_SETVALUE(eUnlockableEntity, 0xb668787d, input);
 }
 
@@ -539,7 +539,7 @@ inline bool Gen::frontend::CollectionName(EA::Reflection::Text &result) const {
     result = CollectionName();
     return true;
 }
-inline bool Gen::frontend::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::frontend::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -553,7 +553,7 @@ inline bool Gen::frontend::Cost(EA::Reflection::Int32 &result) const {
     result = Cost();
     return true;
 }
-inline bool Gen::frontend::SET_Cost(const EA::Reflection::Int32 &input) {
+inline bool Gen::frontend::Set_Cost(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Cost, input);
 }
 
@@ -567,7 +567,7 @@ inline bool Gen::frontend::IsCustomizable(EA::Reflection::Bool &result) const {
     result = IsCustomizable();
     return true;
 }
-inline bool Gen::frontend::SET_IsCustomizable(const EA::Reflection::Bool &input) {
+inline bool Gen::frontend::Set_IsCustomizable(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(IsCustomizable, input);
 }
 
@@ -583,7 +583,7 @@ inline bool Gen::frontend::NameId(EA::Reflection::Int8 &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_NameId() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2c3c7feb);
 }
-inline bool Gen::frontend::SET_NameId(const EA::Reflection::Int8 &input, unsigned int index) {
+inline bool Gen::frontend::Set_NameId(const EA::Reflection::Int8 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Int8, 0x2c3c7feb, input, index);
 }
 
@@ -599,7 +599,7 @@ inline bool Gen::frontend::RapSheetRanks(EA::Reflection::Float &result, unsigned
 inline unsigned int Gen::frontend::Num_RapSheetRanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf9a7d5f7);
 }
-inline bool Gen::frontend::SET_RapSheetRanks(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::frontend::Set_RapSheetRanks(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0xf9a7d5f7, input, index);
 }
 
@@ -613,7 +613,7 @@ inline bool Gen::frontend::UnlockedAt(EA::Reflection::UInt8 &result) const {
     result = UnlockedAt();
     return true;
 }
-inline bool Gen::frontend::SET_UnlockedAt(const EA::Reflection::UInt8 &input) {
+inline bool Gen::frontend::Set_UnlockedAt(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(UnlockedAt, input);
 }
 
@@ -629,7 +629,7 @@ inline bool Gen::frontend::WarningLevel(EA::Reflection::UInt32 &result, unsigned
 inline unsigned int Gen::frontend::Num_WarningLevel() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb54d4a41);
 }
-inline bool Gen::frontend::SET_WarningLevel(const EA::Reflection::UInt32 &input, unsigned int index) {
+inline bool Gen::frontend::Set_WarningLevel(const EA::Reflection::UInt32 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::UInt32, 0xb54d4a41, input, index);
 }
 
@@ -640,7 +640,7 @@ inline bool Gen::frontend::cam_angle(RefSpec &result) const {
     result = cam_angle();
     return true;
 }
-inline bool Gen::frontend::SET_cam_angle(const RefSpec &input) {
+inline bool Gen::frontend::Set_cam_angle(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_angle, input);
 }
 
@@ -651,7 +651,7 @@ inline bool Gen::frontend::cam_anim_speed(EA::Reflection::Float &result) const {
     result = cam_anim_speed();
     return true;
 }
-inline bool Gen::frontend::SET_cam_anim_speed(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_anim_speed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_anim_speed, input);
 }
 
@@ -665,7 +665,7 @@ inline bool Gen::frontend::cam_blur(EA::Reflection::Float &result) const {
     result = cam_blur();
     return true;
 }
-inline bool Gen::frontend::SET_cam_blur(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_blur(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_blur, input);
 }
 
@@ -676,7 +676,7 @@ inline bool Gen::frontend::cam_damping(EA::Reflection::Float &result) const {
     result = cam_damping();
     return true;
 }
-inline bool Gen::frontend::SET_cam_damping(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_damping(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_damping, input);
 }
 
@@ -687,7 +687,7 @@ inline bool Gen::frontend::cam_fov(EA::Reflection::Float &result) const {
     result = cam_fov();
     return true;
 }
-inline bool Gen::frontend::SET_cam_fov(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_fov(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_fov, input);
 }
 
@@ -698,7 +698,7 @@ inline bool Gen::frontend::cam_lookat_x(EA::Reflection::Float &result) const {
     result = cam_lookat_x();
     return true;
 }
-inline bool Gen::frontend::SET_cam_lookat_x(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_lookat_x(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_lookat_x, input);
 }
 
@@ -709,7 +709,7 @@ inline bool Gen::frontend::cam_lookat_y(EA::Reflection::Float &result) const {
     result = cam_lookat_y();
     return true;
 }
-inline bool Gen::frontend::SET_cam_lookat_y(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_lookat_y(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_lookat_y, input);
 }
 
@@ -720,7 +720,7 @@ inline bool Gen::frontend::cam_lookat_z(EA::Reflection::Float &result) const {
     result = cam_lookat_z();
     return true;
 }
-inline bool Gen::frontend::SET_cam_lookat_z(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_lookat_z(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_lookat_z, input);
 }
 
@@ -731,7 +731,7 @@ inline bool Gen::frontend::cam_orbit_horizontal(EA::Reflection::Float &result) c
     result = cam_orbit_horizontal();
     return true;
 }
-inline bool Gen::frontend::SET_cam_orbit_horizontal(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_orbit_horizontal(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_orbit_horizontal, input);
 }
 
@@ -742,7 +742,7 @@ inline bool Gen::frontend::cam_orbit_radius(EA::Reflection::Float &result) const
     result = cam_orbit_radius();
     return true;
 }
-inline bool Gen::frontend::SET_cam_orbit_radius(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_orbit_radius(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_orbit_radius, input);
 }
 
@@ -753,7 +753,7 @@ inline bool Gen::frontend::cam_orbit_vertical(EA::Reflection::Float &result) con
     result = cam_orbit_vertical();
     return true;
 }
-inline bool Gen::frontend::SET_cam_orbit_vertical(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_orbit_vertical(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_orbit_vertical, input);
 }
 
@@ -764,7 +764,7 @@ inline bool Gen::frontend::cam_periods(EA::Reflection::Int32 &result) const {
     result = cam_periods();
     return true;
 }
-inline bool Gen::frontend::SET_cam_periods(const EA::Reflection::Int32 &input) {
+inline bool Gen::frontend::Set_cam_periods(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_periods, input);
 }
 
@@ -775,7 +775,7 @@ inline bool Gen::frontend::cam_roll_angle(EA::Reflection::Float &result) const {
     result = cam_roll_angle();
     return true;
 }
-inline bool Gen::frontend::SET_cam_roll_angle(const EA::Reflection::Float &input) {
+inline bool Gen::frontend::Set_cam_roll_angle(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_roll_angle, input);
 }
 
@@ -786,7 +786,7 @@ inline bool Gen::frontend::cam_user_rotate(EA::Reflection::Bool &result) const {
     result = cam_user_rotate();
     return true;
 }
-inline bool Gen::frontend::SET_cam_user_rotate(const EA::Reflection::Bool &input) {
+inline bool Gen::frontend::Set_cam_user_rotate(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(cam_user_rotate, input);
 }
 
@@ -797,7 +797,7 @@ inline bool Gen::frontend::default_car(RefSpec &result) const {
     result = default_car();
     return true;
 }
-inline bool Gen::frontend::SET_default_car(const RefSpec &input) {
+inline bool Gen::frontend::Set_default_car(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(default_car, input);
 }
 
@@ -813,7 +813,7 @@ inline bool Gen::frontend::feCarPartInfo(FECarPartInfo &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_feCarPartInfo() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1002ea65);
 }
-inline bool Gen::frontend::SET_feCarPartInfo(const FECarPartInfo &input, unsigned int index) {
+inline bool Gen::frontend::Set_feCarPartInfo(const FECarPartInfo &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(FECarPartInfo, 0x1002ea65, input, index);
 }
 
@@ -826,7 +826,7 @@ inline const eUnlockableEntity &Gen::frontend::feCarPartName() const {
 inline bool Gen::frontend::feCarPartName(eUnlockableEntity &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(eUnlockableEntity, 0x3b874697, result);
 }
-inline bool Gen::frontend::SET_feCarPartName(const eUnlockableEntity &input) {
+inline bool Gen::frontend::Set_feCarPartName(const eUnlockableEntity &input) {
     ATTRIB_CODEGEN_SETVALUE(eUnlockableEntity, 0x3b874697, input);
 }
 
@@ -837,7 +837,7 @@ inline bool Gen::frontend::manufacturer(EA::Reflection::UInt32 &result) const {
     result = manufacturer();
     return true;
 }
-inline bool Gen::frontend::SET_manufacturer(const EA::Reflection::UInt32 &input) {
+inline bool Gen::frontend::Set_manufacturer(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(manufacturer, input);
 }
 
@@ -853,7 +853,7 @@ inline bool Gen::frontend::p_brakes_1(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_brakes_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe4af1260);
 }
-inline bool Gen::frontend::SET_p_brakes_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_brakes_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xe4af1260, input, index);
 }
 
@@ -869,7 +869,7 @@ inline bool Gen::frontend::p_brakes_2(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_brakes_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x70b14851);
 }
-inline bool Gen::frontend::SET_p_brakes_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_brakes_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x70b14851, input, index);
 }
 
@@ -885,7 +885,7 @@ inline bool Gen::frontend::p_brakes_3(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_brakes_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8e8b78e1);
 }
-inline bool Gen::frontend::SET_p_brakes_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_brakes_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x8e8b78e1, input, index);
 }
 
@@ -901,7 +901,7 @@ inline bool Gen::frontend::p_brakes_4(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_brakes_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb4df5439);
 }
-inline bool Gen::frontend::SET_p_brakes_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_brakes_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xb4df5439, input, index);
 }
 
@@ -917,7 +917,7 @@ inline bool Gen::frontend::p_engine_1(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_engine_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x512303af);
 }
-inline bool Gen::frontend::SET_p_engine_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_engine_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x512303af, input, index);
 }
 
@@ -933,7 +933,7 @@ inline bool Gen::frontend::p_engine_2(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_engine_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdb8a8a1d);
 }
-inline bool Gen::frontend::SET_p_engine_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_engine_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xdb8a8a1d, input, index);
 }
 
@@ -949,7 +949,7 @@ inline bool Gen::frontend::p_engine_3(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_engine_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0x4f56a655);
 }
-inline bool Gen::frontend::SET_p_engine_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_engine_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x4f56a655, input, index);
 }
 
@@ -965,7 +965,7 @@ inline bool Gen::frontend::p_engine_4(type_bStringHash &result, unsigned int ind
 inline unsigned int Gen::frontend::Num_p_engine_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0x85ab21da);
 }
-inline bool Gen::frontend::SET_p_engine_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_engine_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x85ab21da, input, index);
 }
 
@@ -981,7 +981,7 @@ inline bool Gen::frontend::p_induction_1(type_bStringHash &result, unsigned int 
 inline unsigned int Gen::frontend::Num_p_induction_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0e141cde);
 }
-inline bool Gen::frontend::SET_p_induction_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_induction_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x0e141cde, input, index);
 }
 
@@ -997,7 +997,7 @@ inline bool Gen::frontend::p_induction_2(type_bStringHash &result, unsigned int 
 inline unsigned int Gen::frontend::Num_p_induction_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x4d3b62f3);
 }
-inline bool Gen::frontend::SET_p_induction_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_induction_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x4d3b62f3, input, index);
 }
 
@@ -1013,7 +1013,7 @@ inline bool Gen::frontend::p_induction_3(type_bStringHash &result, unsigned int 
 inline unsigned int Gen::frontend::Num_p_induction_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0xea7f3fe4);
 }
-inline bool Gen::frontend::SET_p_induction_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_induction_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xea7f3fe4, input, index);
 }
 
@@ -1029,7 +1029,7 @@ inline bool Gen::frontend::p_induction_4(type_bStringHash &result, unsigned int 
 inline unsigned int Gen::frontend::Num_p_induction_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb6be1d52);
 }
-inline bool Gen::frontend::SET_p_induction_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_induction_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xb6be1d52, input, index);
 }
 
@@ -1045,7 +1045,7 @@ inline bool Gen::frontend::p_nitrous_1(type_bStringHash &result, unsigned int in
 inline unsigned int Gen::frontend::Num_p_nitrous_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7f6e85a3);
 }
-inline bool Gen::frontend::SET_p_nitrous_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_nitrous_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x7f6e85a3, input, index);
 }
 
@@ -1061,7 +1061,7 @@ inline bool Gen::frontend::p_nitrous_2(type_bStringHash &result, unsigned int in
 inline unsigned int Gen::frontend::Num_p_nitrous_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd810d2dc);
 }
-inline bool Gen::frontend::SET_p_nitrous_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_nitrous_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xd810d2dc, input, index);
 }
 
@@ -1077,7 +1077,7 @@ inline bool Gen::frontend::p_nitrous_3(type_bStringHash &result, unsigned int in
 inline unsigned int Gen::frontend::Num_p_nitrous_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa459ecef);
 }
-inline bool Gen::frontend::SET_p_nitrous_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_nitrous_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xa459ecef, input, index);
 }
 
@@ -1093,7 +1093,7 @@ inline bool Gen::frontend::p_nitrous_4(type_bStringHash &result, unsigned int in
 inline unsigned int Gen::frontend::Num_p_nitrous_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8da087a4);
 }
-inline bool Gen::frontend::SET_p_nitrous_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_nitrous_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x8da087a4, input, index);
 }
 
@@ -1109,7 +1109,7 @@ inline bool Gen::frontend::p_suspension_1(type_bStringHash &result, unsigned int
 inline unsigned int Gen::frontend::Num_p_suspension_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x37ea2169);
 }
-inline bool Gen::frontend::SET_p_suspension_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_suspension_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x37ea2169, input, index);
 }
 
@@ -1125,7 +1125,7 @@ inline bool Gen::frontend::p_suspension_2(type_bStringHash &result, unsigned int
 inline unsigned int Gen::frontend::Num_p_suspension_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe5650914);
 }
-inline bool Gen::frontend::SET_p_suspension_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_suspension_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xe5650914, input, index);
 }
 
@@ -1141,7 +1141,7 @@ inline bool Gen::frontend::p_suspension_3(type_bStringHash &result, unsigned int
 inline unsigned int Gen::frontend::Num_p_suspension_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe321687d);
 }
-inline bool Gen::frontend::SET_p_suspension_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_suspension_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xe321687d, input, index);
 }
 
@@ -1157,7 +1157,7 @@ inline bool Gen::frontend::p_suspension_4(type_bStringHash &result, unsigned int
 inline unsigned int Gen::frontend::Num_p_suspension_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0xfb1ef23f);
 }
-inline bool Gen::frontend::SET_p_suspension_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_suspension_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xfb1ef23f, input, index);
 }
 
@@ -1173,7 +1173,7 @@ inline bool Gen::frontend::p_tires_1(type_bStringHash &result, unsigned int inde
 inline unsigned int Gen::frontend::Num_p_tires_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf0c7c400);
 }
-inline bool Gen::frontend::SET_p_tires_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_tires_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xf0c7c400, input, index);
 }
 
@@ -1189,7 +1189,7 @@ inline bool Gen::frontend::p_tires_2(type_bStringHash &result, unsigned int inde
 inline unsigned int Gen::frontend::Num_p_tires_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x01e6ddf1);
 }
-inline bool Gen::frontend::SET_p_tires_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_tires_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x01e6ddf1, input, index);
 }
 
@@ -1205,7 +1205,7 @@ inline bool Gen::frontend::p_tires_3(type_bStringHash &result, unsigned int inde
 inline unsigned int Gen::frontend::Num_p_tires_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0x92378a0a);
 }
-inline bool Gen::frontend::SET_p_tires_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_tires_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x92378a0a, input, index);
 }
 
@@ -1221,7 +1221,7 @@ inline bool Gen::frontend::p_tires_4(type_bStringHash &result, unsigned int inde
 inline unsigned int Gen::frontend::Num_p_tires_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0x16b700d6);
 }
-inline bool Gen::frontend::SET_p_tires_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_tires_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x16b700d6, input, index);
 }
 
@@ -1237,7 +1237,7 @@ inline bool Gen::frontend::p_transmission_1(type_bStringHash &result, unsigned i
 inline unsigned int Gen::frontend::Num_p_transmission_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1e823f0b);
 }
-inline bool Gen::frontend::SET_p_transmission_1(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_transmission_1(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x1e823f0b, input, index);
 }
 
@@ -1253,7 +1253,7 @@ inline bool Gen::frontend::p_transmission_2(type_bStringHash &result, unsigned i
 inline unsigned int Gen::frontend::Num_p_transmission_2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x79c8d7e9);
 }
-inline bool Gen::frontend::SET_p_transmission_2(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_transmission_2(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0x79c8d7e9, input, index);
 }
 
@@ -1269,7 +1269,7 @@ inline bool Gen::frontend::p_transmission_3(type_bStringHash &result, unsigned i
 inline unsigned int Gen::frontend::Num_p_transmission_3() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa1b53a33);
 }
-inline bool Gen::frontend::SET_p_transmission_3(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_transmission_3(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xa1b53a33, input, index);
 }
 
@@ -1285,7 +1285,7 @@ inline bool Gen::frontend::p_transmission_4(type_bStringHash &result, unsigned i
 inline unsigned int Gen::frontend::Num_p_transmission_4() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf424c06d);
 }
-inline bool Gen::frontend::SET_p_transmission_4(const type_bStringHash &input, unsigned int index) {
+inline bool Gen::frontend::Set_p_transmission_4(const type_bStringHash &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(type_bStringHash, 0xf424c06d, input, index);
 }
 
@@ -1296,7 +1296,7 @@ inline bool Gen::frontend::region(EA::Reflection::UInt32 &result) const {
     result = region();
     return true;
 }
-inline bool Gen::frontend::SET_region(const EA::Reflection::UInt32 &input) {
+inline bool Gen::frontend::Set_region(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(region, input);
 }
 

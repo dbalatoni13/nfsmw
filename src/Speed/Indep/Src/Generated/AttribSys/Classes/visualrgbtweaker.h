@@ -61,17 +61,17 @@ struct visualrgbtweaker : Instance {
     bool blue(TAttrib<UMath::Matrix4> &result) const;
     bool blue(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &blue() const;
-    bool SET_blue(const UMath::Matrix4 &input);
+    bool Set_blue(const UMath::Matrix4 &input);
 
     bool green(TAttrib<UMath::Matrix4> &result) const;
     bool green(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &green() const;
-    bool SET_green(const UMath::Matrix4 &input);
+    bool Set_green(const UMath::Matrix4 &input);
 
     bool red(TAttrib<UMath::Matrix4> &result) const;
     bool red(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &red() const;
-    bool SET_red(const UMath::Matrix4 &input);
+    bool Set_red(const UMath::Matrix4 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -111,7 +111,7 @@ inline const UMath::Matrix4 &Gen::visualrgbtweaker::blue() const {
 inline bool Gen::visualrgbtweaker::blue(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x1c641189, result);
 }
-inline bool Gen::visualrgbtweaker::SET_blue(const UMath::Matrix4 &input) {
+inline bool Gen::visualrgbtweaker::Set_blue(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x1c641189, input);
 }
 
@@ -124,7 +124,7 @@ inline const UMath::Matrix4 &Gen::visualrgbtweaker::green() const {
 inline bool Gen::visualrgbtweaker::green(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x3ffd271c, result);
 }
-inline bool Gen::visualrgbtweaker::SET_green(const UMath::Matrix4 &input) {
+inline bool Gen::visualrgbtweaker::Set_green(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x3ffd271c, input);
 }
 
@@ -137,7 +137,7 @@ inline const UMath::Matrix4 &Gen::visualrgbtweaker::red() const {
 inline bool Gen::visualrgbtweaker::red(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x5cd90211, result);
 }
-inline bool Gen::visualrgbtweaker::SET_red(const UMath::Matrix4 &input) {
+inline bool Gen::visualrgbtweaker::Set_red(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x5cd90211, input);
 }
 

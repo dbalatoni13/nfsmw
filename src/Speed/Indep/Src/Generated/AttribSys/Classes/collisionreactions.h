@@ -79,22 +79,22 @@ struct collisionreactions : Instance {
     bool FRONTSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const;
     bool FRONTSIDE_REACTION(CollisionReactionRecord &result) const;
     const CollisionReactionRecord &FRONTSIDE_REACTION() const;
-    bool SET_FRONTSIDE_REACTION(const CollisionReactionRecord &input);
+    bool Set_FRONTSIDE_REACTION(const CollisionReactionRecord &input);
 
     bool FRONT_REACTION(TAttrib<CollisionReactionRecord> &result) const;
     bool FRONT_REACTION(CollisionReactionRecord &result) const;
     const CollisionReactionRecord &FRONT_REACTION() const;
-    bool SET_FRONT_REACTION(const CollisionReactionRecord &input);
+    bool Set_FRONT_REACTION(const CollisionReactionRecord &input);
 
     bool REARSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const;
     bool REARSIDE_REACTION(CollisionReactionRecord &result) const;
     const CollisionReactionRecord &REARSIDE_REACTION() const;
-    bool SET_REARSIDE_REACTION(const CollisionReactionRecord &input);
+    bool Set_REARSIDE_REACTION(const CollisionReactionRecord &input);
 
     bool REAR_REACTION(TAttrib<CollisionReactionRecord> &result) const;
     bool REAR_REACTION(CollisionReactionRecord &result) const;
     const CollisionReactionRecord &REAR_REACTION() const;
-    bool SET_REAR_REACTION(const CollisionReactionRecord &input);
+    bool Set_REAR_REACTION(const CollisionReactionRecord &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -136,7 +136,7 @@ inline bool Gen::collisionreactions::FRONTSIDE_REACTION(CollisionReactionRecord 
     result = FRONTSIDE_REACTION();
     return true;
 }
-inline bool Gen::collisionreactions::SET_FRONTSIDE_REACTION(const CollisionReactionRecord &input) {
+inline bool Gen::collisionreactions::Set_FRONTSIDE_REACTION(const CollisionReactionRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FRONTSIDE_REACTION, input);
 }
 
@@ -150,7 +150,7 @@ inline bool Gen::collisionreactions::FRONT_REACTION(CollisionReactionRecord &res
     result = FRONT_REACTION();
     return true;
 }
-inline bool Gen::collisionreactions::SET_FRONT_REACTION(const CollisionReactionRecord &input) {
+inline bool Gen::collisionreactions::Set_FRONT_REACTION(const CollisionReactionRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FRONT_REACTION, input);
 }
 
@@ -164,7 +164,7 @@ inline bool Gen::collisionreactions::REARSIDE_REACTION(CollisionReactionRecord &
     result = REARSIDE_REACTION();
     return true;
 }
-inline bool Gen::collisionreactions::SET_REARSIDE_REACTION(const CollisionReactionRecord &input) {
+inline bool Gen::collisionreactions::Set_REARSIDE_REACTION(const CollisionReactionRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(REARSIDE_REACTION, input);
 }
 
@@ -178,7 +178,7 @@ inline bool Gen::collisionreactions::REAR_REACTION(CollisionReactionRecord &resu
     result = REAR_REACTION();
     return true;
 }
-inline bool Gen::collisionreactions::SET_REAR_REACTION(const CollisionReactionRecord &input) {
+inline bool Gen::collisionreactions::Set_REAR_REACTION(const CollisionReactionRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(REAR_REACTION, input);
 }
 

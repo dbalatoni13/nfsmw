@@ -109,97 +109,97 @@ struct fuelcell_emitter : Instance {
     bool Colour1(TAttrib<UMath::Vector4> &result) const;
     bool Colour1(UMath::Vector4 &result) const;
     const UMath::Vector4 &Colour1() const;
-    bool SET_Colour1(const UMath::Vector4 &input);
+    bool Set_Colour1(const UMath::Vector4 &input);
 
     bool GravityDelta(TAttrib<EA::Reflection::Float> &result) const;
     bool GravityDelta(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GravityDelta() const;
-    bool SET_GravityDelta(const EA::Reflection::Float &input);
+    bool Set_GravityDelta(const EA::Reflection::Float &input);
 
     bool GravityStart(TAttrib<EA::Reflection::Float> &result) const;
     bool GravityStart(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GravityStart() const;
-    bool SET_GravityStart(const EA::Reflection::Float &input);
+    bool Set_GravityStart(const EA::Reflection::Float &input);
 
     bool HeightStart(TAttrib<EA::Reflection::Float> &result) const;
     bool HeightStart(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HeightStart() const;
-    bool SET_HeightStart(const EA::Reflection::Float &input);
+    bool Set_HeightStart(const EA::Reflection::Float &input);
 
     bool LengthDelta(TAttrib<EA::Reflection::Float> &result) const;
     bool LengthDelta(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LengthDelta() const;
-    bool SET_LengthDelta(const EA::Reflection::Float &input);
+    bool Set_LengthDelta(const EA::Reflection::Float &input);
 
     bool LengthStart(TAttrib<EA::Reflection::Float> &result) const;
     bool LengthStart(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LengthStart() const;
-    bool SET_LengthStart(const EA::Reflection::Float &input);
+    bool Set_LengthStart(const EA::Reflection::Float &input);
 
     bool Life(TAttrib<EA::Reflection::Float> &result) const;
     bool Life(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Life() const;
-    bool SET_Life(const EA::Reflection::Float &input);
+    bool Set_Life(const EA::Reflection::Float &input);
 
     bool LifeVariance(TAttrib<EA::Reflection::Float> &result) const;
     bool LifeVariance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &LifeVariance() const;
-    bool SET_LifeVariance(const EA::Reflection::Float &input);
+    bool Set_LifeVariance(const EA::Reflection::Float &input);
 
     bool NumParticles(TAttrib<EA::Reflection::Float> &result) const;
     bool NumParticles(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NumParticles() const;
-    bool SET_NumParticles(const EA::Reflection::Float &input);
+    bool Set_NumParticles(const EA::Reflection::Float &input);
 
     bool NumParticlesVariance(TAttrib<EA::Reflection::Float> &result) const;
     bool NumParticlesVariance(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NumParticlesVariance() const;
-    bool SET_NumParticlesVariance(const EA::Reflection::Float &input);
+    bool Set_NumParticlesVariance(const EA::Reflection::Float &input);
 
     bool Spin(TAttrib<EA::Reflection::Int16> &result) const;
     bool Spin(EA::Reflection::Int16 &result) const;
     const EA::Reflection::Int16 &Spin() const;
-    bool SET_Spin(const EA::Reflection::Int16 &input);
+    bool Set_Spin(const EA::Reflection::Int16 &input);
 
     bool VelocityDelta(TAttrib<UMath::Vector4> &result) const;
     bool VelocityDelta(UMath::Vector4 &result) const;
     const UMath::Vector4 &VelocityDelta() const;
-    bool SET_VelocityDelta(const UMath::Vector4 &input);
+    bool Set_VelocityDelta(const UMath::Vector4 &input);
 
     bool VelocityInherit(TAttrib<UMath::Vector4> &result) const;
     bool VelocityInherit(UMath::Vector4 &result) const;
     const UMath::Vector4 &VelocityInherit() const;
-    bool SET_VelocityInherit(const UMath::Vector4 &input);
+    bool Set_VelocityInherit(const UMath::Vector4 &input);
 
     bool VelocityStart(TAttrib<UMath::Vector4> &result) const;
     bool VelocityStart(UMath::Vector4 &result) const;
     const UMath::Vector4 &VelocityStart() const;
-    bool SET_VelocityStart(const UMath::Vector4 &input);
+    bool Set_VelocityStart(const UMath::Vector4 &input);
 
     bool VolumeCenter(TAttrib<UMath::Vector4> &result) const;
     bool VolumeCenter(UMath::Vector4 &result) const;
     const UMath::Vector4 &VolumeCenter() const;
-    bool SET_VolumeCenter(const UMath::Vector4 &input);
+    bool Set_VolumeCenter(const UMath::Vector4 &input);
 
     bool VolumeExtent(TAttrib<UMath::Vector4> &result) const;
     bool VolumeExtent(UMath::Vector4 &result) const;
     const UMath::Vector4 &VolumeExtent() const;
-    bool SET_VolumeExtent(const UMath::Vector4 &input);
+    bool Set_VolumeExtent(const UMath::Vector4 &input);
 
     bool emitteruv(TAttrib<RefSpec> &result) const;
     bool emitteruv(RefSpec &result) const;
     const RefSpec &emitteruv() const;
-    bool SET_emitteruv(const RefSpec &input);
+    bool Set_emitteruv(const RefSpec &input);
 
     bool zContrail(TAttrib<EA::Reflection::Int8> &result) const;
     bool zContrail(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &zContrail() const;
-    bool SET_zContrail(const EA::Reflection::Int8 &input);
+    bool Set_zContrail(const EA::Reflection::Int8 &input);
 
     bool zSprite(TAttrib<EA::Reflection::Int8> &result) const;
     bool zSprite(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &zSprite() const;
-    bool SET_zSprite(const EA::Reflection::Int8 &input);
+    bool Set_zSprite(const EA::Reflection::Int8 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -256,7 +256,7 @@ inline bool Gen::fuelcell_emitter::Colour1(UMath::Vector4 &result) const {
     result = Colour1();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_Colour1(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_Colour1(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Colour1, input);
 }
 
@@ -270,7 +270,7 @@ inline bool Gen::fuelcell_emitter::GravityDelta(EA::Reflection::Float &result) c
     result = GravityDelta();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_GravityDelta(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_GravityDelta(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GravityDelta, input);
 }
 
@@ -284,7 +284,7 @@ inline bool Gen::fuelcell_emitter::GravityStart(EA::Reflection::Float &result) c
     result = GravityStart();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_GravityStart(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_GravityStart(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GravityStart, input);
 }
 
@@ -298,7 +298,7 @@ inline bool Gen::fuelcell_emitter::HeightStart(EA::Reflection::Float &result) co
     result = HeightStart();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_HeightStart(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_HeightStart(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HeightStart, input);
 }
 
@@ -312,7 +312,7 @@ inline bool Gen::fuelcell_emitter::LengthDelta(EA::Reflection::Float &result) co
     result = LengthDelta();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_LengthDelta(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_LengthDelta(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LengthDelta, input);
 }
 
@@ -326,7 +326,7 @@ inline bool Gen::fuelcell_emitter::LengthStart(EA::Reflection::Float &result) co
     result = LengthStart();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_LengthStart(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_LengthStart(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LengthStart, input);
 }
 
@@ -340,7 +340,7 @@ inline bool Gen::fuelcell_emitter::Life(EA::Reflection::Float &result) const {
     result = Life();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_Life(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_Life(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Life, input);
 }
 
@@ -354,7 +354,7 @@ inline bool Gen::fuelcell_emitter::LifeVariance(EA::Reflection::Float &result) c
     result = LifeVariance();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_LifeVariance(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_LifeVariance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(LifeVariance, input);
 }
 
@@ -368,7 +368,7 @@ inline bool Gen::fuelcell_emitter::NumParticles(EA::Reflection::Float &result) c
     result = NumParticles();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_NumParticles(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_NumParticles(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NumParticles, input);
 }
 
@@ -382,7 +382,7 @@ inline bool Gen::fuelcell_emitter::NumParticlesVariance(EA::Reflection::Float &r
     result = NumParticlesVariance();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_NumParticlesVariance(const EA::Reflection::Float &input) {
+inline bool Gen::fuelcell_emitter::Set_NumParticlesVariance(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NumParticlesVariance, input);
 }
 
@@ -396,7 +396,7 @@ inline bool Gen::fuelcell_emitter::Spin(EA::Reflection::Int16 &result) const {
     result = Spin();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_Spin(const EA::Reflection::Int16 &input) {
+inline bool Gen::fuelcell_emitter::Set_Spin(const EA::Reflection::Int16 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Spin, input);
 }
 
@@ -410,7 +410,7 @@ inline bool Gen::fuelcell_emitter::VelocityDelta(UMath::Vector4 &result) const {
     result = VelocityDelta();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_VelocityDelta(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_VelocityDelta(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VelocityDelta, input);
 }
 
@@ -424,7 +424,7 @@ inline bool Gen::fuelcell_emitter::VelocityInherit(UMath::Vector4 &result) const
     result = VelocityInherit();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_VelocityInherit(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_VelocityInherit(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VelocityInherit, input);
 }
 
@@ -438,7 +438,7 @@ inline bool Gen::fuelcell_emitter::VelocityStart(UMath::Vector4 &result) const {
     result = VelocityStart();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_VelocityStart(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_VelocityStart(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VelocityStart, input);
 }
 
@@ -452,7 +452,7 @@ inline bool Gen::fuelcell_emitter::VolumeCenter(UMath::Vector4 &result) const {
     result = VolumeCenter();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_VolumeCenter(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_VolumeCenter(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VolumeCenter, input);
 }
 
@@ -466,7 +466,7 @@ inline bool Gen::fuelcell_emitter::VolumeExtent(UMath::Vector4 &result) const {
     result = VolumeExtent();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_VolumeExtent(const UMath::Vector4 &input) {
+inline bool Gen::fuelcell_emitter::Set_VolumeExtent(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VolumeExtent, input);
 }
 
@@ -480,7 +480,7 @@ inline bool Gen::fuelcell_emitter::emitteruv(RefSpec &result) const {
     result = emitteruv();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_emitteruv(const RefSpec &input) {
+inline bool Gen::fuelcell_emitter::Set_emitteruv(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(emitteruv, input);
 }
 
@@ -494,7 +494,7 @@ inline bool Gen::fuelcell_emitter::zContrail(EA::Reflection::Int8 &result) const
     result = zContrail();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_zContrail(const EA::Reflection::Int8 &input) {
+inline bool Gen::fuelcell_emitter::Set_zContrail(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(zContrail, input);
 }
 
@@ -508,7 +508,7 @@ inline bool Gen::fuelcell_emitter::zSprite(EA::Reflection::Int8 &result) const {
     result = zSprite();
     return true;
 }
-inline bool Gen::fuelcell_emitter::SET_zSprite(const EA::Reflection::Int8 &input) {
+inline bool Gen::fuelcell_emitter::Set_zSprite(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(zSprite, input);
 }
 

@@ -73,7 +73,7 @@ struct infractions : Instance {
     bool amount(TAttrib<EA::Reflection::UInt32> &result) const;
     bool amount(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &amount() const;
-    bool SET_amount(const EA::Reflection::UInt32 &input);
+    bool Set_amount(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -112,7 +112,7 @@ inline bool Gen::infractions::amount(EA::Reflection::UInt32 &result) const {
     result = amount();
     return true;
 }
-inline bool Gen::infractions::SET_amount(const EA::Reflection::UInt32 &input) {
+inline bool Gen::infractions::Set_amount(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(amount, input);
 }
 

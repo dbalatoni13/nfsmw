@@ -81,24 +81,24 @@ struct emittergroup : Instance {
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool Emitters(TAttrib<RefSpec> &result) const;
     bool Emitters(RefSpec &result, unsigned int index) const;
     const RefSpec &Emitters(unsigned int index) const;
     unsigned int Num_Emitters() const;
-    bool SET_Emitters(const RefSpec &input, unsigned int index);
+    bool Set_Emitters(const RefSpec &input, unsigned int index);
 
     bool FarClip(TAttrib<EA::Reflection::Float> &result) const;
     bool FarClip(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FarClip() const;
-    bool SET_FarClip(const EA::Reflection::Float &input);
+    bool Set_FarClip(const EA::Reflection::Float &input);
 
     bool IntensityRanges(TAttrib<UMath::Vector2> &result) const;
     bool IntensityRanges(UMath::Vector2 &result, unsigned int index) const;
     const UMath::Vector2 &IntensityRanges(unsigned int index) const;
     unsigned int Num_IntensityRanges() const;
-    bool SET_IntensityRanges(const UMath::Vector2 &input, unsigned int index);
+    bool Set_IntensityRanges(const UMath::Vector2 &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -140,7 +140,7 @@ inline bool Gen::emittergroup::CollectionName(EA::Reflection::Text &result) cons
     result = CollectionName();
     return true;
 }
-inline bool Gen::emittergroup::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::emittergroup::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -156,7 +156,7 @@ inline bool Gen::emittergroup::Emitters(RefSpec &result, unsigned int index) con
 inline unsigned int Gen::emittergroup::Num_Emitters() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(Emitters);
 }
-inline bool Gen::emittergroup::SET_Emitters(const RefSpec &input, unsigned int index) {
+inline bool Gen::emittergroup::Set_Emitters(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(Emitters, input, index);
 }
 
@@ -170,7 +170,7 @@ inline bool Gen::emittergroup::FarClip(EA::Reflection::Float &result) const {
     result = FarClip();
     return true;
 }
-inline bool Gen::emittergroup::SET_FarClip(const EA::Reflection::Float &input) {
+inline bool Gen::emittergroup::Set_FarClip(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FarClip, input);
 }
 
@@ -186,7 +186,7 @@ inline bool Gen::emittergroup::IntensityRanges(UMath::Vector2 &result, unsigned 
 inline unsigned int Gen::emittergroup::Num_IntensityRanges() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(IntensityRanges);
 }
-inline bool Gen::emittergroup::SET_IntensityRanges(const UMath::Vector2 &input, unsigned int index) {
+inline bool Gen::emittergroup::Set_IntensityRanges(const UMath::Vector2 &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(IntensityRanges, input, index);
 }
 

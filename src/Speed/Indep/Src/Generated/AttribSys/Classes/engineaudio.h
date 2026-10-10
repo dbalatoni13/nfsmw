@@ -143,204 +143,204 @@ struct engineaudio : Instance {
     bool AEMSMix_L_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool AEMSMix_L_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AEMSMix_L_RPM() const;
-    bool SET_AEMSMix_L_RPM(const EA::Reflection::Float &input);
+    bool Set_AEMSMix_L_RPM(const EA::Reflection::Float &input);
 
     bool AEMSMix_S_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool AEMSMix_S_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AEMSMix_S_RPM() const;
-    bool SET_AEMSMix_S_RPM(const EA::Reflection::Float &input);
+    bool Set_AEMSMix_S_RPM(const EA::Reflection::Float &input);
 
     bool AEMSVol(TAttrib<EA::Reflection::UInt32> &result) const;
     bool AEMSVol(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &AEMSVol() const;
-    bool SET_AEMSVol(const EA::Reflection::UInt32 &input);
+    bool Set_AEMSVol(const EA::Reflection::UInt32 &input);
 
     bool AccelDeltaRPMThreshold(TAttrib<EA::Reflection::Float> &result) const;
     bool AccelDeltaRPMThreshold(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AccelDeltaRPMThreshold() const;
-    bool SET_AccelDeltaRPMThreshold(const EA::Reflection::Float &input);
+    bool Set_AccelDeltaRPMThreshold(const EA::Reflection::Float &input);
 
     bool BankName_auxRAM(TAttrib<Attrib::StringKey> &result) const;
     bool BankName_auxRAM(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &BankName_auxRAM(unsigned int index) const;
     unsigned int Num_BankName_auxRAM() const;
-    bool SET_BankName_auxRAM(const Attrib::StringKey &input, unsigned int index);
+    bool Set_BankName_auxRAM(const Attrib::StringKey &input, unsigned int index);
 
     bool BankName_mainRAM(TAttrib<Attrib::StringKey> &result) const;
     bool BankName_mainRAM(Attrib::StringKey &result) const;
     const Attrib::StringKey &BankName_mainRAM() const;
-    bool SET_BankName_mainRAM(const Attrib::StringKey &input);
+    bool Set_BankName_mainRAM(const Attrib::StringKey &input);
 
     bool CarID(TAttrib<EA::Reflection::UInt32> &result) const;
     bool CarID(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &CarID() const;
-    bool SET_CarID(const EA::Reflection::UInt32 &input);
+    bool Set_CarID(const EA::Reflection::UInt32 &input);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool DECEL_AEMSMix_L_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool DECEL_AEMSMix_L_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DECEL_AEMSMix_L_RPM() const;
-    bool SET_DECEL_AEMSMix_L_RPM(const EA::Reflection::Float &input);
+    bool Set_DECEL_AEMSMix_L_RPM(const EA::Reflection::Float &input);
 
     bool DECEL_AEMSMix_S_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool DECEL_AEMSMix_S_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DECEL_AEMSMix_S_RPM() const;
-    bool SET_DECEL_AEMSMix_S_RPM(const EA::Reflection::Float &input);
+    bool Set_DECEL_AEMSMix_S_RPM(const EA::Reflection::Float &input);
 
     bool DECEL_AEMSVol(TAttrib<EA::Reflection::UInt32> &result) const;
     bool DECEL_AEMSVol(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &DECEL_AEMSVol() const;
-    bool SET_DECEL_AEMSVol(const EA::Reflection::UInt32 &input);
+    bool Set_DECEL_AEMSVol(const EA::Reflection::UInt32 &input);
 
     bool DECEL_GINSUMix_L_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool DECEL_GINSUMix_L_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DECEL_GINSUMix_L_RPM() const;
-    bool SET_DECEL_GINSUMix_L_RPM(const EA::Reflection::Float &input);
+    bool Set_DECEL_GINSUMix_L_RPM(const EA::Reflection::Float &input);
 
     bool DECEL_GINSUMix_S_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool DECEL_GINSUMix_S_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DECEL_GINSUMix_S_RPM() const;
-    bool SET_DECEL_GINSUMix_S_RPM(const EA::Reflection::Float &input);
+    bool Set_DECEL_GINSUMix_S_RPM(const EA::Reflection::Float &input);
 
     bool DecelDeltaRPMThreshold(TAttrib<EA::Reflection::Float> &result) const;
     bool DecelDeltaRPMThreshold(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DecelDeltaRPMThreshold() const;
-    bool SET_DecelDeltaRPMThreshold(const EA::Reflection::Float &input);
+    bool Set_DecelDeltaRPMThreshold(const EA::Reflection::Float &input);
 
     bool DecelPitchOffset(TAttrib<EA::Reflection::Float> &result) const;
     bool DecelPitchOffset(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &DecelPitchOffset() const;
-    bool SET_DecelPitchOffset(const EA::Reflection::Float &input);
+    bool Set_DecelPitchOffset(const EA::Reflection::Float &input);
 
     bool EngType(TAttrib<eENGINE_GROUP> &result) const;
     bool EngType(eENGINE_GROUP &result) const;
     const eENGINE_GROUP &EngType() const;
-    bool SET_EngType(const eENGINE_GROUP &input);
+    bool Set_EngType(const eENGINE_GROUP &input);
 
     bool Filename_GinsuAccel(TAttrib<Attrib::StringKey> &result) const;
     bool Filename_GinsuAccel(Attrib::StringKey &result) const;
     const Attrib::StringKey &Filename_GinsuAccel() const;
-    bool SET_Filename_GinsuAccel(const Attrib::StringKey &input);
+    bool Set_Filename_GinsuAccel(const Attrib::StringKey &input);
 
     bool Filename_GinsuDecel(TAttrib<Attrib::StringKey> &result) const;
     bool Filename_GinsuDecel(Attrib::StringKey &result) const;
     const Attrib::StringKey &Filename_GinsuDecel() const;
-    bool SET_Filename_GinsuDecel(const Attrib::StringKey &input);
+    bool Set_Filename_GinsuDecel(const Attrib::StringKey &input);
 
     bool GINSUAccelVol(TAttrib<EA::Reflection::UInt32> &result) const;
     bool GINSUAccelVol(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &GINSUAccelVol() const;
-    bool SET_GINSUAccelVol(const EA::Reflection::UInt32 &input);
+    bool Set_GINSUAccelVol(const EA::Reflection::UInt32 &input);
 
     bool GINSUMix_L_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool GINSUMix_L_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GINSUMix_L_RPM() const;
-    bool SET_GINSUMix_L_RPM(const EA::Reflection::Float &input);
+    bool Set_GINSUMix_L_RPM(const EA::Reflection::Float &input);
 
     bool GINSUMix_S_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool GINSUMix_S_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GINSUMix_S_RPM() const;
-    bool SET_GINSUMix_S_RPM(const EA::Reflection::Float &input);
+    bool Set_GINSUMix_S_RPM(const EA::Reflection::Float &input);
 
     bool GINSU_DECEL_FADE_IN(TAttrib<EA::Reflection::Float> &result) const;
     bool GINSU_DECEL_FADE_IN(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GINSU_DECEL_FADE_IN() const;
-    bool SET_GINSU_DECEL_FADE_IN(const EA::Reflection::Float &input);
+    bool Set_GINSU_DECEL_FADE_IN(const EA::Reflection::Float &input);
 
     bool GINSU_DECEL_FADE_OUT(TAttrib<EA::Reflection::Float> &result) const;
     bool GINSU_DECEL_FADE_OUT(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &GINSU_DECEL_FADE_OUT() const;
-    bool SET_GINSU_DECEL_FADE_OUT(const EA::Reflection::Float &input);
+    bool Set_GINSU_DECEL_FADE_OUT(const EA::Reflection::Float &input);
 
     bool GINSU_Decel_MaxRPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool GINSU_Decel_MaxRPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &GINSU_Decel_MaxRPM() const;
-    bool SET_GINSU_Decel_MaxRPM(const EA::Reflection::UInt32 &input);
+    bool Set_GINSU_Decel_MaxRPM(const EA::Reflection::UInt32 &input);
 
     bool GINSU_Decel_MinRPM(TAttrib<EA::Reflection::UInt32> &result) const;
     bool GINSU_Decel_MinRPM(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &GINSU_Decel_MinRPM() const;
-    bool SET_GINSU_Decel_MinRPM(const EA::Reflection::UInt32 &input);
+    bool Set_GINSU_Decel_MinRPM(const EA::Reflection::UInt32 &input);
 
     bool GINSU_LowPassCutoff(TAttrib<EA::Reflection::UInt32> &result) const;
     bool GINSU_LowPassCutoff(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &GINSU_LowPassCutoff() const;
-    bool SET_GINSU_LowPassCutoff(const EA::Reflection::UInt32 &input);
+    bool Set_GINSU_LowPassCutoff(const EA::Reflection::UInt32 &input);
 
     bool GinsuDecelVol(TAttrib<EA::Reflection::UInt32> &result) const;
     bool GinsuDecelVol(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &GinsuDecelVol() const;
-    bool SET_GinsuDecelVol(const EA::Reflection::UInt32 &input);
+    bool Set_GinsuDecelVol(const EA::Reflection::UInt32 &input);
 
     bool Ginsu_ACL_Neg_L_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool Ginsu_ACL_Neg_L_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Ginsu_ACL_Neg_L_RPM() const;
-    bool SET_Ginsu_ACL_Neg_L_RPM(const EA::Reflection::Float &input);
+    bool Set_Ginsu_ACL_Neg_L_RPM(const EA::Reflection::Float &input);
 
     bool Ginsu_ACL_Neg_S_RPM(TAttrib<EA::Reflection::Float> &result) const;
     bool Ginsu_ACL_Neg_S_RPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Ginsu_ACL_Neg_S_RPM() const;
-    bool SET_Ginsu_ACL_Neg_S_RPM(const EA::Reflection::Float &input);
+    bool Set_Ginsu_ACL_Neg_S_RPM(const EA::Reflection::Float &input);
 
     bool Master_Vol(TAttrib<EA::Reflection::UInt16> &result) const;
     bool Master_Vol(EA::Reflection::UInt16 &result) const;
     const EA::Reflection::UInt16 &Master_Vol() const;
-    bool SET_Master_Vol(const EA::Reflection::UInt16 &input);
+    bool Set_Master_Vol(const EA::Reflection::UInt16 &input);
 
     bool MaxRPM(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxRPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxRPM() const;
-    bool SET_MaxRPM(const EA::Reflection::Float &input);
+    bool Set_MaxRPM(const EA::Reflection::Float &input);
 
     bool MaybeV8(TAttrib<EA::Reflection::Bool> &result) const;
     bool MaybeV8(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &MaybeV8() const;
-    bool SET_MaybeV8(const EA::Reflection::Bool &input);
+    bool Set_MaybeV8(const EA::Reflection::Bool &input);
 
     bool MinRPM(TAttrib<EA::Reflection::Float> &result) const;
     bool MinRPM(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinRPM() const;
-    bool SET_MinRPM(const EA::Reflection::Float &input);
+    bool Set_MinRPM(const EA::Reflection::Float &input);
 
     bool PhysicsRPM_Map(TAttrib<UMath::Matrix4> &result) const;
     bool PhysicsRPM_Map(UMath::Matrix4 &result) const;
     const UMath::Matrix4 &PhysicsRPM_Map() const;
-    bool SET_PhysicsRPM_Map(const UMath::Matrix4 &input);
+    bool Set_PhysicsRPM_Map(const UMath::Matrix4 &input);
 
     bool Priority(TAttrib<EA::Reflection::Float> &result) const;
     bool Priority(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Priority() const;
-    bool SET_Priority(const EA::Reflection::Float &input);
+    bool Set_Priority(const EA::Reflection::Float &input);
 
     bool SweetBank(TAttrib<Attrib::StringKey> &result) const;
     bool SweetBank(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &SweetBank(unsigned int index) const;
     unsigned int Num_SweetBank() const;
-    bool SET_SweetBank(const Attrib::StringKey &input, unsigned int index);
+    bool Set_SweetBank(const Attrib::StringKey &input, unsigned int index);
 
     bool Tranny(TAttrib<EA::Reflection::Bool> &result) const;
     bool Tranny(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &Tranny() const;
-    bool SET_Tranny(const EA::Reflection::Bool &input);
+    bool Set_Tranny(const EA::Reflection::Bool &input);
 
     bool Vol_ShiftSweets(TAttrib<EA::Reflection::Int32> &result) const;
     bool Vol_ShiftSweets(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &Vol_ShiftSweets() const;
-    bool SET_Vol_ShiftSweets(const EA::Reflection::Int32 &input);
+    bool Set_Vol_ShiftSweets(const EA::Reflection::Int32 &input);
 
     bool Vol_Sputters(TAttrib<EA::Reflection::Int32> &result) const;
     bool Vol_Sputters(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &Vol_Sputters() const;
-    bool SET_Vol_Sputters(const EA::Reflection::Int32 &input);
+    bool Set_Vol_Sputters(const EA::Reflection::Int32 &input);
 
     bool acceltrans(TAttrib<RefSpec> &result) const;
     bool acceltrans(RefSpec &result) const;
     const RefSpec &acceltrans() const;
-    bool SET_acceltrans(const RefSpec &input);
+    bool Set_acceltrans(const RefSpec &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -418,7 +418,7 @@ inline bool Gen::engineaudio::AEMSMix_L_RPM(EA::Reflection::Float &result) const
     result = AEMSMix_L_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_AEMSMix_L_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_AEMSMix_L_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AEMSMix_L_RPM, input);
 }
 
@@ -432,7 +432,7 @@ inline bool Gen::engineaudio::AEMSMix_S_RPM(EA::Reflection::Float &result) const
     result = AEMSMix_S_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_AEMSMix_S_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_AEMSMix_S_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AEMSMix_S_RPM, input);
 }
 
@@ -446,7 +446,7 @@ inline bool Gen::engineaudio::AEMSVol(EA::Reflection::UInt32 &result) const {
     result = AEMSVol();
     return true;
 }
-inline bool Gen::engineaudio::SET_AEMSVol(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_AEMSVol(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AEMSVol, input);
 }
 
@@ -460,7 +460,7 @@ inline bool Gen::engineaudio::AccelDeltaRPMThreshold(EA::Reflection::Float &resu
     result = AccelDeltaRPMThreshold();
     return true;
 }
-inline bool Gen::engineaudio::SET_AccelDeltaRPMThreshold(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_AccelDeltaRPMThreshold(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AccelDeltaRPMThreshold, input);
 }
 
@@ -476,7 +476,7 @@ inline bool Gen::engineaudio::BankName_auxRAM(Attrib::StringKey &result, unsigne
 inline unsigned int Gen::engineaudio::Num_BankName_auxRAM() const {
     ATTRIB_CODEGEN_GETLENGTH(0x04935eab);
 }
-inline bool Gen::engineaudio::SET_BankName_auxRAM(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::engineaudio::Set_BankName_auxRAM(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x04935eab, input, index);
 }
 
@@ -490,7 +490,7 @@ inline bool Gen::engineaudio::BankName_mainRAM(Attrib::StringKey &result) const 
     result = BankName_mainRAM();
     return true;
 }
-inline bool Gen::engineaudio::SET_BankName_mainRAM(const Attrib::StringKey &input) {
+inline bool Gen::engineaudio::Set_BankName_mainRAM(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BankName_mainRAM, input);
 }
 
@@ -504,7 +504,7 @@ inline bool Gen::engineaudio::CarID(EA::Reflection::UInt32 &result) const {
     result = CarID();
     return true;
 }
-inline bool Gen::engineaudio::SET_CarID(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_CarID(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CarID, input);
 }
 
@@ -518,7 +518,7 @@ inline bool Gen::engineaudio::CollectionName(EA::Reflection::Text &result) const
     result = CollectionName();
     return true;
 }
-inline bool Gen::engineaudio::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::engineaudio::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -532,7 +532,7 @@ inline bool Gen::engineaudio::DECEL_AEMSMix_L_RPM(EA::Reflection::Float &result)
     result = DECEL_AEMSMix_L_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_DECEL_AEMSMix_L_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DECEL_AEMSMix_L_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DECEL_AEMSMix_L_RPM, input);
 }
 
@@ -546,7 +546,7 @@ inline bool Gen::engineaudio::DECEL_AEMSMix_S_RPM(EA::Reflection::Float &result)
     result = DECEL_AEMSMix_S_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_DECEL_AEMSMix_S_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DECEL_AEMSMix_S_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DECEL_AEMSMix_S_RPM, input);
 }
 
@@ -560,7 +560,7 @@ inline bool Gen::engineaudio::DECEL_AEMSVol(EA::Reflection::UInt32 &result) cons
     result = DECEL_AEMSVol();
     return true;
 }
-inline bool Gen::engineaudio::SET_DECEL_AEMSVol(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_DECEL_AEMSVol(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DECEL_AEMSVol, input);
 }
 
@@ -574,7 +574,7 @@ inline bool Gen::engineaudio::DECEL_GINSUMix_L_RPM(EA::Reflection::Float &result
     result = DECEL_GINSUMix_L_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_DECEL_GINSUMix_L_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DECEL_GINSUMix_L_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DECEL_GINSUMix_L_RPM, input);
 }
 
@@ -588,7 +588,7 @@ inline bool Gen::engineaudio::DECEL_GINSUMix_S_RPM(EA::Reflection::Float &result
     result = DECEL_GINSUMix_S_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_DECEL_GINSUMix_S_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DECEL_GINSUMix_S_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DECEL_GINSUMix_S_RPM, input);
 }
 
@@ -602,7 +602,7 @@ inline bool Gen::engineaudio::DecelDeltaRPMThreshold(EA::Reflection::Float &resu
     result = DecelDeltaRPMThreshold();
     return true;
 }
-inline bool Gen::engineaudio::SET_DecelDeltaRPMThreshold(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DecelDeltaRPMThreshold(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DecelDeltaRPMThreshold, input);
 }
 
@@ -615,7 +615,7 @@ inline const EA::Reflection::Float &Gen::engineaudio::DecelPitchOffset() const {
 inline bool Gen::engineaudio::DecelPitchOffset(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x313385dc, result);
 }
-inline bool Gen::engineaudio::SET_DecelPitchOffset(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_DecelPitchOffset(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x313385dc, input);
 }
 
@@ -629,7 +629,7 @@ inline bool Gen::engineaudio::EngType(eENGINE_GROUP &result) const {
     result = EngType();
     return true;
 }
-inline bool Gen::engineaudio::SET_EngType(const eENGINE_GROUP &input) {
+inline bool Gen::engineaudio::Set_EngType(const eENGINE_GROUP &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EngType, input);
 }
 
@@ -643,7 +643,7 @@ inline bool Gen::engineaudio::Filename_GinsuAccel(Attrib::StringKey &result) con
     result = Filename_GinsuAccel();
     return true;
 }
-inline bool Gen::engineaudio::SET_Filename_GinsuAccel(const Attrib::StringKey &input) {
+inline bool Gen::engineaudio::Set_Filename_GinsuAccel(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Filename_GinsuAccel, input);
 }
 
@@ -657,7 +657,7 @@ inline bool Gen::engineaudio::Filename_GinsuDecel(Attrib::StringKey &result) con
     result = Filename_GinsuDecel();
     return true;
 }
-inline bool Gen::engineaudio::SET_Filename_GinsuDecel(const Attrib::StringKey &input) {
+inline bool Gen::engineaudio::Set_Filename_GinsuDecel(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Filename_GinsuDecel, input);
 }
 
@@ -671,7 +671,7 @@ inline bool Gen::engineaudio::GINSUAccelVol(EA::Reflection::UInt32 &result) cons
     result = GINSUAccelVol();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSUAccelVol(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_GINSUAccelVol(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSUAccelVol, input);
 }
 
@@ -685,7 +685,7 @@ inline bool Gen::engineaudio::GINSUMix_L_RPM(EA::Reflection::Float &result) cons
     result = GINSUMix_L_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSUMix_L_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_GINSUMix_L_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSUMix_L_RPM, input);
 }
 
@@ -699,7 +699,7 @@ inline bool Gen::engineaudio::GINSUMix_S_RPM(EA::Reflection::Float &result) cons
     result = GINSUMix_S_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSUMix_S_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_GINSUMix_S_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSUMix_S_RPM, input);
 }
 
@@ -713,7 +713,7 @@ inline bool Gen::engineaudio::GINSU_DECEL_FADE_IN(EA::Reflection::Float &result)
     result = GINSU_DECEL_FADE_IN();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSU_DECEL_FADE_IN(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_GINSU_DECEL_FADE_IN(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSU_DECEL_FADE_IN, input);
 }
 
@@ -727,7 +727,7 @@ inline bool Gen::engineaudio::GINSU_DECEL_FADE_OUT(EA::Reflection::Float &result
     result = GINSU_DECEL_FADE_OUT();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSU_DECEL_FADE_OUT(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_GINSU_DECEL_FADE_OUT(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSU_DECEL_FADE_OUT, input);
 }
 
@@ -741,7 +741,7 @@ inline bool Gen::engineaudio::GINSU_Decel_MaxRPM(EA::Reflection::UInt32 &result)
     result = GINSU_Decel_MaxRPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSU_Decel_MaxRPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_GINSU_Decel_MaxRPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSU_Decel_MaxRPM, input);
 }
 
@@ -755,7 +755,7 @@ inline bool Gen::engineaudio::GINSU_Decel_MinRPM(EA::Reflection::UInt32 &result)
     result = GINSU_Decel_MinRPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_GINSU_Decel_MinRPM(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_GINSU_Decel_MinRPM(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GINSU_Decel_MinRPM, input);
 }
 
@@ -768,7 +768,7 @@ inline const EA::Reflection::UInt32 &Gen::engineaudio::GINSU_LowPassCutoff() con
 inline bool Gen::engineaudio::GINSU_LowPassCutoff(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0xe3836473, result);
 }
-inline bool Gen::engineaudio::SET_GINSU_LowPassCutoff(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_GINSU_LowPassCutoff(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0xe3836473, input);
 }
 
@@ -782,7 +782,7 @@ inline bool Gen::engineaudio::GinsuDecelVol(EA::Reflection::UInt32 &result) cons
     result = GinsuDecelVol();
     return true;
 }
-inline bool Gen::engineaudio::SET_GinsuDecelVol(const EA::Reflection::UInt32 &input) {
+inline bool Gen::engineaudio::Set_GinsuDecelVol(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(GinsuDecelVol, input);
 }
 
@@ -796,7 +796,7 @@ inline bool Gen::engineaudio::Ginsu_ACL_Neg_L_RPM(EA::Reflection::Float &result)
     result = Ginsu_ACL_Neg_L_RPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_Ginsu_ACL_Neg_L_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_Ginsu_ACL_Neg_L_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Ginsu_ACL_Neg_L_RPM, input);
 }
 
@@ -809,7 +809,7 @@ inline const EA::Reflection::Float &Gen::engineaudio::Ginsu_ACL_Neg_S_RPM() cons
 inline bool Gen::engineaudio::Ginsu_ACL_Neg_S_RPM(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x38afe02e, result);
 }
-inline bool Gen::engineaudio::SET_Ginsu_ACL_Neg_S_RPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_Ginsu_ACL_Neg_S_RPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x38afe02e, input);
 }
 
@@ -823,7 +823,7 @@ inline bool Gen::engineaudio::Master_Vol(EA::Reflection::UInt16 &result) const {
     result = Master_Vol();
     return true;
 }
-inline bool Gen::engineaudio::SET_Master_Vol(const EA::Reflection::UInt16 &input) {
+inline bool Gen::engineaudio::Set_Master_Vol(const EA::Reflection::UInt16 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Master_Vol, input);
 }
 
@@ -837,7 +837,7 @@ inline bool Gen::engineaudio::MaxRPM(EA::Reflection::Float &result) const {
     result = MaxRPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_MaxRPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_MaxRPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxRPM, input);
 }
 
@@ -851,7 +851,7 @@ inline bool Gen::engineaudio::MaybeV8(EA::Reflection::Bool &result) const {
     result = MaybeV8();
     return true;
 }
-inline bool Gen::engineaudio::SET_MaybeV8(const EA::Reflection::Bool &input) {
+inline bool Gen::engineaudio::Set_MaybeV8(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaybeV8, input);
 }
 
@@ -865,7 +865,7 @@ inline bool Gen::engineaudio::MinRPM(EA::Reflection::Float &result) const {
     result = MinRPM();
     return true;
 }
-inline bool Gen::engineaudio::SET_MinRPM(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_MinRPM(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinRPM, input);
 }
 
@@ -878,7 +878,7 @@ inline const UMath::Matrix4 &Gen::engineaudio::PhysicsRPM_Map() const {
 inline bool Gen::engineaudio::PhysicsRPM_Map(UMath::Matrix4 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x07e3c833, result);
 }
-inline bool Gen::engineaudio::SET_PhysicsRPM_Map(const UMath::Matrix4 &input) {
+inline bool Gen::engineaudio::Set_PhysicsRPM_Map(const UMath::Matrix4 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x07e3c833, input);
 }
 
@@ -892,7 +892,7 @@ inline bool Gen::engineaudio::Priority(EA::Reflection::Float &result) const {
     result = Priority();
     return true;
 }
-inline bool Gen::engineaudio::SET_Priority(const EA::Reflection::Float &input) {
+inline bool Gen::engineaudio::Set_Priority(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Priority, input);
 }
 
@@ -908,7 +908,7 @@ inline bool Gen::engineaudio::SweetBank(Attrib::StringKey &result, unsigned int 
 inline unsigned int Gen::engineaudio::Num_SweetBank() const {
     ATTRIB_CODEGEN_GETLENGTH(0xee501c6a);
 }
-inline bool Gen::engineaudio::SET_SweetBank(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::engineaudio::Set_SweetBank(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xee501c6a, input, index);
 }
 
@@ -922,7 +922,7 @@ inline bool Gen::engineaudio::Tranny(EA::Reflection::Bool &result) const {
     result = Tranny();
     return true;
 }
-inline bool Gen::engineaudio::SET_Tranny(const EA::Reflection::Bool &input) {
+inline bool Gen::engineaudio::Set_Tranny(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Tranny, input);
 }
 
@@ -935,7 +935,7 @@ inline const EA::Reflection::Int32 &Gen::engineaudio::Vol_ShiftSweets() const {
 inline bool Gen::engineaudio::Vol_ShiftSweets(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x34beca33, result);
 }
-inline bool Gen::engineaudio::SET_Vol_ShiftSweets(const EA::Reflection::Int32 &input) {
+inline bool Gen::engineaudio::Set_Vol_ShiftSweets(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x34beca33, input);
 }
 
@@ -948,7 +948,7 @@ inline const EA::Reflection::Int32 &Gen::engineaudio::Vol_Sputters() const {
 inline bool Gen::engineaudio::Vol_Sputters(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc1eddd78, result);
 }
-inline bool Gen::engineaudio::SET_Vol_Sputters(const EA::Reflection::Int32 &input) {
+inline bool Gen::engineaudio::Set_Vol_Sputters(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc1eddd78, input);
 }
 
@@ -962,7 +962,7 @@ inline bool Gen::engineaudio::acceltrans(RefSpec &result) const {
     result = acceltrans();
     return true;
 }
-inline bool Gen::engineaudio::SET_acceltrans(const RefSpec &input) {
+inline bool Gen::engineaudio::Set_acceltrans(const RefSpec &input) {
     ATTRIB_CODEGEN_SETLAYOUT(acceltrans, input);
 }
 

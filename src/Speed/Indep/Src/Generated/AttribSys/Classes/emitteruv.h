@@ -79,22 +79,22 @@ struct emitteruv : Instance {
     bool EndU(TAttrib<EA::Reflection::Float> &result) const;
     bool EndU(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EndU() const;
-    bool SET_EndU(const EA::Reflection::Float &input);
+    bool Set_EndU(const EA::Reflection::Float &input);
 
     bool EndV(TAttrib<EA::Reflection::Float> &result) const;
     bool EndV(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EndV() const;
-    bool SET_EndV(const EA::Reflection::Float &input);
+    bool Set_EndV(const EA::Reflection::Float &input);
 
     bool StartU(TAttrib<EA::Reflection::Float> &result) const;
     bool StartU(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &StartU() const;
-    bool SET_StartU(const EA::Reflection::Float &input);
+    bool Set_StartU(const EA::Reflection::Float &input);
 
     bool StartV(TAttrib<EA::Reflection::Float> &result) const;
     bool StartV(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &StartV() const;
-    bool SET_StartV(const EA::Reflection::Float &input);
+    bool Set_StartV(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -136,7 +136,7 @@ inline bool Gen::emitteruv::EndU(EA::Reflection::Float &result) const {
     result = EndU();
     return true;
 }
-inline bool Gen::emitteruv::SET_EndU(const EA::Reflection::Float &input) {
+inline bool Gen::emitteruv::Set_EndU(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EndU, input);
 }
 
@@ -150,7 +150,7 @@ inline bool Gen::emitteruv::EndV(EA::Reflection::Float &result) const {
     result = EndV();
     return true;
 }
-inline bool Gen::emitteruv::SET_EndV(const EA::Reflection::Float &input) {
+inline bool Gen::emitteruv::Set_EndV(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EndV, input);
 }
 
@@ -164,7 +164,7 @@ inline bool Gen::emitteruv::StartU(EA::Reflection::Float &result) const {
     result = StartU();
     return true;
 }
-inline bool Gen::emitteruv::SET_StartU(const EA::Reflection::Float &input) {
+inline bool Gen::emitteruv::Set_StartU(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(StartU, input);
 }
 
@@ -178,7 +178,7 @@ inline bool Gen::emitteruv::StartV(EA::Reflection::Float &result) const {
     result = StartV();
     return true;
 }
-inline bool Gen::emitteruv::SET_StartV(const EA::Reflection::Float &input) {
+inline bool Gen::emitteruv::Set_StartV(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(StartV, input);
 }
 

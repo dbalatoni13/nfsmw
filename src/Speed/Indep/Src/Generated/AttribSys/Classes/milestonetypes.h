@@ -77,22 +77,22 @@ struct milestonetypes : Instance {
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const;
     bool LocalizationTag(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &LocalizationTag() const;
-    bool SET_LocalizationTag(const EA::Reflection::Int32 &input);
+    bool Set_LocalizationTag(const EA::Reflection::Int32 &input);
 
     bool MilestoneType(TAttrib<EA::Reflection::Int32> &result) const;
     bool MilestoneType(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &MilestoneType() const;
-    bool SET_MilestoneType(const EA::Reflection::Int32 &input);
+    bool Set_MilestoneType(const EA::Reflection::Int32 &input);
 
     bool ResetWhenPursuitStarts(TAttrib<EA::Reflection::Bool> &result) const;
     bool ResetWhenPursuitStarts(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &ResetWhenPursuitStarts() const;
-    bool SET_ResetWhenPursuitStarts(const EA::Reflection::Bool &input);
+    bool Set_ResetWhenPursuitStarts(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -134,7 +134,7 @@ inline bool Gen::milestonetypes::CollectionName(EA::Reflection::Text &result) co
     result = CollectionName();
     return true;
 }
-inline bool Gen::milestonetypes::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::milestonetypes::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -147,7 +147,7 @@ inline const EA::Reflection::Int32 &Gen::milestonetypes::LocalizationTag() const
 inline bool Gen::milestonetypes::LocalizationTag(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb89ab5c, result);
 }
-inline bool Gen::milestonetypes::SET_LocalizationTag(const EA::Reflection::Int32 &input) {
+inline bool Gen::milestonetypes::Set_LocalizationTag(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb89ab5c, input);
 }
 
@@ -161,7 +161,7 @@ inline bool Gen::milestonetypes::MilestoneType(EA::Reflection::Int32 &result) co
     result = MilestoneType();
     return true;
 }
-inline bool Gen::milestonetypes::SET_MilestoneType(const EA::Reflection::Int32 &input) {
+inline bool Gen::milestonetypes::Set_MilestoneType(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MilestoneType, input);
 }
 
@@ -174,7 +174,7 @@ inline const EA::Reflection::Bool &Gen::milestonetypes::ResetWhenPursuitStarts()
 inline bool Gen::milestonetypes::ResetWhenPursuitStarts(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xab4a196f, result);
 }
-inline bool Gen::milestonetypes::SET_ResetWhenPursuitStarts(const EA::Reflection::Bool &input) {
+inline bool Gen::milestonetypes::Set_ResetWhenPursuitStarts(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xab4a196f, input);
 }
 

@@ -150,199 +150,199 @@ struct speechtune : Instance {
     bool AIRacerProximity(TAttrib<EA::Reflection::Float> &result) const;
     bool AIRacerProximity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &AIRacerProximity() const;
-    bool SET_AIRacerProximity(const EA::Reflection::Float &input);
+    bool Set_AIRacerProximity(const EA::Reflection::Float &input);
 
     bool BURemindTime(TAttrib<EA::Reflection::Float> &result) const;
     bool BURemindTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BURemindTime() const;
-    bool SET_BURemindTime(const EA::Reflection::Float &input);
+    bool Set_BURemindTime(const EA::Reflection::Float &input);
 
     bool BlowbyInterval(TAttrib<EA::Reflection::Float> &result) const;
     bool BlowbyInterval(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &BlowbyInterval() const;
-    bool SET_BlowbyInterval(const EA::Reflection::Float &input);
+    bool Set_BlowbyInterval(const EA::Reflection::Float &input);
 
     bool CacheDisplayCoords(TAttrib<UMath::Vector2> &result) const;
     bool CacheDisplayCoords(UMath::Vector2 &result) const;
     const UMath::Vector2 &CacheDisplayCoords() const;
-    bool SET_CacheDisplayCoords(const UMath::Vector2 &input);
+    bool Set_CacheDisplayCoords(const UMath::Vector2 &input);
 
     bool CollisionMinClosingVelSq(TAttrib<EA::Reflection::Float> &result) const;
     bool CollisionMinClosingVelSq(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CollisionMinClosingVelSq() const;
-    bool SET_CollisionMinClosingVelSq(const EA::Reflection::Float &input);
+    bool Set_CollisionMinClosingVelSq(const EA::Reflection::Float &input);
 
     bool CrashSlowdownPct(TAttrib<EA::Reflection::Float> &result) const;
     bool CrashSlowdownPct(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CrashSlowdownPct() const;
-    bool SET_CrashSlowdownPct(const EA::Reflection::Float &input);
+    bool Set_CrashSlowdownPct(const EA::Reflection::Float &input);
 
     bool FlipTimeForCommentary(TAttrib<EA::Reflection::Float> &result) const;
     bool FlipTimeForCommentary(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FlipTimeForCommentary() const;
-    bool SET_FlipTimeForCommentary(const EA::Reflection::Float &input);
+    bool Set_FlipTimeForCommentary(const EA::Reflection::Float &input);
 
     bool HangTimeForCommentary(TAttrib<EA::Reflection::Float> &result) const;
     bool HangTimeForCommentary(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HangTimeForCommentary() const;
-    bool SET_HangTimeForCommentary(const EA::Reflection::Float &input);
+    bool Set_HangTimeForCommentary(const EA::Reflection::Float &input);
 
     bool HighIntensityMark(TAttrib<EA::Reflection::Int8> &result) const;
     bool HighIntensityMark(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &HighIntensityMark() const;
-    bool SET_HighIntensityMark(const EA::Reflection::Int8 &input);
+    bool Set_HighIntensityMark(const EA::Reflection::Int8 &input);
 
     bool MaxRangeFor180(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxRangeFor180(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxRangeFor180() const;
-    bool SET_MaxRangeFor180(const EA::Reflection::Float &input);
+    bool Set_MaxRangeFor180(const EA::Reflection::Float &input);
 
     bool MaxRangeForPrimaryBranch(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxRangeForPrimaryBranch(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxRangeForPrimaryBranch() const;
-    bool SET_MaxRangeForPrimaryBranch(const EA::Reflection::Float &input);
+    bool Set_MaxRangeForPrimaryBranch(const EA::Reflection::Float &input);
 
     bool MaxTimeFor180(TAttrib<EA::Reflection::Float> &result) const;
     bool MaxTimeFor180(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MaxTimeFor180() const;
-    bool SET_MaxTimeFor180(const EA::Reflection::Float &input);
+    bool Set_MaxTimeFor180(const EA::Reflection::Float &input);
 
     bool MinContigFramesFor180(TAttrib<EA::Reflection::Int8> &result) const;
     bool MinContigFramesFor180(EA::Reflection::Int8 &result) const;
     const EA::Reflection::Int8 &MinContigFramesFor180() const;
-    bool SET_MinContigFramesFor180(const EA::Reflection::Int8 &input);
+    bool Set_MinContigFramesFor180(const EA::Reflection::Int8 &input);
 
     bool MinHavocForSuspectBehavior(TAttrib<EA::Reflection::Int32> &result) const;
     bool MinHavocForSuspectBehavior(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &MinHavocForSuspectBehavior() const;
-    bool SET_MinHavocForSuspectBehavior(const EA::Reflection::Int32 &input);
+    bool Set_MinHavocForSuspectBehavior(const EA::Reflection::Int32 &input);
 
     bool MinHealthForCommentary(TAttrib<EA::Reflection::Float> &result) const;
     bool MinHealthForCommentary(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinHealthForCommentary() const;
-    bool SET_MinHealthForCommentary(const EA::Reflection::Float &input);
+    bool Set_MinHealthForCommentary(const EA::Reflection::Float &input);
 
     bool MinHeightAirborne(TAttrib<EA::Reflection::Float> &result) const;
     bool MinHeightAirborne(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinHeightAirborne() const;
-    bool SET_MinHeightAirborne(const EA::Reflection::Float &input);
+    bool Set_MinHeightAirborne(const EA::Reflection::Float &input);
 
     bool MinIntensityCopSmash(TAttrib<EA::Reflection::Float> &result) const;
     bool MinIntensityCopSmash(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinIntensityCopSmash() const;
-    bool SET_MinIntensityCopSmash(const EA::Reflection::Float &input);
+    bool Set_MinIntensityCopSmash(const EA::Reflection::Float &input);
 
     bool MinIntensitySideswipe(TAttrib<EA::Reflection::Float> &result) const;
     bool MinIntensitySideswipe(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinIntensitySideswipe() const;
-    bool SET_MinIntensitySideswipe(const EA::Reflection::Float &input);
+    bool Set_MinIntensitySideswipe(const EA::Reflection::Float &input);
 
     bool MinIntensityTrafficSmash(TAttrib<EA::Reflection::Float> &result) const;
     bool MinIntensityTrafficSmash(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinIntensityTrafficSmash() const;
-    bool SET_MinIntensityTrafficSmash(const EA::Reflection::Float &input);
+    bool Set_MinIntensityTrafficSmash(const EA::Reflection::Float &input);
 
     bool MinPursuitDurationForBailouts(TAttrib<EA::Reflection::Float> &result) const;
     bool MinPursuitDurationForBailouts(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinPursuitDurationForBailouts() const;
-    bool SET_MinPursuitDurationForBailouts(const EA::Reflection::Float &input);
+    bool Set_MinPursuitDurationForBailouts(const EA::Reflection::Float &input);
 
     bool MinSpeedConsideredStopped(TAttrib<EA::Reflection::Float> &result) const;
     bool MinSpeedConsideredStopped(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinSpeedConsideredStopped() const;
-    bool SET_MinSpeedConsideredStopped(const EA::Reflection::Float &input);
+    bool Set_MinSpeedConsideredStopped(const EA::Reflection::Float &input);
 
     bool MinTimeConsideredStopped(TAttrib<EA::Reflection::Float> &result) const;
     bool MinTimeConsideredStopped(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MinTimeConsideredStopped() const;
-    bool SET_MinTimeConsideredStopped(const EA::Reflection::Float &input);
+    bool Set_MinTimeConsideredStopped(const EA::Reflection::Float &input);
 
     bool NoLOSCommentaryTime(TAttrib<EA::Reflection::Float> &result) const;
     bool NoLOSCommentaryTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NoLOSCommentaryTime() const;
-    bool SET_NoLOSCommentaryTime(const EA::Reflection::Float &input);
+    bool Set_NoLOSCommentaryTime(const EA::Reflection::Float &input);
 
     bool OutcomeFailSpeed(TAttrib<EA::Reflection::Float> &result) const;
     bool OutcomeFailSpeed(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &OutcomeFailSpeed() const;
-    bool SET_OutcomeFailSpeed(const EA::Reflection::Float &input);
+    bool Set_OutcomeFailSpeed(const EA::Reflection::Float &input);
 
     bool OutcomeTrackTime(TAttrib<EA::Reflection::Float> &result) const;
     bool OutcomeTrackTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &OutcomeTrackTime() const;
-    bool SET_OutcomeTrackTime(const EA::Reflection::Float &input);
+    bool Set_OutcomeTrackTime(const EA::Reflection::Float &input);
 
     bool PlayerSmashSpeedRange(TAttrib<EA::Reflection::Float> &result) const;
     bool PlayerSmashSpeedRange(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &PlayerSmashSpeedRange(unsigned int index) const;
     unsigned int Num_PlayerSmashSpeedRange() const;
-    bool SET_PlayerSmashSpeedRange(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_PlayerSmashSpeedRange(const EA::Reflection::Float &input, unsigned int index);
 
     bool PriorityWeight(TAttrib<EA::Reflection::Float> &result) const;
     bool PriorityWeight(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PriorityWeight() const;
-    bool SET_PriorityWeight(const EA::Reflection::Float &input);
+    bool Set_PriorityWeight(const EA::Reflection::Float &input);
 
     bool PursuitDurationHighIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool PursuitDurationHighIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PursuitDurationHighIntensity() const;
-    bool SET_PursuitDurationHighIntensity(const EA::Reflection::Float &input);
+    bool Set_PursuitDurationHighIntensity(const EA::Reflection::Float &input);
 
     bool PursuitInactivityTimer(TAttrib<EA::Reflection::Float> &result) const;
     bool PursuitInactivityTimer(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &PursuitInactivityTimer(unsigned int index) const;
     unsigned int Num_PursuitInactivityTimer() const;
-    bool SET_PursuitInactivityTimer(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_PursuitInactivityTimer(const EA::Reflection::Float &input, unsigned int index);
 
     bool PursuitInitDelay(TAttrib<EA::Reflection::Float> &result) const;
     bool PursuitInitDelay(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PursuitInitDelay() const;
-    bool SET_PursuitInitDelay(const EA::Reflection::Float &input);
+    bool Set_PursuitInitDelay(const EA::Reflection::Float &input);
 
     bool RBOutcomeTimer(TAttrib<EA::Reflection::Float> &result) const;
     bool RBOutcomeTimer(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RBOutcomeTimer() const;
-    bool SET_RBOutcomeTimer(const EA::Reflection::Float &input);
+    bool Set_RBOutcomeTimer(const EA::Reflection::Float &input);
 
     bool RBPostOutcomeResetTime(TAttrib<EA::Reflection::Float> &result) const;
     bool RBPostOutcomeResetTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RBPostOutcomeResetTime() const;
-    bool SET_RBPostOutcomeResetTime(const EA::Reflection::Float &input);
+    bool Set_RBPostOutcomeResetTime(const EA::Reflection::Float &input);
 
     bool RangeForSpotterBranch(TAttrib<EA::Reflection::Float> &result) const;
     bool RangeForSpotterBranch(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &RangeForSpotterBranch() const;
-    bool SET_RangeForSpotterBranch(const EA::Reflection::Float &input);
+    bool Set_RangeForSpotterBranch(const EA::Reflection::Float &input);
 
     bool SpeechDropoffRamp(TAttrib<UMath::Vector2> &result) const;
     bool SpeechDropoffRamp(UMath::Vector2 &result) const;
     const UMath::Vector2 &SpeechDropoffRamp() const;
-    bool SET_SpeechDropoffRamp(const UMath::Vector2 &input);
+    bool Set_SpeechDropoffRamp(const UMath::Vector2 &input);
 
     bool SpeedDiffForBlowby(TAttrib<EA::Reflection::Float> &result) const;
     bool SpeedDiffForBlowby(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SpeedDiffForBlowby() const;
-    bool SET_SpeedDiffForBlowby(const EA::Reflection::Float &input);
+    bool Set_SpeedDiffForBlowby(const EA::Reflection::Float &input);
 
     bool SpeedThreshFlyFlipIntensity(TAttrib<EA::Reflection::Float> &result) const;
     bool SpeedThreshFlyFlipIntensity(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SpeedThreshFlyFlipIntensity() const;
-    bool SET_SpeedThreshFlyFlipIntensity(const EA::Reflection::Float &input);
+    bool Set_SpeedThreshFlyFlipIntensity(const EA::Reflection::Float &input);
 
     bool SuspectOutrunRange(TAttrib<EA::Reflection::Float> &result) const;
     bool SuspectOutrunRange(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SuspectOutrunRange() const;
-    bool SET_SuspectOutrunRange(const EA::Reflection::Float &input);
+    bool Set_SuspectOutrunRange(const EA::Reflection::Float &input);
 
     bool TimeConsideredLostNoLOS(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeConsideredLostNoLOS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeConsideredLostNoLOS() const;
-    bool SET_TimeConsideredLostNoLOS(const EA::Reflection::Float &input);
+    bool Set_TimeConsideredLostNoLOS(const EA::Reflection::Float &input);
 
     bool TimeWaitForSpotterReply(TAttrib<EA::Reflection::Float> &result) const;
     bool TimeWaitForSpotterReply(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TimeWaitForSpotterReply() const;
-    bool SET_TimeWaitForSpotterReply(const EA::Reflection::Float &input);
+    bool Set_TimeWaitForSpotterReply(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -419,7 +419,7 @@ inline bool Gen::speechtune::AIRacerProximity(EA::Reflection::Float &result) con
     result = AIRacerProximity();
     return true;
 }
-inline bool Gen::speechtune::SET_AIRacerProximity(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_AIRacerProximity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(AIRacerProximity, input);
 }
 
@@ -433,7 +433,7 @@ inline bool Gen::speechtune::BURemindTime(EA::Reflection::Float &result) const {
     result = BURemindTime();
     return true;
 }
-inline bool Gen::speechtune::SET_BURemindTime(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_BURemindTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BURemindTime, input);
 }
 
@@ -447,7 +447,7 @@ inline bool Gen::speechtune::BlowbyInterval(EA::Reflection::Float &result) const
     result = BlowbyInterval();
     return true;
 }
-inline bool Gen::speechtune::SET_BlowbyInterval(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_BlowbyInterval(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BlowbyInterval, input);
 }
 
@@ -460,7 +460,7 @@ inline const UMath::Vector2 &Gen::speechtune::CacheDisplayCoords() const {
 inline bool Gen::speechtune::CacheDisplayCoords(UMath::Vector2 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x3e02ef95, result);
 }
-inline bool Gen::speechtune::SET_CacheDisplayCoords(const UMath::Vector2 &input) {
+inline bool Gen::speechtune::Set_CacheDisplayCoords(const UMath::Vector2 &input) {
     ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x3e02ef95, input);
 }
 
@@ -474,7 +474,7 @@ inline bool Gen::speechtune::CollisionMinClosingVelSq(EA::Reflection::Float &res
     result = CollisionMinClosingVelSq();
     return true;
 }
-inline bool Gen::speechtune::SET_CollisionMinClosingVelSq(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_CollisionMinClosingVelSq(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollisionMinClosingVelSq, input);
 }
 
@@ -488,7 +488,7 @@ inline bool Gen::speechtune::CrashSlowdownPct(EA::Reflection::Float &result) con
     result = CrashSlowdownPct();
     return true;
 }
-inline bool Gen::speechtune::SET_CrashSlowdownPct(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_CrashSlowdownPct(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CrashSlowdownPct, input);
 }
 
@@ -502,7 +502,7 @@ inline bool Gen::speechtune::FlipTimeForCommentary(EA::Reflection::Float &result
     result = FlipTimeForCommentary();
     return true;
 }
-inline bool Gen::speechtune::SET_FlipTimeForCommentary(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_FlipTimeForCommentary(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FlipTimeForCommentary, input);
 }
 
@@ -516,7 +516,7 @@ inline bool Gen::speechtune::HangTimeForCommentary(EA::Reflection::Float &result
     result = HangTimeForCommentary();
     return true;
 }
-inline bool Gen::speechtune::SET_HangTimeForCommentary(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_HangTimeForCommentary(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HangTimeForCommentary, input);
 }
 
@@ -530,7 +530,7 @@ inline bool Gen::speechtune::HighIntensityMark(EA::Reflection::Int8 &result) con
     result = HighIntensityMark();
     return true;
 }
-inline bool Gen::speechtune::SET_HighIntensityMark(const EA::Reflection::Int8 &input) {
+inline bool Gen::speechtune::Set_HighIntensityMark(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HighIntensityMark, input);
 }
 
@@ -544,7 +544,7 @@ inline bool Gen::speechtune::MaxRangeFor180(EA::Reflection::Float &result) const
     result = MaxRangeFor180();
     return true;
 }
-inline bool Gen::speechtune::SET_MaxRangeFor180(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MaxRangeFor180(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxRangeFor180, input);
 }
 
@@ -558,7 +558,7 @@ inline bool Gen::speechtune::MaxRangeForPrimaryBranch(EA::Reflection::Float &res
     result = MaxRangeForPrimaryBranch();
     return true;
 }
-inline bool Gen::speechtune::SET_MaxRangeForPrimaryBranch(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MaxRangeForPrimaryBranch(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxRangeForPrimaryBranch, input);
 }
 
@@ -572,7 +572,7 @@ inline bool Gen::speechtune::MaxTimeFor180(EA::Reflection::Float &result) const 
     result = MaxTimeFor180();
     return true;
 }
-inline bool Gen::speechtune::SET_MaxTimeFor180(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MaxTimeFor180(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MaxTimeFor180, input);
 }
 
@@ -586,7 +586,7 @@ inline bool Gen::speechtune::MinContigFramesFor180(EA::Reflection::Int8 &result)
     result = MinContigFramesFor180();
     return true;
 }
-inline bool Gen::speechtune::SET_MinContigFramesFor180(const EA::Reflection::Int8 &input) {
+inline bool Gen::speechtune::Set_MinContigFramesFor180(const EA::Reflection::Int8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinContigFramesFor180, input);
 }
 
@@ -600,7 +600,7 @@ inline bool Gen::speechtune::MinHavocForSuspectBehavior(EA::Reflection::Int32 &r
     result = MinHavocForSuspectBehavior();
     return true;
 }
-inline bool Gen::speechtune::SET_MinHavocForSuspectBehavior(const EA::Reflection::Int32 &input) {
+inline bool Gen::speechtune::Set_MinHavocForSuspectBehavior(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinHavocForSuspectBehavior, input);
 }
 
@@ -614,7 +614,7 @@ inline bool Gen::speechtune::MinHealthForCommentary(EA::Reflection::Float &resul
     result = MinHealthForCommentary();
     return true;
 }
-inline bool Gen::speechtune::SET_MinHealthForCommentary(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinHealthForCommentary(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinHealthForCommentary, input);
 }
 
@@ -628,7 +628,7 @@ inline bool Gen::speechtune::MinHeightAirborne(EA::Reflection::Float &result) co
     result = MinHeightAirborne();
     return true;
 }
-inline bool Gen::speechtune::SET_MinHeightAirborne(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinHeightAirborne(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinHeightAirborne, input);
 }
 
@@ -642,7 +642,7 @@ inline bool Gen::speechtune::MinIntensityCopSmash(EA::Reflection::Float &result)
     result = MinIntensityCopSmash();
     return true;
 }
-inline bool Gen::speechtune::SET_MinIntensityCopSmash(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinIntensityCopSmash(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinIntensityCopSmash, input);
 }
 
@@ -656,7 +656,7 @@ inline bool Gen::speechtune::MinIntensitySideswipe(EA::Reflection::Float &result
     result = MinIntensitySideswipe();
     return true;
 }
-inline bool Gen::speechtune::SET_MinIntensitySideswipe(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinIntensitySideswipe(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinIntensitySideswipe, input);
 }
 
@@ -670,7 +670,7 @@ inline bool Gen::speechtune::MinIntensityTrafficSmash(EA::Reflection::Float &res
     result = MinIntensityTrafficSmash();
     return true;
 }
-inline bool Gen::speechtune::SET_MinIntensityTrafficSmash(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinIntensityTrafficSmash(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinIntensityTrafficSmash, input);
 }
 
@@ -684,7 +684,7 @@ inline bool Gen::speechtune::MinPursuitDurationForBailouts(EA::Reflection::Float
     result = MinPursuitDurationForBailouts();
     return true;
 }
-inline bool Gen::speechtune::SET_MinPursuitDurationForBailouts(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinPursuitDurationForBailouts(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinPursuitDurationForBailouts, input);
 }
 
@@ -698,7 +698,7 @@ inline bool Gen::speechtune::MinSpeedConsideredStopped(EA::Reflection::Float &re
     result = MinSpeedConsideredStopped();
     return true;
 }
-inline bool Gen::speechtune::SET_MinSpeedConsideredStopped(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinSpeedConsideredStopped(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinSpeedConsideredStopped, input);
 }
 
@@ -712,7 +712,7 @@ inline bool Gen::speechtune::MinTimeConsideredStopped(EA::Reflection::Float &res
     result = MinTimeConsideredStopped();
     return true;
 }
-inline bool Gen::speechtune::SET_MinTimeConsideredStopped(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_MinTimeConsideredStopped(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MinTimeConsideredStopped, input);
 }
 
@@ -726,7 +726,7 @@ inline bool Gen::speechtune::NoLOSCommentaryTime(EA::Reflection::Float &result) 
     result = NoLOSCommentaryTime();
     return true;
 }
-inline bool Gen::speechtune::SET_NoLOSCommentaryTime(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_NoLOSCommentaryTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(NoLOSCommentaryTime, input);
 }
 
@@ -740,7 +740,7 @@ inline bool Gen::speechtune::OutcomeFailSpeed(EA::Reflection::Float &result) con
     result = OutcomeFailSpeed();
     return true;
 }
-inline bool Gen::speechtune::SET_OutcomeFailSpeed(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_OutcomeFailSpeed(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(OutcomeFailSpeed, input);
 }
 
@@ -754,7 +754,7 @@ inline bool Gen::speechtune::OutcomeTrackTime(EA::Reflection::Float &result) con
     result = OutcomeTrackTime();
     return true;
 }
-inline bool Gen::speechtune::SET_OutcomeTrackTime(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_OutcomeTrackTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(OutcomeTrackTime, input);
 }
 
@@ -770,7 +770,7 @@ inline bool Gen::speechtune::PlayerSmashSpeedRange(EA::Reflection::Float &result
 inline unsigned int Gen::speechtune::Num_PlayerSmashSpeedRange() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(PlayerSmashSpeedRange);
 }
-inline bool Gen::speechtune::SET_PlayerSmashSpeedRange(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::speechtune::Set_PlayerSmashSpeedRange(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(PlayerSmashSpeedRange, input, index);
 }
 
@@ -784,7 +784,7 @@ inline bool Gen::speechtune::PriorityWeight(EA::Reflection::Float &result) const
     result = PriorityWeight();
     return true;
 }
-inline bool Gen::speechtune::SET_PriorityWeight(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_PriorityWeight(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PriorityWeight, input);
 }
 
@@ -798,7 +798,7 @@ inline bool Gen::speechtune::PursuitDurationHighIntensity(EA::Reflection::Float 
     result = PursuitDurationHighIntensity();
     return true;
 }
-inline bool Gen::speechtune::SET_PursuitDurationHighIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_PursuitDurationHighIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PursuitDurationHighIntensity, input);
 }
 
@@ -814,7 +814,7 @@ inline bool Gen::speechtune::PursuitInactivityTimer(EA::Reflection::Float &resul
 inline unsigned int Gen::speechtune::Num_PursuitInactivityTimer() const {
     ATTRIB_CODEGEN_GETLAYOUTLENGTH(PursuitInactivityTimer);
 }
-inline bool Gen::speechtune::SET_PursuitInactivityTimer(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::speechtune::Set_PursuitInactivityTimer(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETLAYOUTINDEXED(PursuitInactivityTimer, input, index);
 }
 
@@ -828,7 +828,7 @@ inline bool Gen::speechtune::PursuitInitDelay(EA::Reflection::Float &result) con
     result = PursuitInitDelay();
     return true;
 }
-inline bool Gen::speechtune::SET_PursuitInitDelay(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_PursuitInitDelay(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PursuitInitDelay, input);
 }
 
@@ -842,7 +842,7 @@ inline bool Gen::speechtune::RBOutcomeTimer(EA::Reflection::Float &result) const
     result = RBOutcomeTimer();
     return true;
 }
-inline bool Gen::speechtune::SET_RBOutcomeTimer(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_RBOutcomeTimer(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RBOutcomeTimer, input);
 }
 
@@ -856,7 +856,7 @@ inline bool Gen::speechtune::RBPostOutcomeResetTime(EA::Reflection::Float &resul
     result = RBPostOutcomeResetTime();
     return true;
 }
-inline bool Gen::speechtune::SET_RBPostOutcomeResetTime(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_RBPostOutcomeResetTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RBPostOutcomeResetTime, input);
 }
 
@@ -870,7 +870,7 @@ inline bool Gen::speechtune::RangeForSpotterBranch(EA::Reflection::Float &result
     result = RangeForSpotterBranch();
     return true;
 }
-inline bool Gen::speechtune::SET_RangeForSpotterBranch(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_RangeForSpotterBranch(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(RangeForSpotterBranch, input);
 }
 
@@ -884,7 +884,7 @@ inline bool Gen::speechtune::SpeechDropoffRamp(UMath::Vector2 &result) const {
     result = SpeechDropoffRamp();
     return true;
 }
-inline bool Gen::speechtune::SET_SpeechDropoffRamp(const UMath::Vector2 &input) {
+inline bool Gen::speechtune::Set_SpeechDropoffRamp(const UMath::Vector2 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SpeechDropoffRamp, input);
 }
 
@@ -898,7 +898,7 @@ inline bool Gen::speechtune::SpeedDiffForBlowby(EA::Reflection::Float &result) c
     result = SpeedDiffForBlowby();
     return true;
 }
-inline bool Gen::speechtune::SET_SpeedDiffForBlowby(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_SpeedDiffForBlowby(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SpeedDiffForBlowby, input);
 }
 
@@ -912,7 +912,7 @@ inline bool Gen::speechtune::SpeedThreshFlyFlipIntensity(EA::Reflection::Float &
     result = SpeedThreshFlyFlipIntensity();
     return true;
 }
-inline bool Gen::speechtune::SET_SpeedThreshFlyFlipIntensity(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_SpeedThreshFlyFlipIntensity(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SpeedThreshFlyFlipIntensity, input);
 }
 
@@ -926,7 +926,7 @@ inline bool Gen::speechtune::SuspectOutrunRange(EA::Reflection::Float &result) c
     result = SuspectOutrunRange();
     return true;
 }
-inline bool Gen::speechtune::SET_SuspectOutrunRange(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_SuspectOutrunRange(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SuspectOutrunRange, input);
 }
 
@@ -940,7 +940,7 @@ inline bool Gen::speechtune::TimeConsideredLostNoLOS(EA::Reflection::Float &resu
     result = TimeConsideredLostNoLOS();
     return true;
 }
-inline bool Gen::speechtune::SET_TimeConsideredLostNoLOS(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_TimeConsideredLostNoLOS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimeConsideredLostNoLOS, input);
 }
 
@@ -954,7 +954,7 @@ inline bool Gen::speechtune::TimeWaitForSpotterReply(EA::Reflection::Float &resu
     result = TimeWaitForSpotterReply();
     return true;
 }
-inline bool Gen::speechtune::SET_TimeWaitForSpotterReply(const EA::Reflection::Float &input) {
+inline bool Gen::speechtune::Set_TimeWaitForSpotterReply(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TimeWaitForSpotterReply, input);
 }
 

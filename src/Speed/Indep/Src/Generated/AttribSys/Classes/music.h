@@ -79,27 +79,27 @@ struct music : Instance {
     bool Album(TAttrib<Attrib::StringKey> &result) const;
     bool Album(Attrib::StringKey &result) const;
     const Attrib::StringKey &Album() const;
-    bool SET_Album(const Attrib::StringKey &input);
+    bool Set_Album(const Attrib::StringKey &input);
 
     bool Artist(TAttrib<Attrib::StringKey> &result) const;
     bool Artist(Attrib::StringKey &result) const;
     const Attrib::StringKey &Artist() const;
-    bool SET_Artist(const Attrib::StringKey &input);
+    bool Set_Artist(const Attrib::StringKey &input);
 
     bool DefPlay(TAttrib<Attrib::StringKey> &result) const;
     bool DefPlay(Attrib::StringKey &result) const;
     const Attrib::StringKey &DefPlay() const;
-    bool SET_DefPlay(const Attrib::StringKey &input);
+    bool Set_DefPlay(const Attrib::StringKey &input);
 
     bool PathEvent(TAttrib<PathEventEnum> &result) const;
     bool PathEvent(PathEventEnum &result) const;
     const PathEventEnum &PathEvent() const;
-    bool SET_PathEvent(const PathEventEnum &input);
+    bool Set_PathEvent(const PathEventEnum &input);
 
     bool SongName(TAttrib<Attrib::StringKey> &result) const;
     bool SongName(Attrib::StringKey &result) const;
     const Attrib::StringKey &SongName() const;
-    bool SET_SongName(const Attrib::StringKey &input);
+    bool Set_SongName(const Attrib::StringKey &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -142,7 +142,7 @@ inline bool Gen::music::Album(Attrib::StringKey &result) const {
     result = Album();
     return true;
 }
-inline bool Gen::music::SET_Album(const Attrib::StringKey &input) {
+inline bool Gen::music::Set_Album(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Album, input);
 }
 
@@ -156,7 +156,7 @@ inline bool Gen::music::Artist(Attrib::StringKey &result) const {
     result = Artist();
     return true;
 }
-inline bool Gen::music::SET_Artist(const Attrib::StringKey &input) {
+inline bool Gen::music::Set_Artist(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Artist, input);
 }
 
@@ -169,7 +169,7 @@ inline const Attrib::StringKey &Gen::music::DefPlay() const {
 inline bool Gen::music::DefPlay(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x58f80e5e, result);
 }
-inline bool Gen::music::SET_DefPlay(const Attrib::StringKey &input) {
+inline bool Gen::music::Set_DefPlay(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x58f80e5e, input);
 }
 
@@ -183,7 +183,7 @@ inline bool Gen::music::PathEvent(PathEventEnum &result) const {
     result = PathEvent();
     return true;
 }
-inline bool Gen::music::SET_PathEvent(const PathEventEnum &input) {
+inline bool Gen::music::Set_PathEvent(const PathEventEnum &input) {
     ATTRIB_CODEGEN_SETLAYOUT(PathEvent, input);
 }
 
@@ -197,7 +197,7 @@ inline bool Gen::music::SongName(Attrib::StringKey &result) const {
     result = SongName();
     return true;
 }
-inline bool Gen::music::SET_SongName(const Attrib::StringKey &input) {
+inline bool Gen::music::Set_SongName(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SongName, input);
 }
 

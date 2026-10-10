@@ -75,12 +75,12 @@ struct fuelcell_effect : Instance {
     bool NGEmitter(RefSpec &result, unsigned int index) const;
     const RefSpec &NGEmitter(unsigned int index) const;
     unsigned int Num_NGEmitter() const;
-    bool SET_NGEmitter(const RefSpec &input, unsigned int index);
+    bool Set_NGEmitter(const RefSpec &input, unsigned int index);
 
     bool doTest(TAttrib<EA::Reflection::Bool> &result) const;
     bool doTest(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &doTest() const;
-    bool SET_doTest(const EA::Reflection::Bool &input);
+    bool Set_doTest(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -122,7 +122,7 @@ inline bool Gen::fuelcell_effect::NGEmitter(RefSpec &result, unsigned int index)
 inline unsigned int Gen::fuelcell_effect::Num_NGEmitter() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb0d98a89);
 }
-inline bool Gen::fuelcell_effect::SET_NGEmitter(const RefSpec &input, unsigned int index) {
+inline bool Gen::fuelcell_effect::Set_NGEmitter(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb0d98a89, input, index);
 }
 
@@ -136,7 +136,7 @@ inline bool Gen::fuelcell_effect::doTest(EA::Reflection::Bool &result) const {
     result = doTest();
     return true;
 }
-inline bool Gen::fuelcell_effect::SET_doTest(const EA::Reflection::Bool &input) {
+inline bool Gen::fuelcell_effect::Set_doTest(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(doTest, input);
 }
 

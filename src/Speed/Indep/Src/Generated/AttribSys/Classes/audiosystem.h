@@ -95,112 +95,112 @@ struct audiosystem : Instance {
     bool AEMS_EnvBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_EnvBanks(Attrib::StringKey &result) const;
     const Attrib::StringKey &AEMS_EnvBanks() const;
-    bool SET_AEMS_EnvBanks(const Attrib::StringKey &input);
+    bool Set_AEMS_EnvBanks(const Attrib::StringKey &input);
 
     bool AEMS_FEBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_FEBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_FEBanks(unsigned int index) const;
     unsigned int Num_AEMS_FEBanks() const;
-    bool SET_AEMS_FEBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_FEBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_MiscBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_MiscBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_MiscBanks(unsigned int index) const;
     unsigned int Num_AEMS_MiscBanks() const;
-    bool SET_AEMS_MiscBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_MiscBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_NOSBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_NOSBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_NOSBanks(unsigned int index) const;
     unsigned int Num_AEMS_NOSBanks() const;
-    bool SET_AEMS_NOSBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_NOSBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_RNBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_RNBanks(Attrib::StringKey &result) const;
     const Attrib::StringKey &AEMS_RNBanks() const;
-    bool SET_AEMS_RNBanks(const Attrib::StringKey &input);
+    bool Set_AEMS_RNBanks(const Attrib::StringKey &input);
 
     bool AEMS_SkidBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_SkidBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_SkidBanks(unsigned int index) const;
     unsigned int Num_AEMS_SkidBanks() const;
-    bool SET_AEMS_SkidBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_SkidBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_SparkBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_SparkBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_SparkBanks(unsigned int index) const;
     unsigned int Num_AEMS_SparkBanks() const;
-    bool SET_AEMS_SparkBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_SparkBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_StitchBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_StitchBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_StitchBanks(unsigned int index) const;
     unsigned int Num_AEMS_StitchBanks() const;
-    bool SET_AEMS_StitchBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_StitchBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool AEMS_WNBanks(TAttrib<Attrib::StringKey> &result) const;
     bool AEMS_WNBanks(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &AEMS_WNBanks(unsigned int index) const;
     unsigned int Num_AEMS_WNBanks() const;
-    bool SET_AEMS_WNBanks(const Attrib::StringKey &input, unsigned int index);
+    bool Set_AEMS_WNBanks(const Attrib::StringKey &input, unsigned int index);
 
     bool BIGPath(TAttrib<Attrib::StringKey> &result) const;
     bool BIGPath(Attrib::StringKey &result) const;
     const Attrib::StringKey &BIGPath() const;
-    bool SET_BIGPath(const Attrib::StringKey &input);
+    bool Set_BIGPath(const Attrib::StringKey &input);
 
     bool CSIPath(TAttrib<Attrib::StringKey> &result) const;
     bool CSIPath(Attrib::StringKey &result) const;
     const Attrib::StringKey &CSIPath() const;
-    bool SET_CSIPath(const Attrib::StringKey &input);
+    bool Set_CSIPath(const Attrib::StringKey &input);
 
     bool EVTPath(TAttrib<Attrib::StringKey> &result) const;
     bool EVTPath(Attrib::StringKey &result) const;
     const Attrib::StringKey &EVTPath() const;
-    bool SET_EVTPath(const Attrib::StringKey &input);
+    bool Set_EVTPath(const Attrib::StringKey &input);
 
     bool EvtSys(TAttrib<Attrib::StringKey> &result) const;
     bool EvtSys(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &EvtSys(unsigned int index) const;
     unsigned int Num_EvtSys() const;
-    bool SET_EvtSys(const Attrib::StringKey &input, unsigned int index);
+    bool Set_EvtSys(const Attrib::StringKey &input, unsigned int index);
 
     bool FESpeech(TAttrib<RefSpec> &result) const;
     bool FESpeech(RefSpec &result) const;
     const RefSpec &FESpeech() const;
-    bool SET_FESpeech(const RefSpec &input);
+    bool Set_FESpeech(const RefSpec &input);
 
     bool IDXPath(TAttrib<Attrib::StringKey> &result) const;
     bool IDXPath(Attrib::StringKey &result) const;
     const Attrib::StringKey &IDXPath() const;
-    bool SET_IDXPath(const Attrib::StringKey &input);
+    bool Set_IDXPath(const Attrib::StringKey &input);
 
     bool InGameSpeech(TAttrib<RefSpec> &result) const;
     bool InGameSpeech(RefSpec &result) const;
     const RefSpec &InGameSpeech() const;
-    bool SET_InGameSpeech(const RefSpec &input);
+    bool Set_InGameSpeech(const RefSpec &input);
 
     bool LicensedMusic(TAttrib<RefSpec> &result) const;
     bool LicensedMusic(RefSpec &result) const;
     const RefSpec &LicensedMusic() const;
-    bool SET_LicensedMusic(const RefSpec &input);
+    bool Set_LicensedMusic(const RefSpec &input);
 
     bool Locales(TAttrib<RefSpec> &result) const;
     bool Locales(RefSpec &result, unsigned int index) const;
     const RefSpec &Locales(unsigned int index) const;
     unsigned int Num_Locales() const;
-    bool SET_Locales(const RefSpec &input, unsigned int index);
+    bool Set_Locales(const RefSpec &input, unsigned int index);
 
     bool PFMapping(TAttrib<RefSpec> &result) const;
     bool PFMapping(RefSpec &result, unsigned int index) const;
     const RefSpec &PFMapping(unsigned int index) const;
     unsigned int Num_PFMapping() const;
-    bool SET_PFMapping(const RefSpec &input, unsigned int index);
+    bool Set_PFMapping(const RefSpec &input, unsigned int index);
 
     bool nissfxstreams(TAttrib<RefSpec> &result) const;
     bool nissfxstreams(RefSpec &result) const;
     const RefSpec &nissfxstreams() const;
-    bool SET_nissfxstreams(const RefSpec &input);
+    bool Set_nissfxstreams(const RefSpec &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -257,7 +257,7 @@ inline const Attrib::StringKey &Gen::audiosystem::AEMS_EnvBanks() const {
 inline bool Gen::audiosystem::AEMS_EnvBanks(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x7e6ba5c8, result);
 }
-inline bool Gen::audiosystem::SET_AEMS_EnvBanks(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_AEMS_EnvBanks(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x7e6ba5c8, input);
 }
 
@@ -273,7 +273,7 @@ inline bool Gen::audiosystem::AEMS_FEBanks(Attrib::StringKey &result, unsigned i
 inline unsigned int Gen::audiosystem::Num_AEMS_FEBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0x9849f8df);
 }
-inline bool Gen::audiosystem::SET_AEMS_FEBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_FEBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x9849f8df, input, index);
 }
 
@@ -289,7 +289,7 @@ inline bool Gen::audiosystem::AEMS_MiscBanks(Attrib::StringKey &result, unsigned
 inline unsigned int Gen::audiosystem::Num_AEMS_MiscBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe48df448);
 }
-inline bool Gen::audiosystem::SET_AEMS_MiscBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_MiscBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xe48df448, input, index);
 }
 
@@ -305,7 +305,7 @@ inline bool Gen::audiosystem::AEMS_NOSBanks(Attrib::StringKey &result, unsigned 
 inline unsigned int Gen::audiosystem::Num_AEMS_NOSBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8aca07f9);
 }
-inline bool Gen::audiosystem::SET_AEMS_NOSBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_NOSBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x8aca07f9, input, index);
 }
 
@@ -318,7 +318,7 @@ inline const Attrib::StringKey &Gen::audiosystem::AEMS_RNBanks() const {
 inline bool Gen::audiosystem::AEMS_RNBanks(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x0663aaf3, result);
 }
-inline bool Gen::audiosystem::SET_AEMS_RNBanks(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_AEMS_RNBanks(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x0663aaf3, input);
 }
 
@@ -334,7 +334,7 @@ inline bool Gen::audiosystem::AEMS_SkidBanks(Attrib::StringKey &result, unsigned
 inline unsigned int Gen::audiosystem::Num_AEMS_SkidBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0xbd6f7135);
 }
-inline bool Gen::audiosystem::SET_AEMS_SkidBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_SkidBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xbd6f7135, input, index);
 }
 
@@ -350,7 +350,7 @@ inline bool Gen::audiosystem::AEMS_SparkBanks(Attrib::StringKey &result, unsigne
 inline unsigned int Gen::audiosystem::Num_AEMS_SparkBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf44ae8ed);
 }
-inline bool Gen::audiosystem::SET_AEMS_SparkBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_SparkBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xf44ae8ed, input, index);
 }
 
@@ -366,7 +366,7 @@ inline bool Gen::audiosystem::AEMS_StitchBanks(Attrib::StringKey &result, unsign
 inline unsigned int Gen::audiosystem::Num_AEMS_StitchBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0xeb1fd1bf);
 }
-inline bool Gen::audiosystem::SET_AEMS_StitchBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_StitchBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xeb1fd1bf, input, index);
 }
 
@@ -382,7 +382,7 @@ inline bool Gen::audiosystem::AEMS_WNBanks(Attrib::StringKey &result, unsigned i
 inline unsigned int Gen::audiosystem::Num_AEMS_WNBanks() const {
     ATTRIB_CODEGEN_GETLENGTH(0x916aa05d);
 }
-inline bool Gen::audiosystem::SET_AEMS_WNBanks(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_AEMS_WNBanks(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x916aa05d, input, index);
 }
 
@@ -396,7 +396,7 @@ inline bool Gen::audiosystem::BIGPath(Attrib::StringKey &result) const {
     result = BIGPath();
     return true;
 }
-inline bool Gen::audiosystem::SET_BIGPath(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_BIGPath(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BIGPath, input);
 }
 
@@ -410,7 +410,7 @@ inline bool Gen::audiosystem::CSIPath(Attrib::StringKey &result) const {
     result = CSIPath();
     return true;
 }
-inline bool Gen::audiosystem::SET_CSIPath(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_CSIPath(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CSIPath, input);
 }
 
@@ -424,7 +424,7 @@ inline bool Gen::audiosystem::EVTPath(Attrib::StringKey &result) const {
     result = EVTPath();
     return true;
 }
-inline bool Gen::audiosystem::SET_EVTPath(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_EVTPath(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EVTPath, input);
 }
 
@@ -440,7 +440,7 @@ inline bool Gen::audiosystem::EvtSys(Attrib::StringKey &result, unsigned int ind
 inline unsigned int Gen::audiosystem::Num_EvtSys() const {
     ATTRIB_CODEGEN_GETLENGTH(0x4166fa80);
 }
-inline bool Gen::audiosystem::SET_EvtSys(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_EvtSys(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x4166fa80, input, index);
 }
 
@@ -453,7 +453,7 @@ inline const RefSpec &Gen::audiosystem::FESpeech() const {
 inline bool Gen::audiosystem::FESpeech(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x174f218e, result);
 }
-inline bool Gen::audiosystem::SET_FESpeech(const RefSpec &input) {
+inline bool Gen::audiosystem::Set_FESpeech(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x174f218e, input);
 }
 
@@ -467,7 +467,7 @@ inline bool Gen::audiosystem::IDXPath(Attrib::StringKey &result) const {
     result = IDXPath();
     return true;
 }
-inline bool Gen::audiosystem::SET_IDXPath(const Attrib::StringKey &input) {
+inline bool Gen::audiosystem::Set_IDXPath(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(IDXPath, input);
 }
 
@@ -480,7 +480,7 @@ inline const RefSpec &Gen::audiosystem::InGameSpeech() const {
 inline bool Gen::audiosystem::InGameSpeech(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x4f085f82, result);
 }
-inline bool Gen::audiosystem::SET_InGameSpeech(const RefSpec &input) {
+inline bool Gen::audiosystem::Set_InGameSpeech(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x4f085f82, input);
 }
 
@@ -493,7 +493,7 @@ inline const RefSpec &Gen::audiosystem::LicensedMusic() const {
 inline bool Gen::audiosystem::LicensedMusic(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x5611db83, result);
 }
-inline bool Gen::audiosystem::SET_LicensedMusic(const RefSpec &input) {
+inline bool Gen::audiosystem::Set_LicensedMusic(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x5611db83, input);
 }
 
@@ -509,7 +509,7 @@ inline bool Gen::audiosystem::Locales(RefSpec &result, unsigned int index) const
 inline unsigned int Gen::audiosystem::Num_Locales() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc243117c);
 }
-inline bool Gen::audiosystem::SET_Locales(const RefSpec &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_Locales(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc243117c, input, index);
 }
 
@@ -525,7 +525,7 @@ inline bool Gen::audiosystem::PFMapping(RefSpec &result, unsigned int index) con
 inline unsigned int Gen::audiosystem::Num_PFMapping() const {
     ATTRIB_CODEGEN_GETLENGTH(0x737714de);
 }
-inline bool Gen::audiosystem::SET_PFMapping(const RefSpec &input, unsigned int index) {
+inline bool Gen::audiosystem::Set_PFMapping(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x737714de, input, index);
 }
 
@@ -538,7 +538,7 @@ inline const RefSpec &Gen::audiosystem::nissfxstreams() const {
 inline bool Gen::audiosystem::nissfxstreams(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xe6e5c2a3, result);
 }
-inline bool Gen::audiosystem::SET_nissfxstreams(const RefSpec &input) {
+inline bool Gen::audiosystem::Set_nissfxstreams(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xe6e5c2a3, input);
 }
 

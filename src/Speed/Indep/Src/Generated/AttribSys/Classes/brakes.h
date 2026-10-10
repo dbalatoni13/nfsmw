@@ -76,17 +76,17 @@ struct brakes : Instance {
     bool BRAKES(TAttrib<AxlePair> &result) const;
     bool BRAKES(AxlePair &result) const;
     const AxlePair &BRAKES() const;
-    bool SET_BRAKES(const AxlePair &input);
+    bool Set_BRAKES(const AxlePair &input);
 
     bool BRAKE_LOCK(TAttrib<AxlePair> &result) const;
     bool BRAKE_LOCK(AxlePair &result) const;
     const AxlePair &BRAKE_LOCK() const;
-    bool SET_BRAKE_LOCK(const AxlePair &input);
+    bool Set_BRAKE_LOCK(const AxlePair &input);
 
     bool EBRAKE(TAttrib<EA::Reflection::Float> &result) const;
     bool EBRAKE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &EBRAKE() const;
-    bool SET_EBRAKE(const EA::Reflection::Float &input);
+    bool Set_EBRAKE(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -127,7 +127,7 @@ inline bool Gen::brakes::BRAKES(AxlePair &result) const {
     result = BRAKES();
     return true;
 }
-inline bool Gen::brakes::SET_BRAKES(const AxlePair &input) {
+inline bool Gen::brakes::Set_BRAKES(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BRAKES, input);
 }
 
@@ -141,7 +141,7 @@ inline bool Gen::brakes::BRAKE_LOCK(AxlePair &result) const {
     result = BRAKE_LOCK();
     return true;
 }
-inline bool Gen::brakes::SET_BRAKE_LOCK(const AxlePair &input) {
+inline bool Gen::brakes::Set_BRAKE_LOCK(const AxlePair &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BRAKE_LOCK, input);
 }
 
@@ -155,7 +155,7 @@ inline bool Gen::brakes::EBRAKE(EA::Reflection::Float &result) const {
     result = EBRAKE();
     return true;
 }
-inline bool Gen::brakes::SET_EBRAKE(const EA::Reflection::Float &input) {
+inline bool Gen::brakes::Set_EBRAKE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(EBRAKE, input);
 }
 

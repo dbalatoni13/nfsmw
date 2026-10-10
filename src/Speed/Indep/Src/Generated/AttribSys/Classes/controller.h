@@ -226,900 +226,900 @@ struct controller : Instance {
     bool CAMERAACTION_CHANGE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &CAMERAACTION_CHANGE(unsigned int index) const;
     unsigned int Num_CAMERAACTION_CHANGE() const;
-    bool SET_CAMERAACTION_CHANGE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_CAMERAACTION_CHANGE(const ControllerDataRecord &input, unsigned int index);
 
     bool CAMERAACTION_DEBUG(TAttrib<ControllerDataRecord> &result) const;
     bool CAMERAACTION_DEBUG(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &CAMERAACTION_DEBUG(unsigned int index) const;
     unsigned int Num_CAMERAACTION_DEBUG() const;
-    bool SET_CAMERAACTION_DEBUG(const ControllerDataRecord &input, unsigned int index);
+    bool Set_CAMERAACTION_DEBUG(const ControllerDataRecord &input, unsigned int index);
 
     bool CAMERAACTION_ENABLE_ICE(TAttrib<ControllerDataRecord> &result) const;
     bool CAMERAACTION_ENABLE_ICE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &CAMERAACTION_ENABLE_ICE(unsigned int index) const;
     unsigned int Num_CAMERAACTION_ENABLE_ICE() const;
-    bool SET_CAMERAACTION_ENABLE_ICE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_CAMERAACTION_ENABLE_ICE(const ControllerDataRecord &input, unsigned int index);
 
     bool CAMERAACTION_LOOKBACK(TAttrib<ControllerDataRecord> &result) const;
     bool CAMERAACTION_LOOKBACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &CAMERAACTION_LOOKBACK(unsigned int index) const;
     unsigned int Num_CAMERAACTION_LOOKBACK() const;
-    bool SET_CAMERAACTION_LOOKBACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_CAMERAACTION_LOOKBACK(const ControllerDataRecord &input, unsigned int index);
 
     bool CAMERAACTION_PULLBACK(TAttrib<ControllerDataRecord> &result) const;
     bool CAMERAACTION_PULLBACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &CAMERAACTION_PULLBACK(unsigned int index) const;
     unsigned int Num_CAMERAACTION_PULLBACK() const;
-    bool SET_CAMERAACTION_PULLBACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_CAMERAACTION_PULLBACK(const ControllerDataRecord &input, unsigned int index);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool DEBUGACTION_DROPCAR(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_DROPCAR(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_DROPCAR(unsigned int index) const;
     unsigned int Num_DEBUGACTION_DROPCAR() const;
-    bool SET_DEBUGACTION_DROPCAR(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_DROPCAR(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_DOWN(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_DOWN() const;
-    bool SET_DEBUGACTION_LOOK_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_D_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_D_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_D_DOWN(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_D_DOWN() const;
-    bool SET_DEBUGACTION_LOOK_D_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_D_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_D_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_D_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_D_LEFT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_D_LEFT() const;
-    bool SET_DEBUGACTION_LOOK_D_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_D_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_D_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_D_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_D_RIGHT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_D_RIGHT() const;
-    bool SET_DEBUGACTION_LOOK_D_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_D_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_D_UP(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_D_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_D_UP(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_D_UP() const;
-    bool SET_DEBUGACTION_LOOK_D_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_D_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_LEFT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_LEFT() const;
-    bool SET_DEBUGACTION_LOOK_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_RIGHT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_RIGHT() const;
-    bool SET_DEBUGACTION_LOOK_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_LOOK_UP(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_LOOK_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_LOOK_UP(unsigned int index) const;
     unsigned int Num_DEBUGACTION_LOOK_UP() const;
-    bool SET_DEBUGACTION_LOOK_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_LOOK_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_BACK(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_BACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_BACK(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_BACK() const;
-    bool SET_DEBUGACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_DOWN(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_DOWN() const;
-    bool SET_DEBUGACTION_MOVE_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_D_BACK(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_D_BACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_D_BACK(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_D_BACK() const;
-    bool SET_DEBUGACTION_MOVE_D_BACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_D_BACK(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_D_FORWARD(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_D_FORWARD(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_D_FORWARD(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_D_FORWARD() const;
-    bool SET_DEBUGACTION_MOVE_D_FORWARD(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_D_FORWARD(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_D_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_D_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_D_LEFT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_D_LEFT() const;
-    bool SET_DEBUGACTION_MOVE_D_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_D_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_D_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_D_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_D_RIGHT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_D_RIGHT() const;
-    bool SET_DEBUGACTION_MOVE_D_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_D_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_FORWARD(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_FORWARD(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_FORWARD(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_FORWARD() const;
-    bool SET_DEBUGACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_LEFT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_LEFT() const;
-    bool SET_DEBUGACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_RIGHT(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_RIGHT() const;
-    bool SET_DEBUGACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_MOVE_UP(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_MOVE_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_MOVE_UP(unsigned int index) const;
     unsigned int Num_DEBUGACTION_MOVE_UP() const;
-    bool SET_DEBUGACTION_MOVE_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_MOVE_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_SIMSTEP(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_SIMSTEP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_SIMSTEP(unsigned int index) const;
     unsigned int Num_DEBUGACTION_SIMSTEP() const;
-    bool SET_DEBUGACTION_SIMSTEP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_SIMSTEP(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_SUPER_TURBO(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_SUPER_TURBO(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_SUPER_TURBO(unsigned int index) const;
     unsigned int Num_DEBUGACTION_SUPER_TURBO() const;
-    bool SET_DEBUGACTION_SUPER_TURBO(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_SUPER_TURBO(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_TOGGLEAI(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_TOGGLEAI(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_TOGGLEAI(unsigned int index) const;
     unsigned int Num_DEBUGACTION_TOGGLEAI() const;
-    bool SET_DEBUGACTION_TOGGLEAI(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_TOGGLEAI(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_TOGGLECARCOLOUR(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_TOGGLECARCOLOUR(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_TOGGLECARCOLOUR(unsigned int index) const;
     unsigned int Num_DEBUGACTION_TOGGLECARCOLOUR() const;
-    bool SET_DEBUGACTION_TOGGLECARCOLOUR(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_TOGGLECARCOLOUR(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_TOGGLEDEMOCAMERAS(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_TOGGLEDEMOCAMERAS(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_TOGGLEDEMOCAMERAS(unsigned int index) const;
     unsigned int Num_DEBUGACTION_TOGGLEDEMOCAMERAS() const;
-    bool SET_DEBUGACTION_TOGGLEDEMOCAMERAS(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_TOGGLEDEMOCAMERAS(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_TOGGLESIMSTEP(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_TOGGLESIMSTEP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_TOGGLESIMSTEP(unsigned int index) const;
     unsigned int Num_DEBUGACTION_TOGGLESIMSTEP() const;
-    bool SET_DEBUGACTION_TOGGLESIMSTEP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_TOGGLESIMSTEP(const ControllerDataRecord &input, unsigned int index);
 
     bool DEBUGACTION_TURBO(TAttrib<ControllerDataRecord> &result) const;
     bool DEBUGACTION_TURBO(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &DEBUGACTION_TURBO(unsigned int index) const;
     unsigned int Num_DEBUGACTION_TURBO() const;
-    bool SET_DEBUGACTION_TURBO(const ControllerDataRecord &input, unsigned int index);
+    bool Set_DEBUGACTION_TURBO(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_ACCEPT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_ACCEPT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_ACCEPT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_ACCEPT() const;
-    bool SET_FRONTENDACTION_ACCEPT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_ACCEPT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON0(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON0(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON0(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON0() const;
-    bool SET_FRONTENDACTION_BUTTON0(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON0(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON1(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON1(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON1(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON1() const;
-    bool SET_FRONTENDACTION_BUTTON1(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON1(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON2(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON2(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON2(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON2() const;
-    bool SET_FRONTENDACTION_BUTTON2(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON2(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON3(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON3(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON3(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON3() const;
-    bool SET_FRONTENDACTION_BUTTON3(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON3(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON4(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON4(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON4(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON4() const;
-    bool SET_FRONTENDACTION_BUTTON4(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON4(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_BUTTON5(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_BUTTON5(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_BUTTON5(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_BUTTON5() const;
-    bool SET_FRONTENDACTION_BUTTON5(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_BUTTON5(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_CANCEL(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_CANCEL(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_CANCEL(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_CANCEL() const;
-    bool SET_FRONTENDACTION_CANCEL(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_CANCEL(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_CANCEL_ALT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_CANCEL_ALT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_CANCEL_ALT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_CANCEL_ALT() const;
-    bool SET_FRONTENDACTION_CANCEL_ALT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_CANCEL_ALT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_DOWN(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_DOWN() const;
-    bool SET_FRONTENDACTION_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_LEFT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_LEFT() const;
-    bool SET_FRONTENDACTION_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_LTRIGGER(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_LTRIGGER(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_LTRIGGER(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_LTRIGGER() const;
-    bool SET_FRONTENDACTION_LTRIGGER(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_LTRIGGER(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RDOWN(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RDOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RDOWN(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RDOWN() const;
-    bool SET_FRONTENDACTION_RDOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RDOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RIGHT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RIGHT() const;
-    bool SET_FRONTENDACTION_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RLEFT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RLEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RLEFT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RLEFT() const;
-    bool SET_FRONTENDACTION_RLEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RLEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RRIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RRIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RRIGHT(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RRIGHT() const;
-    bool SET_FRONTENDACTION_RRIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RRIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RTRIGGER(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RTRIGGER(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RTRIGGER(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RTRIGGER() const;
-    bool SET_FRONTENDACTION_RTRIGGER(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RTRIGGER(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_RUP(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_RUP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_RUP(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_RUP() const;
-    bool SET_FRONTENDACTION_RUP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_RUP(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_START(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_START(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_START(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_START() const;
-    bool SET_FRONTENDACTION_START(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_START(const ControllerDataRecord &input, unsigned int index);
 
     bool FRONTENDACTION_UP(TAttrib<ControllerDataRecord> &result) const;
     bool FRONTENDACTION_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &FRONTENDACTION_UP(unsigned int index) const;
     unsigned int Num_FRONTENDACTION_UP() const;
-    bool SET_FRONTENDACTION_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_FRONTENDACTION_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_BACK(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_BACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_BACK(unsigned int index) const;
     unsigned int Num_GAMEACTION_BACK() const;
-    bool SET_GAMEACTION_BACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_BACK(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_BRAKE(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_BRAKE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_BRAKE(unsigned int index) const;
     unsigned int Num_GAMEACTION_BRAKE() const;
-    bool SET_GAMEACTION_BRAKE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_BRAKE(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_DEBUGHUMAN1(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_DEBUGHUMAN1(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_DEBUGHUMAN1(unsigned int index) const;
     unsigned int Num_GAMEACTION_DEBUGHUMAN1() const;
-    bool SET_GAMEACTION_DEBUGHUMAN1(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_DEBUGHUMAN1(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_DEBUGHUMAN2(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_DEBUGHUMAN2(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_DEBUGHUMAN2(unsigned int index) const;
     unsigned int Num_GAMEACTION_DEBUGHUMAN2() const;
-    bool SET_GAMEACTION_DEBUGHUMAN2(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_DEBUGHUMAN2(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_DEBUGHUMAN3(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_DEBUGHUMAN3(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_DEBUGHUMAN3(unsigned int index) const;
     unsigned int Num_GAMEACTION_DEBUGHUMAN3() const;
-    bool SET_GAMEACTION_DEBUGHUMAN3(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_DEBUGHUMAN3(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_DEBUGHUMAN4(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_DEBUGHUMAN4(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_DEBUGHUMAN4(unsigned int index) const;
     unsigned int Num_GAMEACTION_DEBUGHUMAN4() const;
-    bool SET_GAMEACTION_DEBUGHUMAN4(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_DEBUGHUMAN4(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_FORWARD(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_FORWARD(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_FORWARD(unsigned int index) const;
     unsigned int Num_GAMEACTION_FORWARD() const;
-    bool SET_GAMEACTION_FORWARD(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_FORWARD(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_GAMEBREAKER(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_GAMEBREAKER(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_GAMEBREAKER(unsigned int index) const;
     unsigned int Num_GAMEACTION_GAMEBREAKER() const;
-    bool SET_GAMEACTION_GAMEBREAKER(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_GAMEBREAKER(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_GAS(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_GAS(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_GAS(unsigned int index) const;
     unsigned int Num_GAMEACTION_GAS() const;
-    bool SET_GAMEACTION_GAS(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_GAS(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_HANDBRAKE(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_HANDBRAKE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_HANDBRAKE(unsigned int index) const;
     unsigned int Num_GAMEACTION_HANDBRAKE() const;
-    bool SET_GAMEACTION_HANDBRAKE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_HANDBRAKE(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_JUMP(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_JUMP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_JUMP(unsigned int index) const;
     unsigned int Num_GAMEACTION_JUMP() const;
-    bool SET_GAMEACTION_JUMP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_JUMP(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_NOS(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_NOS(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_NOS(unsigned int index) const;
     unsigned int Num_GAMEACTION_NOS() const;
-    bool SET_GAMEACTION_NOS(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_NOS(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_RESET(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_RESET(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_RESET(unsigned int index) const;
     unsigned int Num_GAMEACTION_RESET() const;
-    bool SET_GAMEACTION_RESET(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_RESET(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_SHIFTDOWN(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_SHIFTDOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_SHIFTDOWN(unsigned int index) const;
     unsigned int Num_GAMEACTION_SHIFTDOWN() const;
-    bool SET_GAMEACTION_SHIFTDOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_SHIFTDOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_SHIFTUP(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_SHIFTUP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_SHIFTUP(unsigned int index) const;
     unsigned int Num_GAMEACTION_SHIFTUP() const;
-    bool SET_GAMEACTION_SHIFTUP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_SHIFTUP(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_STEERLEFT(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_STEERLEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_STEERLEFT(unsigned int index) const;
     unsigned int Num_GAMEACTION_STEERLEFT() const;
-    bool SET_GAMEACTION_STEERLEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_STEERLEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_STEERRIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_STEERRIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_STEERRIGHT(unsigned int index) const;
     unsigned int Num_GAMEACTION_STEERRIGHT() const;
-    bool SET_GAMEACTION_STEERRIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_STEERRIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_TURNLEFT(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_TURNLEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_TURNLEFT(unsigned int index) const;
     unsigned int Num_GAMEACTION_TURNLEFT() const;
-    bool SET_GAMEACTION_TURNLEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_TURNLEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool GAMEACTION_TURNRIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool GAMEACTION_TURNRIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &GAMEACTION_TURNRIGHT(unsigned int index) const;
     unsigned int Num_GAMEACTION_TURNRIGHT() const;
-    bool SET_GAMEACTION_TURNRIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_GAMEACTION_TURNRIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_ENGAGE_EVENT(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_ENGAGE_EVENT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_ENGAGE_EVENT(unsigned int index) const;
     unsigned int Num_HUDACTION_ENGAGE_EVENT() const;
-    bool SET_HUDACTION_ENGAGE_EVENT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_ENGAGE_EVENT(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_NEXTSONG(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_NEXTSONG(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_NEXTSONG(unsigned int index) const;
     unsigned int Num_HUDACTION_NEXTSONG() const;
-    bool SET_HUDACTION_NEXTSONG(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_NEXTSONG(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_PAD_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_PAD_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_PAD_DOWN(unsigned int index) const;
     unsigned int Num_HUDACTION_PAD_DOWN() const;
-    bool SET_HUDACTION_PAD_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_PAD_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_PAD_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_PAD_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_PAD_LEFT(unsigned int index) const;
     unsigned int Num_HUDACTION_PAD_LEFT() const;
-    bool SET_HUDACTION_PAD_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_PAD_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_PAD_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_PAD_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_PAD_RIGHT(unsigned int index) const;
     unsigned int Num_HUDACTION_PAD_RIGHT() const;
-    bool SET_HUDACTION_PAD_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_PAD_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_PAUSEREQUEST(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_PAUSEREQUEST(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_PAUSEREQUEST(unsigned int index) const;
     unsigned int Num_HUDACTION_PAUSEREQUEST() const;
-    bool SET_HUDACTION_PAUSEREQUEST(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_PAUSEREQUEST(const ControllerDataRecord &input, unsigned int index);
 
     bool HUDACTION_SKIPNIS(TAttrib<ControllerDataRecord> &result) const;
     bool HUDACTION_SKIPNIS(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &HUDACTION_SKIPNIS(unsigned int index) const;
     unsigned int Num_HUDACTION_SKIPNIS() const;
-    bool SET_HUDACTION_SKIPNIS(const ControllerDataRecord &input, unsigned int index);
+    bool Set_HUDACTION_SKIPNIS(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_ALT_1(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_ALT_1(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_ALT_1(unsigned int index) const;
     unsigned int Num_ICEACTION_ALT_1() const;
-    bool SET_ICEACTION_ALT_1(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_ALT_1(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_BACK(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_BACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_BACK(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_BACK() const;
-    bool SET_ICEACTION_BUBBLE_BACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_BACK(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_DOWN(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_DOWN() const;
-    bool SET_ICEACTION_BUBBLE_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_FORTH(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_FORTH(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_FORTH(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_FORTH() const;
-    bool SET_ICEACTION_BUBBLE_FORTH(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_FORTH(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_IN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_IN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_IN(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_IN() const;
-    bool SET_ICEACTION_BUBBLE_IN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_IN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_LEFT() const;
-    bool SET_ICEACTION_BUBBLE_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_OUT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_OUT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_OUT(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_OUT() const;
-    bool SET_ICEACTION_BUBBLE_OUT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_OUT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_RIGHT() const;
-    bool SET_ICEACTION_BUBBLE_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_SPIN_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_SPIN_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_SPIN_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_SPIN_LEFT() const;
-    bool SET_ICEACTION_BUBBLE_SPIN_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_SPIN_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_SPIN_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_SPIN_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_SPIN_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_SPIN_RIGHT() const;
-    bool SET_ICEACTION_BUBBLE_SPIN_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_SPIN_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_TILT_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_TILT_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_TILT_DOWN(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_TILT_DOWN() const;
-    bool SET_ICEACTION_BUBBLE_TILT_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_TILT_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_TILT_UP(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_TILT_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_TILT_UP(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_TILT_UP() const;
-    bool SET_ICEACTION_BUBBLE_TILT_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_TILT_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_BUBBLE_UP(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_BUBBLE_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_BUBBLE_UP(unsigned int index) const;
     unsigned int Num_ICEACTION_BUBBLE_UP() const;
-    bool SET_ICEACTION_BUBBLE_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_BUBBLE_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_CANCEL(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_CANCEL(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_CANCEL(unsigned int index) const;
     unsigned int Num_ICEACTION_CANCEL() const;
-    bool SET_ICEACTION_CANCEL(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_CANCEL(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_CLIP_IN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_CLIP_IN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_CLIP_IN(unsigned int index) const;
     unsigned int Num_ICEACTION_CLIP_IN() const;
-    bool SET_ICEACTION_CLIP_IN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_CLIP_IN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_CLIP_OUT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_CLIP_OUT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_CLIP_OUT(unsigned int index) const;
     unsigned int Num_ICEACTION_CLIP_OUT() const;
-    bool SET_ICEACTION_CLIP_OUT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_CLIP_OUT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_COPY(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_COPY(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_COPY(unsigned int index) const;
     unsigned int Num_ICEACTION_COPY() const;
-    bool SET_ICEACTION_COPY(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_COPY(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_CUT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_CUT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_CUT(unsigned int index) const;
     unsigned int Num_ICEACTION_CUT() const;
-    bool SET_ICEACTION_CUT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_CUT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_DOWN(unsigned int index) const;
     unsigned int Num_ICEACTION_DOWN() const;
-    bool SET_ICEACTION_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_DUTCH_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_DUTCH_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_DUTCH_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_DUTCH_LEFT() const;
-    bool SET_ICEACTION_DUTCH_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_DUTCH_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_DUTCH_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_DUTCH_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_DUTCH_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_DUTCH_RIGHT() const;
-    bool SET_ICEACTION_DUTCH_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_DUTCH_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_FAST_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_FAST_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_FAST_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_FAST_LEFT() const;
-    bool SET_ICEACTION_FAST_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_FAST_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_FAST_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_FAST_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_FAST_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_FAST_RIGHT() const;
-    bool SET_ICEACTION_FAST_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_FAST_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_GRAB_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_GRAB_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_GRAB_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_GRAB_LEFT() const;
-    bool SET_ICEACTION_GRAB_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_GRAB_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_GRAB_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_GRAB_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_GRAB_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_GRAB_RIGHT() const;
-    bool SET_ICEACTION_GRAB_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_GRAB_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_HELP(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_HELP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_HELP(unsigned int index) const;
     unsigned int Num_ICEACTION_HELP() const;
-    bool SET_ICEACTION_HELP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_HELP(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_HIDE(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_HIDE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_HIDE(unsigned int index) const;
     unsigned int Num_ICEACTION_HIDE() const;
-    bool SET_ICEACTION_HIDE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_HIDE(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_INSERT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_INSERT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_INSERT(unsigned int index) const;
     unsigned int Num_ICEACTION_INSERT() const;
-    bool SET_ICEACTION_INSERT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_INSERT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_LEFT() const;
-    bool SET_ICEACTION_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_LETTERBOX_IN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_LETTERBOX_IN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_LETTERBOX_IN(unsigned int index) const;
     unsigned int Num_ICEACTION_LETTERBOX_IN() const;
-    bool SET_ICEACTION_LETTERBOX_IN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_LETTERBOX_IN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_LETTERBOX_OUT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_LETTERBOX_OUT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_LETTERBOX_OUT(unsigned int index) const;
     unsigned int Num_ICEACTION_LETTERBOX_OUT() const;
-    bool SET_ICEACTION_LETTERBOX_OUT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_LETTERBOX_OUT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_PASTE(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_PASTE(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_PASTE(unsigned int index) const;
     unsigned int Num_ICEACTION_PASTE() const;
-    bool SET_ICEACTION_PASTE(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_PASTE(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_PLAY(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_PLAY(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_PLAY(unsigned int index) const;
     unsigned int Num_ICEACTION_PLAY() const;
-    bool SET_ICEACTION_PLAY(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_PLAY(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_RIGHT() const;
-    bool SET_ICEACTION_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SCREENSHOT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SCREENSHOT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SCREENSHOT(unsigned int index) const;
     unsigned int Num_ICEACTION_SCREENSHOT() const;
-    bool SET_ICEACTION_SCREENSHOT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SCREENSHOT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SCREENSHOT_STREAM(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SCREENSHOT_STREAM(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SCREENSHOT_STREAM(unsigned int index) const;
     unsigned int Num_ICEACTION_SCREENSHOT_STREAM() const;
-    bool SET_ICEACTION_SCREENSHOT_STREAM(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SCREENSHOT_STREAM(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SELECT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SELECT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SELECT(unsigned int index) const;
     unsigned int Num_ICEACTION_SELECT() const;
-    bool SET_ICEACTION_SELECT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SELECT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHAKE_FRQ_DEC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHAKE_FRQ_DEC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHAKE_FRQ_DEC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHAKE_FRQ_DEC() const;
-    bool SET_ICEACTION_SHAKE_FRQ_DEC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHAKE_FRQ_DEC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHAKE_FRQ_INC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHAKE_FRQ_INC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHAKE_FRQ_INC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHAKE_FRQ_INC() const;
-    bool SET_ICEACTION_SHAKE_FRQ_INC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHAKE_FRQ_INC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHAKE_MAG_DEC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHAKE_MAG_DEC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHAKE_MAG_DEC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHAKE_MAG_DEC() const;
-    bool SET_ICEACTION_SHAKE_MAG_DEC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHAKE_MAG_DEC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHAKE_MAG_INC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHAKE_MAG_INC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHAKE_MAG_INC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHAKE_MAG_INC() const;
-    bool SET_ICEACTION_SHAKE_MAG_INC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHAKE_MAG_INC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_DOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_DOWN(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_DOWN() const;
-    bool SET_ICEACTION_SHUTTLE_DOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_DOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_LEFT(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_LEFT() const;
-    bool SET_ICEACTION_SHUTTLE_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_RIGHT(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_RIGHT() const;
-    bool SET_ICEACTION_SHUTTLE_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_SPEED_DEC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_SPEED_DEC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_SPEED_DEC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_SPEED_DEC() const;
-    bool SET_ICEACTION_SHUTTLE_SPEED_DEC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_SPEED_DEC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_SPEED_INC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_SPEED_INC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_SPEED_INC(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_SPEED_INC() const;
-    bool SET_ICEACTION_SHUTTLE_SPEED_INC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_SPEED_INC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SHUTTLE_UP(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SHUTTLE_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SHUTTLE_UP(unsigned int index) const;
     unsigned int Num_ICEACTION_SHUTTLE_UP() const;
-    bool SET_ICEACTION_SHUTTLE_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SHUTTLE_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SIMSPEED_DEC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SIMSPEED_DEC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SIMSPEED_DEC(unsigned int index) const;
     unsigned int Num_ICEACTION_SIMSPEED_DEC() const;
-    bool SET_ICEACTION_SIMSPEED_DEC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SIMSPEED_DEC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_SIMSPEED_INC(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_SIMSPEED_INC(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_SIMSPEED_INC(unsigned int index) const;
     unsigned int Num_ICEACTION_SIMSPEED_INC() const;
-    bool SET_ICEACTION_SIMSPEED_INC(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_SIMSPEED_INC(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_UNDO(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_UNDO(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_UNDO(unsigned int index) const;
     unsigned int Num_ICEACTION_UNDO() const;
-    bool SET_ICEACTION_UNDO(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_UNDO(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_UP(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_UP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_UP(unsigned int index) const;
     unsigned int Num_ICEACTION_UP() const;
-    bool SET_ICEACTION_UP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_UP(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_ZOOM_IN(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_ZOOM_IN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_ZOOM_IN(unsigned int index) const;
     unsigned int Num_ICEACTION_ZOOM_IN() const;
-    bool SET_ICEACTION_ZOOM_IN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_ZOOM_IN(const ControllerDataRecord &input, unsigned int index);
 
     bool ICEACTION_ZOOM_OUT(TAttrib<ControllerDataRecord> &result) const;
     bool ICEACTION_ZOOM_OUT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &ICEACTION_ZOOM_OUT(unsigned int index) const;
     unsigned int Num_ICEACTION_ZOOM_OUT() const;
-    bool SET_ICEACTION_ZOOM_OUT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_ICEACTION_ZOOM_OUT(const ControllerDataRecord &input, unsigned int index);
 
     bool Pauseable(TAttrib<EA::Reflection::Bool> &result) const;
     bool Pauseable(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &Pauseable() const;
-    bool SET_Pauseable(const EA::Reflection::Bool &input);
+    bool Set_Pauseable(const EA::Reflection::Bool &input);
 
     bool REACTION_ACTIVATE_EDIT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_ACTIVATE_EDIT(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_ACTIVATE_EDIT() const;
-    bool SET_REACTION_ACTIVATE_EDIT(const ControllerDataRecord &input);
+    bool Set_REACTION_ACTIVATE_EDIT(const ControllerDataRecord &input);
 
     bool REACTION_APPLY_TO_NEXT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_APPLY_TO_NEXT(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_APPLY_TO_NEXT() const;
-    bool SET_REACTION_APPLY_TO_NEXT(const ControllerDataRecord &input);
+    bool Set_REACTION_APPLY_TO_NEXT(const ControllerDataRecord &input);
 
     bool REACTION_AUTOFIT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_AUTOFIT(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_AUTOFIT() const;
-    bool SET_REACTION_AUTOFIT(const ControllerDataRecord &input);
+    bool Set_REACTION_AUTOFIT(const ControllerDataRecord &input);
 
     bool REACTION_EDIT_NODE(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_EDIT_NODE(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_EDIT_NODE() const;
-    bool SET_REACTION_EDIT_NODE(const ControllerDataRecord &input);
+    bool Set_REACTION_EDIT_NODE(const ControllerDataRecord &input);
 
     bool REACTION_LOOKDOWN(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_LOOKDOWN(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_LOOKDOWN(unsigned int index) const;
     unsigned int Num_REACTION_LOOKDOWN() const;
-    bool SET_REACTION_LOOKDOWN(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_LOOKDOWN(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_LOOKLEFT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_LOOKLEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_LOOKLEFT(unsigned int index) const;
     unsigned int Num_REACTION_LOOKLEFT() const;
-    bool SET_REACTION_LOOKLEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_LOOKLEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_LOOKRIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_LOOKRIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_LOOKRIGHT(unsigned int index) const;
     unsigned int Num_REACTION_LOOKRIGHT() const;
-    bool SET_REACTION_LOOKRIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_LOOKRIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_LOOKUP(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_LOOKUP(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_LOOKUP(unsigned int index) const;
     unsigned int Num_REACTION_LOOKUP() const;
-    bool SET_REACTION_LOOKUP(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_LOOKUP(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_MOVE_BACK(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_BACK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_MOVE_BACK(unsigned int index) const;
     unsigned int Num_REACTION_MOVE_BACK() const;
-    bool SET_REACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_MOVE_DOWN(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_DOWN(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_MOVE_DOWN() const;
-    bool SET_REACTION_MOVE_DOWN(const ControllerDataRecord &input);
+    bool Set_REACTION_MOVE_DOWN(const ControllerDataRecord &input);
 
     bool REACTION_MOVE_FORWARD(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_FORWARD(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_MOVE_FORWARD(unsigned int index) const;
     unsigned int Num_REACTION_MOVE_FORWARD() const;
-    bool SET_REACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_MOVE_LEFT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_LEFT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_MOVE_LEFT(unsigned int index) const;
     unsigned int Num_REACTION_MOVE_LEFT() const;
-    bool SET_REACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_MOVE_RIGHT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_RIGHT(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &REACTION_MOVE_RIGHT(unsigned int index) const;
     unsigned int Num_REACTION_MOVE_RIGHT() const;
-    bool SET_REACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index);
+    bool Set_REACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index);
 
     bool REACTION_MOVE_UP(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_MOVE_UP(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_MOVE_UP() const;
-    bool SET_REACTION_MOVE_UP(const ControllerDataRecord &input);
+    bool Set_REACTION_MOVE_UP(const ControllerDataRecord &input);
 
     bool REACTION_NEXTLANE(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_NEXTLANE(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_NEXTLANE() const;
-    bool SET_REACTION_NEXTLANE(const ControllerDataRecord &input);
+    bool Set_REACTION_NEXTLANE(const ControllerDataRecord &input);
 
     bool REACTION_PICK(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_PICK(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_PICK() const;
-    bool SET_REACTION_PICK(const ControllerDataRecord &input);
+    bool Set_REACTION_PICK(const ControllerDataRecord &input);
 
     bool REACTION_PREVIOUSLANE(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_PREVIOUSLANE(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_PREVIOUSLANE() const;
-    bool SET_REACTION_PREVIOUSLANE(const ControllerDataRecord &input);
+    bool Set_REACTION_PREVIOUSLANE(const ControllerDataRecord &input);
 
     bool REACTION_SELECTNEXT(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_SELECTNEXT(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_SELECTNEXT() const;
-    bool SET_REACTION_SELECTNEXT(const ControllerDataRecord &input);
+    bool Set_REACTION_SELECTNEXT(const ControllerDataRecord &input);
 
     bool REACTION_TURBO(TAttrib<ControllerDataRecord> &result) const;
     bool REACTION_TURBO(ControllerDataRecord &result) const;
     const ControllerDataRecord &REACTION_TURBO() const;
-    bool SET_REACTION_TURBO(const ControllerDataRecord &input);
+    bool Set_REACTION_TURBO(const ControllerDataRecord &input);
 
     bool VOIPACTION_PUSHTOTALK(TAttrib<ControllerDataRecord> &result) const;
     bool VOIPACTION_PUSHTOTALK(ControllerDataRecord &result, unsigned int index) const;
     const ControllerDataRecord &VOIPACTION_PUSHTOTALK(unsigned int index) const;
     unsigned int Num_VOIPACTION_PUSHTOTALK() const;
-    bool SET_VOIPACTION_PUSHTOTALK(const ControllerDataRecord &input, unsigned int index);
+    bool Set_VOIPACTION_PUSHTOTALK(const ControllerDataRecord &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -1311,7 +1311,7 @@ inline bool Gen::controller::CAMERAACTION_CHANGE(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_CAMERAACTION_CHANGE() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2f478795);
 }
-inline bool Gen::controller::SET_CAMERAACTION_CHANGE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_CAMERAACTION_CHANGE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x2f478795, input, index);
 }
 
@@ -1327,7 +1327,7 @@ inline bool Gen::controller::CAMERAACTION_DEBUG(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_CAMERAACTION_DEBUG() const {
     ATTRIB_CODEGEN_GETLENGTH(0xacc223c6);
 }
-inline bool Gen::controller::SET_CAMERAACTION_DEBUG(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_CAMERAACTION_DEBUG(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xacc223c6, input, index);
 }
 
@@ -1343,7 +1343,7 @@ inline bool Gen::controller::CAMERAACTION_ENABLE_ICE(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_CAMERAACTION_ENABLE_ICE() const {
     ATTRIB_CODEGEN_GETLENGTH(0xbac6c7d7);
 }
-inline bool Gen::controller::SET_CAMERAACTION_ENABLE_ICE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_CAMERAACTION_ENABLE_ICE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xbac6c7d7, input, index);
 }
 
@@ -1359,7 +1359,7 @@ inline bool Gen::controller::CAMERAACTION_LOOKBACK(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_CAMERAACTION_LOOKBACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8dc18faf);
 }
-inline bool Gen::controller::SET_CAMERAACTION_LOOKBACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_CAMERAACTION_LOOKBACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8dc18faf, input, index);
 }
 
@@ -1375,7 +1375,7 @@ inline bool Gen::controller::CAMERAACTION_PULLBACK(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_CAMERAACTION_PULLBACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7f189eec);
 }
-inline bool Gen::controller::SET_CAMERAACTION_PULLBACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_CAMERAACTION_PULLBACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x7f189eec, input, index);
 }
 
@@ -1389,7 +1389,7 @@ inline bool Gen::controller::CollectionName(EA::Reflection::Text &result) const 
     result = CollectionName();
     return true;
 }
-inline bool Gen::controller::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::controller::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -1405,7 +1405,7 @@ inline bool Gen::controller::DEBUGACTION_DROPCAR(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_DEBUGACTION_DROPCAR() const {
     ATTRIB_CODEGEN_GETLENGTH(0xbdf62d8e);
 }
-inline bool Gen::controller::SET_DEBUGACTION_DROPCAR(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_DROPCAR(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xbdf62d8e, input, index);
 }
 
@@ -1421,7 +1421,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_DOWN(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x136435ac);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x136435ac, input, index);
 }
 
@@ -1437,7 +1437,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_D_DOWN(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_D_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x88e9f301);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_D_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_D_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x88e9f301, input, index);
 }
 
@@ -1453,7 +1453,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_D_LEFT(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_D_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf3c5ed4e);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_D_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_D_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xf3c5ed4e, input, index);
 }
 
@@ -1469,7 +1469,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_D_RIGHT(ControllerDataRecord &resu
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_D_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x49eade84);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_D_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_D_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x49eade84, input, index);
 }
 
@@ -1485,7 +1485,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_D_UP(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_D_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8bb25bd4);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_D_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_D_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8bb25bd4, input, index);
 }
 
@@ -1501,7 +1501,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_LEFT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8afced7a);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8afced7a, input, index);
 }
 
@@ -1517,7 +1517,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_RIGHT(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5c36897f);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5c36897f, input, index);
 }
 
@@ -1533,7 +1533,7 @@ inline bool Gen::controller::DEBUGACTION_LOOK_UP(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_DEBUGACTION_LOOK_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc0c95361);
 }
-inline bool Gen::controller::SET_DEBUGACTION_LOOK_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_LOOK_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc0c95361, input, index);
 }
 
@@ -1549,7 +1549,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_BACK(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_BACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb9db7418);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xb9db7418, input, index);
 }
 
@@ -1565,7 +1565,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_DOWN(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5eb6f87f);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5eb6f87f, input, index);
 }
 
@@ -1581,7 +1581,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_D_BACK(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_D_BACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0x94227bad);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_D_BACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_D_BACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x94227bad, input, index);
 }
 
@@ -1597,7 +1597,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_D_FORWARD(ControllerDataRecord &re
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_D_FORWARD() const {
     ATTRIB_CODEGEN_GETLENGTH(0x76354cb7);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_D_FORWARD(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_D_FORWARD(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x76354cb7, input, index);
 }
 
@@ -1613,7 +1613,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_D_LEFT(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_D_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x3ae35a4c);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_D_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_D_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x3ae35a4c, input, index);
 }
 
@@ -1629,7 +1629,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_D_RIGHT(ControllerDataRecord &resu
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_D_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa449a027);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_D_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_D_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa449a027, input, index);
 }
 
@@ -1645,7 +1645,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_FORWARD(ControllerDataRecord &resu
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_FORWARD() const {
     ATTRIB_CODEGEN_GETLENGTH(0x3391934b);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x3391934b, input, index);
 }
 
@@ -1661,7 +1661,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_LEFT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x98a510c3);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x98a510c3, input, index);
 }
 
@@ -1677,7 +1677,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_RIGHT(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x64a558de);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x64a558de, input, index);
 }
 
@@ -1693,7 +1693,7 @@ inline bool Gen::controller::DEBUGACTION_MOVE_UP(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_DEBUGACTION_MOVE_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x65f33c23);
 }
-inline bool Gen::controller::SET_DEBUGACTION_MOVE_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_MOVE_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x65f33c23, input, index);
 }
 
@@ -1709,7 +1709,7 @@ inline bool Gen::controller::DEBUGACTION_SIMSTEP(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_DEBUGACTION_SIMSTEP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1f903fec);
 }
-inline bool Gen::controller::SET_DEBUGACTION_SIMSTEP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_SIMSTEP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x1f903fec, input, index);
 }
 
@@ -1725,7 +1725,7 @@ inline bool Gen::controller::DEBUGACTION_SUPER_TURBO(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_DEBUGACTION_SUPER_TURBO() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7d1b500d);
 }
-inline bool Gen::controller::SET_DEBUGACTION_SUPER_TURBO(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_SUPER_TURBO(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x7d1b500d, input, index);
 }
 
@@ -1741,7 +1741,7 @@ inline bool Gen::controller::DEBUGACTION_TOGGLEAI(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_DEBUGACTION_TOGGLEAI() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1ff07aef);
 }
-inline bool Gen::controller::SET_DEBUGACTION_TOGGLEAI(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_TOGGLEAI(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x1ff07aef, input, index);
 }
 
@@ -1757,7 +1757,7 @@ inline bool Gen::controller::DEBUGACTION_TOGGLECARCOLOUR(ControllerDataRecord &r
 inline unsigned int Gen::controller::Num_DEBUGACTION_TOGGLECARCOLOUR() const {
     ATTRIB_CODEGEN_GETLENGTH(0x25e38fdf);
 }
-inline bool Gen::controller::SET_DEBUGACTION_TOGGLECARCOLOUR(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_TOGGLECARCOLOUR(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x25e38fdf, input, index);
 }
 
@@ -1773,7 +1773,7 @@ inline bool Gen::controller::DEBUGACTION_TOGGLEDEMOCAMERAS(ControllerDataRecord 
 inline unsigned int Gen::controller::Num_DEBUGACTION_TOGGLEDEMOCAMERAS() const {
     ATTRIB_CODEGEN_GETLENGTH(0xedd2a2f3);
 }
-inline bool Gen::controller::SET_DEBUGACTION_TOGGLEDEMOCAMERAS(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_TOGGLEDEMOCAMERAS(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xedd2a2f3, input, index);
 }
 
@@ -1789,7 +1789,7 @@ inline bool Gen::controller::DEBUGACTION_TOGGLESIMSTEP(ControllerDataRecord &res
 inline unsigned int Gen::controller::Num_DEBUGACTION_TOGGLESIMSTEP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x770e0d16);
 }
-inline bool Gen::controller::SET_DEBUGACTION_TOGGLESIMSTEP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_TOGGLESIMSTEP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x770e0d16, input, index);
 }
 
@@ -1805,7 +1805,7 @@ inline bool Gen::controller::DEBUGACTION_TURBO(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_DEBUGACTION_TURBO() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2cf3d7d7);
 }
-inline bool Gen::controller::SET_DEBUGACTION_TURBO(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_DEBUGACTION_TURBO(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x2cf3d7d7, input, index);
 }
 
@@ -1821,7 +1821,7 @@ inline bool Gen::controller::FRONTENDACTION_ACCEPT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_FRONTENDACTION_ACCEPT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc18193fd);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_ACCEPT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_ACCEPT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc18193fd, input, index);
 }
 
@@ -1837,7 +1837,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON0(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON0() const {
     ATTRIB_CODEGEN_GETLENGTH(0x6eb8dedc);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON0(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON0(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x6eb8dedc, input, index);
 }
 
@@ -1853,7 +1853,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON1(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON1() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5954d9c3);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON1(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON1(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5954d9c3, input, index);
 }
 
@@ -1869,7 +1869,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON2(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x02c68d30);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON2(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON2(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x02c68d30, input, index);
 }
 
@@ -1885,7 +1885,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON3(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON3() const {
     ATTRIB_CODEGEN_GETLENGTH(0x4178fc35);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON3(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON3(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x4178fc35, input, index);
 }
 
@@ -1901,7 +1901,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON4(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON4() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf31f71c7);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON4(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON4(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xf31f71c7, input, index);
 }
 
@@ -1917,7 +1917,7 @@ inline bool Gen::controller::FRONTENDACTION_BUTTON5(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_FRONTENDACTION_BUTTON5() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa28033b2);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_BUTTON5(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_BUTTON5(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa28033b2, input, index);
 }
 
@@ -1933,7 +1933,7 @@ inline bool Gen::controller::FRONTENDACTION_CANCEL(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_FRONTENDACTION_CANCEL() const {
     ATTRIB_CODEGEN_GETLENGTH(0x01079014);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_CANCEL(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_CANCEL(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x01079014, input, index);
 }
 
@@ -1949,7 +1949,7 @@ inline bool Gen::controller::FRONTENDACTION_CANCEL_ALT(ControllerDataRecord &res
 inline unsigned int Gen::controller::Num_FRONTENDACTION_CANCEL_ALT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf6e6bad9);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_CANCEL_ALT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_CANCEL_ALT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xf6e6bad9, input, index);
 }
 
@@ -1965,7 +1965,7 @@ inline bool Gen::controller::FRONTENDACTION_DOWN(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_FRONTENDACTION_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0xef3fac67);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xef3fac67, input, index);
 }
 
@@ -1981,7 +1981,7 @@ inline bool Gen::controller::FRONTENDACTION_LEFT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_FRONTENDACTION_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x97011fc1);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x97011fc1, input, index);
 }
 
@@ -1997,7 +1997,7 @@ inline bool Gen::controller::FRONTENDACTION_LTRIGGER(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_FRONTENDACTION_LTRIGGER() const {
     ATTRIB_CODEGEN_GETLENGTH(0xeda51002);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_LTRIGGER(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_LTRIGGER(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xeda51002, input, index);
 }
 
@@ -2013,7 +2013,7 @@ inline bool Gen::controller::FRONTENDACTION_RDOWN(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RDOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x06645bd6);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RDOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RDOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x06645bd6, input, index);
 }
 
@@ -2029,7 +2029,7 @@ inline bool Gen::controller::FRONTENDACTION_RIGHT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa968b63a);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa968b63a, input, index);
 }
 
@@ -2045,7 +2045,7 @@ inline bool Gen::controller::FRONTENDACTION_RLEFT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RLEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x376803fa);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RLEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RLEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x376803fa, input, index);
 }
 
@@ -2061,7 +2061,7 @@ inline bool Gen::controller::FRONTENDACTION_RRIGHT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RRIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xde24df25);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RRIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RRIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xde24df25, input, index);
 }
 
@@ -2077,7 +2077,7 @@ inline bool Gen::controller::FRONTENDACTION_RTRIGGER(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RTRIGGER() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8d005b54);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RTRIGGER(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RTRIGGER(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8d005b54, input, index);
 }
 
@@ -2093,7 +2093,7 @@ inline bool Gen::controller::FRONTENDACTION_RUP(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_FRONTENDACTION_RUP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2b8b4b6f);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_RUP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_RUP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x2b8b4b6f, input, index);
 }
 
@@ -2109,7 +2109,7 @@ inline bool Gen::controller::FRONTENDACTION_START(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_FRONTENDACTION_START() const {
     ATTRIB_CODEGEN_GETLENGTH(0x67eebe3f);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_START(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_START(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x67eebe3f, input, index);
 }
 
@@ -2125,7 +2125,7 @@ inline bool Gen::controller::FRONTENDACTION_UP(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_FRONTENDACTION_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc455d61d);
 }
-inline bool Gen::controller::SET_FRONTENDACTION_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_FRONTENDACTION_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc455d61d, input, index);
 }
 
@@ -2141,7 +2141,7 @@ inline bool Gen::controller::GAMEACTION_BACK(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_GAMEACTION_BACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdc0e7b73);
 }
-inline bool Gen::controller::SET_GAMEACTION_BACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_BACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdc0e7b73, input, index);
 }
 
@@ -2157,7 +2157,7 @@ inline bool Gen::controller::GAMEACTION_BRAKE(ControllerDataRecord &result, unsi
 inline unsigned int Gen::controller::Num_GAMEACTION_BRAKE() const {
     ATTRIB_CODEGEN_GETLENGTH(0x82a9b7d8);
 }
-inline bool Gen::controller::SET_GAMEACTION_BRAKE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_BRAKE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x82a9b7d8, input, index);
 }
 
@@ -2173,7 +2173,7 @@ inline bool Gen::controller::GAMEACTION_DEBUGHUMAN1(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_GAMEACTION_DEBUGHUMAN1() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe82d180f);
 }
-inline bool Gen::controller::SET_GAMEACTION_DEBUGHUMAN1(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_DEBUGHUMAN1(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xe82d180f, input, index);
 }
 
@@ -2189,7 +2189,7 @@ inline bool Gen::controller::GAMEACTION_DEBUGHUMAN2(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_GAMEACTION_DEBUGHUMAN2() const {
     ATTRIB_CODEGEN_GETLENGTH(0x37eb8ea4);
 }
-inline bool Gen::controller::SET_GAMEACTION_DEBUGHUMAN2(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_DEBUGHUMAN2(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x37eb8ea4, input, index);
 }
 
@@ -2205,7 +2205,7 @@ inline bool Gen::controller::GAMEACTION_DEBUGHUMAN3(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_GAMEACTION_DEBUGHUMAN3() const {
     ATTRIB_CODEGEN_GETLENGTH(0x15024c88);
 }
-inline bool Gen::controller::SET_GAMEACTION_DEBUGHUMAN3(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_DEBUGHUMAN3(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x15024c88, input, index);
 }
 
@@ -2221,7 +2221,7 @@ inline bool Gen::controller::GAMEACTION_DEBUGHUMAN4(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_GAMEACTION_DEBUGHUMAN4() const {
     ATTRIB_CODEGEN_GETLENGTH(0x6b76f3be);
 }
-inline bool Gen::controller::SET_GAMEACTION_DEBUGHUMAN4(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_DEBUGHUMAN4(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x6b76f3be, input, index);
 }
 
@@ -2237,7 +2237,7 @@ inline bool Gen::controller::GAMEACTION_FORWARD(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_GAMEACTION_FORWARD() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdc1ab9ea);
 }
-inline bool Gen::controller::SET_GAMEACTION_FORWARD(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_FORWARD(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdc1ab9ea, input, index);
 }
 
@@ -2253,7 +2253,7 @@ inline bool Gen::controller::GAMEACTION_GAMEBREAKER(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_GAMEACTION_GAMEBREAKER() const {
     ATTRIB_CODEGEN_GETLENGTH(0x98d605b8);
 }
-inline bool Gen::controller::SET_GAMEACTION_GAMEBREAKER(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_GAMEBREAKER(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x98d605b8, input, index);
 }
 
@@ -2269,7 +2269,7 @@ inline bool Gen::controller::GAMEACTION_GAS(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_GAMEACTION_GAS() const {
     ATTRIB_CODEGEN_GETLENGTH(0x06525329);
 }
-inline bool Gen::controller::SET_GAMEACTION_GAS(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_GAS(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x06525329, input, index);
 }
 
@@ -2285,7 +2285,7 @@ inline bool Gen::controller::GAMEACTION_HANDBRAKE(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_GAMEACTION_HANDBRAKE() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1aaf2c13);
 }
-inline bool Gen::controller::SET_GAMEACTION_HANDBRAKE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_HANDBRAKE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x1aaf2c13, input, index);
 }
 
@@ -2301,7 +2301,7 @@ inline bool Gen::controller::GAMEACTION_JUMP(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_GAMEACTION_JUMP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xba48a502);
 }
-inline bool Gen::controller::SET_GAMEACTION_JUMP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_JUMP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xba48a502, input, index);
 }
 
@@ -2317,7 +2317,7 @@ inline bool Gen::controller::GAMEACTION_NOS(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_GAMEACTION_NOS() const {
     ATTRIB_CODEGEN_GETLENGTH(0xabc46a0f);
 }
-inline bool Gen::controller::SET_GAMEACTION_NOS(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_NOS(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xabc46a0f, input, index);
 }
 
@@ -2333,7 +2333,7 @@ inline bool Gen::controller::GAMEACTION_RESET(ControllerDataRecord &result, unsi
 inline unsigned int Gen::controller::Num_GAMEACTION_RESET() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb488445a);
 }
-inline bool Gen::controller::SET_GAMEACTION_RESET(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_RESET(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xb488445a, input, index);
 }
 
@@ -2349,7 +2349,7 @@ inline bool Gen::controller::GAMEACTION_SHIFTDOWN(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_GAMEACTION_SHIFTDOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x50638735);
 }
-inline bool Gen::controller::SET_GAMEACTION_SHIFTDOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_SHIFTDOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x50638735, input, index);
 }
 
@@ -2365,7 +2365,7 @@ inline bool Gen::controller::GAMEACTION_SHIFTUP(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_GAMEACTION_SHIFTUP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x06dbd3c3);
 }
-inline bool Gen::controller::SET_GAMEACTION_SHIFTUP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_SHIFTUP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x06dbd3c3, input, index);
 }
 
@@ -2381,7 +2381,7 @@ inline bool Gen::controller::GAMEACTION_STEERLEFT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_GAMEACTION_STEERLEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x37b1b6a8);
 }
-inline bool Gen::controller::SET_GAMEACTION_STEERLEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_STEERLEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x37b1b6a8, input, index);
 }
 
@@ -2397,7 +2397,7 @@ inline bool Gen::controller::GAMEACTION_STEERRIGHT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_GAMEACTION_STEERRIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb3a37c41);
 }
-inline bool Gen::controller::SET_GAMEACTION_STEERRIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_STEERRIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xb3a37c41, input, index);
 }
 
@@ -2413,7 +2413,7 @@ inline bool Gen::controller::GAMEACTION_TURNLEFT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_GAMEACTION_TURNLEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x77570455);
 }
-inline bool Gen::controller::SET_GAMEACTION_TURNLEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_TURNLEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x77570455, input, index);
 }
 
@@ -2429,7 +2429,7 @@ inline bool Gen::controller::GAMEACTION_TURNRIGHT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_GAMEACTION_TURNRIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xfa647f8f);
 }
-inline bool Gen::controller::SET_GAMEACTION_TURNRIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_GAMEACTION_TURNRIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xfa647f8f, input, index);
 }
 
@@ -2445,7 +2445,7 @@ inline bool Gen::controller::HUDACTION_ENGAGE_EVENT(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_HUDACTION_ENGAGE_EVENT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xbbab56ef);
 }
-inline bool Gen::controller::SET_HUDACTION_ENGAGE_EVENT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_ENGAGE_EVENT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xbbab56ef, input, index);
 }
 
@@ -2461,7 +2461,7 @@ inline bool Gen::controller::HUDACTION_NEXTSONG(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_HUDACTION_NEXTSONG() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5a1e0eb7);
 }
-inline bool Gen::controller::SET_HUDACTION_NEXTSONG(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_NEXTSONG(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5a1e0eb7, input, index);
 }
 
@@ -2477,7 +2477,7 @@ inline bool Gen::controller::HUDACTION_PAD_DOWN(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_HUDACTION_PAD_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x112b5d2d);
 }
-inline bool Gen::controller::SET_HUDACTION_PAD_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_PAD_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x112b5d2d, input, index);
 }
 
@@ -2493,7 +2493,7 @@ inline bool Gen::controller::HUDACTION_PAD_LEFT(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_HUDACTION_PAD_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe2d51bdc);
 }
-inline bool Gen::controller::SET_HUDACTION_PAD_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_PAD_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xe2d51bdc, input, index);
 }
 
@@ -2509,7 +2509,7 @@ inline bool Gen::controller::HUDACTION_PAD_RIGHT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_HUDACTION_PAD_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x713c8f5c);
 }
-inline bool Gen::controller::SET_HUDACTION_PAD_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_PAD_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x713c8f5c, input, index);
 }
 
@@ -2525,7 +2525,7 @@ inline bool Gen::controller::HUDACTION_PAUSEREQUEST(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_HUDACTION_PAUSEREQUEST() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdaaf60cd);
 }
-inline bool Gen::controller::SET_HUDACTION_PAUSEREQUEST(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_PAUSEREQUEST(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdaaf60cd, input, index);
 }
 
@@ -2541,7 +2541,7 @@ inline bool Gen::controller::HUDACTION_SKIPNIS(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_HUDACTION_SKIPNIS() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8053361a);
 }
-inline bool Gen::controller::SET_HUDACTION_SKIPNIS(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_HUDACTION_SKIPNIS(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8053361a, input, index);
 }
 
@@ -2557,7 +2557,7 @@ inline bool Gen::controller::ICEACTION_ALT_1(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_ICEACTION_ALT_1() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc6658aef);
 }
-inline bool Gen::controller::SET_ICEACTION_ALT_1(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_ALT_1(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc6658aef, input, index);
 }
 
@@ -2573,7 +2573,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_BACK(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_BACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0x90b590f9);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_BACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_BACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x90b590f9, input, index);
 }
 
@@ -2589,7 +2589,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_DOWN(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8573245a);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8573245a, input, index);
 }
 
@@ -2605,7 +2605,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_FORTH(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_FORTH() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc667a7c0);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_FORTH(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_FORTH(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc667a7c0, input, index);
 }
 
@@ -2621,7 +2621,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_IN(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_IN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x71e24c87);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_IN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_IN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x71e24c87, input, index);
 }
 
@@ -2637,7 +2637,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_LEFT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x83d67a7b);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x83d67a7b, input, index);
 }
 
@@ -2653,7 +2653,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_OUT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_OUT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x535f828a);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_OUT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_OUT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x535f828a, input, index);
 }
 
@@ -2669,7 +2669,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_RIGHT(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdd43339a);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdd43339a, input, index);
 }
 
@@ -2685,7 +2685,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_SPIN_LEFT(ControllerDataRecord &re
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_SPIN_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5bcd578b);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_SPIN_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_SPIN_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5bcd578b, input, index);
 }
 
@@ -2701,7 +2701,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_SPIN_RIGHT(ControllerDataRecord &r
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_SPIN_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8784bb00);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_SPIN_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_SPIN_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8784bb00, input, index);
 }
 
@@ -2717,7 +2717,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_TILT_DOWN(ControllerDataRecord &re
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_TILT_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x58482016);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_TILT_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_TILT_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x58482016, input, index);
 }
 
@@ -2733,7 +2733,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_TILT_UP(ControllerDataRecord &resu
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_TILT_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2cfdf83b);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_TILT_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_TILT_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x2cfdf83b, input, index);
 }
 
@@ -2749,7 +2749,7 @@ inline bool Gen::controller::ICEACTION_BUBBLE_UP(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_ICEACTION_BUBBLE_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0fd8110f);
 }
-inline bool Gen::controller::SET_ICEACTION_BUBBLE_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_BUBBLE_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x0fd8110f, input, index);
 }
 
@@ -2765,7 +2765,7 @@ inline bool Gen::controller::ICEACTION_CANCEL(ControllerDataRecord &result, unsi
 inline unsigned int Gen::controller::Num_ICEACTION_CANCEL() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd9e3873b);
 }
-inline bool Gen::controller::SET_ICEACTION_CANCEL(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_CANCEL(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xd9e3873b, input, index);
 }
 
@@ -2781,7 +2781,7 @@ inline bool Gen::controller::ICEACTION_CLIP_IN(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_ICEACTION_CLIP_IN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x85c7f9ff);
 }
-inline bool Gen::controller::SET_ICEACTION_CLIP_IN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_CLIP_IN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x85c7f9ff, input, index);
 }
 
@@ -2797,7 +2797,7 @@ inline bool Gen::controller::ICEACTION_CLIP_OUT(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_ICEACTION_CLIP_OUT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa4f85f2d);
 }
-inline bool Gen::controller::SET_ICEACTION_CLIP_OUT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_CLIP_OUT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa4f85f2d, input, index);
 }
 
@@ -2813,7 +2813,7 @@ inline bool Gen::controller::ICEACTION_COPY(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_COPY() const {
     ATTRIB_CODEGEN_GETLENGTH(0x469a29a2);
 }
-inline bool Gen::controller::SET_ICEACTION_COPY(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_COPY(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x469a29a2, input, index);
 }
 
@@ -2829,7 +2829,7 @@ inline bool Gen::controller::ICEACTION_CUT(ControllerDataRecord &result, unsigne
 inline unsigned int Gen::controller::Num_ICEACTION_CUT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7be61732);
 }
-inline bool Gen::controller::SET_ICEACTION_CUT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_CUT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x7be61732, input, index);
 }
 
@@ -2845,7 +2845,7 @@ inline bool Gen::controller::ICEACTION_DOWN(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x80ff983c);
 }
-inline bool Gen::controller::SET_ICEACTION_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x80ff983c, input, index);
 }
 
@@ -2861,7 +2861,7 @@ inline bool Gen::controller::ICEACTION_DUTCH_LEFT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_DUTCH_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x34e03ed7);
 }
-inline bool Gen::controller::SET_ICEACTION_DUTCH_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_DUTCH_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x34e03ed7, input, index);
 }
 
@@ -2877,7 +2877,7 @@ inline bool Gen::controller::ICEACTION_DUTCH_RIGHT(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_ICEACTION_DUTCH_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x005f9d1d);
 }
-inline bool Gen::controller::SET_ICEACTION_DUTCH_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_DUTCH_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x005f9d1d, input, index);
 }
 
@@ -2893,7 +2893,7 @@ inline bool Gen::controller::ICEACTION_FAST_LEFT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_ICEACTION_FAST_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x021ecbba);
 }
-inline bool Gen::controller::SET_ICEACTION_FAST_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_FAST_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x021ecbba, input, index);
 }
 
@@ -2909,7 +2909,7 @@ inline bool Gen::controller::ICEACTION_FAST_RIGHT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_FAST_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x1cf73674);
 }
-inline bool Gen::controller::SET_ICEACTION_FAST_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_FAST_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x1cf73674, input, index);
 }
 
@@ -2925,7 +2925,7 @@ inline bool Gen::controller::ICEACTION_GRAB_LEFT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_ICEACTION_GRAB_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0d6d7fb4);
 }
-inline bool Gen::controller::SET_ICEACTION_GRAB_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_GRAB_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x0d6d7fb4, input, index);
 }
 
@@ -2941,7 +2941,7 @@ inline bool Gen::controller::ICEACTION_GRAB_RIGHT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_GRAB_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xfcbd5969);
 }
-inline bool Gen::controller::SET_ICEACTION_GRAB_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_GRAB_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xfcbd5969, input, index);
 }
 
@@ -2957,7 +2957,7 @@ inline bool Gen::controller::ICEACTION_HELP(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_HELP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xcbb4ccbf);
 }
-inline bool Gen::controller::SET_ICEACTION_HELP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_HELP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xcbb4ccbf, input, index);
 }
 
@@ -2973,7 +2973,7 @@ inline bool Gen::controller::ICEACTION_HIDE(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_HIDE() const {
     ATTRIB_CODEGEN_GETLENGTH(0x9b1e3f1b);
 }
-inline bool Gen::controller::SET_ICEACTION_HIDE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_HIDE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x9b1e3f1b, input, index);
 }
 
@@ -2989,7 +2989,7 @@ inline bool Gen::controller::ICEACTION_INSERT(ControllerDataRecord &result, unsi
 inline unsigned int Gen::controller::Num_ICEACTION_INSERT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0bec5a35);
 }
-inline bool Gen::controller::SET_ICEACTION_INSERT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_INSERT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x0bec5a35, input, index);
 }
 
@@ -3005,7 +3005,7 @@ inline bool Gen::controller::ICEACTION_LEFT(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xeb1ce242);
 }
-inline bool Gen::controller::SET_ICEACTION_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xeb1ce242, input, index);
 }
 
@@ -3021,7 +3021,7 @@ inline bool Gen::controller::ICEACTION_LETTERBOX_IN(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_LETTERBOX_IN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x509346cd);
 }
-inline bool Gen::controller::SET_ICEACTION_LETTERBOX_IN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_LETTERBOX_IN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x509346cd, input, index);
 }
 
@@ -3037,7 +3037,7 @@ inline bool Gen::controller::ICEACTION_LETTERBOX_OUT(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_LETTERBOX_OUT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x9d6dea3c);
 }
-inline bool Gen::controller::SET_ICEACTION_LETTERBOX_OUT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_LETTERBOX_OUT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x9d6dea3c, input, index);
 }
 
@@ -3053,7 +3053,7 @@ inline bool Gen::controller::ICEACTION_PASTE(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_ICEACTION_PASTE() const {
     ATTRIB_CODEGEN_GETLENGTH(0xcf996f30);
 }
-inline bool Gen::controller::SET_ICEACTION_PASTE(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_PASTE(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xcf996f30, input, index);
 }
 
@@ -3069,7 +3069,7 @@ inline bool Gen::controller::ICEACTION_PLAY(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_PLAY() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5404dd6d);
 }
-inline bool Gen::controller::SET_ICEACTION_PLAY(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_PLAY(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5404dd6d, input, index);
 }
 
@@ -3085,7 +3085,7 @@ inline bool Gen::controller::ICEACTION_RIGHT(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_ICEACTION_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5bd28819);
 }
-inline bool Gen::controller::SET_ICEACTION_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5bd28819, input, index);
 }
 
@@ -3101,7 +3101,7 @@ inline bool Gen::controller::ICEACTION_SCREENSHOT(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_SCREENSHOT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x68af00cb);
 }
-inline bool Gen::controller::SET_ICEACTION_SCREENSHOT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SCREENSHOT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x68af00cb, input, index);
 }
 
@@ -3117,7 +3117,7 @@ inline bool Gen::controller::ICEACTION_SCREENSHOT_STREAM(ControllerDataRecord &r
 inline unsigned int Gen::controller::Num_ICEACTION_SCREENSHOT_STREAM() const {
     ATTRIB_CODEGEN_GETLENGTH(0x915b5e15);
 }
-inline bool Gen::controller::SET_ICEACTION_SCREENSHOT_STREAM(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SCREENSHOT_STREAM(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x915b5e15, input, index);
 }
 
@@ -3133,7 +3133,7 @@ inline bool Gen::controller::ICEACTION_SELECT(ControllerDataRecord &result, unsi
 inline unsigned int Gen::controller::Num_ICEACTION_SELECT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa3b4828b);
 }
-inline bool Gen::controller::SET_ICEACTION_SELECT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SELECT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa3b4828b, input, index);
 }
 
@@ -3149,7 +3149,7 @@ inline bool Gen::controller::ICEACTION_SHAKE_FRQ_DEC(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_SHAKE_FRQ_DEC() const {
     ATTRIB_CODEGEN_GETLENGTH(0x68306931);
 }
-inline bool Gen::controller::SET_ICEACTION_SHAKE_FRQ_DEC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHAKE_FRQ_DEC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x68306931, input, index);
 }
 
@@ -3165,7 +3165,7 @@ inline bool Gen::controller::ICEACTION_SHAKE_FRQ_INC(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_SHAKE_FRQ_INC() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd3f858ca);
 }
-inline bool Gen::controller::SET_ICEACTION_SHAKE_FRQ_INC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHAKE_FRQ_INC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xd3f858ca, input, index);
 }
 
@@ -3181,7 +3181,7 @@ inline bool Gen::controller::ICEACTION_SHAKE_MAG_DEC(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_SHAKE_MAG_DEC() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8a9ee6ef);
 }
-inline bool Gen::controller::SET_ICEACTION_SHAKE_MAG_DEC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHAKE_MAG_DEC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8a9ee6ef, input, index);
 }
 
@@ -3197,7 +3197,7 @@ inline bool Gen::controller::ICEACTION_SHAKE_MAG_INC(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_SHAKE_MAG_INC() const {
     ATTRIB_CODEGEN_GETLENGTH(0xda3fa888);
 }
-inline bool Gen::controller::SET_ICEACTION_SHAKE_MAG_INC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHAKE_MAG_INC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xda3fa888, input, index);
 }
 
@@ -3213,7 +3213,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_DOWN(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_DOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdc4ccb3c);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_DOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_DOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdc4ccb3c, input, index);
 }
 
@@ -3229,7 +3229,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_LEFT(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x9b870f45);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x9b870f45, input, index);
 }
 
@@ -3245,7 +3245,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_RIGHT(ControllerDataRecord &resul
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x591cf93a);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x591cf93a, input, index);
 }
 
@@ -3261,7 +3261,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_SPEED_DEC(ControllerDataRecord &r
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_SPEED_DEC() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf08628de);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_SPEED_DEC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_SPEED_DEC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xf08628de, input, index);
 }
 
@@ -3277,7 +3277,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_SPEED_INC(ControllerDataRecord &r
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_SPEED_INC() const {
     ATTRIB_CODEGEN_GETLENGTH(0x82fd8328);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_SPEED_INC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_SPEED_INC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x82fd8328, input, index);
 }
 
@@ -3293,7 +3293,7 @@ inline bool Gen::controller::ICEACTION_SHUTTLE_UP(ControllerDataRecord &result, 
 inline unsigned int Gen::controller::Num_ICEACTION_SHUTTLE_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdcfe9685);
 }
-inline bool Gen::controller::SET_ICEACTION_SHUTTLE_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SHUTTLE_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xdcfe9685, input, index);
 }
 
@@ -3309,7 +3309,7 @@ inline bool Gen::controller::ICEACTION_SIMSPEED_DEC(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_SIMSPEED_DEC() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb5625552);
 }
-inline bool Gen::controller::SET_ICEACTION_SIMSPEED_DEC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SIMSPEED_DEC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xb5625552, input, index);
 }
 
@@ -3325,7 +3325,7 @@ inline bool Gen::controller::ICEACTION_SIMSPEED_INC(ControllerDataRecord &result
 inline unsigned int Gen::controller::Num_ICEACTION_SIMSPEED_INC() const {
     ATTRIB_CODEGEN_GETLENGTH(0x25ee8e66);
 }
-inline bool Gen::controller::SET_ICEACTION_SIMSPEED_INC(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_SIMSPEED_INC(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x25ee8e66, input, index);
 }
 
@@ -3341,7 +3341,7 @@ inline bool Gen::controller::ICEACTION_UNDO(ControllerDataRecord &result, unsign
 inline unsigned int Gen::controller::Num_ICEACTION_UNDO() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc9aca929);
 }
-inline bool Gen::controller::SET_ICEACTION_UNDO(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_UNDO(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc9aca929, input, index);
 }
 
@@ -3357,7 +3357,7 @@ inline bool Gen::controller::ICEACTION_UP(ControllerDataRecord &result, unsigned
 inline unsigned int Gen::controller::Num_ICEACTION_UP() const {
     ATTRIB_CODEGEN_GETLENGTH(0x5383adea);
 }
-inline bool Gen::controller::SET_ICEACTION_UP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_UP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x5383adea, input, index);
 }
 
@@ -3373,7 +3373,7 @@ inline bool Gen::controller::ICEACTION_ZOOM_IN(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_ICEACTION_ZOOM_IN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x46b49ed9);
 }
-inline bool Gen::controller::SET_ICEACTION_ZOOM_IN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_ZOOM_IN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x46b49ed9, input, index);
 }
 
@@ -3389,7 +3389,7 @@ inline bool Gen::controller::ICEACTION_ZOOM_OUT(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_ICEACTION_ZOOM_OUT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf036026a);
 }
-inline bool Gen::controller::SET_ICEACTION_ZOOM_OUT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_ICEACTION_ZOOM_OUT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xf036026a, input, index);
 }
 
@@ -3403,7 +3403,7 @@ inline bool Gen::controller::Pauseable(EA::Reflection::Bool &result) const {
     result = Pauseable();
     return true;
 }
-inline bool Gen::controller::SET_Pauseable(const EA::Reflection::Bool &input) {
+inline bool Gen::controller::Set_Pauseable(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Pauseable, input);
 }
 
@@ -3416,7 +3416,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_ACTIVATE_EDIT() con
 inline bool Gen::controller::REACTION_ACTIVATE_EDIT(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0xaa96159c, result);
 }
-inline bool Gen::controller::SET_REACTION_ACTIVATE_EDIT(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_ACTIVATE_EDIT(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0xaa96159c, input);
 }
 
@@ -3429,7 +3429,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_APPLY_TO_NEXT() con
 inline bool Gen::controller::REACTION_APPLY_TO_NEXT(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x06bb1fc4, result);
 }
-inline bool Gen::controller::SET_REACTION_APPLY_TO_NEXT(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_APPLY_TO_NEXT(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x06bb1fc4, input);
 }
 
@@ -3442,7 +3442,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_AUTOFIT() const {
 inline bool Gen::controller::REACTION_AUTOFIT(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0xc604e4c8, result);
 }
-inline bool Gen::controller::SET_REACTION_AUTOFIT(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_AUTOFIT(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0xc604e4c8, input);
 }
 
@@ -3455,7 +3455,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_EDIT_NODE() const {
 inline bool Gen::controller::REACTION_EDIT_NODE(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x87c357b2, result);
 }
-inline bool Gen::controller::SET_REACTION_EDIT_NODE(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_EDIT_NODE(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x87c357b2, input);
 }
 
@@ -3471,7 +3471,7 @@ inline bool Gen::controller::REACTION_LOOKDOWN(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_REACTION_LOOKDOWN() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8a90bda5);
 }
-inline bool Gen::controller::SET_REACTION_LOOKDOWN(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_LOOKDOWN(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x8a90bda5, input, index);
 }
 
@@ -3487,7 +3487,7 @@ inline bool Gen::controller::REACTION_LOOKLEFT(ControllerDataRecord &result, uns
 inline unsigned int Gen::controller::Num_REACTION_LOOKLEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc1097c28);
 }
-inline bool Gen::controller::SET_REACTION_LOOKLEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_LOOKLEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xc1097c28, input, index);
 }
 
@@ -3503,7 +3503,7 @@ inline bool Gen::controller::REACTION_LOOKRIGHT(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_REACTION_LOOKRIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0x2e183c63);
 }
-inline bool Gen::controller::SET_REACTION_LOOKRIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_LOOKRIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x2e183c63, input, index);
 }
 
@@ -3519,7 +3519,7 @@ inline bool Gen::controller::REACTION_LOOKUP(ControllerDataRecord &result, unsig
 inline unsigned int Gen::controller::Num_REACTION_LOOKUP() const {
     ATTRIB_CODEGEN_GETLENGTH(0xccc3ad00);
 }
-inline bool Gen::controller::SET_REACTION_LOOKUP(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_LOOKUP(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xccc3ad00, input, index);
 }
 
@@ -3535,7 +3535,7 @@ inline bool Gen::controller::REACTION_MOVE_BACK(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_REACTION_MOVE_BACK() const {
     ATTRIB_CODEGEN_GETLENGTH(0x521d0a7c);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_MOVE_BACK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x521d0a7c, input, index);
 }
 
@@ -3548,7 +3548,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_MOVE_DOWN() const {
 inline bool Gen::controller::REACTION_MOVE_DOWN(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x16dab024, result);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_DOWN(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_MOVE_DOWN(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x16dab024, input);
 }
 
@@ -3564,7 +3564,7 @@ inline bool Gen::controller::REACTION_MOVE_FORWARD(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_REACTION_MOVE_FORWARD() const {
     ATTRIB_CODEGEN_GETLENGTH(0x395f1ceb);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_MOVE_FORWARD(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0x395f1ceb, input, index);
 }
 
@@ -3580,7 +3580,7 @@ inline bool Gen::controller::REACTION_MOVE_LEFT(ControllerDataRecord &result, un
 inline unsigned int Gen::controller::Num_REACTION_MOVE_LEFT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xa914965d);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_MOVE_LEFT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xa914965d, input, index);
 }
 
@@ -3596,7 +3596,7 @@ inline bool Gen::controller::REACTION_MOVE_RIGHT(ControllerDataRecord &result, u
 inline unsigned int Gen::controller::Num_REACTION_MOVE_RIGHT() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd19432c0);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_REACTION_MOVE_RIGHT(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xd19432c0, input, index);
 }
 
@@ -3609,7 +3609,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_MOVE_UP() const {
 inline bool Gen::controller::REACTION_MOVE_UP(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0xbdcd877e, result);
 }
-inline bool Gen::controller::SET_REACTION_MOVE_UP(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_MOVE_UP(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0xbdcd877e, input);
 }
 
@@ -3622,7 +3622,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_NEXTLANE() const {
 inline bool Gen::controller::REACTION_NEXTLANE(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0xedd1f872, result);
 }
-inline bool Gen::controller::SET_REACTION_NEXTLANE(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_NEXTLANE(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0xedd1f872, input);
 }
 
@@ -3635,7 +3635,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_PICK() const {
 inline bool Gen::controller::REACTION_PICK(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x67490952, result);
 }
-inline bool Gen::controller::SET_REACTION_PICK(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_PICK(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x67490952, input);
 }
 
@@ -3648,7 +3648,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_PREVIOUSLANE() cons
 inline bool Gen::controller::REACTION_PREVIOUSLANE(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x64bf8411, result);
 }
-inline bool Gen::controller::SET_REACTION_PREVIOUSLANE(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_PREVIOUSLANE(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x64bf8411, input);
 }
 
@@ -3661,7 +3661,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_SELECTNEXT() const 
 inline bool Gen::controller::REACTION_SELECTNEXT(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0x291bda5d, result);
 }
-inline bool Gen::controller::SET_REACTION_SELECTNEXT(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_SELECTNEXT(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0x291bda5d, input);
 }
 
@@ -3674,7 +3674,7 @@ inline const ControllerDataRecord &Gen::controller::REACTION_TURBO() const {
 inline bool Gen::controller::REACTION_TURBO(ControllerDataRecord &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(ControllerDataRecord, 0xda7d1177, result);
 }
-inline bool Gen::controller::SET_REACTION_TURBO(const ControllerDataRecord &input) {
+inline bool Gen::controller::Set_REACTION_TURBO(const ControllerDataRecord &input) {
     ATTRIB_CODEGEN_SETVALUE(ControllerDataRecord, 0xda7d1177, input);
 }
 
@@ -3690,7 +3690,7 @@ inline bool Gen::controller::VOIPACTION_PUSHTOTALK(ControllerDataRecord &result,
 inline unsigned int Gen::controller::Num_VOIPACTION_PUSHTOTALK() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe5c50a17);
 }
-inline bool Gen::controller::SET_VOIPACTION_PUSHTOTALK(const ControllerDataRecord &input, unsigned int index) {
+inline bool Gen::controller::Set_VOIPACTION_PUSHTOTALK(const ControllerDataRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(ControllerDataRecord, 0xe5c50a17, input, index);
 }
 

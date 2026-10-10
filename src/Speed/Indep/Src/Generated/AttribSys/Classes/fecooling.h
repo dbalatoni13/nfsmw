@@ -69,57 +69,57 @@ struct fecooling : Instance {
     bool NewBodyKit(TAttrib<EA::Reflection::Float> &result) const;
     bool NewBodyKit(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewBodyKit() const;
-    bool SET_NewBodyKit(const EA::Reflection::Float &input);
+    bool Set_NewBodyKit(const EA::Reflection::Float &input);
 
     bool NewDecal(TAttrib<EA::Reflection::Float> &result) const;
     bool NewDecal(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewDecal() const;
-    bool SET_NewDecal(const EA::Reflection::Float &input);
+    bool Set_NewDecal(const EA::Reflection::Float &input);
 
     bool NewHood(TAttrib<EA::Reflection::Float> &result) const;
     bool NewHood(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewHood() const;
-    bool SET_NewHood(const EA::Reflection::Float &input);
+    bool Set_NewHood(const EA::Reflection::Float &input);
 
     bool NewNumbers(TAttrib<EA::Reflection::Float> &result) const;
     bool NewNumbers(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewNumbers() const;
-    bool SET_NewNumbers(const EA::Reflection::Float &input);
+    bool Set_NewNumbers(const EA::Reflection::Float &input);
 
     bool NewPaint(TAttrib<EA::Reflection::Float> &result) const;
     bool NewPaint(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewPaint() const;
-    bool SET_NewPaint(const EA::Reflection::Float &input);
+    bool Set_NewPaint(const EA::Reflection::Float &input);
 
     bool NewRim(TAttrib<EA::Reflection::Float> &result) const;
     bool NewRim(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewRim() const;
-    bool SET_NewRim(const EA::Reflection::Float &input);
+    bool Set_NewRim(const EA::Reflection::Float &input);
 
     bool NewRimPaint(TAttrib<EA::Reflection::Float> &result) const;
     bool NewRimPaint(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewRimPaint() const;
-    bool SET_NewRimPaint(const EA::Reflection::Float &input);
+    bool Set_NewRimPaint(const EA::Reflection::Float &input);
 
     bool NewRoofScoop(TAttrib<EA::Reflection::Float> &result) const;
     bool NewRoofScoop(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewRoofScoop() const;
-    bool SET_NewRoofScoop(const EA::Reflection::Float &input);
+    bool Set_NewRoofScoop(const EA::Reflection::Float &input);
 
     bool NewSpoiler(TAttrib<EA::Reflection::Float> &result) const;
     bool NewSpoiler(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewSpoiler() const;
-    bool SET_NewSpoiler(const EA::Reflection::Float &input);
+    bool Set_NewSpoiler(const EA::Reflection::Float &input);
 
     bool NewVinyl(TAttrib<EA::Reflection::Float> &result) const;
     bool NewVinyl(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewVinyl() const;
-    bool SET_NewVinyl(const EA::Reflection::Float &input);
+    bool Set_NewVinyl(const EA::Reflection::Float &input);
 
     bool NewWindowTint(TAttrib<EA::Reflection::Float> &result) const;
     bool NewWindowTint(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &NewWindowTint() const;
-    bool SET_NewWindowTint(const EA::Reflection::Float &input);
+    bool Set_NewWindowTint(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -167,7 +167,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewBodyKit() const {
 inline bool Gen::fecooling::NewBodyKit(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe52d0fb6, result);
 }
-inline bool Gen::fecooling::SET_NewBodyKit(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewBodyKit(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe52d0fb6, input);
 }
 
@@ -180,7 +180,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewDecal() const {
 inline bool Gen::fecooling::NewDecal(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x1f71a77c, result);
 }
-inline bool Gen::fecooling::SET_NewDecal(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewDecal(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x1f71a77c, input);
 }
 
@@ -193,7 +193,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewHood() const {
 inline bool Gen::fecooling::NewHood(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x678a0c91, result);
 }
-inline bool Gen::fecooling::SET_NewHood(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewHood(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x678a0c91, input);
 }
 
@@ -206,7 +206,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewNumbers() const {
 inline bool Gen::fecooling::NewNumbers(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xa9ef0056, result);
 }
-inline bool Gen::fecooling::SET_NewNumbers(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewNumbers(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xa9ef0056, input);
 }
 
@@ -219,7 +219,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewPaint() const {
 inline bool Gen::fecooling::NewPaint(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x072ca287, result);
 }
-inline bool Gen::fecooling::SET_NewPaint(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewPaint(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x072ca287, input);
 }
 
@@ -232,7 +232,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewRim() const {
 inline bool Gen::fecooling::NewRim(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4192719a, result);
 }
-inline bool Gen::fecooling::SET_NewRim(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewRim(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4192719a, input);
 }
 
@@ -245,7 +245,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewRimPaint() const {
 inline bool Gen::fecooling::NewRimPaint(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xa27de5ff, result);
 }
-inline bool Gen::fecooling::SET_NewRimPaint(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewRimPaint(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xa27de5ff, input);
 }
 
@@ -258,7 +258,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewRoofScoop() const {
 inline bool Gen::fecooling::NewRoofScoop(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xf8be97ef, result);
 }
-inline bool Gen::fecooling::SET_NewRoofScoop(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewRoofScoop(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xf8be97ef, input);
 }
 
@@ -271,7 +271,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewSpoiler() const {
 inline bool Gen::fecooling::NewSpoiler(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe5d29656, result);
 }
-inline bool Gen::fecooling::SET_NewSpoiler(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewSpoiler(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe5d29656, input);
 }
 
@@ -284,7 +284,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewVinyl() const {
 inline bool Gen::fecooling::NewVinyl(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x55b9418b, result);
 }
-inline bool Gen::fecooling::SET_NewVinyl(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewVinyl(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x55b9418b, input);
 }
 
@@ -297,7 +297,7 @@ inline const EA::Reflection::Float &Gen::fecooling::NewWindowTint() const {
 inline bool Gen::fecooling::NewWindowTint(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x550807a7, result);
 }
-inline bool Gen::fecooling::SET_NewWindowTint(const EA::Reflection::Float &input) {
+inline bool Gen::fecooling::Set_NewWindowTint(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x550807a7, input);
 }
 

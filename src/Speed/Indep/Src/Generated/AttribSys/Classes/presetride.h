@@ -65,37 +65,37 @@ struct presetride : Instance {
     bool brakes(TAttrib<EA::Reflection::Int32> &result) const;
     bool brakes(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &brakes() const;
-    bool SET_brakes(const EA::Reflection::Int32 &input);
+    bool Set_brakes(const EA::Reflection::Int32 &input);
 
     bool chassis(TAttrib<EA::Reflection::Int32> &result) const;
     bool chassis(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &chassis() const;
-    bool SET_chassis(const EA::Reflection::Int32 &input);
+    bool Set_chassis(const EA::Reflection::Int32 &input);
 
     bool engine(TAttrib<EA::Reflection::Int32> &result) const;
     bool engine(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &engine() const;
-    bool SET_engine(const EA::Reflection::Int32 &input);
+    bool Set_engine(const EA::Reflection::Int32 &input);
 
     bool induction(TAttrib<EA::Reflection::Int32> &result) const;
     bool induction(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &induction() const;
-    bool SET_induction(const EA::Reflection::Int32 &input);
+    bool Set_induction(const EA::Reflection::Int32 &input);
 
     bool nos(TAttrib<EA::Reflection::Int32> &result) const;
     bool nos(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &nos() const;
-    bool SET_nos(const EA::Reflection::Int32 &input);
+    bool Set_nos(const EA::Reflection::Int32 &input);
 
     bool tires(TAttrib<EA::Reflection::Int32> &result) const;
     bool tires(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &tires() const;
-    bool SET_tires(const EA::Reflection::Int32 &input);
+    bool Set_tires(const EA::Reflection::Int32 &input);
 
     bool transmission(TAttrib<EA::Reflection::Int32> &result) const;
     bool transmission(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &transmission() const;
-    bool SET_transmission(const EA::Reflection::Int32 &input);
+    bool Set_transmission(const EA::Reflection::Int32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -139,7 +139,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::brakes() const {
 inline bool Gen::presetride::brakes(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x36350867, result);
 }
-inline bool Gen::presetride::SET_brakes(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_brakes(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x36350867, input);
 }
 
@@ -152,7 +152,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::chassis() const {
 inline bool Gen::presetride::chassis(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xafa210f0, result);
 }
-inline bool Gen::presetride::SET_chassis(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_chassis(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xafa210f0, input);
 }
 
@@ -165,7 +165,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::engine() const {
 inline bool Gen::presetride::engine(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf1f5fbc7, result);
 }
-inline bool Gen::presetride::SET_engine(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_engine(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf1f5fbc7, input);
 }
 
@@ -178,7 +178,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::induction() const {
 inline bool Gen::presetride::induction(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc92a0142, result);
 }
-inline bool Gen::presetride::SET_induction(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_induction(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc92a0142, input);
 }
 
@@ -191,7 +191,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::nos() const {
 inline bool Gen::presetride::nos(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xb1669f64, result);
 }
-inline bool Gen::presetride::SET_nos(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_nos(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xb1669f64, input);
 }
 
@@ -204,7 +204,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::tires() const {
 inline bool Gen::presetride::tires(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xbd38d1ca, result);
 }
-inline bool Gen::presetride::SET_tires(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_tires(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xbd38d1ca, input);
 }
 
@@ -217,7 +217,7 @@ inline const EA::Reflection::Int32 &Gen::presetride::transmission() const {
 inline bool Gen::presetride::transmission(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x07a7a3e5, result);
 }
-inline bool Gen::presetride::SET_transmission(const EA::Reflection::Int32 &input) {
+inline bool Gen::presetride::Set_transmission(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x07a7a3e5, input);
 }
 

@@ -90,168 +90,168 @@ struct world : Instance {
     bool ACCUMULATE_SCORES(TAttrib<EA::Reflection::Int32> &result) const;
     bool ACCUMULATE_SCORES(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &ACCUMULATE_SCORES() const;
-    bool SET_ACCUMULATE_SCORES(const EA::Reflection::Int32 &input);
+    bool Set_ACCUMULATE_SCORES(const EA::Reflection::Int32 &input);
 
     bool AIC_BOND_LGADGET(TAttrib<Attrib::StringKey> &result) const;
     bool AIC_BOND_LGADGET(Attrib::StringKey &result) const;
     const Attrib::StringKey &AIC_BOND_LGADGET() const;
-    bool SET_AIC_BOND_LGADGET(const Attrib::StringKey &input);
+    bool Set_AIC_BOND_LGADGET(const Attrib::StringKey &input);
 
     bool AIC_BOND_RGADGET(TAttrib<Attrib::StringKey> &result) const;
     bool AIC_BOND_RGADGET(Attrib::StringKey &result) const;
     const Attrib::StringKey &AIC_BOND_RGADGET() const;
-    bool SET_AIC_BOND_RGADGET(const Attrib::StringKey &input);
+    bool Set_AIC_BOND_RGADGET(const Attrib::StringKey &input);
 
     bool ANIM_BANK_NIS_BUFFER(TAttrib<EA::Reflection::Int32> &result) const;
     bool ANIM_BANK_NIS_BUFFER(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &ANIM_BANK_NIS_BUFFER() const;
-    bool SET_ANIM_BANK_NIS_BUFFER(const EA::Reflection::Int32 &input);
+    bool Set_ANIM_BANK_NIS_BUFFER(const EA::Reflection::Int32 &input);
 
     bool BONDMOVE_DIE_CLEAR(TAttrib<EA::Reflection::Int32> &result) const;
     bool BONDMOVE_DIE_CLEAR(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &BONDMOVE_DIE_CLEAR() const;
-    bool SET_BONDMOVE_DIE_CLEAR(const EA::Reflection::Int32 &input);
+    bool Set_BONDMOVE_DIE_CLEAR(const EA::Reflection::Int32 &input);
 
     bool BONDMOVE_RESTART_CLEAR(TAttrib<EA::Reflection::Int32> &result) const;
     bool BONDMOVE_RESTART_CLEAR(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &BONDMOVE_RESTART_CLEAR() const;
-    bool SET_BONDMOVE_RESTART_CLEAR(const EA::Reflection::Int32 &input);
+    bool Set_BONDMOVE_RESTART_CLEAR(const EA::Reflection::Int32 &input);
 
     bool CHAIN_NEXT_MISSION(TAttrib<EA::Reflection::Int32> &result) const;
     bool CHAIN_NEXT_MISSION(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &CHAIN_NEXT_MISSION() const;
-    bool SET_CHAIN_NEXT_MISSION(const EA::Reflection::Int32 &input);
+    bool Set_CHAIN_NEXT_MISSION(const EA::Reflection::Int32 &input);
 
     bool CHAIN_NEXT_MISSION_NAME(TAttrib<Attrib::StringKey> &result) const;
     bool CHAIN_NEXT_MISSION_NAME(Attrib::StringKey &result) const;
     const Attrib::StringKey &CHAIN_NEXT_MISSION_NAME() const;
-    bool SET_CHAIN_NEXT_MISSION_NAME(const Attrib::StringKey &input);
+    bool Set_CHAIN_NEXT_MISSION_NAME(const Attrib::StringKey &input);
 
     bool CHECK_PLAYER_BEHIND_TRAFFIC(TAttrib<EA::Reflection::Bool> &result) const;
     bool CHECK_PLAYER_BEHIND_TRAFFIC(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &CHECK_PLAYER_BEHIND_TRAFFIC() const;
-    bool SET_CHECK_PLAYER_BEHIND_TRAFFIC(const EA::Reflection::Bool &input);
+    bool Set_CHECK_PLAYER_BEHIND_TRAFFIC(const EA::Reflection::Bool &input);
 
     bool CONTROLLER_CURVE(TAttrib<EA::Reflection::Float> &result) const;
     bool CONTROLLER_CURVE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &CONTROLLER_CURVE() const;
-    bool SET_CONTROLLER_CURVE(const EA::Reflection::Float &input);
+    bool Set_CONTROLLER_CURVE(const EA::Reflection::Float &input);
 
     bool HENCH_SLOTS_AVAIL(TAttrib<EA::Reflection::Int32> &result) const;
     bool HENCH_SLOTS_AVAIL(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &HENCH_SLOTS_AVAIL() const;
-    bool SET_HENCH_SLOTS_AVAIL(const EA::Reflection::Int32 &input);
+    bool Set_HENCH_SLOTS_AVAIL(const EA::Reflection::Int32 &input);
 
     bool LINEAR_TRACK(TAttrib<EA::Reflection::Bool> &result) const;
     bool LINEAR_TRACK(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &LINEAR_TRACK() const;
-    bool SET_LINEAR_TRACK(const EA::Reflection::Bool &input);
+    bool Set_LINEAR_TRACK(const EA::Reflection::Bool &input);
 
     bool MAX_FRAGMENTS(TAttrib<EA::Reflection::UInt32> &result) const;
     bool MAX_FRAGMENTS(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &MAX_FRAGMENTS() const;
-    bool SET_MAX_FRAGMENTS(const EA::Reflection::UInt32 &input);
+    bool Set_MAX_FRAGMENTS(const EA::Reflection::UInt32 &input);
 
     bool MAX_NEWTONS(TAttrib<EA::Reflection::UInt32> &result) const;
     bool MAX_NEWTONS(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &MAX_NEWTONS() const;
-    bool SET_MAX_NEWTONS(const EA::Reflection::UInt32 &input);
+    bool Set_MAX_NEWTONS(const EA::Reflection::UInt32 &input);
 
     bool MAX_SMACKABLES(TAttrib<EA::Reflection::UInt32> &result) const;
     bool MAX_SMACKABLES(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &MAX_SMACKABLES() const;
-    bool SET_MAX_SMACKABLES(const EA::Reflection::UInt32 &input);
+    bool Set_MAX_SMACKABLES(const EA::Reflection::UInt32 &input);
 
     bool MAX_TRAFFIC(TAttrib<EA::Reflection::Int32> &result) const;
     bool MAX_TRAFFIC(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &MAX_TRAFFIC() const;
-    bool SET_MAX_TRAFFIC(const EA::Reflection::Int32 &input);
+    bool Set_MAX_TRAFFIC(const EA::Reflection::Int32 &input);
 
     bool MAX_TRAFFIC_SPAWN_DISTANCE(TAttrib<EA::Reflection::Float> &result) const;
     bool MAX_TRAFFIC_SPAWN_DISTANCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MAX_TRAFFIC_SPAWN_DISTANCE() const;
-    bool SET_MAX_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input);
+    bool Set_MAX_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input);
 
     bool MIN_TRAFFIC_SPAWN_DISTANCE(TAttrib<EA::Reflection::Float> &result) const;
     bool MIN_TRAFFIC_SPAWN_DISTANCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MIN_TRAFFIC_SPAWN_DISTANCE() const;
-    bool SET_MIN_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input);
+    bool Set_MIN_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input);
 
     bool NUM_CHECKPOINTS(TAttrib<EA::Reflection::Int32> &result) const;
     bool NUM_CHECKPOINTS(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NUM_CHECKPOINTS() const;
-    bool SET_NUM_CHECKPOINTS(const EA::Reflection::Int32 &input);
+    bool Set_NUM_CHECKPOINTS(const EA::Reflection::Int32 &input);
 
     bool NUM_PED_TYPES_GC(TAttrib<EA::Reflection::Int32> &result) const;
     bool NUM_PED_TYPES_GC(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NUM_PED_TYPES_GC() const;
-    bool SET_NUM_PED_TYPES_GC(const EA::Reflection::Int32 &input);
+    bool Set_NUM_PED_TYPES_GC(const EA::Reflection::Int32 &input);
 
     bool NUM_PED_TYPES_PS2(TAttrib<EA::Reflection::Int32> &result) const;
     bool NUM_PED_TYPES_PS2(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NUM_PED_TYPES_PS2() const;
-    bool SET_NUM_PED_TYPES_PS2(const EA::Reflection::Int32 &input);
+    bool Set_NUM_PED_TYPES_PS2(const EA::Reflection::Int32 &input);
 
     bool NUM_PED_TYPES_XBOX(TAttrib<EA::Reflection::Int32> &result) const;
     bool NUM_PED_TYPES_XBOX(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &NUM_PED_TYPES_XBOX() const;
-    bool SET_NUM_PED_TYPES_XBOX(const EA::Reflection::Int32 &input);
+    bool Set_NUM_PED_TYPES_XBOX(const EA::Reflection::Int32 &input);
 
     bool PED_OBJECTS(TAttrib<Attrib::StringKey> &result) const;
     bool PED_OBJECTS(Attrib::StringKey &result) const;
     const Attrib::StringKey &PED_OBJECTS() const;
-    bool SET_PED_OBJECTS(const Attrib::StringKey &input);
+    bool Set_PED_OBJECTS(const Attrib::StringKey &input);
 
     bool PED_SPAWN_RADIUS(TAttrib<EA::Reflection::Float> &result) const;
     bool PED_SPAWN_RADIUS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &PED_SPAWN_RADIUS() const;
-    bool SET_PED_SPAWN_RADIUS(const EA::Reflection::Float &input);
+    bool Set_PED_SPAWN_RADIUS(const EA::Reflection::Float &input);
 
     bool RACE_SCORING(TAttrib<EA::Reflection::Bool> &result) const;
     bool RACE_SCORING(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &RACE_SCORING() const;
-    bool SET_RACE_SCORING(const EA::Reflection::Bool &input);
+    bool Set_RACE_SCORING(const EA::Reflection::Bool &input);
 
     bool SPLITMISSION_CARRYDAMAGE(TAttrib<EA::Reflection::Bool> &result) const;
     bool SPLITMISSION_CARRYDAMAGE(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &SPLITMISSION_CARRYDAMAGE() const;
-    bool SET_SPLITMISSION_CARRYDAMAGE(const EA::Reflection::Bool &input);
+    bool Set_SPLITMISSION_CARRYDAMAGE(const EA::Reflection::Bool &input);
 
     bool SPLITMISSION_NEXTHALF(TAttrib<Attrib::StringKey> &result) const;
     bool SPLITMISSION_NEXTHALF(Attrib::StringKey &result) const;
     const Attrib::StringKey &SPLITMISSION_NEXTHALF() const;
-    bool SET_SPLITMISSION_NEXTHALF(const Attrib::StringKey &input);
+    bool Set_SPLITMISSION_NEXTHALF(const Attrib::StringKey &input);
 
     bool SPLITMISSION_PREVHALF(TAttrib<Attrib::StringKey> &result) const;
     bool SPLITMISSION_PREVHALF(Attrib::StringKey &result) const;
     const Attrib::StringKey &SPLITMISSION_PREVHALF() const;
-    bool SET_SPLITMISSION_PREVHALF(const Attrib::StringKey &input);
+    bool Set_SPLITMISSION_PREVHALF(const Attrib::StringKey &input);
 
     bool TRAFFIC_LANE_CHANGES(TAttrib<EA::Reflection::Bool> &result) const;
     bool TRAFFIC_LANE_CHANGES(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &TRAFFIC_LANE_CHANGES() const;
-    bool SET_TRAFFIC_LANE_CHANGES(const EA::Reflection::Bool &input);
+    bool Set_TRAFFIC_LANE_CHANGES(const EA::Reflection::Bool &input);
 
     bool TRAFFIC_SPEED(TAttrib<EA::Reflection::Float> &result) const;
     bool TRAFFIC_SPEED(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &TRAFFIC_SPEED() const;
-    bool SET_TRAFFIC_SPEED(const EA::Reflection::Float &input);
+    bool Set_TRAFFIC_SPEED(const EA::Reflection::Float &input);
 
     bool TRAFFIC_TYPES(TAttrib<Attrib::StringKey> &result) const;
     bool TRAFFIC_TYPES(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &TRAFFIC_TYPES(unsigned int index) const;
     unsigned int Num_TRAFFIC_TYPES() const;
-    bool SET_TRAFFIC_TYPES(const Attrib::StringKey &input, unsigned int index);
+    bool Set_TRAFFIC_TYPES(const Attrib::StringKey &input, unsigned int index);
 
     bool VEHICLE_SLOTS_AVAIL(TAttrib<EA::Reflection::Int32> &result) const;
     bool VEHICLE_SLOTS_AVAIL(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &VEHICLE_SLOTS_AVAIL() const;
-    bool SET_VEHICLE_SLOTS_AVAIL(const EA::Reflection::Int32 &input);
+    bool Set_VEHICLE_SLOTS_AVAIL(const EA::Reflection::Int32 &input);
 
     bool WORLD_TYPE(TAttrib<Attrib::StringKey> &result) const;
     bool WORLD_TYPE(Attrib::StringKey &result) const;
     const Attrib::StringKey &WORLD_TYPE() const;
-    bool SET_WORLD_TYPE(const Attrib::StringKey &input);
+    bool Set_WORLD_TYPE(const Attrib::StringKey &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -321,7 +321,7 @@ inline const EA::Reflection::Int32 &Gen::world::ACCUMULATE_SCORES() const {
 inline bool Gen::world::ACCUMULATE_SCORES(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xe2956904, result);
 }
-inline bool Gen::world::SET_ACCUMULATE_SCORES(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_ACCUMULATE_SCORES(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xe2956904, input);
 }
 
@@ -334,7 +334,7 @@ inline const Attrib::StringKey &Gen::world::AIC_BOND_LGADGET() const {
 inline bool Gen::world::AIC_BOND_LGADGET(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x73824203, result);
 }
-inline bool Gen::world::SET_AIC_BOND_LGADGET(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_AIC_BOND_LGADGET(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x73824203, input);
 }
 
@@ -347,7 +347,7 @@ inline const Attrib::StringKey &Gen::world::AIC_BOND_RGADGET() const {
 inline bool Gen::world::AIC_BOND_RGADGET(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x1c778e02, result);
 }
-inline bool Gen::world::SET_AIC_BOND_RGADGET(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_AIC_BOND_RGADGET(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x1c778e02, input);
 }
 
@@ -360,7 +360,7 @@ inline const EA::Reflection::Int32 &Gen::world::ANIM_BANK_NIS_BUFFER() const {
 inline bool Gen::world::ANIM_BANK_NIS_BUFFER(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb48b25b, result);
 }
-inline bool Gen::world::SET_ANIM_BANK_NIS_BUFFER(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_ANIM_BANK_NIS_BUFFER(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb48b25b, input);
 }
 
@@ -373,7 +373,7 @@ inline const EA::Reflection::Int32 &Gen::world::BONDMOVE_DIE_CLEAR() const {
 inline bool Gen::world::BONDMOVE_DIE_CLEAR(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf3542002, result);
 }
-inline bool Gen::world::SET_BONDMOVE_DIE_CLEAR(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_BONDMOVE_DIE_CLEAR(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf3542002, input);
 }
 
@@ -386,7 +386,7 @@ inline const EA::Reflection::Int32 &Gen::world::BONDMOVE_RESTART_CLEAR() const {
 inline bool Gen::world::BONDMOVE_RESTART_CLEAR(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x134550a4, result);
 }
-inline bool Gen::world::SET_BONDMOVE_RESTART_CLEAR(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_BONDMOVE_RESTART_CLEAR(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x134550a4, input);
 }
 
@@ -399,7 +399,7 @@ inline const EA::Reflection::Int32 &Gen::world::CHAIN_NEXT_MISSION() const {
 inline bool Gen::world::CHAIN_NEXT_MISSION(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x30f2cd5a, result);
 }
-inline bool Gen::world::SET_CHAIN_NEXT_MISSION(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_CHAIN_NEXT_MISSION(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x30f2cd5a, input);
 }
 
@@ -412,7 +412,7 @@ inline const Attrib::StringKey &Gen::world::CHAIN_NEXT_MISSION_NAME() const {
 inline bool Gen::world::CHAIN_NEXT_MISSION_NAME(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x9df683fb, result);
 }
-inline bool Gen::world::SET_CHAIN_NEXT_MISSION_NAME(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_CHAIN_NEXT_MISSION_NAME(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x9df683fb, input);
 }
 
@@ -425,7 +425,7 @@ inline const EA::Reflection::Bool &Gen::world::CHECK_PLAYER_BEHIND_TRAFFIC() con
 inline bool Gen::world::CHECK_PLAYER_BEHIND_TRAFFIC(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe8a7cce2, result);
 }
-inline bool Gen::world::SET_CHECK_PLAYER_BEHIND_TRAFFIC(const EA::Reflection::Bool &input) {
+inline bool Gen::world::Set_CHECK_PLAYER_BEHIND_TRAFFIC(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe8a7cce2, input);
 }
 
@@ -438,7 +438,7 @@ inline const EA::Reflection::Float &Gen::world::CONTROLLER_CURVE() const {
 inline bool Gen::world::CONTROLLER_CURVE(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x98b567dc, result);
 }
-inline bool Gen::world::SET_CONTROLLER_CURVE(const EA::Reflection::Float &input) {
+inline bool Gen::world::Set_CONTROLLER_CURVE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x98b567dc, input);
 }
 
@@ -451,7 +451,7 @@ inline const EA::Reflection::Int32 &Gen::world::HENCH_SLOTS_AVAIL() const {
 inline bool Gen::world::HENCH_SLOTS_AVAIL(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xaea7d039, result);
 }
-inline bool Gen::world::SET_HENCH_SLOTS_AVAIL(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_HENCH_SLOTS_AVAIL(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xaea7d039, input);
 }
 
@@ -464,7 +464,7 @@ inline const EA::Reflection::Bool &Gen::world::LINEAR_TRACK() const {
 inline bool Gen::world::LINEAR_TRACK(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xfd47cfb6, result);
 }
-inline bool Gen::world::SET_LINEAR_TRACK(const EA::Reflection::Bool &input) {
+inline bool Gen::world::Set_LINEAR_TRACK(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xfd47cfb6, input);
 }
 
@@ -477,7 +477,7 @@ inline const EA::Reflection::UInt32 &Gen::world::MAX_FRAGMENTS() const {
 inline bool Gen::world::MAX_FRAGMENTS(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x113d4c46, result);
 }
-inline bool Gen::world::SET_MAX_FRAGMENTS(const EA::Reflection::UInt32 &input) {
+inline bool Gen::world::Set_MAX_FRAGMENTS(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x113d4c46, input);
 }
 
@@ -490,7 +490,7 @@ inline const EA::Reflection::UInt32 &Gen::world::MAX_NEWTONS() const {
 inline bool Gen::world::MAX_NEWTONS(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x0013821f, result);
 }
-inline bool Gen::world::SET_MAX_NEWTONS(const EA::Reflection::UInt32 &input) {
+inline bool Gen::world::Set_MAX_NEWTONS(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x0013821f, input);
 }
 
@@ -503,7 +503,7 @@ inline const EA::Reflection::UInt32 &Gen::world::MAX_SMACKABLES() const {
 inline bool Gen::world::MAX_SMACKABLES(EA::Reflection::UInt32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x68575d35, result);
 }
-inline bool Gen::world::SET_MAX_SMACKABLES(const EA::Reflection::UInt32 &input) {
+inline bool Gen::world::Set_MAX_SMACKABLES(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x68575d35, input);
 }
 
@@ -516,7 +516,7 @@ inline const EA::Reflection::Int32 &Gen::world::MAX_TRAFFIC() const {
 inline bool Gen::world::MAX_TRAFFIC(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xfc01dc96, result);
 }
-inline bool Gen::world::SET_MAX_TRAFFIC(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_MAX_TRAFFIC(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xfc01dc96, input);
 }
 
@@ -529,7 +529,7 @@ inline const EA::Reflection::Float &Gen::world::MAX_TRAFFIC_SPAWN_DISTANCE() con
 inline bool Gen::world::MAX_TRAFFIC_SPAWN_DISTANCE(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3f4a4cec, result);
 }
-inline bool Gen::world::SET_MAX_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input) {
+inline bool Gen::world::Set_MAX_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3f4a4cec, input);
 }
 
@@ -542,7 +542,7 @@ inline const EA::Reflection::Float &Gen::world::MIN_TRAFFIC_SPAWN_DISTANCE() con
 inline bool Gen::world::MIN_TRAFFIC_SPAWN_DISTANCE(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xecd3671d, result);
 }
-inline bool Gen::world::SET_MIN_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input) {
+inline bool Gen::world::Set_MIN_TRAFFIC_SPAWN_DISTANCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xecd3671d, input);
 }
 
@@ -555,7 +555,7 @@ inline const EA::Reflection::Int32 &Gen::world::NUM_CHECKPOINTS() const {
 inline bool Gen::world::NUM_CHECKPOINTS(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x91ed18e9, result);
 }
-inline bool Gen::world::SET_NUM_CHECKPOINTS(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_NUM_CHECKPOINTS(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x91ed18e9, input);
 }
 
@@ -568,7 +568,7 @@ inline const EA::Reflection::Int32 &Gen::world::NUM_PED_TYPES_GC() const {
 inline bool Gen::world::NUM_PED_TYPES_GC(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x3c0e521f, result);
 }
-inline bool Gen::world::SET_NUM_PED_TYPES_GC(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_NUM_PED_TYPES_GC(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x3c0e521f, input);
 }
 
@@ -581,7 +581,7 @@ inline const EA::Reflection::Int32 &Gen::world::NUM_PED_TYPES_PS2() const {
 inline bool Gen::world::NUM_PED_TYPES_PS2(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xfc206f2f, result);
 }
-inline bool Gen::world::SET_NUM_PED_TYPES_PS2(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_NUM_PED_TYPES_PS2(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xfc206f2f, input);
 }
 
@@ -594,7 +594,7 @@ inline const EA::Reflection::Int32 &Gen::world::NUM_PED_TYPES_XBOX() const {
 inline bool Gen::world::NUM_PED_TYPES_XBOX(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xac052d7a, result);
 }
-inline bool Gen::world::SET_NUM_PED_TYPES_XBOX(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_NUM_PED_TYPES_XBOX(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xac052d7a, input);
 }
 
@@ -607,7 +607,7 @@ inline const Attrib::StringKey &Gen::world::PED_OBJECTS() const {
 inline bool Gen::world::PED_OBJECTS(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x968e5680, result);
 }
-inline bool Gen::world::SET_PED_OBJECTS(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_PED_OBJECTS(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x968e5680, input);
 }
 
@@ -620,7 +620,7 @@ inline const EA::Reflection::Float &Gen::world::PED_SPAWN_RADIUS() const {
 inline bool Gen::world::PED_SPAWN_RADIUS(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb60cb556, result);
 }
-inline bool Gen::world::SET_PED_SPAWN_RADIUS(const EA::Reflection::Float &input) {
+inline bool Gen::world::Set_PED_SPAWN_RADIUS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb60cb556, input);
 }
 
@@ -633,7 +633,7 @@ inline const EA::Reflection::Bool &Gen::world::RACE_SCORING() const {
 inline bool Gen::world::RACE_SCORING(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xd52754da, result);
 }
-inline bool Gen::world::SET_RACE_SCORING(const EA::Reflection::Bool &input) {
+inline bool Gen::world::Set_RACE_SCORING(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xd52754da, input);
 }
 
@@ -646,7 +646,7 @@ inline const EA::Reflection::Bool &Gen::world::SPLITMISSION_CARRYDAMAGE() const 
 inline bool Gen::world::SPLITMISSION_CARRYDAMAGE(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe58865d1, result);
 }
-inline bool Gen::world::SET_SPLITMISSION_CARRYDAMAGE(const EA::Reflection::Bool &input) {
+inline bool Gen::world::Set_SPLITMISSION_CARRYDAMAGE(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe58865d1, input);
 }
 
@@ -659,7 +659,7 @@ inline const Attrib::StringKey &Gen::world::SPLITMISSION_NEXTHALF() const {
 inline bool Gen::world::SPLITMISSION_NEXTHALF(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xe05dec39, result);
 }
-inline bool Gen::world::SET_SPLITMISSION_NEXTHALF(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_SPLITMISSION_NEXTHALF(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xe05dec39, input);
 }
 
@@ -672,7 +672,7 @@ inline const Attrib::StringKey &Gen::world::SPLITMISSION_PREVHALF() const {
 inline bool Gen::world::SPLITMISSION_PREVHALF(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x375aed88, result);
 }
-inline bool Gen::world::SET_SPLITMISSION_PREVHALF(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_SPLITMISSION_PREVHALF(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x375aed88, input);
 }
 
@@ -685,7 +685,7 @@ inline const EA::Reflection::Bool &Gen::world::TRAFFIC_LANE_CHANGES() const {
 inline bool Gen::world::TRAFFIC_LANE_CHANGES(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4463a62d, result);
 }
-inline bool Gen::world::SET_TRAFFIC_LANE_CHANGES(const EA::Reflection::Bool &input) {
+inline bool Gen::world::Set_TRAFFIC_LANE_CHANGES(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4463a62d, input);
 }
 
@@ -698,7 +698,7 @@ inline const EA::Reflection::Float &Gen::world::TRAFFIC_SPEED() const {
 inline bool Gen::world::TRAFFIC_SPEED(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x811c6606, result);
 }
-inline bool Gen::world::SET_TRAFFIC_SPEED(const EA::Reflection::Float &input) {
+inline bool Gen::world::Set_TRAFFIC_SPEED(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x811c6606, input);
 }
 
@@ -714,7 +714,7 @@ inline bool Gen::world::TRAFFIC_TYPES(Attrib::StringKey &result, unsigned int in
 inline unsigned int Gen::world::Num_TRAFFIC_TYPES() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb7606a9a);
 }
-inline bool Gen::world::SET_TRAFFIC_TYPES(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::world::Set_TRAFFIC_TYPES(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xb7606a9a, input, index);
 }
 
@@ -727,7 +727,7 @@ inline const EA::Reflection::Int32 &Gen::world::VEHICLE_SLOTS_AVAIL() const {
 inline bool Gen::world::VEHICLE_SLOTS_AVAIL(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x80a91138, result);
 }
-inline bool Gen::world::SET_VEHICLE_SLOTS_AVAIL(const EA::Reflection::Int32 &input) {
+inline bool Gen::world::Set_VEHICLE_SLOTS_AVAIL(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x80a91138, input);
 }
 
@@ -740,7 +740,7 @@ inline const Attrib::StringKey &Gen::world::WORLD_TYPE() const {
 inline bool Gen::world::WORLD_TYPE(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x84da8ef1, result);
 }
-inline bool Gen::world::SET_WORLD_TYPE(const Attrib::StringKey &input) {
+inline bool Gen::world::Set_WORLD_TYPE(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x84da8ef1, input);
 }
 

@@ -82,32 +82,32 @@ struct turbosfx : Instance {
     bool BankName(TAttrib<Attrib::StringKey> &result) const;
     bool BankName(Attrib::StringKey &result) const;
     const Attrib::StringKey &BankName() const;
-    bool SET_BankName(const Attrib::StringKey &input);
+    bool Set_BankName(const Attrib::StringKey &input);
 
     bool ChargeTime(TAttrib<EA::Reflection::Float> &result) const;
     bool ChargeTime(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &ChargeTime() const;
-    bool SET_ChargeTime(const EA::Reflection::Float &input);
+    bool Set_ChargeTime(const EA::Reflection::Float &input);
 
     bool Leak_Rate(TAttrib<EA::Reflection::Float> &result) const;
     bool Leak_Rate(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &Leak_Rate() const;
-    bool SET_Leak_Rate(const EA::Reflection::Float &input);
+    bool Set_Leak_Rate(const EA::Reflection::Float &input);
 
     bool Vol_Blowoff1(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Vol_Blowoff1(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Vol_Blowoff1() const;
-    bool SET_Vol_Blowoff1(const EA::Reflection::UInt32 &input);
+    bool Set_Vol_Blowoff1(const EA::Reflection::UInt32 &input);
 
     bool Vol_Blowoff2(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Vol_Blowoff2(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Vol_Blowoff2() const;
-    bool SET_Vol_Blowoff2(const EA::Reflection::UInt32 &input);
+    bool Set_Vol_Blowoff2(const EA::Reflection::UInt32 &input);
 
     bool Vol_Spool(TAttrib<EA::Reflection::UInt32> &result) const;
     bool Vol_Spool(EA::Reflection::UInt32 &result) const;
     const EA::Reflection::UInt32 &Vol_Spool() const;
-    bool SET_Vol_Spool(const EA::Reflection::UInt32 &input);
+    bool Set_Vol_Spool(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -151,7 +151,7 @@ inline bool Gen::turbosfx::BankName(Attrib::StringKey &result) const {
     result = BankName();
     return true;
 }
-inline bool Gen::turbosfx::SET_BankName(const Attrib::StringKey &input) {
+inline bool Gen::turbosfx::Set_BankName(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(BankName, input);
 }
 
@@ -165,7 +165,7 @@ inline bool Gen::turbosfx::ChargeTime(EA::Reflection::Float &result) const {
     result = ChargeTime();
     return true;
 }
-inline bool Gen::turbosfx::SET_ChargeTime(const EA::Reflection::Float &input) {
+inline bool Gen::turbosfx::Set_ChargeTime(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(ChargeTime, input);
 }
 
@@ -178,7 +178,7 @@ inline const EA::Reflection::Float &Gen::turbosfx::Leak_Rate() const {
 inline bool Gen::turbosfx::Leak_Rate(EA::Reflection::Float &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xfdf3bc20, result);
 }
-inline bool Gen::turbosfx::SET_Leak_Rate(const EA::Reflection::Float &input) {
+inline bool Gen::turbosfx::Set_Leak_Rate(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xfdf3bc20, input);
 }
 
@@ -192,7 +192,7 @@ inline bool Gen::turbosfx::Vol_Blowoff1(EA::Reflection::UInt32 &result) const {
     result = Vol_Blowoff1();
     return true;
 }
-inline bool Gen::turbosfx::SET_Vol_Blowoff1(const EA::Reflection::UInt32 &input) {
+inline bool Gen::turbosfx::Set_Vol_Blowoff1(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff1, input);
 }
 
@@ -206,7 +206,7 @@ inline bool Gen::turbosfx::Vol_Blowoff2(EA::Reflection::UInt32 &result) const {
     result = Vol_Blowoff2();
     return true;
 }
-inline bool Gen::turbosfx::SET_Vol_Blowoff2(const EA::Reflection::UInt32 &input) {
+inline bool Gen::turbosfx::Set_Vol_Blowoff2(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff2, input);
 }
 
@@ -220,7 +220,7 @@ inline bool Gen::turbosfx::Vol_Spool(EA::Reflection::UInt32 &result) const {
     result = Vol_Spool();
     return true;
 }
-inline bool Gen::turbosfx::SET_Vol_Spool(const EA::Reflection::UInt32 &input) {
+inline bool Gen::turbosfx::Set_Vol_Spool(const EA::Reflection::UInt32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(Vol_Spool, input);
 }
 

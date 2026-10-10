@@ -152,352 +152,352 @@ struct pvehicle : Instance {
     bool BEHAVIOR_MECHANIC_AUDIO(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_AUDIO() const;
-    bool SET_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_DAMAGE(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_DAMAGE(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_DAMAGE() const;
-    bool SET_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_DRAW(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_DRAW(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_DRAW() const;
-    bool SET_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_EFFECTS(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_EFFECTS(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_EFFECTS() const;
-    bool SET_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_ENGINE(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_ENGINE(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_ENGINE() const;
-    bool SET_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_INPUT(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_INPUT(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_INPUT() const;
-    bool SET_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_RESET(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_RESET(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_RESET() const;
-    bool SET_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_RIGIDBODY(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_RIGIDBODY(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_RIGIDBODY() const;
-    bool SET_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input);
 
     bool BEHAVIOR_MECHANIC_SUSPENSION(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_MECHANIC_SUSPENSION(Attrib::StringKey &result) const;
     const Attrib::StringKey &BEHAVIOR_MECHANIC_SUSPENSION() const;
-    bool SET_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input);
+    bool Set_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input);
 
     bool BEHAVIOR_ORDER(TAttrib<Attrib::StringKey> &result) const;
     bool BEHAVIOR_ORDER(Attrib::StringKey &result, unsigned int index) const;
     const Attrib::StringKey &BEHAVIOR_ORDER(unsigned int index) const;
     unsigned int Num_BEHAVIOR_ORDER() const;
-    bool SET_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index);
+    bool Set_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index);
 
     bool CLASS(TAttrib<Attrib::StringKey> &result) const;
     bool CLASS(Attrib::StringKey &result) const;
     const Attrib::StringKey &CLASS() const;
-    bool SET_CLASS(const Attrib::StringKey &input);
+    bool Set_CLASS(const Attrib::StringKey &input);
 
     bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
     bool CollectionName(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &CollectionName() const;
-    bool SET_CollectionName(const EA::Reflection::Text &input);
+    bool Set_CollectionName(const EA::Reflection::Text &input);
 
     bool DefaultPresetRide(TAttrib<EA::Reflection::Text> &result) const;
     bool DefaultPresetRide(EA::Reflection::Text &result) const;
     const EA::Reflection::Text &DefaultPresetRide() const;
-    bool SET_DefaultPresetRide(const EA::Reflection::Text &input);
+    bool Set_DefaultPresetRide(const EA::Reflection::Text &input);
 
     bool EventSequencer(TAttrib<Attrib::StringKey> &result) const;
     bool EventSequencer(Attrib::StringKey &result) const;
     const Attrib::StringKey &EventSequencer() const;
-    bool SET_EventSequencer(const Attrib::StringKey &input);
+    bool Set_EventSequencer(const Attrib::StringKey &input);
 
     bool HandlingRating(TAttrib<EA::Reflection::Float> &result) const;
     bool HandlingRating(EA::Reflection::Float &result, unsigned int index) const;
     const EA::Reflection::Float &HandlingRating(unsigned int index) const;
     unsigned int Num_HandlingRating() const;
-    bool SET_HandlingRating(const EA::Reflection::Float &input, unsigned int index);
+    bool Set_HandlingRating(const EA::Reflection::Float &input, unsigned int index);
 
     bool HornType(TAttrib<EA::Reflection::UInt8> &result) const;
     bool HornType(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &HornType() const;
-    bool SET_HornType(const EA::Reflection::UInt8 &input);
+    bool Set_HornType(const EA::Reflection::UInt8 &input);
 
     bool MASS(TAttrib<EA::Reflection::Float> &result) const;
     bool MASS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &MASS() const;
-    bool SET_MASS(const EA::Reflection::Float &input);
+    bool Set_MASS(const EA::Reflection::Float &input);
 
     bool MODEL(TAttrib<Attrib::StringKey> &result) const;
     bool MODEL(Attrib::StringKey &result) const;
     const Attrib::StringKey &MODEL() const;
-    bool SET_MODEL(const Attrib::StringKey &input);
+    bool Set_MODEL(const Attrib::StringKey &input);
 
     bool OnBottomOut(TAttrib<EffectLinkageRecord> &result) const;
     bool OnBottomOut(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnBottomOut(unsigned int index) const;
     unsigned int Num_OnBottomOut() const;
-    bool SET_OnBottomOut(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnBottomOut(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnBottomScrape(TAttrib<EffectLinkageRecord> &result) const;
     bool OnBottomScrape(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnBottomScrape(unsigned int index) const;
     unsigned int Num_OnBottomScrape() const;
-    bool SET_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnHitGround(TAttrib<EffectLinkageRecord> &result) const;
     bool OnHitGround(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnHitGround(unsigned int index) const;
     unsigned int Num_OnHitGround() const;
-    bool SET_OnHitGround(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnHitGround(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnHitObject(TAttrib<EffectLinkageRecord> &result) const;
     bool OnHitObject(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnHitObject(unsigned int index) const;
     unsigned int Num_OnHitObject() const;
-    bool SET_OnHitObject(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnHitObject(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnHitWorld(TAttrib<EffectLinkageRecord> &result) const;
     bool OnHitWorld(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnHitWorld(unsigned int index) const;
     unsigned int Num_OnHitWorld() const;
-    bool SET_OnHitWorld(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnHitWorld(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnScrapeGround(TAttrib<EffectLinkageRecord> &result) const;
     bool OnScrapeGround(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnScrapeGround(unsigned int index) const;
     unsigned int Num_OnScrapeGround() const;
-    bool SET_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnScrapeObject(TAttrib<EffectLinkageRecord> &result) const;
     bool OnScrapeObject(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnScrapeObject(unsigned int index) const;
     unsigned int Num_OnScrapeObject() const;
-    bool SET_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnScrapeWorld(TAttrib<EffectLinkageRecord> &result) const;
     bool OnScrapeWorld(EffectLinkageRecord &result, unsigned int index) const;
     const EffectLinkageRecord &OnScrapeWorld(unsigned int index) const;
     unsigned int Num_OnScrapeWorld() const;
-    bool SET_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index);
+    bool Set_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index);
 
     bool OnTireBlow(TAttrib<RefSpec> &result) const;
     bool OnTireBlow(RefSpec &result) const;
     const RefSpec &OnTireBlow() const;
-    bool SET_OnTireBlow(const RefSpec &input);
+    bool Set_OnTireBlow(const RefSpec &input);
 
     bool PlayerUsable(TAttrib<EA::Reflection::Bool> &result) const;
     bool PlayerUsable(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &PlayerUsable() const;
-    bool SET_PlayerUsable(const EA::Reflection::Bool &input);
+    bool Set_PlayerUsable(const EA::Reflection::Bool &input);
 
     bool RandomOpponent(TAttrib<EA::Reflection::Bool> &result) const;
     bool RandomOpponent(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &RandomOpponent() const;
-    bool SET_RandomOpponent(const EA::Reflection::Bool &input);
+    bool Set_RandomOpponent(const EA::Reflection::Bool &input);
 
     bool ShiftSND(TAttrib<UpgradeSpecs> &result) const;
     bool ShiftSND(UpgradeSpecs &result, unsigned int index) const;
     const UpgradeSpecs &ShiftSND(unsigned int index) const;
     unsigned int Num_ShiftSND() const;
-    bool SET_ShiftSND(const UpgradeSpecs &input, unsigned int index);
+    bool Set_ShiftSND(const UpgradeSpecs &input, unsigned int index);
 
     bool TENSOR_SCALE(TAttrib<UMath::Vector4> &result) const;
     bool TENSOR_SCALE(UMath::Vector4 &result) const;
     const UMath::Vector4 &TENSOR_SCALE() const;
-    bool SET_TENSOR_SCALE(const UMath::Vector4 &input);
+    bool Set_TENSOR_SCALE(const UMath::Vector4 &input);
 
     bool TrafficEngType(TAttrib<EA::Reflection::UInt8> &result) const;
     bool TrafficEngType(EA::Reflection::UInt8 &result) const;
     const EA::Reflection::UInt8 &TrafficEngType() const;
-    bool SET_TrafficEngType(const EA::Reflection::UInt8 &input);
+    bool Set_TrafficEngType(const EA::Reflection::UInt8 &input);
 
     bool Trailer(TAttrib<RefSpec> &result) const;
     bool Trailer(RefSpec &result) const;
     const RefSpec &Trailer() const;
-    bool SET_Trailer(const RefSpec &input);
+    bool Set_Trailer(const RefSpec &input);
 
     bool TruckSndFX(TAttrib<EA::Reflection::Bool> &result) const;
     bool TruckSndFX(EA::Reflection::Bool &result) const;
     const EA::Reflection::Bool &TruckSndFX() const;
-    bool SET_TruckSndFX(const EA::Reflection::Bool &input);
+    bool Set_TruckSndFX(const EA::Reflection::Bool &input);
 
     bool TurboSND(TAttrib<UpgradeSpecs> &result) const;
     bool TurboSND(UpgradeSpecs &result, unsigned int index) const;
     const UpgradeSpecs &TurboSND(unsigned int index) const;
     unsigned int Num_TurboSND() const;
-    bool SET_TurboSND(const UpgradeSpecs &input, unsigned int index);
+    bool Set_TurboSND(const UpgradeSpecs &input, unsigned int index);
 
     bool VerbalType(TAttrib<Csis::Type_car_type> &result) const;
     bool VerbalType(Csis::Type_car_type &result) const;
     const Csis::Type_car_type &VerbalType() const;
-    bool SET_VerbalType(const Csis::Type_car_type &input);
+    bool Set_VerbalType(const Csis::Type_car_type &input);
 
     bool WooshType(TAttrib<eDRIVE_BY_TYPE> &result) const;
     bool WooshType(eDRIVE_BY_TYPE &result) const;
     const eDRIVE_BY_TYPE &WooshType() const;
-    bool SET_WooshType(const eDRIVE_BY_TYPE &input);
+    bool Set_WooshType(const eDRIVE_BY_TYPE &input);
 
     bool aivehicle(TAttrib<RefSpec> &result) const;
     bool aivehicle(RefSpec &result) const;
     const RefSpec &aivehicle() const;
-    bool SET_aivehicle(const RefSpec &input);
+    bool Set_aivehicle(const RefSpec &input);
 
     bool brakes(TAttrib<RefSpec> &result) const;
     bool brakes(RefSpec &result, unsigned int index) const;
     const RefSpec &brakes(unsigned int index) const;
     unsigned int Num_brakes() const;
-    bool SET_brakes(const RefSpec &input, unsigned int index);
+    bool Set_brakes(const RefSpec &input, unsigned int index);
 
     bool brakes_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool brakes_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &brakes_current() const;
-    bool SET_brakes_current(const EA::Reflection::Int32 &input);
+    bool Set_brakes_current(const EA::Reflection::Int32 &input);
 
     bool brakes_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool brakes_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &brakes_upgrades() const;
-    bool SET_brakes_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_brakes_upgrades(const EA::Reflection::Int32 &input);
 
     bool chassis(TAttrib<RefSpec> &result) const;
     bool chassis(RefSpec &result, unsigned int index) const;
     const RefSpec &chassis(unsigned int index) const;
     unsigned int Num_chassis() const;
-    bool SET_chassis(const RefSpec &input, unsigned int index);
+    bool Set_chassis(const RefSpec &input, unsigned int index);
 
     bool chassis_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool chassis_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &chassis_current() const;
-    bool SET_chassis_current(const EA::Reflection::Int32 &input);
+    bool Set_chassis_current(const EA::Reflection::Int32 &input);
 
     bool chassis_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool chassis_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &chassis_upgrades() const;
-    bool SET_chassis_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_chassis_upgrades(const EA::Reflection::Int32 &input);
 
     bool chopperspecs(TAttrib<RefSpec> &result) const;
     bool chopperspecs(RefSpec &result) const;
     const RefSpec &chopperspecs() const;
-    bool SET_chopperspecs(const RefSpec &input);
+    bool Set_chopperspecs(const RefSpec &input);
 
     bool damagespecs(TAttrib<RefSpec> &result) const;
     bool damagespecs(RefSpec &result) const;
     const RefSpec &damagespecs() const;
-    bool SET_damagespecs(const RefSpec &input);
+    bool Set_damagespecs(const RefSpec &input);
 
     bool engine(TAttrib<RefSpec> &result) const;
     bool engine(RefSpec &result, unsigned int index) const;
     const RefSpec &engine(unsigned int index) const;
     unsigned int Num_engine() const;
-    bool SET_engine(const RefSpec &input, unsigned int index);
+    bool Set_engine(const RefSpec &input, unsigned int index);
 
     bool engine_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool engine_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &engine_current() const;
-    bool SET_engine_current(const EA::Reflection::Int32 &input);
+    bool Set_engine_current(const EA::Reflection::Int32 &input);
 
     bool engine_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool engine_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &engine_upgrades() const;
-    bool SET_engine_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_engine_upgrades(const EA::Reflection::Int32 &input);
 
     bool engineaudio(TAttrib<RefSpec> &result) const;
     bool engineaudio(RefSpec &result, unsigned int index) const;
     const RefSpec &engineaudio(unsigned int index) const;
     unsigned int Num_engineaudio() const;
-    bool SET_engineaudio(const RefSpec &input, unsigned int index);
+    bool Set_engineaudio(const RefSpec &input, unsigned int index);
 
     bool frontend(TAttrib<RefSpec> &result) const;
     bool frontend(RefSpec &result) const;
     const RefSpec &frontend() const;
-    bool SET_frontend(const RefSpec &input);
+    bool Set_frontend(const RefSpec &input);
 
     bool induction(TAttrib<RefSpec> &result) const;
     bool induction(RefSpec &result, unsigned int index) const;
     const RefSpec &induction(unsigned int index) const;
     unsigned int Num_induction() const;
-    bool SET_induction(const RefSpec &input, unsigned int index);
+    bool Set_induction(const RefSpec &input, unsigned int index);
 
     bool induction_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool induction_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &induction_current() const;
-    bool SET_induction_current(const EA::Reflection::Int32 &input);
+    bool Set_induction_current(const EA::Reflection::Int32 &input);
 
     bool induction_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool induction_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &induction_upgrades() const;
-    bool SET_induction_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_induction_upgrades(const EA::Reflection::Int32 &input);
 
     bool junkman(TAttrib<RefSpec> &result) const;
     bool junkman(RefSpec &result) const;
     const RefSpec &junkman() const;
-    bool SET_junkman(const RefSpec &input);
+    bool Set_junkman(const RefSpec &input);
 
     bool junkman_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool junkman_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &junkman_current() const;
-    bool SET_junkman_current(const EA::Reflection::Int32 &input);
+    bool Set_junkman_current(const EA::Reflection::Int32 &input);
 
     bool nos(TAttrib<RefSpec> &result) const;
     bool nos(RefSpec &result, unsigned int index) const;
     const RefSpec &nos(unsigned int index) const;
     unsigned int Num_nos() const;
-    bool SET_nos(const RefSpec &input, unsigned int index);
+    bool Set_nos(const RefSpec &input, unsigned int index);
 
     bool nos_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool nos_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &nos_current() const;
-    bool SET_nos_current(const EA::Reflection::Int32 &input);
+    bool Set_nos_current(const EA::Reflection::Int32 &input);
 
     bool nos_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool nos_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &nos_upgrades() const;
-    bool SET_nos_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_nos_upgrades(const EA::Reflection::Int32 &input);
 
     bool rigidbodyspecs(TAttrib<RefSpec> &result) const;
     bool rigidbodyspecs(RefSpec &result) const;
     const RefSpec &rigidbodyspecs() const;
-    bool SET_rigidbodyspecs(const RefSpec &input);
+    bool Set_rigidbodyspecs(const RefSpec &input);
 
     bool tires(TAttrib<RefSpec> &result) const;
     bool tires(RefSpec &result, unsigned int index) const;
     const RefSpec &tires(unsigned int index) const;
     unsigned int Num_tires() const;
-    bool SET_tires(const RefSpec &input, unsigned int index);
+    bool Set_tires(const RefSpec &input, unsigned int index);
 
     bool tires_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool tires_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &tires_current() const;
-    bool SET_tires_current(const EA::Reflection::Int32 &input);
+    bool Set_tires_current(const EA::Reflection::Int32 &input);
 
     bool tires_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool tires_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &tires_upgrades() const;
-    bool SET_tires_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_tires_upgrades(const EA::Reflection::Int32 &input);
 
     bool transmission(TAttrib<RefSpec> &result) const;
     bool transmission(RefSpec &result, unsigned int index) const;
     const RefSpec &transmission(unsigned int index) const;
     unsigned int Num_transmission() const;
-    bool SET_transmission(const RefSpec &input, unsigned int index);
+    bool Set_transmission(const RefSpec &input, unsigned int index);
 
     bool transmission_current(TAttrib<EA::Reflection::Int32> &result) const;
     bool transmission_current(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &transmission_current() const;
-    bool SET_transmission_current(const EA::Reflection::Int32 &input);
+    bool Set_transmission_current(const EA::Reflection::Int32 &input);
 
     bool transmission_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
     bool transmission_upgrades(EA::Reflection::Int32 &result) const;
     const EA::Reflection::Int32 &transmission_upgrades() const;
-    bool SET_transmission_upgrades(const EA::Reflection::Int32 &input);
+    bool Set_transmission_upgrades(const EA::Reflection::Int32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -600,7 +600,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_AUDIO() const {
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xfb0b5be9, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xfb0b5be9, input);
 }
 
@@ -613,7 +613,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_DAMAGE() const 
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DAMAGE(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x858ed6e3, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x858ed6e3, input);
 }
 
@@ -626,7 +626,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_DRAW() const {
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DRAW(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xb230ade1, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xb230ade1, input);
 }
 
@@ -639,7 +639,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_EFFECTS() const
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_EFFECTS(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x59c2beb1, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x59c2beb1, input);
 }
 
@@ -652,7 +652,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_ENGINE() const 
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_ENGINE(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xa3e13328, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xa3e13328, input);
 }
 
@@ -665,7 +665,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_INPUT() const {
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_INPUT(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xc3fa0cc4, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xc3fa0cc4, input);
 }
 
@@ -678,7 +678,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_RESET() const {
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RESET(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8013456f, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8013456f, input);
 }
 
@@ -691,7 +691,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_RIGIDBODY() con
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RIGIDBODY(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8ba55001, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8ba55001, input);
 }
 
@@ -704,7 +704,7 @@ inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_SUSPENSION() co
 inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_SUSPENSION(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x511abd7b, result);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x511abd7b, input);
 }
 
@@ -720,7 +720,7 @@ inline bool Gen::pvehicle::BEHAVIOR_ORDER(Attrib::StringKey &result, unsigned in
 inline unsigned int Gen::pvehicle::Num_BEHAVIOR_ORDER() const {
     ATTRIB_CODEGEN_GETLENGTH(0x104e9d16);
 }
-inline bool Gen::pvehicle::SET_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, input, index);
 }
 
@@ -733,7 +733,7 @@ inline const Attrib::StringKey &Gen::pvehicle::CLASS() const {
 inline bool Gen::pvehicle::CLASS(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x0ef6ddf2, result);
 }
-inline bool Gen::pvehicle::SET_CLASS(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_CLASS(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x0ef6ddf2, input);
 }
 
@@ -747,7 +747,7 @@ inline bool Gen::pvehicle::CollectionName(EA::Reflection::Text &result) const {
     result = CollectionName();
     return true;
 }
-inline bool Gen::pvehicle::SET_CollectionName(const EA::Reflection::Text &input) {
+inline bool Gen::pvehicle::Set_CollectionName(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
 }
 
@@ -761,7 +761,7 @@ inline bool Gen::pvehicle::DefaultPresetRide(EA::Reflection::Text &result) const
     result = DefaultPresetRide();
     return true;
 }
-inline bool Gen::pvehicle::SET_DefaultPresetRide(const EA::Reflection::Text &input) {
+inline bool Gen::pvehicle::Set_DefaultPresetRide(const EA::Reflection::Text &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DefaultPresetRide, input);
 }
 
@@ -774,7 +774,7 @@ inline const Attrib::StringKey &Gen::pvehicle::EventSequencer() const {
 inline bool Gen::pvehicle::EventSequencer(Attrib::StringKey &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x5aab860f, result);
 }
-inline bool Gen::pvehicle::SET_EventSequencer(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_EventSequencer(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x5aab860f, input);
 }
 
@@ -790,7 +790,7 @@ inline bool Gen::pvehicle::HandlingRating(EA::Reflection::Float &result, unsigne
 inline unsigned int Gen::pvehicle::Num_HandlingRating() const {
     ATTRIB_CODEGEN_GETLENGTH(0xaacbe2e7);
 }
-inline bool Gen::pvehicle::SET_HandlingRating(const EA::Reflection::Float &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_HandlingRating(const EA::Reflection::Float &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, input, index);
 }
 
@@ -804,7 +804,7 @@ inline bool Gen::pvehicle::HornType(EA::Reflection::UInt8 &result) const {
     result = HornType();
     return true;
 }
-inline bool Gen::pvehicle::SET_HornType(const EA::Reflection::UInt8 &input) {
+inline bool Gen::pvehicle::Set_HornType(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HornType, input);
 }
 
@@ -818,7 +818,7 @@ inline bool Gen::pvehicle::MASS(EA::Reflection::Float &result) const {
     result = MASS();
     return true;
 }
-inline bool Gen::pvehicle::SET_MASS(const EA::Reflection::Float &input) {
+inline bool Gen::pvehicle::Set_MASS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MASS, input);
 }
 
@@ -832,7 +832,7 @@ inline bool Gen::pvehicle::MODEL(Attrib::StringKey &result) const {
     result = MODEL();
     return true;
 }
-inline bool Gen::pvehicle::SET_MODEL(const Attrib::StringKey &input) {
+inline bool Gen::pvehicle::Set_MODEL(const Attrib::StringKey &input) {
     ATTRIB_CODEGEN_SETLAYOUT(MODEL, input);
 }
 
@@ -848,7 +848,7 @@ inline bool Gen::pvehicle::OnBottomOut(EffectLinkageRecord &result, unsigned int
 inline unsigned int Gen::pvehicle::Num_OnBottomOut() const {
     ATTRIB_CODEGEN_GETLENGTH(0x31047ebc);
 }
-inline bool Gen::pvehicle::SET_OnBottomOut(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnBottomOut(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, input, index);
 }
 
@@ -864,7 +864,7 @@ inline bool Gen::pvehicle::OnBottomScrape(EffectLinkageRecord &result, unsigned 
 inline unsigned int Gen::pvehicle::Num_OnBottomScrape() const {
     ATTRIB_CODEGEN_GETLENGTH(0xfc03ad6a);
 }
-inline bool Gen::pvehicle::SET_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, input, index);
 }
 
@@ -880,7 +880,7 @@ inline bool Gen::pvehicle::OnHitGround(EffectLinkageRecord &result, unsigned int
 inline unsigned int Gen::pvehicle::Num_OnHitGround() const {
     ATTRIB_CODEGEN_GETLENGTH(0xd9c6cdfd);
 }
-inline bool Gen::pvehicle::SET_OnHitGround(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnHitGround(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, input, index);
 }
 
@@ -896,7 +896,7 @@ inline bool Gen::pvehicle::OnHitObject(EffectLinkageRecord &result, unsigned int
 inline unsigned int Gen::pvehicle::Num_OnHitObject() const {
     ATTRIB_CODEGEN_GETLENGTH(0x18915735);
 }
-inline bool Gen::pvehicle::SET_OnHitObject(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnHitObject(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x18915735, input, index);
 }
 
@@ -912,7 +912,7 @@ inline bool Gen::pvehicle::OnHitWorld(EffectLinkageRecord &result, unsigned int 
 inline unsigned int Gen::pvehicle::Num_OnHitWorld() const {
     ATTRIB_CODEGEN_GETLENGTH(0xe3167336);
 }
-inline bool Gen::pvehicle::SET_OnHitWorld(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnHitWorld(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, input, index);
 }
 
@@ -928,7 +928,7 @@ inline bool Gen::pvehicle::OnScrapeGround(EffectLinkageRecord &result, unsigned 
 inline unsigned int Gen::pvehicle::Num_OnScrapeGround() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdb823931);
 }
-inline bool Gen::pvehicle::SET_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, input, index);
 }
 
@@ -944,7 +944,7 @@ inline bool Gen::pvehicle::OnScrapeObject(EffectLinkageRecord &result, unsigned 
 inline unsigned int Gen::pvehicle::Num_OnScrapeObject() const {
     ATTRIB_CODEGEN_GETLENGTH(0xdacb1c11);
 }
-inline bool Gen::pvehicle::SET_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, input, index);
 }
 
@@ -960,7 +960,7 @@ inline bool Gen::pvehicle::OnScrapeWorld(EffectLinkageRecord &result, unsigned i
 inline unsigned int Gen::pvehicle::Num_OnScrapeWorld() const {
     ATTRIB_CODEGEN_GETLENGTH(0x7100960c);
 }
-inline bool Gen::pvehicle::SET_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, input, index);
 }
 
@@ -973,7 +973,7 @@ inline const RefSpec &Gen::pvehicle::OnTireBlow() const {
 inline bool Gen::pvehicle::OnTireBlow(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xd42e792f, result);
 }
-inline bool Gen::pvehicle::SET_OnTireBlow(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_OnTireBlow(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xd42e792f, input);
 }
 
@@ -986,7 +986,7 @@ inline const EA::Reflection::Bool &Gen::pvehicle::PlayerUsable() const {
 inline bool Gen::pvehicle::PlayerUsable(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xf099b6ac, result);
 }
-inline bool Gen::pvehicle::SET_PlayerUsable(const EA::Reflection::Bool &input) {
+inline bool Gen::pvehicle::Set_PlayerUsable(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xf099b6ac, input);
 }
 
@@ -999,7 +999,7 @@ inline const EA::Reflection::Bool &Gen::pvehicle::RandomOpponent() const {
 inline bool Gen::pvehicle::RandomOpponent(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6df0abfe, result);
 }
-inline bool Gen::pvehicle::SET_RandomOpponent(const EA::Reflection::Bool &input) {
+inline bool Gen::pvehicle::Set_RandomOpponent(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6df0abfe, input);
 }
 
@@ -1015,7 +1015,7 @@ inline bool Gen::pvehicle::ShiftSND(UpgradeSpecs &result, unsigned int index) co
 inline unsigned int Gen::pvehicle::Num_ShiftSND() const {
     ATTRIB_CODEGEN_GETLENGTH(0x8ae8bee0);
 }
-inline bool Gen::pvehicle::SET_ShiftSND(const UpgradeSpecs &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_ShiftSND(const UpgradeSpecs &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, input, index);
 }
 
@@ -1029,7 +1029,7 @@ inline bool Gen::pvehicle::TENSOR_SCALE(UMath::Vector4 &result) const {
     result = TENSOR_SCALE();
     return true;
 }
-inline bool Gen::pvehicle::SET_TENSOR_SCALE(const UMath::Vector4 &input) {
+inline bool Gen::pvehicle::Set_TENSOR_SCALE(const UMath::Vector4 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TENSOR_SCALE, input);
 }
 
@@ -1043,7 +1043,7 @@ inline bool Gen::pvehicle::TrafficEngType(EA::Reflection::UInt8 &result) const {
     result = TrafficEngType();
     return true;
 }
-inline bool Gen::pvehicle::SET_TrafficEngType(const EA::Reflection::UInt8 &input) {
+inline bool Gen::pvehicle::Set_TrafficEngType(const EA::Reflection::UInt8 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(TrafficEngType, input);
 }
 
@@ -1056,7 +1056,7 @@ inline const RefSpec &Gen::pvehicle::Trailer() const {
 inline bool Gen::pvehicle::Trailer(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x9a5537fe, result);
 }
-inline bool Gen::pvehicle::SET_Trailer(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_Trailer(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x9a5537fe, input);
 }
 
@@ -1069,7 +1069,7 @@ inline const EA::Reflection::Bool &Gen::pvehicle::TruckSndFX() const {
 inline bool Gen::pvehicle::TruckSndFX(EA::Reflection::Bool &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xeacb7696, result);
 }
-inline bool Gen::pvehicle::SET_TruckSndFX(const EA::Reflection::Bool &input) {
+inline bool Gen::pvehicle::Set_TruckSndFX(const EA::Reflection::Bool &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xeacb7696, input);
 }
 
@@ -1085,7 +1085,7 @@ inline bool Gen::pvehicle::TurboSND(UpgradeSpecs &result, unsigned int index) co
 inline unsigned int Gen::pvehicle::Num_TurboSND() const {
     ATTRIB_CODEGEN_GETLENGTH(0x0e9bfb66);
 }
-inline bool Gen::pvehicle::SET_TurboSND(const UpgradeSpecs &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_TurboSND(const UpgradeSpecs &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, input, index);
 }
 
@@ -1099,7 +1099,7 @@ inline bool Gen::pvehicle::VerbalType(Csis::Type_car_type &result) const {
     result = VerbalType();
     return true;
 }
-inline bool Gen::pvehicle::SET_VerbalType(const Csis::Type_car_type &input) {
+inline bool Gen::pvehicle::Set_VerbalType(const Csis::Type_car_type &input) {
     ATTRIB_CODEGEN_SETLAYOUT(VerbalType, input);
 }
 
@@ -1112,7 +1112,7 @@ inline const eDRIVE_BY_TYPE &Gen::pvehicle::WooshType() const {
 inline bool Gen::pvehicle::WooshType(eDRIVE_BY_TYPE &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(eDRIVE_BY_TYPE, 0x7e744600, result);
 }
-inline bool Gen::pvehicle::SET_WooshType(const eDRIVE_BY_TYPE &input) {
+inline bool Gen::pvehicle::Set_WooshType(const eDRIVE_BY_TYPE &input) {
     ATTRIB_CODEGEN_SETVALUE(eDRIVE_BY_TYPE, 0x7e744600, input);
 }
 
@@ -1125,7 +1125,7 @@ inline const RefSpec &Gen::pvehicle::aivehicle() const {
 inline bool Gen::pvehicle::aivehicle(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x22515733, result);
 }
-inline bool Gen::pvehicle::SET_aivehicle(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_aivehicle(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x22515733, input);
 }
 
@@ -1141,7 +1141,7 @@ inline bool Gen::pvehicle::brakes(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::pvehicle::Num_brakes() const {
     ATTRIB_CODEGEN_GETLENGTH(0x36350867);
 }
-inline bool Gen::pvehicle::SET_brakes(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_brakes(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x36350867, input, index);
 }
 
@@ -1154,7 +1154,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::brakes_current() const {
 inline bool Gen::pvehicle::brakes_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x552c3d22, result);
 }
-inline bool Gen::pvehicle::SET_brakes_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_brakes_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x552c3d22, input);
 }
 
@@ -1168,7 +1168,7 @@ inline bool Gen::pvehicle::brakes_upgrades(EA::Reflection::Int32 &result) const 
     result = brakes_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_brakes_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_brakes_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(brakes_upgrades, input);
 }
 
@@ -1184,7 +1184,7 @@ inline bool Gen::pvehicle::chassis(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::pvehicle::Num_chassis() const {
     ATTRIB_CODEGEN_GETLENGTH(0xafa210f0);
 }
-inline bool Gen::pvehicle::SET_chassis(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_chassis(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xafa210f0, input, index);
 }
 
@@ -1197,7 +1197,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::chassis_current() const {
 inline bool Gen::pvehicle::chassis_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7845f9bc, result);
 }
-inline bool Gen::pvehicle::SET_chassis_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_chassis_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7845f9bc, input);
 }
 
@@ -1211,7 +1211,7 @@ inline bool Gen::pvehicle::chassis_upgrades(EA::Reflection::Int32 &result) const
     result = chassis_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_chassis_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_chassis_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(chassis_upgrades, input);
 }
 
@@ -1224,7 +1224,7 @@ inline const RefSpec &Gen::pvehicle::chopperspecs() const {
 inline bool Gen::pvehicle::chopperspecs(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x5d898ee7, result);
 }
-inline bool Gen::pvehicle::SET_chopperspecs(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_chopperspecs(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x5d898ee7, input);
 }
 
@@ -1237,7 +1237,7 @@ inline const RefSpec &Gen::pvehicle::damagespecs() const {
 inline bool Gen::pvehicle::damagespecs(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xc1f0b434, result);
 }
-inline bool Gen::pvehicle::SET_damagespecs(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_damagespecs(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xc1f0b434, input);
 }
 
@@ -1253,7 +1253,7 @@ inline bool Gen::pvehicle::engine(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::pvehicle::Num_engine() const {
     ATTRIB_CODEGEN_GETLENGTH(0xf1f5fbc7);
 }
-inline bool Gen::pvehicle::SET_engine(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_engine(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf1f5fbc7, input, index);
 }
 
@@ -1266,7 +1266,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::engine_current() const {
 inline bool Gen::pvehicle::engine_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xb12ccb69, result);
 }
-inline bool Gen::pvehicle::SET_engine_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_engine_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xb12ccb69, input);
 }
 
@@ -1280,7 +1280,7 @@ inline bool Gen::pvehicle::engine_upgrades(EA::Reflection::Int32 &result) const 
     result = engine_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_engine_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_engine_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(engine_upgrades, input);
 }
 
@@ -1296,7 +1296,7 @@ inline bool Gen::pvehicle::engineaudio(RefSpec &result, unsigned int index) cons
 inline unsigned int Gen::pvehicle::Num_engineaudio() const {
     ATTRIB_CODEGEN_GETLENGTH(0x50eab0e6);
 }
-inline bool Gen::pvehicle::SET_engineaudio(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_engineaudio(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x50eab0e6, input, index);
 }
 
@@ -1309,7 +1309,7 @@ inline const RefSpec &Gen::pvehicle::frontend() const {
 inline bool Gen::pvehicle::frontend(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x85885722, result);
 }
-inline bool Gen::pvehicle::SET_frontend(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_frontend(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x85885722, input);
 }
 
@@ -1325,7 +1325,7 @@ inline bool Gen::pvehicle::induction(RefSpec &result, unsigned int index) const 
 inline unsigned int Gen::pvehicle::Num_induction() const {
     ATTRIB_CODEGEN_GETLENGTH(0xc92a0142);
 }
-inline bool Gen::pvehicle::SET_induction(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_induction(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc92a0142, input, index);
 }
 
@@ -1338,7 +1338,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::induction_current() const {
 inline bool Gen::pvehicle::induction_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7f440672, result);
 }
-inline bool Gen::pvehicle::SET_induction_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_induction_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7f440672, input);
 }
 
@@ -1352,7 +1352,7 @@ inline bool Gen::pvehicle::induction_upgrades(EA::Reflection::Int32 &result) con
     result = induction_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_induction_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_induction_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(induction_upgrades, input);
 }
 
@@ -1365,7 +1365,7 @@ inline const RefSpec &Gen::pvehicle::junkman() const {
 inline bool Gen::pvehicle::junkman(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x171737e9, result);
 }
-inline bool Gen::pvehicle::SET_junkman(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_junkman(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x171737e9, input);
 }
 
@@ -1378,7 +1378,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::junkman_current() const {
 inline bool Gen::pvehicle::junkman_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xcdc136e8, result);
 }
-inline bool Gen::pvehicle::SET_junkman_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_junkman_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xcdc136e8, input);
 }
 
@@ -1394,7 +1394,7 @@ inline bool Gen::pvehicle::nos(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::pvehicle::Num_nos() const {
     ATTRIB_CODEGEN_GETLENGTH(0xb1669f64);
 }
-inline bool Gen::pvehicle::SET_nos(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_nos(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb1669f64, input, index);
 }
 
@@ -1407,7 +1407,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::nos_current() const {
 inline bool Gen::pvehicle::nos_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x8f37beae, result);
 }
-inline bool Gen::pvehicle::SET_nos_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_nos_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x8f37beae, input);
 }
 
@@ -1421,7 +1421,7 @@ inline bool Gen::pvehicle::nos_upgrades(EA::Reflection::Int32 &result) const {
     result = nos_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_nos_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_nos_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(nos_upgrades, input);
 }
 
@@ -1434,7 +1434,7 @@ inline const RefSpec &Gen::pvehicle::rigidbodyspecs() const {
 inline bool Gen::pvehicle::rigidbodyspecs(RefSpec &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x7c90bb38, result);
 }
-inline bool Gen::pvehicle::SET_rigidbodyspecs(const RefSpec &input) {
+inline bool Gen::pvehicle::Set_rigidbodyspecs(const RefSpec &input) {
     ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x7c90bb38, input);
 }
 
@@ -1450,7 +1450,7 @@ inline bool Gen::pvehicle::tires(RefSpec &result, unsigned int index) const {
 inline unsigned int Gen::pvehicle::Num_tires() const {
     ATTRIB_CODEGEN_GETLENGTH(0xbd38d1ca);
 }
-inline bool Gen::pvehicle::SET_tires(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_tires(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xbd38d1ca, input, index);
 }
 
@@ -1463,7 +1463,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::tires_current() const {
 inline bool Gen::pvehicle::tires_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x34e73f83, result);
 }
-inline bool Gen::pvehicle::SET_tires_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_tires_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x34e73f83, input);
 }
 
@@ -1477,7 +1477,7 @@ inline bool Gen::pvehicle::tires_upgrades(EA::Reflection::Int32 &result) const {
     result = tires_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_tires_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_tires_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(tires_upgrades, input);
 }
 
@@ -1493,7 +1493,7 @@ inline bool Gen::pvehicle::transmission(RefSpec &result, unsigned int index) con
 inline unsigned int Gen::pvehicle::Num_transmission() const {
     ATTRIB_CODEGEN_GETLENGTH(0x07a7a3e5);
 }
-inline bool Gen::pvehicle::SET_transmission(const RefSpec &input, unsigned int index) {
+inline bool Gen::pvehicle::Set_transmission(const RefSpec &input, unsigned int index) {
     ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x07a7a3e5, input, index);
 }
 
@@ -1506,7 +1506,7 @@ inline const EA::Reflection::Int32 &Gen::pvehicle::transmission_current() const 
 inline bool Gen::pvehicle::transmission_current(EA::Reflection::Int32 &result) const {
     ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x170d5554, result);
 }
-inline bool Gen::pvehicle::SET_transmission_current(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_transmission_current(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x170d5554, input);
 }
 
@@ -1520,7 +1520,7 @@ inline bool Gen::pvehicle::transmission_upgrades(EA::Reflection::Int32 &result) 
     result = transmission_upgrades();
     return true;
 }
-inline bool Gen::pvehicle::SET_transmission_upgrades(const EA::Reflection::Int32 &input) {
+inline bool Gen::pvehicle::Set_transmission_upgrades(const EA::Reflection::Int32 &input) {
     ATTRIB_CODEGEN_SETLAYOUT(transmission_upgrades, input);
 }
 

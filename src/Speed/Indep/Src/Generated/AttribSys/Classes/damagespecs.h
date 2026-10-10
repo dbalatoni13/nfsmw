@@ -103,82 +103,82 @@ struct damagespecs : Instance {
     bool DZ_BOTTOM(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_BOTTOM(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_BOTTOM() const;
-    bool SET_DZ_BOTTOM(const DamageScaleRecord &input);
+    bool Set_DZ_BOTTOM(const DamageScaleRecord &input);
 
     bool DZ_FRONT(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_FRONT(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_FRONT() const;
-    bool SET_DZ_FRONT(const DamageScaleRecord &input);
+    bool Set_DZ_FRONT(const DamageScaleRecord &input);
 
     bool DZ_LEFT(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_LEFT(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_LEFT() const;
-    bool SET_DZ_LEFT(const DamageScaleRecord &input);
+    bool Set_DZ_LEFT(const DamageScaleRecord &input);
 
     bool DZ_LFRONT(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_LFRONT(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_LFRONT() const;
-    bool SET_DZ_LFRONT(const DamageScaleRecord &input);
+    bool Set_DZ_LFRONT(const DamageScaleRecord &input);
 
     bool DZ_LREAR(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_LREAR(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_LREAR() const;
-    bool SET_DZ_LREAR(const DamageScaleRecord &input);
+    bool Set_DZ_LREAR(const DamageScaleRecord &input);
 
     bool DZ_REAR(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_REAR(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_REAR() const;
-    bool SET_DZ_REAR(const DamageScaleRecord &input);
+    bool Set_DZ_REAR(const DamageScaleRecord &input);
 
     bool DZ_RFRONT(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_RFRONT(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_RFRONT() const;
-    bool SET_DZ_RFRONT(const DamageScaleRecord &input);
+    bool Set_DZ_RFRONT(const DamageScaleRecord &input);
 
     bool DZ_RIGHT(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_RIGHT(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_RIGHT() const;
-    bool SET_DZ_RIGHT(const DamageScaleRecord &input);
+    bool Set_DZ_RIGHT(const DamageScaleRecord &input);
 
     bool DZ_RREAR(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_RREAR(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_RREAR() const;
-    bool SET_DZ_RREAR(const DamageScaleRecord &input);
+    bool Set_DZ_RREAR(const DamageScaleRecord &input);
 
     bool DZ_TOP(TAttrib<DamageScaleRecord> &result) const;
     bool DZ_TOP(DamageScaleRecord &result) const;
     const DamageScaleRecord &DZ_TOP() const;
-    bool SET_DZ_TOP(const DamageScaleRecord &input);
+    bool Set_DZ_TOP(const DamageScaleRecord &input);
 
     bool FORCE(TAttrib<EA::Reflection::Float> &result) const;
     bool FORCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &FORCE() const;
-    bool SET_FORCE(const EA::Reflection::Float &input);
+    bool Set_FORCE(const EA::Reflection::Float &input);
 
     bool HIT_POINTS(TAttrib<EA::Reflection::Float> &result) const;
     bool HIT_POINTS(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HIT_POINTS() const;
-    bool SET_HIT_POINTS(const EA::Reflection::Float &input);
+    bool Set_HIT_POINTS(const EA::Reflection::Float &input);
 
     bool HP_THRESHOLD(TAttrib<EA::Reflection::Float> &result) const;
     bool HP_THRESHOLD(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &HP_THRESHOLD() const;
-    bool SET_HP_THRESHOLD(const EA::Reflection::Float &input);
+    bool Set_HP_THRESHOLD(const EA::Reflection::Float &input);
 
     bool SHOCK_FORCE(TAttrib<EA::Reflection::Float> &result) const;
     bool SHOCK_FORCE(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SHOCK_FORCE() const;
-    bool SET_SHOCK_FORCE(const EA::Reflection::Float &input);
+    bool Set_SHOCK_FORCE(const EA::Reflection::Float &input);
 
     bool SHOCK_TIME(TAttrib<EA::Reflection::Float> &result) const;
     bool SHOCK_TIME(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SHOCK_TIME() const;
-    bool SET_SHOCK_TIME(const EA::Reflection::Float &input);
+    bool Set_SHOCK_TIME(const EA::Reflection::Float &input);
 
     bool SUPPRESS_DIST(TAttrib<EA::Reflection::Float> &result) const;
     bool SUPPRESS_DIST(EA::Reflection::Float &result) const;
     const EA::Reflection::Float &SUPPRESS_DIST() const;
-    bool SET_SUPPRESS_DIST(const EA::Reflection::Float &input);
+    bool Set_SUPPRESS_DIST(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -232,7 +232,7 @@ inline bool Gen::damagespecs::DZ_BOTTOM(DamageScaleRecord &result) const {
     result = DZ_BOTTOM();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_BOTTOM(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_BOTTOM(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_BOTTOM, input);
 }
 
@@ -246,7 +246,7 @@ inline bool Gen::damagespecs::DZ_FRONT(DamageScaleRecord &result) const {
     result = DZ_FRONT();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_FRONT(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_FRONT(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_FRONT, input);
 }
 
@@ -260,7 +260,7 @@ inline bool Gen::damagespecs::DZ_LEFT(DamageScaleRecord &result) const {
     result = DZ_LEFT();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_LEFT(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_LEFT(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_LEFT, input);
 }
 
@@ -274,7 +274,7 @@ inline bool Gen::damagespecs::DZ_LFRONT(DamageScaleRecord &result) const {
     result = DZ_LFRONT();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_LFRONT(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_LFRONT(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_LFRONT, input);
 }
 
@@ -288,7 +288,7 @@ inline bool Gen::damagespecs::DZ_LREAR(DamageScaleRecord &result) const {
     result = DZ_LREAR();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_LREAR(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_LREAR(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_LREAR, input);
 }
 
@@ -302,7 +302,7 @@ inline bool Gen::damagespecs::DZ_REAR(DamageScaleRecord &result) const {
     result = DZ_REAR();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_REAR(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_REAR(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_REAR, input);
 }
 
@@ -316,7 +316,7 @@ inline bool Gen::damagespecs::DZ_RFRONT(DamageScaleRecord &result) const {
     result = DZ_RFRONT();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_RFRONT(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_RFRONT(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_RFRONT, input);
 }
 
@@ -330,7 +330,7 @@ inline bool Gen::damagespecs::DZ_RIGHT(DamageScaleRecord &result) const {
     result = DZ_RIGHT();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_RIGHT(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_RIGHT(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_RIGHT, input);
 }
 
@@ -344,7 +344,7 @@ inline bool Gen::damagespecs::DZ_RREAR(DamageScaleRecord &result) const {
     result = DZ_RREAR();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_RREAR(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_RREAR(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_RREAR, input);
 }
 
@@ -358,7 +358,7 @@ inline bool Gen::damagespecs::DZ_TOP(DamageScaleRecord &result) const {
     result = DZ_TOP();
     return true;
 }
-inline bool Gen::damagespecs::SET_DZ_TOP(const DamageScaleRecord &input) {
+inline bool Gen::damagespecs::Set_DZ_TOP(const DamageScaleRecord &input) {
     ATTRIB_CODEGEN_SETLAYOUT(DZ_TOP, input);
 }
 
@@ -372,7 +372,7 @@ inline bool Gen::damagespecs::FORCE(EA::Reflection::Float &result) const {
     result = FORCE();
     return true;
 }
-inline bool Gen::damagespecs::SET_FORCE(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_FORCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(FORCE, input);
 }
 
@@ -386,7 +386,7 @@ inline bool Gen::damagespecs::HIT_POINTS(EA::Reflection::Float &result) const {
     result = HIT_POINTS();
     return true;
 }
-inline bool Gen::damagespecs::SET_HIT_POINTS(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_HIT_POINTS(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HIT_POINTS, input);
 }
 
@@ -400,7 +400,7 @@ inline bool Gen::damagespecs::HP_THRESHOLD(EA::Reflection::Float &result) const 
     result = HP_THRESHOLD();
     return true;
 }
-inline bool Gen::damagespecs::SET_HP_THRESHOLD(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_HP_THRESHOLD(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(HP_THRESHOLD, input);
 }
 
@@ -414,7 +414,7 @@ inline bool Gen::damagespecs::SHOCK_FORCE(EA::Reflection::Float &result) const {
     result = SHOCK_FORCE();
     return true;
 }
-inline bool Gen::damagespecs::SET_SHOCK_FORCE(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_SHOCK_FORCE(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SHOCK_FORCE, input);
 }
 
@@ -428,7 +428,7 @@ inline bool Gen::damagespecs::SHOCK_TIME(EA::Reflection::Float &result) const {
     result = SHOCK_TIME();
     return true;
 }
-inline bool Gen::damagespecs::SET_SHOCK_TIME(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_SHOCK_TIME(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SHOCK_TIME, input);
 }
 
@@ -442,7 +442,7 @@ inline bool Gen::damagespecs::SUPPRESS_DIST(EA::Reflection::Float &result) const
     result = SUPPRESS_DIST();
     return true;
 }
-inline bool Gen::damagespecs::SET_SUPPRESS_DIST(const EA::Reflection::Float &input) {
+inline bool Gen::damagespecs::Set_SUPPRESS_DIST(const EA::Reflection::Float &input) {
     ATTRIB_CODEGEN_SETLAYOUT(SUPPRESS_DIST, input);
 }
 
