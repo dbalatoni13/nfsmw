@@ -185,7 +185,10 @@ bool bIsDebuggerConnected() {
     }
     return snIsDebuggerRunning() != 0;
 #elif defined(EA_PLATFORM_XENON)
-    return DmIsDebuggerPresent() != 0;
+    if (DmIsDebuggerPresent()) {
+        return true;
+    }
+    return false;
 #else
     return false;
 #endif
