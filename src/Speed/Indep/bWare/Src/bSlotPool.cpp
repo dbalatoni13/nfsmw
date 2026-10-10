@@ -356,12 +356,14 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     SlotPoolEntry *first_slot;
     int n;
 
+#ifndef EA_PLATFORM_XENON
     if (num_slots == 0) {
         return nullptr;
     }
+#endif
     if (CountFreeSlots() < num_slots) {
         if ((Flags & SLOTPOOL_FLAG_OVERFLOW_IF_FULL) == 0) {
-#ifdef EA_PLATFORM_GAMECUBE
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_WIN32)
             return nullptr;
 #else
             goto no_slots;
@@ -381,9 +383,15 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
         }
         ExpandSlotPool(num_extra_slots);
     }
+#if defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
+    slot = FreeSlots;
+    n = 0;
+    first_slot = slot;
+#else
     first_slot = FreeSlots;
     n = 0;
     slot = first_slot;
+#endif
 #ifdef EA_PLATFORM_GAMECUBE
     if (!first_slot) {
         return nullptr;
@@ -402,7 +410,7 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     }
 #endif
     if (!slot) {
-#ifndef EA_PLATFORM_GAMECUBE
+#if !defined(EA_PLATFORM_GAMECUBE) && !defined(EA_PLATFORM_WIN32)
     no_slots:
 #endif
         return nullptr;
@@ -418,14 +426,14 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     }
     if (Flags & SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY) {
         for (SlotPoolEntry *slot = first_slot; slot;) {
-#if !defined(EA_PLATFORM_GAMECUBE) && !defined(EA_PLATFORM_WIN32)
+#if !defined(EA_PLATFORM_GAMECUBE) && !defined(EA_PLATFORM_WIN32) && !defined(EA_PLATFORM_XENON)
             SlotPoolEntry *next_slot = slot->Next;
 #endif
             int num_words = SlotSize >> 2;
             for (int n = 1; n < num_words; n++) {
                 slot[n].Next = nullptr;
             }
-#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
             slot = slot->Next;
 #else
             slot = next_slot;
