@@ -42,12 +42,23 @@ int bStrLen(const char *s) {
 }
 
 char *bStrCpy(char *to, const char *from) {
+#ifdef EA_PLATFORM_XENON
+    int n = 0;
+    unsigned int c = static_cast<unsigned char>(from[0]);
+    to[0] = static_cast<char>(c);
+    while (c != 0) {
+        n++;
+        c = static_cast<unsigned char>(from[n]);
+        to[n] = static_cast<char>(c);
+    }
+#else
     int n = 0;
     to[0] = from[0];
     while (to[n] != '\0') {
         n++;
         to[n] = from[n];
     }
+#endif
     return to;
 }
 
@@ -666,44 +677,59 @@ void bSharedStringPool::Close() {
     }
 }
 
+#ifdef EA_PLATFORM_XENON
+// Retail Xenon specializes these entries for the global pool. Keep the original
+// instance expression elsewhere: a local alias changes historical MSVC codegen.
+#define B_SHARED_STRING_POOL pool
+#else
+#define B_SHARED_STRING_POOL this
+#endif
+
 const char *bSharedStringPool::Allocate(const char *s) {
+#ifdef EA_PLATFORM_XENON
+    bSharedStringPool *pool = &gSharedStringPool;
+#endif
     if (s == nullptr) {
         return nullptr;
     }
-    if (this->StringTable == nullptr) {
+    if (B_SHARED_STRING_POOL->StringTable == nullptr) {
         return nullptr;
     }
 
-    this->Mutex.Lock();
+    B_SHARED_STRING_POOL->Mutex.Lock();
 
     int hash_index = static_cast<int>(bStringHash(s) & 0x7ff);
-    bSharedString *string = this->FastLookupTable[hash_index];
+    bSharedString *string = B_SHARED_STRING_POOL->FastLookupTable[hash_index];
     if (string && (bStrCmp(s, string->String) == 0)) {
         string->Count++;
-        this->Mutex.Unlock();
+        B_SHARED_STRING_POOL->Mutex.Unlock();
         return string->String;
     }
 
+#ifdef EA_PLATFORM_XENON
+    bool search_table = true;
+#else
     int search_table = true;
-    if (this->FastLookupTableCount[hash_index] == 0) {
+#endif
+    if (B_SHARED_STRING_POOL->FastLookupTableCount[hash_index] == 0) {
         search_table = false;
-    } else if ((this->FastLookupTableCount[hash_index] == 1) && (string != nullptr)) {
+    } else if ((B_SHARED_STRING_POOL->FastLookupTableCount[hash_index] == 1) && (string != nullptr)) {
         search_table = false;
     }
 
     if (search_table) {
-        for (string = GetStringTableStart(); string != GetStringTableEnd(); string = string->GetNext()) {
+        for (string = B_SHARED_STRING_POOL->GetStringTableStart(); string != B_SHARED_STRING_POOL->GetStringTableEnd(); string = string->GetNext()) {
             if ((string->Count != 0) && (bStrCmp(s, string->String) == 0)) {
-                this->FastLookupTable[hash_index] = string;
+                B_SHARED_STRING_POOL->FastLookupTable[hash_index] = string;
                 string->Count++;
-                this->Mutex.Unlock();
+                B_SHARED_STRING_POOL->Mutex.Unlock();
                 return string->String;
             }
         }
     }
 
     int size = (bStrLen(s) + 14) / sizeof(bSharedString);
-    string = this->LargestFreeString;
+    string = B_SHARED_STRING_POOL->LargestFreeString;
 
     do {
         if ((string->Count == 0) && (string->Size >= size)) {
@@ -715,7 +741,7 @@ const char *bSharedStringPool::Allocate(const char *s) {
                 next_string->String[0] = '\0';
 
                 bSharedString *next_next_string = next_string->GetNext();
-                if (next_next_string != GetStringTableEnd()) {
+                if (next_next_string != B_SHARED_STRING_POOL->GetStringTableEnd()) {
                     next_next_string->Prev = next_next_string - next_string;
                 }
             }
@@ -723,94 +749,99 @@ const char *bSharedStringPool::Allocate(const char *s) {
             string->Size = static_cast<unsigned short>(size);
             string->Count = 1;
             bStrCpy(string->String, s);
-            this->FastLookupTable[hash_index] = string;
-            this->FastLookupTableCount[hash_index]++;
+            B_SHARED_STRING_POOL->FastLookupTable[hash_index] = string;
+            B_SHARED_STRING_POOL->FastLookupTableCount[hash_index]++;
 
-            this->NumBytesAllocated += size * sizeof(bSharedString);
-            if (this->NumBytesAllocated > this->MostBytesAllocated) {
-                this->MostBytesAllocated = this->NumBytesAllocated;
+            B_SHARED_STRING_POOL->NumBytesAllocated += size * sizeof(bSharedString);
+            if (B_SHARED_STRING_POOL->NumBytesAllocated > B_SHARED_STRING_POOL->MostBytesAllocated) {
+                B_SHARED_STRING_POOL->MostBytesAllocated = B_SHARED_STRING_POOL->NumBytesAllocated;
             }
 
-            this->NumStringsAllocated++;
-            if (this->NumStringsAllocated > this->MostStringsAllocated) {
-                this->MostStringsAllocated = this->NumStringsAllocated;
+            B_SHARED_STRING_POOL->NumStringsAllocated++;
+            if (B_SHARED_STRING_POOL->NumStringsAllocated > B_SHARED_STRING_POOL->MostStringsAllocated) {
+                B_SHARED_STRING_POOL->MostStringsAllocated = B_SHARED_STRING_POOL->NumStringsAllocated;
             }
 
-            this->LargestFreeString = string->GetNext();
-            if (this->LargestFreeString == GetStringTableEnd()) {
-                this->LargestFreeString = GetStringTableStart();
+            B_SHARED_STRING_POOL->LargestFreeString = string->GetNext();
+            if (B_SHARED_STRING_POOL->LargestFreeString == B_SHARED_STRING_POOL->GetStringTableEnd()) {
+                B_SHARED_STRING_POOL->LargestFreeString = B_SHARED_STRING_POOL->GetStringTableStart();
             }
 
-            this->Mutex.Unlock();
+            B_SHARED_STRING_POOL->Mutex.Unlock();
             return string->String;
         }
 
         string = string->GetNext();
-        if (string == GetStringTableEnd()) {
-            string = GetStringTableStart();
+        if (string == B_SHARED_STRING_POOL->GetStringTableEnd()) {
+            string = B_SHARED_STRING_POOL->GetStringTableStart();
         }
-    } while (string != this->LargestFreeString);
+    } while (string != B_SHARED_STRING_POOL->LargestFreeString);
 
-    this->Mutex.Unlock();
+    B_SHARED_STRING_POOL->Mutex.Unlock();
     return nullptr;
 }
 
 void bSharedStringPool::Free(const char *s) {
+#ifdef EA_PLATFORM_XENON
+    bSharedStringPool *pool = &gSharedStringPool;
+#endif
     if (s == nullptr) {
         return;
     }
 
-    int index = GetIndex(s);
+    int index = B_SHARED_STRING_POOL->GetIndex(s);
     if (index == -1) {
         return;
     }
 
-    bSharedString *string = GetSharedString(index);
+    bSharedString *string = B_SHARED_STRING_POOL->GetSharedString(index);
 
-    this->Mutex.Lock();
+    B_SHARED_STRING_POOL->Mutex.Lock();
 
     if (--string->Count != 0) {
-        this->Mutex.Unlock();
+        B_SHARED_STRING_POOL->Mutex.Unlock();
         return;
     }
 
     int hash_index = static_cast<int>(bStringHash(s) & 0x7ff);
 
-    if (this->FastLookupTable[hash_index] == string) {
-        this->FastLookupTable[hash_index] = 0;
+    if (B_SHARED_STRING_POOL->FastLookupTable[hash_index] == string) {
+        B_SHARED_STRING_POOL->FastLookupTable[hash_index] = 0;
     }
 
-    this->FastLookupTableCount[hash_index]--;
+    B_SHARED_STRING_POOL->FastLookupTableCount[hash_index]--;
     string->String[0] = 0;
-    this->NumBytesAllocated -= string->Size * sizeof(bSharedString);
-    this->NumStringsAllocated--;
+    B_SHARED_STRING_POOL->NumBytesAllocated -= string->Size * sizeof(bSharedString);
+    B_SHARED_STRING_POOL->NumStringsAllocated--;
 
     bSharedString *next_string = string->GetNext();
 
-    if ((next_string != GetStringTableEnd()) && (next_string->Count == 0)) {
+    if ((next_string != B_SHARED_STRING_POOL->GetStringTableEnd()) && (next_string->Count == 0)) {
         string->Size += next_string->Size;
         next_string = next_string->GetNext(); // TODO new variable to match dwarf
-        if (next_string != GetStringTableEnd()) {
+        if (next_string != B_SHARED_STRING_POOL->GetStringTableEnd()) {
             next_string->Prev = next_string - string;
         }
     }
 
     bSharedString *prev_string = string->GetPrev();
-    if ((string != GetStringTableStart()) && (prev_string->Count == 0)) {
+    if ((string != B_SHARED_STRING_POOL->GetStringTableStart()) && (prev_string->Count == 0)) {
         prev_string->Size += string->Size;
         bSharedString *next_string = string->GetNext();
-        if (next_string != GetStringTableEnd()) {
+        if (next_string != B_SHARED_STRING_POOL->GetStringTableEnd()) {
             next_string->Prev = next_string - prev_string;
         }
         string = prev_string;
     }
 
-    if (string->Size > this->LargestFreeString->Size) {
-        this->LargestFreeString = string;
+    if (string->Size > B_SHARED_STRING_POOL->LargestFreeString->Size) {
+        B_SHARED_STRING_POOL->LargestFreeString = string;
     }
 
-    this->Mutex.Unlock();
+    B_SHARED_STRING_POOL->Mutex.Unlock();
 }
+
+#undef B_SHARED_STRING_POOL
 
 // STRIPPED
 void bSharedStringPool::Dump() {
