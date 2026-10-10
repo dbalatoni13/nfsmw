@@ -258,11 +258,33 @@ int bGetFunctionInfo(unsigned int address, unsigned int *start_address, char *na
 }
 
 bFunkServer::bFunkServer(const char *name) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     this->NameHash = bStringHash(name);
+#ifdef EA_PLATFORM_XENON
+    unsigned int *words = reinterpret_cast<unsigned int *>(this->Name);
+    for (int count = sizeof(this->Name) / sizeof(*words); count != 0; --count) {
+        *words++ = 0;
+    }
+    int name_index = 0;
+    int remaining = sizeof(this->Name) - 1;
+    do {
+        unsigned char value = name[name_index];
+        this->Name[name_index] = value;
+        --remaining;
+        if (value == 0) {
+            break;
+        }
+        ++name_index;
+    } while (remaining != 0);
+    words = reinterpret_cast<unsigned int *>(this->FunctionTypes);
+    for (int count = sizeof(this->FunctionTypes) / sizeof(*words); count != 0; --count) {
+        *words++ = 0;
+    }
+#else
     bMemSet(this->Name, 0, sizeof(this->Name));
     bStrNCpy(this->Name, name, sizeof(this->Name) - 1);
     bMemSet(this->FunctionTypes, 0, sizeof(this->FunctionTypes));
+#endif
     bMemSet(this->FunctionTable, 0, sizeof(this->FunctionTable));
     bFunkServerList.AddTail(this);
 #endif
@@ -273,7 +295,7 @@ bFunkServer::~bFunkServer() {
 }
 
 void bFunkServer::AddASync(int function_num, void (*function)(const void *, int)) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (function_num >= 0 && function_num < 128) {
         this->FunctionTypes[function_num] = 0;
         this->FunctionTable[function_num] = (void *)function;
@@ -282,7 +304,7 @@ void bFunkServer::AddASync(int function_num, void (*function)(const void *, int)
 }
 
 void bFunkServer::AddSync(int function_num, int (*function)(const void *, int, void *)) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (function_num >= 0 && function_num < 128) {
         this->FunctionTypes[function_num] = 1;
         this->FunctionTable[function_num] = (void *)function;
@@ -291,7 +313,7 @@ void bFunkServer::AddSync(int function_num, int (*function)(const void *, int, v
 }
 
 void bFunkServer::Remove(int function_num) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (function_num >= 0 && function_num < 128) {
         this->FunctionTable[function_num] = nullptr;
     }
@@ -299,7 +321,7 @@ void bFunkServer::Remove(int function_num) {
 }
 
 void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (packet->GetType() == 0) {
         int function_num = packet->FunctionNum;
         if ((this->FunctionTypes[function_num] == 0) && (this->FunctionTable[function_num] != nullptr)) {
@@ -328,7 +350,11 @@ void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
         this->DeliverPacket(&return_packet);
     } else if (packet->GetType() == 2) {
         if (packet->ReturnCode > 0) {
+#ifdef EA_PLATFORM_XENON
+            memcpy(reinterpret_cast<void *>(packet->ReturnBufferAddress), packet->GetData(), packet->ReturnCode);
+#else
             bMemCpy(reinterpret_cast<void *>(packet->ReturnBufferAddress), packet->GetData(), packet->ReturnCode);
+#endif
         }
         *reinterpret_cast<int *>(packet->ReturnCodeAddress) = packet->ReturnCode;
     }
@@ -336,7 +362,7 @@ void bFunkServer::ProcessPacket(const bFunkPacket *packet) {
 }
 
 struct bFunkServer *bFunkFindServer(uint32 server_hash) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     for (bFunkServer *server = static_cast<bFunkServer *>(bFunkServerList.GetHead());
          server != static_cast<bFunkServer *>(bFunkServerList.EndOfList()); server = server->GetNext()) {
         if (server->GetNameHash() == server_hash) {
@@ -348,7 +374,7 @@ struct bFunkServer *bFunkFindServer(uint32 server_hash) {
 }
 
 bool bFunkServer::CanDeliverPacket(uint32 server_hash) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     return server_hash == this->NameHash || bFunkFindServer(server_hash) != nullptr;
 #else
     return false;
@@ -356,7 +382,7 @@ bool bFunkServer::CanDeliverPacket(uint32 server_hash) {
 }
 
 bool bFunkServer::DeliverPacket(bFunkPacket *packet) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     if (packet->DestServer == this->NameHash) {
         this->ProcessPacket(packet);
         return true;
@@ -372,11 +398,17 @@ bool bFunkServer::DeliverPacket(bFunkPacket *packet) {
 }
 
 bFunkServerPlatform::bFunkServerPlatform(const char *name, int max_receive_packets) : bFunkServer(name) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     int remaining_packets = max_receive_packets;
     this->MaxReceivePackets = remaining_packets;
     this->NextReceivePacketNum = 0;
     this->ProcessingPacket = false;
+#ifdef EA_PLATFORM_XENON
+    this->pReceivePackets = new (nullptr, 0) bFunkPacket[max_receive_packets];
+    for (int i = 0; i < this->MaxReceivePackets; ++i) {
+        this->pReceivePackets[i].SetTotalSize(0);
+    }
+#else
     this->pReceivePackets = new (__FILE__, __LINE__) bFunkPacket[remaining_packets];
 
     int offset = 0;
@@ -386,37 +418,68 @@ bFunkServerPlatform::bFunkServerPlatform(const char *name, int max_receive_packe
             offset += sizeof(bFunkPacket);
         } while (--remaining_packets != 0);
     }
+#endif
 
     bFunkCodeineAddServerPacket packet;
     packet.pReceivePackets = this->pReceivePackets;
     packet.MaxReceivePackets = max_receive_packets;
+#ifdef EA_PLATFORM_XENON
+    int name_index = 0;
+    int remaining = sizeof(packet.Name) - 1;
+    do {
+        unsigned char value = name[name_index];
+        packet.Name[name_index] = value;
+        --remaining;
+        if (value == 0) {
+            break;
+        }
+        ++name_index;
+    } while (remaining != 0);
+#else
     bStrNCpy(packet.Name, name, sizeof(packet.Name) - 1);
+#endif
     packet.Name[sizeof(packet.Name) - 1] = '\0';
     bFunkCallASync("CODEINE", 20, &packet, sizeof(packet));
 #endif
 }
 
 bFunkServerPlatform::~bFunkServerPlatform() {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     bFunkCallASync("CODEINE", 21, this->GetName(), bStrLen(this->GetName()) + 1);
 #endif
 }
 
 int bFunkServerPlatform::Service() {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32)
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WIN32) || defined(EA_PLATFORM_XENON)
     int packets_processed = 0;
 
     if (!this->ProcessingPacket) {
+#ifdef EA_PLATFORM_XENON
+        int next_receive_packet_num = this->NextReceivePacketNum;
+#else
         int next_receive_packet_num = *reinterpret_cast<volatile int *>(&this->NextReceivePacketNum);
+#endif
         bFunkPacket *packet = &this->pReceivePackets[next_receive_packet_num % this->MaxReceivePackets];
+#ifdef EA_PLATFORM_XENON
+        while (packet->GetTotalSize() != 0) {
+#else
         while (packet->TotalSize != 0) {
+#endif
+#ifdef EA_PLATFORM_XENON
+            ++*reinterpret_cast<volatile int *>(&this->NextReceivePacketNum);
+#else
             ++this->NextReceivePacketNum;
+#endif
             ++packets_processed;
             this->ProcessingPacket = true;
             this->ProcessPacket(packet);
             this->ProcessingPacket = false;
             packet->TotalSize = 0;
+#ifdef EA_PLATFORM_XENON
+            next_receive_packet_num = this->NextReceivePacketNum;
+#else
             next_receive_packet_num = *reinterpret_cast<volatile int *>(&this->NextReceivePacketNum);
+#endif
             packet = &this->pReceivePackets[next_receive_packet_num % this->MaxReceivePackets];
         }
     }

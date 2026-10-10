@@ -123,6 +123,9 @@ class bFunkServerPlatform : public bFunkServer {
     bFunkPacket *pReceivePackets; // offset 0x2DC, size 0x4
   public:
     bFunkServerPlatform(const char *name, int max_receive_packets);
+#ifdef EA_PLATFORM_XENON
+    __declspec(noinline)
+#endif
     ~bFunkServerPlatform() override;
     int Service() override;
     bool DeliverPacket(bFunkPacket *packet) override;
