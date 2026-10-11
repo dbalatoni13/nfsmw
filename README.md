@@ -27,7 +27,7 @@ Supported versions:
 
 We expect that as we progress on this decompilation, vibecoders will attempt to take what we have and slop out a broken port before us. Please do not give sloppers attention. Any releases and ports will be available [here](https://github.com/RevEngin3) when they are ready. 
 
-LLMs have been used on this project. Here's why, dispite this, our project isn't slop.
+LLMs have been used on this project. Here's why, despite this, our project isn't slop.
 
 - LLMs are **ONLY** used as a rough pass to get code somewhere in the ballpark that we can then reference or to create tooling. All LLM code must go through extensive manual review to clean it up to the point of being usable. **No slop is allowed to be merged into main.** If we accepted slop we could have been "done" months ago. Raw LLM output is unacceptable due to the mistakes it makes, such as:
 
