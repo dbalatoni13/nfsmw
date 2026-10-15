@@ -5,6 +5,8 @@ PROVIDE (_ctors = 0x804528D0);
 PROVIDE (_dtors = 0x804528D8);
 SECTIONS
 {
+	GXWGFifo = 0xCC008000;
+
 	.comment :{ *(.comment)}
 	.init	0x80003100	 : { *(.init)		} =0
 
